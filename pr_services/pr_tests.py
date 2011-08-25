@@ -3080,6 +3080,14 @@ class TestCurriculumManagement(TestCase):
         self.exam_2 = self.exam_manager.create(self.admin_token, 'Exam 2')
         self.exam_3 = self.exam_manager.create(self.admin_token, 'Exam 3')
 
+    def test_admin_curriculum_view(self):
+        curriculum = self.curriculum_manager.create(self.admin_token, 'Curriculum 1')
+
+        ret = self.curriculum_manager.admin_curriculums_view(self.admin_token)
+        self.assertEquals(len(ret), 1)
+        self.assertTrue('name' in ret[0])
+        self.assertEquals(ret[0]['name'], curriculum.name)
+
     def test_create_from_task_bundle(self):
         task_bundle = self.task_bundle_manager.create(self.admin_token,
             'example task bundle', 'this is an example task bundle', [

@@ -4,6 +4,7 @@ curriculum manager class
 
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
+from pr_services.utils import Utils
 import facade
 
 class CurriculumManager(ObjectManager):
@@ -45,5 +46,14 @@ class CurriculumManager(ObjectManager):
         c.save()
         self.authorizer.check_create_permissions(auth_token, c)
         return c
+
+    @service_method
+    def admin_curriculums_view(self, auth_token):
+        ret = self.get_filtered(auth_token, {}, ['name', 'tasks', 'achievements', 'organization'])
+
+        ret = Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name'], 'achievements')
+
+        return Utils.merge_queries(ret, facade.managers.TaskManager(), auth_token, ['name'], 'tasks')
+    
 
 # vim:tabstop=4 shiftwidth=4 expandtab
