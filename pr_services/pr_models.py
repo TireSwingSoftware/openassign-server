@@ -869,6 +869,10 @@ class CurriculumTaskAssociation(PRModel):
     # the curriculum_enrollment's end date
     days_to_complete = models.PositiveSmallIntegerField(default=0)
 
+    @property
+    def task_name(self):
+        return self.task.name
+
 
 class CurriculumEnrollment(PRModel):
     """
@@ -881,6 +885,10 @@ class CurriculumEnrollment(PRModel):
     users = models.ManyToManyField('User', through='CurriculumEnrollmentUserAssociation', related_name='curriculum_enrollments')
     start = models.DateField()
     end = models.DateField()
+
+    @property
+    def curriculum_name(self):
+        return self.curriculum.name
 
     @property
     def user_completion_statuses(self):

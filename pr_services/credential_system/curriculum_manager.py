@@ -18,6 +18,7 @@ class CurriculumManager(ObjectManager):
         ObjectManager.__init__(self)
         self.getters.update({
             'achievements' : 'get_many_to_many',
+            'curriculum_task_associations' : 'get_many_to_one',
             'name' : 'get_general',
             'organization' : 'get_foreign_key',
             'tasks' : 'get_many_to_many',
@@ -49,11 +50,11 @@ class CurriculumManager(ObjectManager):
 
     @service_method
     def admin_curriculums_view(self, auth_token):
-        ret = self.get_filtered(auth_token, {}, ['name', 'tasks', 'achievements', 'organization'])
+        ret = self.get_filtered(auth_token, {}, ['name', 'curriculum_task_associations', 'achievements', 'organization'])
 
         ret = Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name'], 'achievements')
 
-        return Utils.merge_queries(ret, facade.managers.TaskManager(), auth_token, ['name'], 'tasks')
+        return Utils.merge_queries(ret, facade.managers.CurriculumTaskAssociationManager(), auth_token, ['task_name'], 'curriculum_task_associations')
     
 
 # vim:tabstop=4 shiftwidth=4 expandtab

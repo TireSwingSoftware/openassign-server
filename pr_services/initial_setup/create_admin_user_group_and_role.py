@@ -108,13 +108,13 @@ def setup(machine):
         },
         'Curriculum' : {
             'c' : True,
-            'r' : ['name', 'organization', 'achievements', 'tasks'],
+            'r' : ['name', 'organization', 'achievements', 'tasks', 'curriculum_task_associations'],
             'u' : ['name', 'organization', 'achievements', 'tasks'],
             'd' : True,
         },
         'CurriculumEnrollment' : {
             'c' : True,
-            'r' : ['assignments', 'curriculum', 'users', 'user_completion_statuses', 'start', 'end'],
+            'r' : ['assignments', 'curriculum', 'curriculum_name', 'users', 'user_completion_statuses', 'start', 'end'],
             'u' : ['curriculum', 'users', 'start', 'end'],
             'd' : True,
         },
@@ -126,7 +126,7 @@ def setup(machine):
         },
         'CurriculumTaskAssociation' : {
             'c' : True,
-            'r' : ['curriculum', 'task', 'task_bundle', 'days_to_complete', 'days_before_start', 'presentation_order', 'continue_automatically'],
+            'r' : ['curriculum', 'task', 'task_name', 'task_bundle', 'days_to_complete', 'days_before_start', 'presentation_order', 'continue_automatically'],
             'u' : ['curriculum', 'task', 'task_bundle', 'days_to_complete', 'days_before_start', 'presentation_order', 'continue_automatically'],
             'd' : True,
         },

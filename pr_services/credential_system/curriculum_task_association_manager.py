@@ -23,6 +23,7 @@ class CurriculumTaskAssociationManager(ObjectManager):
             'presentation_order' : 'get_general',
             'task' : 'get_foreign_key',
             'task_bundle' : 'get_foreign_key',
+            'task_name' : 'get_general',
         })
         self.setters.update({
             'continue_automatically' : 'set_general',

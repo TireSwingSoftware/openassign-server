@@ -6,6 +6,7 @@ from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
 from pr_services import pr_time
+from pr_services.utils import Utils
 
 class CurriculumEnrollmentManager(ObjectManager):
     """
@@ -19,6 +20,7 @@ class CurriculumEnrollmentManager(ObjectManager):
         self.getters.update({
             'assignments' : 'get_many_to_one',
             'curriculum' : 'get_foreign_key',
+            'curriculum_name' : 'get_general',
             'users' : 'get_many_to_many',
             'start' : 'get_time',
             'end' : 'get_time',
@@ -56,5 +58,12 @@ class CurriculumEnrollmentManager(ObjectManager):
                 facade.models.CurriculumEnrollmentUserAssociation.objects.create(user=user, curriculum_enrollment=c)
         self.authorizer.check_create_permissions(auth_token, c)
         return c
+
+    @service_method
+    def curriculum_enrollments_view(self, auth_token, pks=None):
+        filters = {} if pks == None else {'member' : {'id' : pks}}
+        ret = self.get_filtered(auth_token, filters, ['curriculum_name', 'start', 'end', 'users'])
+
+        return Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['first_name', 'last_name', 'email'], 'users') 
 
 # vim:tabstop=4 shiftwidth=4 expandtab
