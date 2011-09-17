@@ -1,27 +1,33 @@
 # pip requirements for running in a virtualenv
 
-# M2Crypto==0.20.2 (use direct download of source)
-http://pypi.python.org/packages/source/M/M2Crypto/M2Crypto-0.20.2.tar.gz
+Django==1.3
+M2Crypto==0.21.1
 MySQL-python==1.2.3
 PIL==1.1.7
 PyAMF==0.5.1
+South==0.7.3
 amqplib==0.6.1
-anyjson==0.3
+anyjson==0.3.1
+boto==2.0
 carrot==0.10.7
-celery==2.1.4
-django-celery==2.1.4
+celery==2.3.1
+decorator==3.3.2
+django-celery==2.3.3
 django-mailer==0.1.0
 django-picklefield==0.1.9
-# django-storages==1.2a (use direct download of latest instead)
-http://bitbucket.org/david/django-storages/get/tip.tar.gz#egg=django-storages
-importlib==1.0.2
+django-storages==1.1.3
+django-tagging==0.3.1
+-e git://github.com/TireSwingSoftware/fastenc.git#egg=fastenc-dev
+# importlib only needed on python2.6 and earlier
+#importlib==1.0.2
+kombu==1.3.5
 psycopg2==2.3.2
 pycurl==7.19.0
-pyparsing==1.5.5
+pyparsing==1.5.6
 python-dateutil==1.5
-# python-ldap==2.3.12 (must download, edit setup.cfg and use setup.py install)
-# http://pypi.python.org/packages/source/p/python-ldap/python-ldap-2.3.12.tar.gz
+# python-ldap==2.4.3 (must download, edit setup.cfg and use setup.py install)
+# http://pypi.python.org/packages/source/p/python-ldap/python-ldap-2.4.3.tar.gz
 python-memcached==1.47
-recaptcha-client==1.0.5
-simplejson==2.1.2
+recaptcha-client==1.0.6
+simplejson==2.2.0
 wsgiref==0.1.2
