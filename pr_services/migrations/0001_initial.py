@@ -5,45 +5,45 @@ from south.v2 import SchemaMigration
 from django.db import models
 
 class Migration(SchemaMigration):
-    
+
     def forwards(self, orm):
         
         # Adding model 'Note'
         db.create_table('pr_services_note', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('text', self.gf('django.db.models.fields.TextField')()),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_notes', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_notes', null=True, to=orm['pr_services.User'])),
+            ('text', self.gf('django.db.models.fields.TextField')()),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['Note'])
 
         # Adding model 'Organization'
         db.create_table('pr_services_organization', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('photo', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_organizations', null=True, to=orm['pr_services.User'])),
-            ('primary_contact_first_name', self.gf('django.db.models.fields.CharField')(max_length=31)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('primary_contact_email', self.gf('django.db.models.fields.EmailField')(max_length=75)),
-            ('primary_contact_cell_phone', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_organizations', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=127)),
             ('department', self.gf('django.db.models.fields.CharField')(max_length=127, null=True)),
+            ('address', self.gf('pr_services.fields.PRForeignKey')(related_name='organizations', null=True, to=orm['pr_services.Address'])),
+            ('phone', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
             ('email', self.gf('django.db.models.fields.EmailField')(max_length=75)),
             ('fax', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('description', self.gf('django.db.models.fields.TextField')()),
             ('parent', self.gf('pr_services.fields.PRForeignKey')(related_name='children', null=True, to=orm['pr_services.Organization'])),
-            ('primary_contact_other_phone', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
-            ('phone', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
-            ('address', self.gf('pr_services.fields.PRForeignKey')(related_name='organizations', null=True, to=orm['pr_services.Address'])),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=127)),
-            ('primary_contact_office_phone', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
-            ('url', self.gf('django.db.models.fields.URLField')(max_length=200, null=True)),
+            ('photo', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True)),
             ('primary_contact_last_name', self.gf('django.db.models.fields.CharField')(max_length=31)),
+            ('primary_contact_first_name', self.gf('django.db.models.fields.CharField')(max_length=31)),
+            ('primary_contact_office_phone', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
+            ('primary_contact_cell_phone', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
+            ('primary_contact_other_phone', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
+            ('primary_contact_email', self.gf('django.db.models.fields.EmailField')(max_length=75)),
+            ('url', self.gf('django.db.models.fields.URLField')(max_length=200, null=True)),
         ))
         db.send_create_signal('pr_services', ['Organization'])
 
@@ -60,25 +60,25 @@ class Migration(SchemaMigration):
 
         # Adding model 'OrgRole'
         db.create_table('pr_services_orgrole', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
-            ('default', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
+            ('default', self.gf('pr_services.fields.PRBooleanField')(default=False)),
         ))
         db.send_create_signal('pr_services', ['OrgRole'])
 
         # Adding model 'UserOrgRole'
         db.create_table('pr_services_userorgrole', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('parent', self.gf('pr_services.fields.PRForeignKey')(related_name='children', null=True, to=orm['pr_services.UserOrgRole'])),
-            ('role', self.gf('pr_services.fields.PRForeignKey')(related_name='user_org_roles', to=orm['pr_services.OrgRole'])),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_userorgroles', null=True, to=orm['pr_services.User'])),
             ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='user_org_roles', to=orm['pr_services.Organization'])),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('role', self.gf('pr_services.fields.PRForeignKey')(related_name='user_org_roles', to=orm['pr_services.OrgRole'])),
+            ('parent', self.gf('pr_services.fields.PRForeignKey')(related_name='children', null=True, to=orm['pr_services.UserOrgRole'])),
         ))
         db.send_create_signal('pr_services', ['UserOrgRole'])
 
@@ -87,14 +87,14 @@ class Migration(SchemaMigration):
 
         # Adding model 'OrgEmailDomain'
         db.create_table('pr_services_orgemaildomain', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('role', self.gf('pr_services.fields.PRForeignKey')(related_name='org_email_domains', null=True, to=orm['pr_services.OrgRole'])),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('email_domain', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_orgemaildomains', null=True, to=orm['pr_services.User'])),
-            ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='org_email_domains', to=orm['pr_services.Organization'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_orgemaildomains', null=True, to=orm['pr_services.User'])),
+            ('email_domain', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='org_email_domains', to=orm['pr_services.Organization'])),
+            ('role', self.gf('pr_services.fields.PRForeignKey')(related_name='org_email_domains', null=True, to=orm['pr_services.OrgRole'])),
         ))
         db.send_create_signal('pr_services', ['OrgEmailDomain'])
 
@@ -103,23 +103,15 @@ class Migration(SchemaMigration):
 
         # Adding model 'CredentialType'
         db.create_table('pr_services_credentialtype', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
-            ('description', self.gf('django.db.models.fields.TextField')(null=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_credentialtypes', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_credentialtypes', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
+            ('description', self.gf('django.db.models.fields.TextField')(null=True)),
         ))
         db.send_create_signal('pr_services', ['CredentialType'])
-
-        # Adding M2M table for field prerequisite_credential_types on 'CredentialType'
-        db.create_table('pr_services_credentialtype_prerequisite_credential_types', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('from_credentialtype', models.ForeignKey(orm['pr_services.credentialtype'], null=False)),
-            ('to_credentialtype', models.ForeignKey(orm['pr_services.credentialtype'], null=False))
-        ))
-        db.create_unique('pr_services_credentialtype_prerequisite_credential_types', ['from_credentialtype_id', 'to_credentialtype_id'])
 
         # Adding M2M table for field notes on 'CredentialType'
         db.create_table('pr_services_credentialtype_notes', (
@@ -137,22 +129,30 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('pr_services_credentialtype_required_achievements', ['credentialtype_id', 'achievement_id'])
 
+        # Adding M2M table for field prerequisite_credential_types on 'CredentialType'
+        db.create_table('pr_services_credentialtype_prerequisite_credential_types', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('from_credentialtype', models.ForeignKey(orm['pr_services.credentialtype'], null=False)),
+            ('to_credentialtype', models.ForeignKey(orm['pr_services.credentialtype'], null=False))
+        ))
+        db.create_unique('pr_services_credentialtype_prerequisite_credential_types', ['from_credentialtype_id', 'to_credentialtype_id'])
+
         # Adding model 'Credential'
         db.create_table('pr_services_credential', (
-            ('status', self.gf('django.db.models.fields.CharField')(default='pending', max_length=8)),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('date_expires', self.gf('django.db.models.fields.DateTimeField')(null=True)),
-            ('authority', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
-            ('credential_type', self.gf('pr_services.fields.PRForeignKey')(related_name='credentials', to=orm['pr_services.CredentialType'])),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_credentials', null=True, to=orm['pr_services.User'])),
-            ('serial_number', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
-            ('date_started', self.gf('django.db.models.fields.DateTimeField')(null=True)),
-            ('date_granted', self.gf('django.db.models.fields.DateTimeField')(null=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_credentials', null=True, to=orm['pr_services.User'])),
+            ('credential_type', self.gf('pr_services.fields.PRForeignKey')(related_name='credentials', to=orm['pr_services.CredentialType'])),
+            ('authority', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
+            ('serial_number', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
             ('date_assigned', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('date_granted', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+            ('date_expires', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+            ('date_started', self.gf('django.db.models.fields.DateTimeField')(null=True)),
             ('user', self.gf('pr_services.fields.PRForeignKey')(related_name='credentials', to=orm['pr_services.User'])),
+            ('status', self.gf('django.db.models.fields.CharField')(default='pending', max_length=8)),
         ))
         db.send_create_signal('pr_services', ['Credential'])
 
@@ -166,14 +166,14 @@ class Migration(SchemaMigration):
 
         # Adding model 'Achievement'
         db.create_table('pr_services_achievement', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('description', self.gf('django.db.models.fields.TextField')()),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_achievements', null=True, to=orm['pr_services.User'])),
-            ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='achievements', null=True, to=orm['pr_services.Organization'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_achievements', null=True, to=orm['pr_services.User'])),
+            ('description', self.gf('django.db.models.fields.TextField')()),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='achievements', null=True, to=orm['pr_services.Organization'])),
         ))
         db.send_create_signal('pr_services', ['Achievement'])
 
@@ -187,44 +187,36 @@ class Migration(SchemaMigration):
 
         # Adding model 'AchievementAward'
         db.create_table('pr_services_achievementaward', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('assignment', self.gf('pr_services.fields.PRForeignKey')(related_name='achievement_awards', null=True, to=orm['pr_services.Assignment'])),
-            ('user', self.gf('pr_services.fields.PRForeignKey')(related_name='achievement_awards', to=orm['pr_services.User'])),
-            ('date', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('achievement', self.gf('pr_services.fields.PRForeignKey')(related_name='achievement_awards', to=orm['pr_services.Achievement'])),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('achievement', self.gf('pr_services.fields.PRForeignKey')(related_name='achievement_awards', to=orm['pr_services.Achievement'])),
+            ('user', self.gf('pr_services.fields.PRForeignKey')(related_name='achievement_awards', to=orm['pr_services.User'])),
+            ('assignment', self.gf('pr_services.fields.PRForeignKey')(related_name='achievement_awards', null=True, to=orm['pr_services.Assignment'])),
+            ('date', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
         ))
         db.send_create_signal('pr_services', ['AchievementAward'])
 
         # Adding model 'Task'
         db.create_table('pr_services_task', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('title', self.gf('django.db.models.fields.CharField')(max_length=191, null=True)),
-            ('max', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
-            ('public', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('min', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('version_id', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('version_comment', self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('version_label', self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_tasks', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('prevent_duplicate_assignments', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
+            ('version_id', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('version_label', self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True)),
+            ('version_comment', self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_tasks', null=True, to=orm['pr_services.User'])),
             ('description', self.gf('django.db.models.fields.TextField')()),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('title', self.gf('django.db.models.fields.CharField')(max_length=191, null=True)),
+            ('public', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('min', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('max', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('prevent_duplicate_assignments', self.gf('pr_services.fields.PRBooleanField')(default=False)),
         ))
         db.send_create_signal('pr_services', ['Task'])
-
-        # Adding M2M table for field achievements on 'Task'
-        db.create_table('pr_services_task_achievements', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('task', models.ForeignKey(orm['pr_services.task'], null=False)),
-            ('achievement', models.ForeignKey(orm['pr_services.achievement'], null=False))
-        ))
-        db.create_unique('pr_services_task_achievements', ['task_id', 'achievement_id'])
 
         # Adding M2M table for field prerequisite_tasks on 'Task'
         db.create_table('pr_services_task_prerequisite_tasks', (
@@ -242,14 +234,22 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('pr_services_task_prerequisite_achievements', ['task_id', 'achievement_id'])
 
+        # Adding M2M table for field achievements on 'Task'
+        db.create_table('pr_services_task_achievements', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('task', models.ForeignKey(orm['pr_services.task'], null=False)),
+            ('achievement', models.ForeignKey(orm['pr_services.achievement'], null=False))
+        ))
+        db.create_unique('pr_services_task_achievements', ['task_id', 'achievement_id'])
+
         # Adding model 'Curriculum'
         db.create_table('pr_services_curriculum', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculums', null=True, to=orm['pr_services.Organization'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculums', null=True, to=orm['pr_services.Organization'])),
         ))
         db.send_create_signal('pr_services', ['Curriculum'])
 
@@ -263,125 +263,117 @@ class Migration(SchemaMigration):
 
         # Adding model 'CurriculumTaskAssociation'
         db.create_table('pr_services_curriculumtaskassociation', (
-            ('task_bundle', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculum_task_associations', null=True, to=orm['pr_services.TaskBundle'])),
-            ('task', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculum_task_associations', to=orm['pr_services.Task'])),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('presentation_order', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=0)),
-            ('curriculum', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculum_task_associations', to=orm['pr_services.Curriculum'])),
-            ('days_before_start', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=0)),
-            ('continue_automatically', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('days_to_complete', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=0)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('curriculum', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculum_task_associations', to=orm['pr_services.Curriculum'])),
+            ('task', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculum_task_associations', to=orm['pr_services.Task'])),
+            ('task_bundle', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculum_task_associations', null=True, to=orm['pr_services.TaskBundle'])),
+            ('presentation_order', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=0)),
+            ('continue_automatically', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('days_before_start', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=0)),
+            ('days_to_complete', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=0)),
         ))
         db.send_create_signal('pr_services', ['CurriculumTaskAssociation'])
 
         # Adding model 'CurriculumEnrollment'
         db.create_table('pr_services_curriculumenrollment', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('curriculum', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculum_enrollments', to=orm['pr_services.Curriculum'])),
             ('start', self.gf('django.db.models.fields.DateField')()),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('end', self.gf('django.db.models.fields.DateField')()),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
         ))
         db.send_create_signal('pr_services', ['CurriculumEnrollment'])
 
         # Adding model 'CurriculumEnrollmentUserAssociation'
         db.create_table('pr_services_curriculumenrollmentuserassociation', (
-            ('curriculum_enrollment', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculum_enrollment_user_associations', to=orm['pr_services.CurriculumEnrollment'])),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('user', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculum_enrollment_user_associations', to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('curriculum_enrollment', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculum_enrollment_user_associations', to=orm['pr_services.CurriculumEnrollment'])),
+            ('user', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculum_enrollment_user_associations', to=orm['pr_services.User'])),
         ))
         db.send_create_signal('pr_services', ['CurriculumEnrollmentUserAssociation'])
 
         # Adding model 'Assignment'
         db.create_table('pr_services_assignment', (
-            ('status', self.gf('django.db.models.fields.CharField')(default='assigned', max_length=16, db_index=True)),
-            ('due_date', self.gf('django.db.models.fields.DateTimeField')(null=True)),
-            ('task', self.gf('pr_services.fields.PRForeignKey')(related_name='assignments', to=orm['pr_services.Task'])),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('sent_reminder', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('curriculum_enrollment', self.gf('pr_services.fields.PRForeignKey')(related_name='assignments', null=True, to=orm['pr_services.CurriculumEnrollment'])),
-            ('product_claim', self.gf('pr_services.fields.PRForeignKey')(related_name='assignments', null=True, to=orm['pr_services.ProductClaim'])),
-            ('sent_confirmation', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('authority', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='assignments', null=True, to=orm['pr_services.Blame'])),
-            ('effective_date_assigned', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('user', self.gf('pr_services.fields.PRForeignKey')(related_name='assignments', to=orm['pr_services.User'])),
-            ('serial_number', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
-            ('sent_pre_reminder', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
+            ('status', self.gf('django.db.models.fields.CharField')(default='assigned', max_length=16, db_index=True)),
             ('date_completed', self.gf('django.db.models.fields.DateTimeField')(null=True)),
             ('date_started', self.gf('django.db.models.fields.DateTimeField')(null=True)),
-            ('sent_late_notice', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('due_date', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+            ('effective_date_assigned', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+            ('task', self.gf('pr_services.fields.PRForeignKey')(related_name='assignments', to=orm['pr_services.Task'])),
+            ('authority', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
+            ('serial_number', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
+            ('sent_confirmation', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('sent_late_notice', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('sent_reminder', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('product_claim', self.gf('pr_services.fields.PRForeignKey')(related_name='assignments', null=True, to=orm['pr_services.ProductClaim'])),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='assignments', null=True, to=orm['pr_services.Blame'])),
+            ('curriculum_enrollment', self.gf('pr_services.fields.PRForeignKey')(related_name='assignments', null=True, to=orm['pr_services.CurriculumEnrollment'])),
+            ('sent_pre_reminder', self.gf('pr_services.fields.PRBooleanField')(default=False)),
         ))
         db.send_create_signal('pr_services', ['Assignment'])
 
         # Adding model 'AssignmentAttempt'
         db.create_table('pr_services_assignmentattempt', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('assignment', self.gf('pr_services.fields.PRForeignKey')(related_name='assignment_attempts', to=orm['pr_services.Assignment'])),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_assignmentattempts', null=True, to=orm['pr_services.User'])),
+            ('assignment', self.gf('pr_services.fields.PRForeignKey')(related_name='assignment_attempts', to=orm['pr_services.Assignment'])),
             ('date_completed', self.gf('django.db.models.fields.DateTimeField')(null=True)),
             ('date_started', self.gf('django.db.models.fields.DateTimeField')()),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
         ))
         db.send_create_signal('pr_services', ['AssignmentAttempt'])
 
         # Adding model 'TaskBundle'
         db.create_table('pr_services_taskbundle', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('description', self.gf('django.db.models.fields.TextField')()),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='task_bundles', null=True, to=orm['pr_services.Organization'])),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('description', self.gf('django.db.models.fields.TextField')()),
+            ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='task_bundles', null=True, to=orm['pr_services.Organization'])),
         ))
         db.send_create_signal('pr_services', ['TaskBundle'])
 
         # Adding model 'TaskBundleTaskAssociation'
         db.create_table('pr_services_taskbundletaskassociation', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('task_bundle', self.gf('pr_services.fields.PRForeignKey')(related_name='task_bundle_task_associations', to=orm['pr_services.TaskBundle'])),
             ('task', self.gf('pr_services.fields.PRForeignKey')(related_name='task_bundle_task_associations', to=orm['pr_services.Task'])),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
             ('presentation_order', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('continue_automatically', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('continue_automatically', self.gf('pr_services.fields.PRBooleanField')(default=False)),
         ))
         db.send_create_signal('pr_services', ['TaskBundleTaskAssociation'])
 
         # Adding model 'ProductLine'
         db.create_table('pr_services_productline', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_productlines', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_productlines', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['ProductLine'])
-
-        # Adding M2M table for field instructors on 'ProductLine'
-        db.create_table('pr_services_productline_instructors', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('productline', models.ForeignKey(orm['pr_services.productline'], null=False)),
-            ('user', models.ForeignKey(orm['pr_services.user'], null=False))
-        ))
-        db.create_unique('pr_services_productline_instructors', ['productline_id', 'user_id'])
 
         # Adding M2M table for field notes on 'ProductLine'
         db.create_table('pr_services_productline_notes', (
@@ -391,14 +383,6 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('pr_services_productline_notes', ['productline_id', 'note_id'])
 
-        # Adding M2M table for field instructor_managers on 'ProductLine'
-        db.create_table('pr_services_productline_instructor_managers', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('productline', models.ForeignKey(orm['pr_services.productline'], null=False)),
-            ('user', models.ForeignKey(orm['pr_services.user'], null=False))
-        ))
-        db.create_unique('pr_services_productline_instructor_managers', ['productline_id', 'user_id'])
-
         # Adding M2M table for field managers on 'ProductLine'
         db.create_table('pr_services_productline_managers', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
@@ -407,15 +391,31 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('pr_services_productline_managers', ['productline_id', 'user_id'])
 
+        # Adding M2M table for field instructor_managers on 'ProductLine'
+        db.create_table('pr_services_productline_instructor_managers', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('productline', models.ForeignKey(orm['pr_services.productline'], null=False)),
+            ('user', models.ForeignKey(orm['pr_services.user'], null=False))
+        ))
+        db.create_unique('pr_services_productline_instructor_managers', ['productline_id', 'user_id'])
+
+        # Adding M2M table for field instructors on 'ProductLine'
+        db.create_table('pr_services_productline_instructors', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('productline', models.ForeignKey(orm['pr_services.productline'], null=False)),
+            ('user', models.ForeignKey(orm['pr_services.user'], null=False))
+        ))
+        db.create_unique('pr_services_productline_instructors', ['productline_id', 'user_id'])
+
         # Adding model 'Region'
         db.create_table('pr_services_region', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_regions', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_regions', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['Region'])
 
@@ -429,13 +429,13 @@ class Migration(SchemaMigration):
 
         # Adding model 'Resource'
         db.create_table('pr_services_resource', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_resources', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_resources', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['Resource'])
 
@@ -449,14 +449,14 @@ class Migration(SchemaMigration):
 
         # Adding model 'Group'
         db.create_table('pr_services_group', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
-            ('default', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_groups', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_groups', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
+            ('default', self.gf('pr_services.fields.PRBooleanField')(default=False)),
         ))
         db.send_create_signal('pr_services', ['Group'])
 
@@ -478,12 +478,12 @@ class Migration(SchemaMigration):
 
         # Adding model 'Role'
         db.create_table('pr_services_role', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_roles', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_roles', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
         ))
         db.send_create_signal('pr_services', ['Role'])
 
@@ -497,86 +497,86 @@ class Migration(SchemaMigration):
 
         # Adding model 'ACL'
         db.create_table('pr_services_acl', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('arbitrary_perm_list', self.gf('django.db.models.fields.TextField')()),
-            ('acl', self.gf('django.db.models.fields.TextField')()),
-            ('role', self.gf('pr_services.fields.PRForeignKey')(related_name='acls', to=orm['pr_services.Role'])),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_acls', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_acls', null=True, to=orm['pr_services.User'])),
+            ('acl', self.gf('django.db.models.fields.TextField')()),
+            ('arbitrary_perm_list', self.gf('django.db.models.fields.TextField')()),
+            ('role', self.gf('pr_services.fields.PRForeignKey')(related_name='acls', to=orm['pr_services.Role'])),
         ))
         db.send_create_signal('pr_services', ['ACL'])
 
         # Adding model 'ACCheckMethod'
         db.create_table('pr_services_accheckmethod', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=64, unique=True)),
-            ('title', self.gf('django.db.models.fields.CharField')(max_length=128, unique=True)),
-            ('description', self.gf('django.db.models.fields.TextField')()),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_accheckmethods', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_accheckmethods', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=64, unique=True)),
+            ('description', self.gf('django.db.models.fields.TextField')()),
+            ('title', self.gf('django.db.models.fields.CharField')(max_length=128, unique=True)),
         ))
         db.send_create_signal('pr_services', ['ACCheckMethod'])
 
         # Adding model 'ACMethodCall'
         db.create_table('pr_services_acmethodcall', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('acl', self.gf('pr_services.fields.PRForeignKey')(related_name='ac_method_calls', to=orm['pr_services.ACL'])),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_acmethodcalls', null=True, to=orm['pr_services.User'])),
+            ('acl', self.gf('pr_services.fields.PRForeignKey')(related_name='ac_method_calls', to=orm['pr_services.ACL'])),
             ('ac_check_method', self.gf('pr_services.fields.PRForeignKey')(related_name='ac_method_calls', to=orm['pr_services.ACCheckMethod'])),
             ('ac_check_parameters', self.gf('django.db.models.fields.TextField')()),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
         ))
         db.send_create_signal('pr_services', ['ACMethodCall'])
 
         # Adding model 'Address'
         db.create_table('pr_services_address', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('locality', self.gf('django.db.models.fields.CharField')(default='', max_length=31, null=True, blank=True)),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_addresss', null=True, to=orm['pr_services.User'])),
             ('country', self.gf('django.db.models.fields.CharField')(max_length=2)),
             ('region', self.gf('django.db.models.fields.CharField')(default='', max_length=31, null=True, blank=True)),
-            ('label', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
+            ('locality', self.gf('django.db.models.fields.CharField')(default='', max_length=31, null=True, blank=True)),
             ('postal_code', self.gf('django.db.models.fields.CharField')(default='', max_length=16, null=True, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_addresss', null=True, to=orm['pr_services.User'])),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('label', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['Address'])
 
         # Adding model 'Domain'
         db.create_table('pr_services_domain', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('password_hash_type', self.gf('django.db.models.fields.CharField')(default='SHA-512', max_length=8)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('authentication_ip', self.gf('django.db.models.fields.IPAddressField')(max_length=15, null=True)),
             ('authentication_password_hash', self.gf('django.db.models.fields.CharField')(max_length=128)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
+            ('password_hash_type', self.gf('django.db.models.fields.CharField')(default='SHA-512', max_length=8)),
         ))
         db.send_create_signal('pr_services', ['Domain'])
 
         # Adding model 'DomainAffiliation'
         db.create_table('pr_services_domainaffiliation', (
-            ('username', self.gf('django.db.models.fields.CharField')(max_length=31, db_index=True)),
-            ('domain', self.gf('pr_services.fields.PRForeignKey')(related_name='domain_affiliations', to=orm['pr_services.Domain'])),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('password_salt', self.gf('django.db.models.fields.CharField')(max_length=8, null=True)),
-            ('default', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('user', self.gf('pr_services.fields.PRForeignKey')(related_name='domain_affiliations', to=orm['pr_services.User'])),
-            ('password_hash_type', self.gf('django.db.models.fields.CharField')(default='SHA-512', max_length=8)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('may_log_me_in', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('default', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('domain', self.gf('pr_services.fields.PRForeignKey')(related_name='domain_affiliations', to=orm['pr_services.Domain'])),
+            ('may_log_me_in', self.gf('pr_services.fields.PRBooleanField')(default=False)),
             ('password_hash', self.gf('django.db.models.fields.CharField')(max_length=128)),
+            ('password_hash_type', self.gf('django.db.models.fields.CharField')(default='SHA-512', max_length=8)),
+            ('password_salt', self.gf('django.db.models.fields.CharField')(max_length=8, null=True)),
+            ('user', self.gf('pr_services.fields.PRForeignKey')(related_name='domain_affiliations', to=orm['pr_services.User'])),
+            ('username', self.gf('django.db.models.fields.CharField')(max_length=31, db_index=True)),
         ))
         db.send_create_signal('pr_services', ['DomainAffiliation'])
 
@@ -585,45 +585,37 @@ class Migration(SchemaMigration):
 
         # Adding model 'User'
         db.create_table('pr_services_user', (
-            ('last_name', self.gf('django.db.models.fields.CharField')(max_length=31)),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('photo', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True)),
-            ('is_staff', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_users', null=True, to=orm['pr_services.User'])),
-            ('email2', self.gf('django.db.models.fields.EmailField')(max_length=75, null=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('biography', self.gf('django.db.models.fields.TextField')(null=True)),
-            ('first_name', self.gf('django.db.models.fields.CharField')(max_length=31)),
-            ('middle_name', self.gf('django.db.models.fields.CharField')(default='', max_length=31)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_users', null=True, to=orm['pr_services.User'])),
+            ('url', self.gf('django.db.models.fields.URLField')(max_length=200, null=True)),
             ('title', self.gf('django.db.models.fields.CharField')(max_length=15, null=True)),
-            ('confirmation_code', self.gf('django.db.models.fields.CharField')(max_length=40, null=True)),
-            ('enable_paypal', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('email', self.gf('django.db.models.fields.EmailField')(max_length=75)),
-            ('status', self.gf('django.db.models.fields.CharField')(max_length=15, null=True)),
+            ('last_name', self.gf('django.db.models.fields.CharField')(max_length=31)),
+            ('middle_name', self.gf('django.db.models.fields.CharField')(default='', max_length=31)),
+            ('first_name', self.gf('django.db.models.fields.CharField')(max_length=31)),
+            ('name_suffix', self.gf('django.db.models.fields.CharField')(max_length=15, null=True)),
+            ('shipping_address', self.gf('pr_services.fields.PRForeignKey')(related_name='users_shipping', null=True, to=orm['pr_services.Address'])),
             ('billing_address', self.gf('pr_services.fields.PRForeignKey')(related_name='users_billing', null=True, to=orm['pr_services.Address'])),
-            ('color_code', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
+            ('phone', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
             ('phone2', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
             ('phone3', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='created_users', null=True, to=orm['pr_services.Blame'])),
-            ('phone', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('url', self.gf('django.db.models.fields.URLField')(max_length=200, null=True)),
-            ('name_suffix', self.gf('django.db.models.fields.CharField')(max_length=15, null=True)),
-            ('suppress_emails', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('alleged_organization', self.gf('django.db.models.fields.CharField')(max_length=100, null=True)),
+            ('email', self.gf('django.db.models.fields.EmailField')(max_length=75)),
+            ('email2', self.gf('django.db.models.fields.EmailField')(max_length=75, null=True)),
             ('paypal_address', self.gf('django.db.models.fields.EmailField')(max_length=75, null=True)),
-            ('shipping_address', self.gf('pr_services.fields.PRForeignKey')(related_name='users_shipping', null=True, to=orm['pr_services.Address'])),
+            ('enable_paypal', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('status', self.gf('django.db.models.fields.CharField')(max_length=15, null=True)),
+            ('color_code', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='created_users', null=True, to=orm['pr_services.Blame'])),
+            ('biography', self.gf('django.db.models.fields.TextField')(null=True)),
+            ('photo', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True)),
+            ('suppress_emails', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('is_staff', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('confirmation_code', self.gf('django.db.models.fields.CharField')(max_length=40, null=True)),
+            ('alleged_organization', self.gf('django.db.models.fields.CharField')(max_length=100, null=True)),
         ))
         db.send_create_signal('pr_services', ['User'])
-
-        # Adding M2M table for field notes on 'User'
-        db.create_table('pr_services_user_notes', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('user', models.ForeignKey(orm['pr_services.user'], null=False)),
-            ('note', models.ForeignKey(orm['pr_services.note'], null=False))
-        ))
-        db.create_unique('pr_services_user_notes', ['user_id', 'note_id'])
 
         # Adding M2M table for field groups on 'User'
         db.create_table('pr_services_user_groups', (
@@ -632,6 +624,14 @@ class Migration(SchemaMigration):
             ('group', models.ForeignKey(orm['pr_services.group'], null=False))
         ))
         db.create_unique('pr_services_user_groups', ['user_id', 'group_id'])
+
+        # Adding M2M table for field notes on 'User'
+        db.create_table('pr_services_user_notes', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('user', models.ForeignKey(orm['pr_services.user'], null=False)),
+            ('note', models.ForeignKey(orm['pr_services.note'], null=False))
+        ))
+        db.create_unique('pr_services_user_notes', ['user_id', 'note_id'])
 
         # Adding M2M table for field preferred_venues on 'User'
         db.create_table('pr_services_user_preferred_venues', (
@@ -643,37 +643,37 @@ class Migration(SchemaMigration):
 
         # Adding model 'Blame'
         db.create_table('pr_services_blame', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('ip', self.gf('django.db.models.fields.IPAddressField')(max_length=15)),
-            ('user', self.gf('pr_services.fields.PRForeignKey')(related_name='blamed_user', to=orm['pr_services.User'])),
-            ('time', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_blames', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_blames', null=True, to=orm['pr_services.User'])),
+            ('user', self.gf('pr_services.fields.PRForeignKey')(related_name='blamed_user', to=orm['pr_services.User'])),
+            ('ip', self.gf('django.db.models.fields.IPAddressField')(max_length=15)),
+            ('time', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
         ))
         db.send_create_signal('pr_services', ['Blame'])
 
         # Adding model 'SessionTemplate'
         db.create_table('pr_services_sessiontemplate', (
-            ('product_line', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.ProductLine'], null=True)),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('sequence', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
-            ('price', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('event_template', self.gf('pr_services.fields.PRForeignKey')(related_name='session_templates', null=True, to=orm['pr_services.EventTemplate'])),
-            ('fullname', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('modality', self.gf('django.db.models.fields.CharField')(default='Generic', max_length=31)),
-            ('duration', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
-            ('audience', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
-            ('version', self.gf('django.db.models.fields.CharField')(max_length=15)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_sessiontemplates', null=True, to=orm['pr_services.User'])),
-            ('shortname', self.gf('django.db.models.fields.CharField')(max_length=31, unique=True)),
-            ('lead_time', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_sessiontemplates', null=True, to=orm['pr_services.User'])),
+            ('sequence', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('shortname', self.gf('django.db.models.fields.CharField')(max_length=31, unique=True)),
+            ('fullname', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('version', self.gf('django.db.models.fields.CharField')(max_length=15)),
             ('description', self.gf('django.db.models.fields.TextField')()),
+            ('audience', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
+            ('price', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('lead_time', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('duration', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('product_line', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.ProductLine'], null=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
+            ('modality', self.gf('django.db.models.fields.CharField')(default='Generic', max_length=31)),
+            ('event_template', self.gf('pr_services.fields.PRForeignKey')(related_name='session_templates', null=True, to=orm['pr_services.EventTemplate'])),
         ))
         db.send_create_signal('pr_services', ['SessionTemplate'])
 
@@ -687,19 +687,19 @@ class Migration(SchemaMigration):
 
         # Adding model 'Venue'
         db.create_table('pr_services_venue', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_venues', null=True, to=orm['pr_services.User'])),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
+            ('address', self.gf('pr_services.fields.PRForeignKey')(related_name='venues', null=True, to=orm['pr_services.Address'])),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
+            ('contact', self.gf('django.db.models.fields.CharField')(max_length=63, null=True)),
+            ('hours_of_operation', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('phone', self.gf('django.db.models.fields.CharField')(max_length=31)),
             ('region', self.gf('pr_services.fields.PRForeignKey')(related_name='venues', to=orm['pr_services.Region'])),
-            ('hours_of_operation', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('contact', self.gf('django.db.models.fields.CharField')(max_length=63, null=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('address', self.gf('pr_services.fields.PRForeignKey')(related_name='venues', null=True, to=orm['pr_services.Address'])),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_venues', null=True, to=orm['pr_services.User'])),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
         ))
         db.send_create_signal('pr_services', ['Venue'])
 
@@ -713,16 +713,16 @@ class Migration(SchemaMigration):
 
         # Adding model 'Room'
         db.create_table('pr_services_room', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('room_number', self.gf('django.db.models.fields.CharField')(max_length=15)),
-            ('venue', self.gf('pr_services.fields.PRForeignKey')(related_name='rooms', to=orm['pr_services.Venue'])),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_rooms', null=True, to=orm['pr_services.User'])),
-            ('capacity', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_rooms', null=True, to=orm['pr_services.User'])),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
+            ('venue', self.gf('pr_services.fields.PRForeignKey')(related_name='rooms', to=orm['pr_services.Venue'])),
+            ('room_number', self.gf('django.db.models.fields.CharField')(max_length=15)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=63)),
+            ('capacity', self.gf('django.db.models.fields.PositiveIntegerField')()),
         ))
         db.send_create_signal('pr_services', ['Room'])
 
@@ -736,30 +736,30 @@ class Migration(SchemaMigration):
 
         # Adding model 'Session'
         db.create_table('pr_services_session', (
-            ('default_price', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_sessions', null=True, to=orm['pr_services.User'])),
-            ('sent_reminders', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('modality', self.gf('django.db.models.fields.CharField')(default='Generic', max_length=31)),
-            ('confirmed', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
+            ('default_price', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('room', self.gf('pr_services.fields.PRForeignKey')(related_name='sessions', null=True, to=orm['pr_services.Room'])),
+            ('evaluation', self.gf('pr_services.fields.PROneToOneField')(related_name='session', unique=True, null=True, to=orm['pr_services.Exam'])),
+            ('start', self.gf('django.db.models.fields.DateTimeField')()),
             ('end', self.gf('django.db.models.fields.DateTimeField')()),
             ('session_template', self.gf('pr_services.fields.PRForeignKey')(related_name='sessions', null=True, to=orm['pr_services.SessionTemplate'])),
-            ('title', self.gf('django.db.models.fields.CharField')(max_length=127, null=True)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('start', self.gf('django.db.models.fields.DateTimeField')()),
-            ('evaluation', self.gf('pr_services.fields.PROneToOneField')(related_name='session', unique=True, null=True, to=orm['pr_services.Exam'])),
-            ('status', self.gf('django.db.models.fields.CharField')(max_length=63)),
-            ('description', self.gf('django.db.models.fields.TextField')(null=True)),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
-            ('graphic', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('room', self.gf('pr_services.fields.PRForeignKey')(related_name='sessions', null=True, to=orm['pr_services.Room'])),
-            ('url', self.gf('django.db.models.fields.URLField')(max_length=255, null=True)),
-            ('event', self.gf('pr_services.fields.PRForeignKey')(related_name='sessions', to=orm['pr_services.Event'])),
             ('audience', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
+            ('title', self.gf('django.db.models.fields.CharField')(max_length=127, null=True)),
+            ('graphic', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True)),
+            ('confirmed', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('status', self.gf('django.db.models.fields.CharField')(max_length=63)),
+            ('url', self.gf('django.db.models.fields.URLField')(max_length=255, null=True)),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
+            ('modality', self.gf('django.db.models.fields.CharField')(default='Generic', max_length=31)),
+            ('description', self.gf('django.db.models.fields.TextField')(null=True)),
+            ('event', self.gf('pr_services.fields.PRForeignKey')(related_name='sessions', to=orm['pr_services.Event'])),
+            ('sent_reminders', self.gf('pr_services.fields.PRBooleanField')(default=False)),
         ))
         db.send_create_signal('pr_services', ['Session'])
 
@@ -773,22 +773,22 @@ class Migration(SchemaMigration):
 
         # Adding model 'EventTemplate'
         db.create_table('pr_services_eventtemplate', (
-            ('product_line', self.gf('pr_services.fields.PRForeignKey')(related_name='event_templates', null=True, to=orm['pr_services.ProductLine'])),
-            ('name_prefix', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('description', self.gf('django.db.models.fields.TextField')()),
-            ('twitter_template', self.gf('django.db.models.fields.CharField')(default='I just signed up for {{event}}! Join me! {{url}}', max_length=255)),
-            ('title', self.gf('django.db.models.fields.CharField')(max_length=127, null=True)),
-            ('url', self.gf('django.db.models.fields.URLField')(max_length=255, null=True)),
-            ('facebook_template', self.gf('django.db.models.fields.CharField')(default='I just signed up for {{event}}! Click the link to join me.', max_length=255)),
-            ('external_reference', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('lag_time', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_eventtemplates', null=True, to=orm['pr_services.User'])),
-            ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='event_templates', null=True, to=orm['pr_services.Organization'])),
-            ('lead_time', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_eventtemplates', null=True, to=orm['pr_services.User'])),
+            ('description', self.gf('django.db.models.fields.TextField')()),
+            ('external_reference', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
+            ('facebook_template', self.gf('django.db.models.fields.CharField')(default='I just signed up for {{event}}! Click the link to join me.', max_length=255)),
+            ('lag_time', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('lead_time', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('name_prefix', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='event_templates', null=True, to=orm['pr_services.Organization'])),
+            ('product_line', self.gf('pr_services.fields.PRForeignKey')(related_name='event_templates', null=True, to=orm['pr_services.ProductLine'])),
+            ('title', self.gf('django.db.models.fields.CharField')(max_length=127, null=True)),
+            ('twitter_template', self.gf('django.db.models.fields.CharField')(default='I just signed up for {{event}}! Join me! {{url}}', max_length=255)),
+            ('url', self.gf('django.db.models.fields.URLField')(max_length=255, null=True)),
         ))
         db.send_create_signal('pr_services', ['EventTemplate'])
 
@@ -802,27 +802,27 @@ class Migration(SchemaMigration):
 
         # Adding model 'Event'
         db.create_table('pr_services_event', (
-            ('product_line', self.gf('pr_services.fields.PRForeignKey')(related_name='events', to=orm['pr_services.ProductLine'])),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('twitter_template', self.gf('django.db.models.fields.CharField')(default='I just signed up for {{event}}! Join me! {{url}}', max_length=255)),
-            ('title', self.gf('django.db.models.fields.CharField')(max_length=127, null=True)),
-            ('url', self.gf('django.db.models.fields.URLField')(max_length=255, null=True)),
-            ('facebook_template', self.gf('django.db.models.fields.CharField')(default='I just signed up for {{event}}! Click the link to join me.', max_length=255)),
-            ('region', self.gf('pr_services.fields.PRForeignKey')(related_name='events', null=True, to=orm['pr_services.Region'])),
-            ('description', self.gf('django.db.models.fields.TextField')()),
-            ('venue', self.gf('pr_services.fields.PRForeignKey')(related_name='events', null=True, to=orm['pr_services.Venue'])),
-            ('external_reference', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('start', self.gf('django.db.models.fields.DateField')()),
-            ('event_template', self.gf('pr_services.fields.PRForeignKey')(related_name='events', null=True, to=orm['pr_services.EventTemplate'])),
-            ('lag_time', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='events', to=orm['pr_services.Organization'])),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_events', null=True, to=orm['pr_services.User'])),
-            ('end', self.gf('django.db.models.fields.DateField')()),
-            ('lead_time', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_events', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('region', self.gf('pr_services.fields.PRForeignKey')(related_name='events', null=True, to=orm['pr_services.Region'])),
+            ('title', self.gf('django.db.models.fields.CharField')(max_length=127, null=True)),
+            ('description', self.gf('django.db.models.fields.TextField')()),
+            ('start', self.gf('django.db.models.fields.DateField')()),
+            ('end', self.gf('django.db.models.fields.DateField')()),
+            ('venue', self.gf('pr_services.fields.PRForeignKey')(related_name='events', null=True, to=orm['pr_services.Venue'])),
+            ('product_line', self.gf('pr_services.fields.PRForeignKey')(related_name='events', null=True, to=orm['pr_services.ProductLine'])),
+            ('lead_time', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('lag_time', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('external_reference', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
+            ('url', self.gf('django.db.models.fields.URLField')(max_length=255, null=True)),
+            ('facebook_template', self.gf('django.db.models.fields.CharField')(default='I just signed up for {{event}}! Click the link to join me.', max_length=255)),
+            ('twitter_template', self.gf('django.db.models.fields.CharField')(default='I just signed up for {{event}}! Join me! {{url}}', max_length=255)),
+            ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='events', to=orm['pr_services.Organization'])),
+            ('event_template', self.gf('pr_services.fields.PRForeignKey')(related_name='events', null=True, to=orm['pr_services.EventTemplate'])),
         ))
         db.send_create_signal('pr_services', ['Event'])
 
@@ -836,13 +836,13 @@ class Migration(SchemaMigration):
 
         # Adding model 'SessionUserRole'
         db.create_table('pr_services_sessionuserrole', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_sessionuserroles', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_sessionuserroles', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['SessionUserRole'])
 
@@ -856,23 +856,15 @@ class Migration(SchemaMigration):
 
         # Adding model 'ResourceType'
         db.create_table('pr_services_resourcetype', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_resourcetypes', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_resourcetypes', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['ResourceType'])
-
-        # Adding M2M table for field notes on 'ResourceType'
-        db.create_table('pr_services_resourcetype_notes', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('resourcetype', models.ForeignKey(orm['pr_services.resourcetype'], null=False)),
-            ('note', models.ForeignKey(orm['pr_services.note'], null=False))
-        ))
-        db.create_unique('pr_services_resourcetype_notes', ['resourcetype_id', 'note_id'])
 
         # Adding M2M table for field resources on 'ResourceType'
         db.create_table('pr_services_resourcetype_resources', (
@@ -882,14 +874,22 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('pr_services_resourcetype_resources', ['resourcetype_id', 'resource_id'])
 
+        # Adding M2M table for field notes on 'ResourceType'
+        db.create_table('pr_services_resourcetype_notes', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('resourcetype', models.ForeignKey(orm['pr_services.resourcetype'], null=False)),
+            ('note', models.ForeignKey(orm['pr_services.note'], null=False))
+        ))
+        db.create_unique('pr_services_resourcetype_notes', ['resourcetype_id', 'note_id'])
+
         # Adding model 'SessionUserRoleRequirement'
         db.create_table('pr_services_sessionuserrolerequirement', (
             ('task_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['pr_services.Task'], unique=True, primary_key=True)),
-            ('enrollment_status_test', self.gf('pr_services.fields.PRForeignKey')(related_name='session_user_role_requirements', null=True, to=orm['pr_services.ConditionTestCollection'])),
-            ('session', self.gf('pr_services.fields.PRForeignKey')(related_name='session_user_role_requirements', to=orm['pr_services.Session'])),
             ('session_user_role', self.gf('pr_services.fields.PRForeignKey')(related_name='session_user_role_requirements', to=orm['pr_services.SessionUserRole'])),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('ignore_room_capacity', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
+            ('session', self.gf('pr_services.fields.PRForeignKey')(related_name='session_user_role_requirements', to=orm['pr_services.Session'])),
+            ('enrollment_status_test', self.gf('pr_services.fields.PRForeignKey')(related_name='session_user_role_requirements', null=True, to=orm['pr_services.ConditionTestCollection'])),
+            ('ignore_room_capacity', self.gf('pr_services.fields.PRBooleanField')(default=False)),
         ))
         db.send_create_signal('pr_services', ['SessionUserRoleRequirement'])
 
@@ -911,16 +911,16 @@ class Migration(SchemaMigration):
 
         # Adding model 'SessionTemplateUserRoleReq'
         db.create_table('pr_services_sessiontemplateuserrolereq', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_sessiontemplateuserrolereqs', null=True, to=orm['pr_services.User'])),
+            ('session_user_role', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.SessionUserRole'])),
             ('min', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('max', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('session_user_role', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.SessionUserRole'])),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_sessiontemplateuserrolereqs', null=True, to=orm['pr_services.User'])),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('session_template', self.gf('pr_services.fields.PRForeignKey')(related_name='session_template_user_role_requirements', to=orm['pr_services.SessionTemplate'])),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['SessionTemplateUserRoleReq'])
 
@@ -934,55 +934,55 @@ class Migration(SchemaMigration):
 
         # Adding model 'AuthToken'
         db.create_table('pr_services_authtoken', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('time_of_expiration', self.gf('django.db.models.fields.DateTimeField')()),
-            ('issue_timestamp', self.gf('django.db.models.fields.DateTimeField')()),
-            ('number_of_renewals', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('session_id', self.gf('django.db.models.fields.CharField')(max_length=32, unique=True, db_index=True)),
-            ('renewal_timestamp', self.gf('django.db.models.fields.DateTimeField')(null=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('ip', self.gf('django.db.models.fields.IPAddressField')(default='0.0.0.0', max_length=15)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_authtokens', null=True, to=orm['pr_services.User'])),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_authtokens', null=True, to=orm['pr_services.User'])),
+            ('session_id', self.gf('django.db.models.fields.CharField')(max_length=32, unique=True, db_index=True)),
             ('domain_affiliation', self.gf('pr_services.fields.PRForeignKey')(related_name='auth_tokens', to=orm['pr_services.DomainAffiliation'])),
+            ('issue_timestamp', self.gf('django.db.models.fields.DateTimeField')()),
+            ('renewal_timestamp', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+            ('number_of_renewals', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('time_of_expiration', self.gf('django.db.models.fields.DateTimeField')()),
+            ('ip', self.gf('django.db.models.fields.IPAddressField')(default='0.0.0.0', max_length=15)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['AuthToken'])
 
         # Adding model 'SingleUseAuthToken'
         db.create_table('pr_services_singleuseauthtoken', (
-            ('used', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
             ('authtoken_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['pr_services.AuthToken'], unique=True, primary_key=True)),
+            ('used', self.gf('pr_services.fields.PRBooleanField')(default=False)),
         ))
         db.send_create_signal('pr_services', ['SingleUseAuthToken'])
 
         # Adding model 'AuthTokenVoucher'
         db.create_table('pr_services_authtokenvoucher', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('time_of_expiration', self.gf('django.db.models.fields.DateTimeField')()),
-            ('issue_timestamp', self.gf('django.db.models.fields.DateTimeField')()),
-            ('session_id', self.gf('django.db.models.fields.CharField')(max_length=32, unique=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_authtokenvouchers', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_authtokenvouchers', null=True, to=orm['pr_services.User'])),
+            ('session_id', self.gf('django.db.models.fields.CharField')(max_length=32, unique=True)),
             ('domain_affiliation', self.gf('pr_services.fields.PRForeignKey')(related_name='auth_token_vouchers', to=orm['pr_services.DomainAffiliation'])),
+            ('issue_timestamp', self.gf('django.db.models.fields.DateTimeField')()),
+            ('time_of_expiration', self.gf('django.db.models.fields.DateTimeField')()),
         ))
         db.send_create_signal('pr_services', ['AuthTokenVoucher'])
 
         # Adding model 'SessionTemplateResourceTypeReq'
         db.create_table('pr_services_sessiontemplateresourcetypereq', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('min', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('max', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_sessiontemplateresourcetypereqs', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_sessiontemplateresourcetypereqs', null=True, to=orm['pr_services.User'])),
             ('resource_type', self.gf('pr_services.fields.PRForeignKey')(related_name='sessiontemplateresourcetypereqs', to=orm['pr_services.ResourceType'])),
             ('session_template', self.gf('pr_services.fields.PRForeignKey')(related_name='session_template_resource_type_requirements', to=orm['pr_services.SessionTemplate'])),
+            ('min', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('max', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['SessionTemplateResourceTypeReq'])
 
@@ -996,26 +996,18 @@ class Migration(SchemaMigration):
 
         # Adding model 'SessionResourceTypeRequirement'
         db.create_table('pr_services_sessionresourcetyperequirement', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_sessionresourcetyperequirements', null=True, to=orm['pr_services.User'])),
+            ('resource_type', self.gf('pr_services.fields.PRForeignKey')(related_name='sessionresourcetyperequirements', to=orm['pr_services.ResourceType'])),
+            ('session', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Session'])),
             ('min', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('max', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('session', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Session'])),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_sessionresourcetyperequirements', null=True, to=orm['pr_services.User'])),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('resource_type', self.gf('pr_services.fields.PRForeignKey')(related_name='sessionresourcetyperequirements', to=orm['pr_services.ResourceType'])),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['SessionResourceTypeRequirement'])
-
-        # Adding M2M table for field notes on 'SessionResourceTypeRequirement'
-        db.create_table('pr_services_sessionresourcetyperequirement_notes', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('sessionresourcetyperequirement', models.ForeignKey(orm['pr_services.sessionresourcetyperequirement'], null=False)),
-            ('note', models.ForeignKey(orm['pr_services.note'], null=False))
-        ))
-        db.create_unique('pr_services_sessionresourcetyperequirement_notes', ['sessionresourcetyperequirement_id', 'note_id'])
 
         # Adding M2M table for field resources on 'SessionResourceTypeRequirement'
         db.create_table('pr_services_sessionresourcetyperequirement_resources', (
@@ -1025,21 +1017,29 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('pr_services_sessionresourcetyperequirement_resources', ['sessionresourcetyperequirement_id', 'resource_id'])
 
+        # Adding M2M table for field notes on 'SessionResourceTypeRequirement'
+        db.create_table('pr_services_sessionresourcetyperequirement_notes', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('sessionresourcetyperequirement', models.ForeignKey(orm['pr_services.sessionresourcetyperequirement'], null=False)),
+            ('note', models.ForeignKey(orm['pr_services.note'], null=False))
+        ))
+        db.create_unique('pr_services_sessionresourcetyperequirement_notes', ['sessionresourcetyperequirement_id', 'note_id'])
+
         # Adding model 'PurchaseOrder'
         db.create_table('pr_services_purchaseorder', (
-            ('training_units_price', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('expiration', self.gf('django.db.models.fields.DateTimeField')(null=True)),
-            ('training_units_purchased', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('promo_code', self.gf('django.db.models.fields.CharField')(max_length=15, null=True)),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_purchaseorders', null=True, to=orm['pr_services.User'])),
             ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='purchase_orders', null=True, to=orm['pr_services.Organization'])),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('user', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.User'], null=True)),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
+            ('training_units_purchased', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('training_units_price', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('expiration', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
+            ('promo_code', self.gf('django.db.models.fields.CharField')(max_length=15, null=True)),
         ))
         db.send_create_signal('pr_services', ['PurchaseOrder'])
 
@@ -1061,16 +1061,16 @@ class Migration(SchemaMigration):
 
         # Adding model 'TrainingUnitAccount'
         db.create_table('pr_services_trainingunitaccount', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_trainingunitaccounts', null=True, to=orm['pr_services.User'])),
             ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='trainingunitaccounts', null=True, to=orm['pr_services.Organization'])),
-            ('starting_value', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('user', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.User'], null=True)),
+            ('starting_value', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['TrainingUnitAccount'])
 
@@ -1084,16 +1084,16 @@ class Migration(SchemaMigration):
 
         # Adding model 'TrainingUnitTransaction'
         db.create_table('pr_services_trainingunittransaction', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('value', self.gf('django.db.models.fields.IntegerField')()),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('purchase_order', self.gf('pr_services.fields.PRForeignKey')(related_name='training_unit_transactions', to=orm['pr_services.PurchaseOrder'])),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_trainingunittransactions', null=True, to=orm['pr_services.User'])),
             ('training_unit_account', self.gf('pr_services.fields.PRForeignKey')(related_name='training_unit_transactions', to=orm['pr_services.TrainingUnitAccount'])),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
+            ('value', self.gf('django.db.models.fields.IntegerField')()),
+            ('purchase_order', self.gf('pr_services.fields.PRForeignKey')(related_name='training_unit_transactions', to=orm['pr_services.PurchaseOrder'])),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['TrainingUnitTransaction'])
 
@@ -1107,27 +1107,19 @@ class Migration(SchemaMigration):
 
         # Adding model 'TrainingUnitAuthorization'
         db.create_table('pr_services_trainingunitauthorization', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_trainingunitauthorizations', null=True, to=orm['pr_services.User'])),
+            ('training_unit_account', self.gf('pr_services.fields.PRForeignKey')(related_name='training_unit_authorizations', to=orm['pr_services.TrainingUnitAccount'])),
+            ('user', self.gf('pr_services.fields.PRForeignKey')(related_name='training_unit_authorizations', to=orm['pr_services.User'])),
+            ('start', self.gf('django.db.models.fields.DateTimeField')()),
+            ('end', self.gf('django.db.models.fields.DateTimeField')()),
             ('max_value', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
-            ('start', self.gf('django.db.models.fields.DateTimeField')()),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_trainingunitauthorizations', null=True, to=orm['pr_services.User'])),
-            ('end', self.gf('django.db.models.fields.DateTimeField')()),
-            ('training_unit_account', self.gf('pr_services.fields.PRForeignKey')(related_name='training_unit_authorizations', to=orm['pr_services.TrainingUnitAccount'])),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('user', self.gf('pr_services.fields.PRForeignKey')(related_name='training_unit_authorizations', to=orm['pr_services.User'])),
         ))
         db.send_create_signal('pr_services', ['TrainingUnitAuthorization'])
-
-        # Adding M2M table for field notes on 'TrainingUnitAuthorization'
-        db.create_table('pr_services_trainingunitauthorization_notes', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('trainingunitauthorization', models.ForeignKey(orm['pr_services.trainingunitauthorization'], null=False)),
-            ('note', models.ForeignKey(orm['pr_services.note'], null=False))
-        ))
-        db.create_unique('pr_services_trainingunitauthorization_notes', ['trainingunitauthorization_id', 'note_id'])
 
         # Adding M2M table for field transactions on 'TrainingUnitAuthorization'
         db.create_table('pr_services_trainingunitauthorization_transactions', (
@@ -1137,18 +1129,26 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('pr_services_trainingunitauthorization_transactions', ['trainingunitauthorization_id', 'trainingunittransaction_id'])
 
+        # Adding M2M table for field notes on 'TrainingUnitAuthorization'
+        db.create_table('pr_services_trainingunitauthorization_notes', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('trainingunitauthorization', models.ForeignKey(orm['pr_services.trainingunitauthorization'], null=False)),
+            ('note', models.ForeignKey(orm['pr_services.note'], null=False))
+        ))
+        db.create_unique('pr_services_trainingunitauthorization_notes', ['trainingunitauthorization_id', 'note_id'])
+
         # Adding model 'TrainingVoucher'
         db.create_table('pr_services_trainingvoucher', (
-            ('code', self.gf('django.db.models.fields.CharField')(max_length=10)),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('purchase_order', self.gf('pr_services.fields.PRForeignKey')(related_name='training_vouchers', null=True, to=orm['pr_services.PurchaseOrder'])),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_trainingvouchers', null=True, to=orm['pr_services.User'])),
             ('session_user_role_requirement', self.gf('pr_services.fields.PRForeignKey')(related_name='training_vouchers', to=orm['pr_services.SessionUserRoleRequirement'])),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('purchase_order', self.gf('pr_services.fields.PRForeignKey')(related_name='training_vouchers', null=True, to=orm['pr_services.PurchaseOrder'])),
+            ('code', self.gf('django.db.models.fields.CharField')(max_length=10)),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['TrainingVoucher'])
 
@@ -1162,29 +1162,29 @@ class Migration(SchemaMigration):
 
         # Adding model 'Payment'
         db.create_table('pr_services_payment', (
-            ('last_name', self.gf('django.db.models.fields.CharField')(max_length=63)),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('exp_date', self.gf('django.db.models.fields.CharField')(max_length=4)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_payments', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('city', self.gf('django.db.models.fields.CharField')(max_length=63)),
-            ('first_name', self.gf('django.db.models.fields.CharField')(max_length=63)),
-            ('zip', self.gf('django.db.models.fields.CharField')(max_length=15)),
-            ('state', self.gf('django.db.models.fields.CharField')(max_length=63)),
-            ('purchase_order', self.gf('pr_services.fields.PRForeignKey')(related_name='payments', to=orm['pr_services.PurchaseOrder'])),
-            ('address_label', self.gf('django.db.models.fields.CharField')(max_length=127)),
-            ('result_message', self.gf('django.db.models.fields.CharField')(max_length=31)),
-            ('transaction_id', self.gf('django.db.models.fields.CharField')(max_length=63)),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('invoice_number', self.gf('django.db.models.fields.CharField')(max_length=31)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('country', self.gf('django.db.models.fields.CharField')(max_length=2)),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_payments', null=True, to=orm['pr_services.User'])),
             ('card_type', self.gf('django.db.models.fields.CharField')(max_length=10)),
-            ('amount', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('sales_tax', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('card_number', self.gf('django.db.models.fields.CharField')(max_length=16)),
+            ('exp_date', self.gf('django.db.models.fields.CharField')(max_length=4)),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
+            ('amount', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('first_name', self.gf('django.db.models.fields.CharField')(max_length=63)),
+            ('last_name', self.gf('django.db.models.fields.CharField')(max_length=63)),
+            ('address_label', self.gf('django.db.models.fields.CharField')(max_length=127)),
+            ('city', self.gf('django.db.models.fields.CharField')(max_length=63)),
+            ('state', self.gf('django.db.models.fields.CharField')(max_length=63)),
+            ('zip', self.gf('django.db.models.fields.CharField')(max_length=15)),
+            ('country', self.gf('django.db.models.fields.CharField')(max_length=2)),
+            ('sales_tax', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('transaction_id', self.gf('django.db.models.fields.CharField')(max_length=63)),
+            ('purchase_order', self.gf('pr_services.fields.PRForeignKey')(related_name='payments', to=orm['pr_services.PurchaseOrder'])),
+            ('invoice_number', self.gf('django.db.models.fields.CharField')(max_length=31)),
+            ('result_message', self.gf('django.db.models.fields.CharField')(max_length=31)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['Payment'])
 
@@ -1198,48 +1198,48 @@ class Migration(SchemaMigration):
 
         # Adding model 'Refund'
         db.create_table('pr_services_refund', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('result_message', self.gf('django.db.models.fields.CharField')(max_length=31)),
-            ('payment', self.gf('pr_services.fields.PRForeignKey')(related_name='refunds', to=orm['pr_services.Payment'])),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
-            ('amount', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_refunds', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_refunds', null=True, to=orm['pr_services.User'])),
+            ('amount', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('payment', self.gf('pr_services.fields.PRForeignKey')(related_name='refunds', to=orm['pr_services.Payment'])),
+            ('result_message', self.gf('django.db.models.fields.CharField')(max_length=31)),
             ('transaction_id', self.gf('django.db.models.fields.CharField')(max_length=63)),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
         ))
         db.send_create_signal('pr_services', ['Refund'])
 
         # Adding model 'CSVData'
         db.create_table('pr_services_csvdata', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('text', self.gf('django.db.models.fields.TextField')()),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_csvdatas', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_csvdatas', null=True, to=orm['pr_services.User'])),
+            ('text', self.gf('django.db.models.fields.TextField')()),
             ('user', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.User'])),
         ))
         db.send_create_signal('pr_services', ['CSVData'])
 
         # Adding model 'Product'
         db.create_table('pr_services_product', (
-            ('sku', self.gf('django.db.models.fields.CharField')(max_length=32, unique=True)),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('display_order', self.gf('django.db.models.fields.PositiveIntegerField')(default=None, null=True)),
-            ('starting_quantity', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=127)),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='products', null=True, to=orm['pr_services.Blame'])),
-            ('cost', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
-            ('visibility_condition_test_collection', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.ConditionTestCollection'], null=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_products', null=True, to=orm['pr_services.User'])),
-            ('training_units', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
-            ('price', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_products', null=True, to=orm['pr_services.User'])),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='products', null=True, to=orm['pr_services.Blame'])),
             ('description', self.gf('django.db.models.fields.TextField')()),
+            ('display_order', self.gf('django.db.models.fields.PositiveIntegerField')(default=None, null=True)),
+            ('cost', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=127)),
+            ('price', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('sku', self.gf('django.db.models.fields.CharField')(max_length=32, unique=True)),
+            ('starting_quantity', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('training_units', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('visibility_condition_test_collection', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.ConditionTestCollection'], null=True)),
         ))
         db.send_create_signal('pr_services', ['Product'])
 
@@ -1261,25 +1261,25 @@ class Migration(SchemaMigration):
 
         # Adding model 'TaskFee'
         db.create_table('pr_services_taskfee', (
-            ('task', self.gf('pr_services.fields.PRForeignKey')(related_name='task_fees', to=orm['pr_services.Task'])),
             ('product_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['pr_services.Product'], unique=True, primary_key=True)),
+            ('task', self.gf('pr_services.fields.PRForeignKey')(related_name='task_fees', to=orm['pr_services.Task'])),
         ))
         db.send_create_signal('pr_services', ['TaskFee'])
 
         # Adding model 'ProductClaim'
         db.create_table('pr_services_productclaim', (
-            ('product', self.gf('pr_services.fields.PRForeignKey')(related_name='product_claims', to=orm['pr_services.Product'])),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('discounts_searched', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='product_claims', null=True, to=orm['pr_services.Blame'])),
-            ('purchase_order', self.gf('pr_services.fields.PRForeignKey')(related_name='product_claims', to=orm['pr_services.PurchaseOrder'])),
-            ('training_units_paid', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_productclaims', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('price_paid', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_productclaims', null=True, to=orm['pr_services.User'])),
+            ('product', self.gf('pr_services.fields.PRForeignKey')(related_name='product_claims', to=orm['pr_services.Product'])),
+            ('purchase_order', self.gf('pr_services.fields.PRForeignKey')(related_name='product_claims', to=orm['pr_services.PurchaseOrder'])),
             ('quantity', self.gf('django.db.models.fields.PositiveIntegerField')(default=1)),
+            ('price_paid', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('training_units_paid', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('discounts_searched', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='product_claims', null=True, to=orm['pr_services.Blame'])),
         ))
         db.send_create_signal('pr_services', ['ProductClaim'])
 
@@ -1293,16 +1293,16 @@ class Migration(SchemaMigration):
 
         # Adding model 'ClaimProductOffers'
         db.create_table('pr_services_claimproductoffers', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('purchase_order', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.PurchaseOrder'])),
-            ('training_units_paid', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_claimproductofferss', null=True, to=orm['pr_services.User'])),
-            ('quantity', self.gf('django.db.models.fields.PositiveIntegerField')(default=1)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('price_paid', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_claimproductofferss', null=True, to=orm['pr_services.User'])),
             ('product_offer', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.ProductOffer'])),
+            ('purchase_order', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.PurchaseOrder'])),
+            ('quantity', self.gf('django.db.models.fields.PositiveIntegerField')(default=1)),
+            ('price_paid', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('training_units_paid', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
         ))
         db.send_create_signal('pr_services', ['ClaimProductOffers'])
 
@@ -1316,33 +1316,33 @@ class Migration(SchemaMigration):
 
         # Adding model 'ProductTransaction'
         db.create_table('pr_services_producttransaction', (
-            ('product', self.gf('pr_services.fields.PRForeignKey')(related_name='product_transactions', to=orm['pr_services.Product'])),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='product_transactions', null=True, to=orm['pr_services.Blame'])),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_producttransactions', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_producttransactions', null=True, to=orm['pr_services.User'])),
+            ('product', self.gf('pr_services.fields.PRForeignKey')(related_name='product_transactions', to=orm['pr_services.Product'])),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='product_transactions', null=True, to=orm['pr_services.Blame'])),
             ('change', self.gf('django.db.models.fields.IntegerField')()),
         ))
         db.send_create_signal('pr_services', ['ProductTransaction'])
 
         # Adding model 'ProductDiscount'
         db.create_table('pr_services_productdiscount', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('currency', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
-            ('condition_test_collection', self.gf('pr_services.fields.PRForeignKey')(related_name='product_discounts', null=True, to=orm['pr_services.ConditionTestCollection'])),
-            ('cumulative', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=63, null=True)),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='product_discounts', null=True, to=orm['pr_services.Blame'])),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_productdiscounts', null=True, to=orm['pr_services.User'])),
-            ('training_units', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
-            ('percentage', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_productdiscounts', null=True, to=orm['pr_services.User'])),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
+            ('currency', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='product_discounts', null=True, to=orm['pr_services.Blame'])),
+            ('condition_test_collection', self.gf('pr_services.fields.PRForeignKey')(related_name='product_discounts', null=True, to=orm['pr_services.ConditionTestCollection'])),
+            ('cumulative', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('percentage', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
             ('promo_code', self.gf('django.db.models.fields.CharField')(max_length=15, null=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=63, null=True)),
+            ('training_units', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
         ))
         db.send_create_signal('pr_services', ['ProductDiscount'])
 
@@ -1354,14 +1354,6 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('pr_services_productdiscount_notes', ['productdiscount_id', 'note_id'])
 
-        # Adding M2M table for field product_offers on 'ProductDiscount'
-        db.create_table('pr_services_productdiscount_product_offers', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('productdiscount', models.ForeignKey(orm['pr_services.productdiscount'], null=False)),
-            ('productoffer', models.ForeignKey(orm['pr_services.productoffer'], null=False))
-        ))
-        db.create_unique('pr_services_productdiscount_product_offers', ['productdiscount_id', 'productoffer_id'])
-
         # Adding M2M table for field products on 'ProductDiscount'
         db.create_table('pr_services_productdiscount_products', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
@@ -1370,18 +1362,26 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('pr_services_productdiscount_products', ['productdiscount_id', 'product_id'])
 
+        # Adding M2M table for field product_offers on 'ProductDiscount'
+        db.create_table('pr_services_productdiscount_product_offers', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('productdiscount', models.ForeignKey(orm['pr_services.productdiscount'], null=False)),
+            ('productoffer', models.ForeignKey(orm['pr_services.productoffer'], null=False))
+        ))
+        db.create_unique('pr_services_productdiscount_product_offers', ['productdiscount_id', 'productoffer_id'])
+
         # Adding model 'ProductOffer'
         db.create_table('pr_services_productoffer', (
-            ('product', self.gf('pr_services.fields.PRForeignKey')(related_name='product_offers', to=orm['pr_services.Product'])),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_productoffers', null=True, to=orm['pr_services.User'])),
+            ('product', self.gf('pr_services.fields.PRForeignKey')(related_name='product_offers', to=orm['pr_services.Product'])),
             ('price', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('seller', self.gf('pr_services.fields.PRForeignKey')(related_name='product_offers', to=orm['pr_services.User'])),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='product_offers', null=True, to=orm['pr_services.Blame'])),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_productoffers', null=True, to=orm['pr_services.User'])),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('description', self.gf('django.db.models.fields.TextField')()),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='product_offers', null=True, to=orm['pr_services.Blame'])),
         ))
         db.send_create_signal('pr_services', ['ProductOffer'])
 
@@ -1395,53 +1395,29 @@ class Migration(SchemaMigration):
 
         # Adding model 'ConditionTestCollection'
         db.create_table('pr_services_conditiontestcollection', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=127)),
             ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='condition_test_collections', null=True, to=orm['pr_services.Blame'])),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
         ))
         db.send_create_signal('pr_services', ['ConditionTestCollection'])
 
         # Adding model 'ConditionTest'
         db.create_table('pr_services_conditiontest', (
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='condition_tests', to=orm['pr_services.Blame'])),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('sequence', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
-            ('condition_test_collection', self.gf('pr_services.fields.PRForeignKey')(related_name='condition_tests', to=orm['pr_services.ConditionTestCollection'])),
-            ('match_all_defined_parameters', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('start', self.gf('django.db.models.fields.DateTimeField')(null=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('end', self.gf('django.db.models.fields.DateTimeField')(null=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('condition_test_collection', self.gf('pr_services.fields.PRForeignKey')(related_name='condition_tests', to=orm['pr_services.ConditionTestCollection'])),
+            ('sequence', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
+            ('start', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+            ('end', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+            ('match_all_defined_parameters', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='condition_tests', to=orm['pr_services.Blame'])),
         ))
         db.send_create_signal('pr_services', ['ConditionTest'])
-
-        # Adding M2M table for field organizations on 'ConditionTest'
-        db.create_table('pr_services_conditiontest_organizations', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('conditiontest', models.ForeignKey(orm['pr_services.conditiontest'], null=False)),
-            ('organization', models.ForeignKey(orm['pr_services.organization'], null=False))
-        ))
-        db.create_unique('pr_services_conditiontest_organizations', ['conditiontest_id', 'organization_id'])
-
-        # Adding M2M table for field session_user_role_requirements on 'ConditionTest'
-        db.create_table('pr_services_conditiontest_session_user_role_requirements', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('conditiontest', models.ForeignKey(orm['pr_services.conditiontest'], null=False)),
-            ('sessionuserrolerequirement', models.ForeignKey(orm['pr_services.sessionuserrolerequirement'], null=False))
-        ))
-        db.create_unique('pr_services_conditiontest_session_user_role_requirements', ['conditiontest_id', 'sessionuserrolerequirement_id'])
-
-        # Adding M2M table for field sessions on 'ConditionTest'
-        db.create_table('pr_services_conditiontest_sessions', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('conditiontest', models.ForeignKey(orm['pr_services.conditiontest'], null=False)),
-            ('session', models.ForeignKey(orm['pr_services.session'], null=False))
-        ))
-        db.create_unique('pr_services_conditiontest_sessions', ['conditiontest_id', 'session_id'])
 
         # Adding M2M table for field groups on 'ConditionTest'
         db.create_table('pr_services_conditiontest_groups', (
@@ -1450,6 +1426,14 @@ class Migration(SchemaMigration):
             ('group', models.ForeignKey(orm['pr_services.group'], null=False))
         ))
         db.create_unique('pr_services_conditiontest_groups', ['conditiontest_id', 'group_id'])
+
+        # Adding M2M table for field organizations on 'ConditionTest'
+        db.create_table('pr_services_conditiontest_organizations', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('conditiontest', models.ForeignKey(orm['pr_services.conditiontest'], null=False)),
+            ('organization', models.ForeignKey(orm['pr_services.organization'], null=False))
+        ))
+        db.create_unique('pr_services_conditiontest_organizations', ['conditiontest_id', 'organization_id'])
 
         # Adding M2M table for field credentials on 'ConditionTest'
         db.create_table('pr_services_conditiontest_credentials', (
@@ -1467,14 +1451,30 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('pr_services_conditiontest_events', ['conditiontest_id', 'event_id'])
 
+        # Adding M2M table for field sessions on 'ConditionTest'
+        db.create_table('pr_services_conditiontest_sessions', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('conditiontest', models.ForeignKey(orm['pr_services.conditiontest'], null=False)),
+            ('session', models.ForeignKey(orm['pr_services.session'], null=False))
+        ))
+        db.create_unique('pr_services_conditiontest_sessions', ['conditiontest_id', 'session_id'])
+
+        # Adding M2M table for field session_user_role_requirements on 'ConditionTest'
+        db.create_table('pr_services_conditiontest_session_user_role_requirements', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('conditiontest', models.ForeignKey(orm['pr_services.conditiontest'], null=False)),
+            ('sessionuserrolerequirement', models.ForeignKey(orm['pr_services.sessionuserrolerequirement'], null=False))
+        ))
+        db.create_unique('pr_services_conditiontest_session_user_role_requirements', ['conditiontest_id', 'sessionuserrolerequirement_id'])
+
         # Adding model 'Course'
         db.create_table('pr_services_course', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=127)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_courses', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_courses', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=127)),
         ))
         db.send_create_signal('pr_services', ['Course'])
 
@@ -1483,52 +1483,52 @@ class Migration(SchemaMigration):
             ('task_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['pr_services.Task'], unique=True, primary_key=True)),
             ('course', self.gf('pr_services.fields.PRForeignKey')(related_name='scos', to=orm['pr_services.Course'])),
             ('completion_requirement', self.gf('django.db.models.fields.CharField')(default='visit_sco', max_length=64)),
-            ('url', self.gf('django.db.models.fields.CharField')(max_length=1024)),
             ('data', self.gf('django.db.models.fields.CharField')(max_length=1024)),
+            ('url', self.gf('django.db.models.fields.CharField')(max_length=1024)),
         ))
         db.send_create_signal('pr_services', ['Sco'])
 
         # Adding model 'ScoSession'
         db.create_table('pr_services_scosession', (
+            ('assignmentattempt_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['pr_services.AssignmentAttempt'], unique=True, primary_key=True)),
+            ('shared_object', self.gf('django.db.models.fields.TextField')()),
+            ('cmi_core_lesson_location', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('cmi_core_lesson_status', self.gf('django.db.models.fields.CharField')(max_length=32, null=True)),
             ('cmi_core_score_max', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
             ('cmi_core_score_min', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
-            ('shared_object', self.gf('django.db.models.fields.TextField')()),
-            ('cmi_core_lesson_status', self.gf('django.db.models.fields.CharField')(max_length=32, null=True)),
-            ('assignmentattempt_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['pr_services.AssignmentAttempt'], unique=True, primary_key=True)),
-            ('cmi_core_lesson_location', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
         ))
         db.send_create_signal('pr_services', ['ScoSession'])
 
         # Adding model 'CachedCookie'
         db.create_table('pr_services_cachedcookie', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('value', self.gf('django.db.models.fields.TextField')()),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('key', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_cachedcookies', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_cachedcookies', null=True, to=orm['pr_services.User'])),
+            ('key', self.gf('django.db.models.fields.CharField')(max_length=255, unique=True)),
+            ('value', self.gf('django.db.models.fields.TextField')()),
         ))
         db.send_create_signal('pr_services', ['CachedCookie'])
 
         # Adding model 'CustomAction'
         db.create_table('pr_services_customaction', (
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('description', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='custom_actions', to=orm['pr_services.Blame'])),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('function_name', self.gf('django.db.models.fields.CharField')(max_length=127)),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=65)),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('function_name', self.gf('django.db.models.fields.CharField')(max_length=127)),
+            ('blame', self.gf('pr_services.fields.PRForeignKey')(related_name='custom_actions', to=orm['pr_services.Blame'])),
         ))
         db.send_create_signal('pr_services', ['CustomAction'])
 
         # Adding model 'DBSetting'
         db.create_table('pr_services_dbsetting', (
-            ('pickled_value', self.gf('django.db.models.fields.TextField')()),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=127, unique=True)),
+            ('pickled_value', self.gf('django.db.models.fields.TextField')()),
         ))
         db.send_create_signal('pr_services', ['DBSetting'])
 
@@ -1541,101 +1541,101 @@ class Migration(SchemaMigration):
 
         # Adding model 'QuestionPool'
         db.create_table('pr_services_questionpool', (
-            ('exam', self.gf('pr_services.fields.PRForeignKey')(related_name='question_pools', to=orm['pr_services.Exam'])),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('title', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('randomize_questions', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('next_question_pool', self.gf('pr_services.fields.PRForeignKey')(default=None, to=orm['pr_services.QuestionPool'], null=True)),
-            ('order', self.gf('django.db.models.fields.PositiveIntegerField')(default=None)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_questionpools', null=True, to=orm['pr_services.User'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('number_to_answer', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_questionpools', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
+            ('exam', self.gf('pr_services.fields.PRForeignKey')(related_name='question_pools', to=orm['pr_services.Exam'])),
+            ('title', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
+            ('order', self.gf('django.db.models.fields.PositiveIntegerField')(default=None)),
+            ('next_question_pool', self.gf('pr_services.fields.PRForeignKey')(default=None, to=orm['pr_services.QuestionPool'], null=True)),
+            ('randomize_questions', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('number_to_answer', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
         ))
         db.send_create_signal('pr_services', ['QuestionPool'])
 
         # Adding model 'Question'
         db.create_table('pr_services_question', (
-            ('rejoinder', self.gf('django.db.models.fields.TextField')(default=None, null=True)),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('question_pool', self.gf('pr_services.fields.PRForeignKey')(related_name='questions', to=orm['pr_services.QuestionPool'])),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('help_text', self.gf('django.db.models.fields.TextField')(default=None, null=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_questions', null=True, to=orm['pr_services.User'])),
-            ('label', self.gf('django.db.models.fields.TextField')()),
-            ('max_length', self.gf('django.db.models.fields.PositiveIntegerField')(default=None, null=True)),
-            ('question_type', self.gf('django.db.models.fields.CharField')(max_length=31)),
-            ('text_regex', self.gf('django.db.models.fields.CharField')(default=None, max_length=255, null=True)),
-            ('text_response_label', self.gf('django.db.models.fields.TextField')(default=None, null=True)),
-            ('widget', self.gf('django.db.models.fields.CharField')(default=None, max_length=31)),
-            ('max_value', self.gf('django.db.models.fields.DecimalField')(default=None, null=True, max_digits=24, decimal_places=10)),
-            ('min_value', self.gf('django.db.models.fields.DecimalField')(default=None, null=True, max_digits=24, decimal_places=10)),
-            ('max_answers', self.gf('django.db.models.fields.PositiveIntegerField')(default=1, null=True)),
-            ('min_answers', self.gf('django.db.models.fields.PositiveIntegerField')(default=1)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('text_response', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('min_length', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_questions', null=True, to=orm['pr_services.User'])),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('required', self.gf('pr_services.fields.PRBooleanField')(default=True, blank=True)),
+            ('question_pool', self.gf('pr_services.fields.PRForeignKey')(related_name='questions', to=orm['pr_services.QuestionPool'])),
             ('order', self.gf('django.db.models.fields.PositiveIntegerField')(default=None)),
+            ('required', self.gf('pr_services.fields.PRBooleanField')(default=True)),
+            ('label', self.gf('django.db.models.fields.TextField')()),
+            ('help_text', self.gf('django.db.models.fields.TextField')(default=None, null=True)),
+            ('rejoinder', self.gf('django.db.models.fields.TextField')(default=None, null=True)),
+            ('question_type', self.gf('django.db.models.fields.CharField')(max_length=31)),
+            ('widget', self.gf('django.db.models.fields.CharField')(default=None, max_length=31)),
+            ('min_answers', self.gf('django.db.models.fields.PositiveIntegerField')(default=1)),
+            ('max_answers', self.gf('django.db.models.fields.PositiveIntegerField')(default=1, null=True)),
+            ('text_response', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('text_response_label', self.gf('django.db.models.fields.TextField')(default=None, null=True)),
+            ('min_length', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('max_length', self.gf('django.db.models.fields.PositiveIntegerField')(default=None, null=True)),
+            ('text_regex', self.gf('django.db.models.fields.CharField')(default=None, max_length=255, null=True)),
+            ('min_value', self.gf('django.db.models.fields.DecimalField')(default=None, null=True, max_digits=24, decimal_places=10)),
+            ('max_value', self.gf('django.db.models.fields.DecimalField')(default=None, null=True, max_digits=24, decimal_places=10)),
         ))
         db.send_create_signal('pr_services', ['Question'])
 
         # Adding model 'Answer'
         db.create_table('pr_services_answer', (
-            ('text_response', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('correct', self.gf('django.db.models.fields.NullBooleanField')(default=None, null=True, blank=True)),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('end_question_pool', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('end_exam', self.gf('pr_services.fields.PRBooleanField')(default=False, blank=True)),
-            ('question', self.gf('pr_services.fields.PRForeignKey')(related_name='answers', to=orm['pr_services.Question'])),
-            ('next_question_pool', self.gf('pr_services.fields.PRForeignKey')(default=None, to=orm['pr_services.QuestionPool'], null=True)),
-            ('value', self.gf('django.db.models.fields.CharField')(default=None, max_length=255, null=True)),
-            ('order', self.gf('django.db.models.fields.PositiveIntegerField')(default=None)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_answers', null=True, to=orm['pr_services.User'])),
-            ('label', self.gf('django.db.models.fields.CharField')(default=None, max_length=255, null=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_answers', null=True, to=orm['pr_services.User'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
+            ('question', self.gf('pr_services.fields.PRForeignKey')(related_name='answers', to=orm['pr_services.Question'])),
+            ('order', self.gf('django.db.models.fields.PositiveIntegerField')(default=None)),
+            ('label', self.gf('django.db.models.fields.CharField')(default=None, max_length=255, null=True)),
+            ('text_response', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('value', self.gf('django.db.models.fields.CharField')(default=None, max_length=255, null=True)),
+            ('correct', self.gf('django.db.models.fields.NullBooleanField')(default=None, null=True, blank=True)),
+            ('next_question_pool', self.gf('pr_services.fields.PRForeignKey')(default=None, to=orm['pr_services.QuestionPool'], null=True)),
+            ('end_question_pool', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('end_exam', self.gf('pr_services.fields.PRBooleanField')(default=False)),
         ))
         db.send_create_signal('pr_services', ['Answer'])
 
         # Adding model 'ExamSession'
         db.create_table('pr_services_examsession', (
-            ('score', self.gf('django.db.models.fields.DecimalField')(default=None, null=True, max_digits=5, decimal_places=2)),
             ('assignmentattempt_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['pr_services.AssignmentAttempt'], unique=True, primary_key=True)),
-            ('passed', self.gf('django.db.models.fields.NullBooleanField')(null=True, blank=True)),
+            ('score', self.gf('django.db.models.fields.DecimalField')(default=None, null=True, max_digits=5, decimal_places=2)),
             ('number_correct', self.gf('django.db.models.fields.PositiveIntegerField')(default=None, null=True)),
+            ('passed', self.gf('django.db.models.fields.NullBooleanField')(null=True, blank=True)),
         ))
         db.send_create_signal('pr_services', ['ExamSession'])
 
         # Adding model 'Response'
         db.create_table('pr_services_response', (
-            ('password_value', self.gf('django.db.models.fields.CharField')(default=None, max_length=255, null=True)),
-            ('correct', self.gf('django.db.models.fields.NullBooleanField')(default=None, null=True, blank=True)),
-            ('time_value', self.gf('django.db.models.fields.TimeField')(default=None, null=True)),
-            ('bool_value', self.gf('django.db.models.fields.NullBooleanField')(default=None, null=True, blank=True)),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('int_value', self.gf('django.db.models.fields.IntegerField')(default=None, null=True)),
-            ('question', self.gf('pr_services.fields.PRForeignKey')(related_name='responses', to=orm['pr_services.Question'])),
-            ('datetime_value', self.gf('django.db.models.fields.DateTimeField')(default=None, null=True)),
-            ('exam_session', self.gf('pr_services.fields.PRForeignKey')(related_name='responses', to=orm['pr_services.ExamSession'])),
-            ('decimal_value', self.gf('django.db.models.fields.DecimalField')(default=None, null=True, max_digits=24, decimal_places=10)),
-            ('order', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
-            ('date_value', self.gf('django.db.models.fields.DateField')(default=None, null=True)),
-            ('char_value', self.gf('django.db.models.fields.CharField')(default=None, max_length=255, null=True)),
-            ('valid', self.gf('django.db.models.fields.NullBooleanField')(default=None, null=True, blank=True)),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('float_value', self.gf('django.db.models.fields.FloatField')(default=None, null=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_responses', null=True, to=orm['pr_services.User'])),
-            ('text_value', self.gf('django.db.models.fields.TextField')(default=None, null=True)),
-            ('rating_value', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=None, null=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_responses', null=True, to=orm['pr_services.User'])),
+            ('exam_session', self.gf('pr_services.fields.PRForeignKey')(related_name='responses', to=orm['pr_services.ExamSession'])),
+            ('question', self.gf('pr_services.fields.PRForeignKey')(related_name='responses', to=orm['pr_services.Question'])),
+            ('order', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('valid', self.gf('django.db.models.fields.NullBooleanField')(default=None, null=True, blank=True)),
+            ('correct', self.gf('django.db.models.fields.NullBooleanField')(default=None, null=True, blank=True)),
+            ('bool_value', self.gf('django.db.models.fields.NullBooleanField')(default=None, null=True, blank=True)),
+            ('char_value', self.gf('django.db.models.fields.CharField')(default=None, max_length=255, null=True)),
+            ('date_value', self.gf('django.db.models.fields.DateField')(default=None, null=True)),
+            ('datetime_value', self.gf('django.db.models.fields.DateTimeField')(default=None, null=True)),
+            ('decimal_value', self.gf('django.db.models.fields.DecimalField')(default=None, null=True, max_digits=24, decimal_places=10)),
+            ('float_value', self.gf('django.db.models.fields.FloatField')(default=None, null=True)),
+            ('int_value', self.gf('django.db.models.fields.IntegerField')(default=None, null=True)),
+            ('password_value', self.gf('django.db.models.fields.CharField')(default=None, max_length=255, null=True)),
+            ('rating_value', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=None, null=True)),
+            ('text_value', self.gf('django.db.models.fields.TextField')(default=None, null=True)),
+            ('time_value', self.gf('django.db.models.fields.TimeField')(default=None, null=True)),
         ))
         db.send_create_signal('pr_services', ['Response'])
 
@@ -1652,10 +1652,10 @@ class Migration(SchemaMigration):
 
         # Adding model 'FormPage'
         db.create_table('pr_services_formpage', (
-            ('photo', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True)),
-            ('number', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('exam', self.gf('pr_services.fields.PRForeignKey')(related_name='form_pages', to=orm['pr_services.Exam'])),
+            ('number', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('photo', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True)),
         ))
         db.send_create_signal('pr_services', ['FormPage'])
 
@@ -1664,32 +1664,47 @@ class Migration(SchemaMigration):
 
         # Adding model 'FormWidget'
         db.create_table('pr_services_formwidget', (
-            ('y', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('answer', self.gf('pr_services.fields.PRForeignKey')(related_name='form_widgets', null=True, to=orm['pr_services.Answer'])),
-            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'])),
+            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_formwidgets', null=True, to=orm['pr_services.User'])),
             ('form_page', self.gf('pr_services.fields.PRForeignKey')(related_name='form_widgets', to=orm['pr_services.FormPage'])),
-            ('question', self.gf('pr_services.fields.PRForeignKey')(related_name='form_widgets', to=orm['pr_services.Question'])),
             ('height', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('width', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_formwidgets', null=True, to=orm['pr_services.User'])),
             ('x', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('y', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('question', self.gf('pr_services.fields.PRForeignKey')(related_name='form_widgets', to=orm['pr_services.Question'])),
+            ('answer', self.gf('pr_services.fields.PRForeignKey')(related_name='form_widgets', null=True, to=orm['pr_services.Answer'])),
         ))
         db.send_create_signal('pr_services', ['FormWidget'])
-    
-    
+
+
     def backwards(self, orm):
         
+        # Removing unique constraint on 'FormPage', fields ['exam', 'number']
+        db.delete_unique('pr_services_formpage', ['exam_id', 'number'])
+
+        # Removing unique constraint on 'Response', fields ['exam_session', 'question']
+        db.delete_unique('pr_services_response', ['exam_session_id', 'question_id'])
+
+        # Removing unique constraint on 'DomainAffiliation', fields ['username', 'domain']
+        db.delete_unique('pr_services_domainaffiliation', ['username', 'domain_id'])
+
+        # Removing unique constraint on 'OrgEmailDomain', fields ['email_domain', 'organization', 'role']
+        db.delete_unique('pr_services_orgemaildomain', ['email_domain', 'organization_id', 'role_id'])
+
+        # Removing unique constraint on 'UserOrgRole', fields ['owner', 'organization', 'role']
+        db.delete_unique('pr_services_userorgrole', ['owner_id', 'organization_id', 'role_id'])
+
+        # Removing unique constraint on 'Organization', fields ['name', 'parent']
+        db.delete_unique('pr_services_organization', ['name', 'parent_id'])
+
         # Deleting model 'Note'
         db.delete_table('pr_services_note')
 
         # Deleting model 'Organization'
         db.delete_table('pr_services_organization')
-
-        # Removing unique constraint on 'Organization', fields ['name', 'parent']
-        db.delete_unique('pr_services_organization', ['name', 'parent_id'])
 
         # Removing M2M table for field notes on 'Organization'
         db.delete_table('pr_services_organization_notes')
@@ -1700,26 +1715,20 @@ class Migration(SchemaMigration):
         # Deleting model 'UserOrgRole'
         db.delete_table('pr_services_userorgrole')
 
-        # Removing unique constraint on 'UserOrgRole', fields ['owner', 'organization', 'role']
-        db.delete_unique('pr_services_userorgrole', ['owner_id', 'organization_id', 'role_id'])
-
         # Deleting model 'OrgEmailDomain'
         db.delete_table('pr_services_orgemaildomain')
 
-        # Removing unique constraint on 'OrgEmailDomain', fields ['email_domain', 'organization', 'role']
-        db.delete_unique('pr_services_orgemaildomain', ['email_domain', 'organization_id', 'role_id'])
-
         # Deleting model 'CredentialType'
         db.delete_table('pr_services_credentialtype')
-
-        # Removing M2M table for field prerequisite_credential_types on 'CredentialType'
-        db.delete_table('pr_services_credentialtype_prerequisite_credential_types')
 
         # Removing M2M table for field notes on 'CredentialType'
         db.delete_table('pr_services_credentialtype_notes')
 
         # Removing M2M table for field required_achievements on 'CredentialType'
         db.delete_table('pr_services_credentialtype_required_achievements')
+
+        # Removing M2M table for field prerequisite_credential_types on 'CredentialType'
+        db.delete_table('pr_services_credentialtype_prerequisite_credential_types')
 
         # Deleting model 'Credential'
         db.delete_table('pr_services_credential')
@@ -1739,14 +1748,14 @@ class Migration(SchemaMigration):
         # Deleting model 'Task'
         db.delete_table('pr_services_task')
 
-        # Removing M2M table for field achievements on 'Task'
-        db.delete_table('pr_services_task_achievements')
-
         # Removing M2M table for field prerequisite_tasks on 'Task'
         db.delete_table('pr_services_task_prerequisite_tasks')
 
         # Removing M2M table for field prerequisite_achievements on 'Task'
         db.delete_table('pr_services_task_prerequisite_achievements')
+
+        # Removing M2M table for field achievements on 'Task'
+        db.delete_table('pr_services_task_achievements')
 
         # Deleting model 'Curriculum'
         db.delete_table('pr_services_curriculum')
@@ -1778,17 +1787,17 @@ class Migration(SchemaMigration):
         # Deleting model 'ProductLine'
         db.delete_table('pr_services_productline')
 
-        # Removing M2M table for field instructors on 'ProductLine'
-        db.delete_table('pr_services_productline_instructors')
-
         # Removing M2M table for field notes on 'ProductLine'
         db.delete_table('pr_services_productline_notes')
+
+        # Removing M2M table for field managers on 'ProductLine'
+        db.delete_table('pr_services_productline_managers')
 
         # Removing M2M table for field instructor_managers on 'ProductLine'
         db.delete_table('pr_services_productline_instructor_managers')
 
-        # Removing M2M table for field managers on 'ProductLine'
-        db.delete_table('pr_services_productline_managers')
+        # Removing M2M table for field instructors on 'ProductLine'
+        db.delete_table('pr_services_productline_instructors')
 
         # Deleting model 'Region'
         db.delete_table('pr_services_region')
@@ -1835,17 +1844,14 @@ class Migration(SchemaMigration):
         # Deleting model 'DomainAffiliation'
         db.delete_table('pr_services_domainaffiliation')
 
-        # Removing unique constraint on 'DomainAffiliation', fields ['username', 'domain']
-        db.delete_unique('pr_services_domainaffiliation', ['username', 'domain_id'])
-
         # Deleting model 'User'
         db.delete_table('pr_services_user')
 
-        # Removing M2M table for field notes on 'User'
-        db.delete_table('pr_services_user_notes')
-
         # Removing M2M table for field groups on 'User'
         db.delete_table('pr_services_user_groups')
+
+        # Removing M2M table for field notes on 'User'
+        db.delete_table('pr_services_user_notes')
 
         # Removing M2M table for field preferred_venues on 'User'
         db.delete_table('pr_services_user_preferred_venues')
@@ -1898,11 +1904,11 @@ class Migration(SchemaMigration):
         # Deleting model 'ResourceType'
         db.delete_table('pr_services_resourcetype')
 
-        # Removing M2M table for field notes on 'ResourceType'
-        db.delete_table('pr_services_resourcetype_notes')
-
         # Removing M2M table for field resources on 'ResourceType'
         db.delete_table('pr_services_resourcetype_resources')
+
+        # Removing M2M table for field notes on 'ResourceType'
+        db.delete_table('pr_services_resourcetype_notes')
 
         # Deleting model 'SessionUserRoleRequirement'
         db.delete_table('pr_services_sessionuserrolerequirement')
@@ -1937,11 +1943,11 @@ class Migration(SchemaMigration):
         # Deleting model 'SessionResourceTypeRequirement'
         db.delete_table('pr_services_sessionresourcetyperequirement')
 
-        # Removing M2M table for field notes on 'SessionResourceTypeRequirement'
-        db.delete_table('pr_services_sessionresourcetyperequirement_notes')
-
         # Removing M2M table for field resources on 'SessionResourceTypeRequirement'
         db.delete_table('pr_services_sessionresourcetyperequirement_resources')
+
+        # Removing M2M table for field notes on 'SessionResourceTypeRequirement'
+        db.delete_table('pr_services_sessionresourcetyperequirement_notes')
 
         # Deleting model 'PurchaseOrder'
         db.delete_table('pr_services_purchaseorder')
@@ -1967,11 +1973,11 @@ class Migration(SchemaMigration):
         # Deleting model 'TrainingUnitAuthorization'
         db.delete_table('pr_services_trainingunitauthorization')
 
-        # Removing M2M table for field notes on 'TrainingUnitAuthorization'
-        db.delete_table('pr_services_trainingunitauthorization_notes')
-
         # Removing M2M table for field transactions on 'TrainingUnitAuthorization'
         db.delete_table('pr_services_trainingunitauthorization_transactions')
+
+        # Removing M2M table for field notes on 'TrainingUnitAuthorization'
+        db.delete_table('pr_services_trainingunitauthorization_notes')
 
         # Deleting model 'TrainingVoucher'
         db.delete_table('pr_services_trainingvoucher')
@@ -2024,11 +2030,11 @@ class Migration(SchemaMigration):
         # Removing M2M table for field notes on 'ProductDiscount'
         db.delete_table('pr_services_productdiscount_notes')
 
-        # Removing M2M table for field product_offers on 'ProductDiscount'
-        db.delete_table('pr_services_productdiscount_product_offers')
-
         # Removing M2M table for field products on 'ProductDiscount'
         db.delete_table('pr_services_productdiscount_products')
+
+        # Removing M2M table for field product_offers on 'ProductDiscount'
+        db.delete_table('pr_services_productdiscount_product_offers')
 
         # Deleting model 'ProductOffer'
         db.delete_table('pr_services_productoffer')
@@ -2042,23 +2048,23 @@ class Migration(SchemaMigration):
         # Deleting model 'ConditionTest'
         db.delete_table('pr_services_conditiontest')
 
-        # Removing M2M table for field organizations on 'ConditionTest'
-        db.delete_table('pr_services_conditiontest_organizations')
-
-        # Removing M2M table for field session_user_role_requirements on 'ConditionTest'
-        db.delete_table('pr_services_conditiontest_session_user_role_requirements')
-
-        # Removing M2M table for field sessions on 'ConditionTest'
-        db.delete_table('pr_services_conditiontest_sessions')
-
         # Removing M2M table for field groups on 'ConditionTest'
         db.delete_table('pr_services_conditiontest_groups')
+
+        # Removing M2M table for field organizations on 'ConditionTest'
+        db.delete_table('pr_services_conditiontest_organizations')
 
         # Removing M2M table for field credentials on 'ConditionTest'
         db.delete_table('pr_services_conditiontest_credentials')
 
         # Removing M2M table for field events on 'ConditionTest'
         db.delete_table('pr_services_conditiontest_events')
+
+        # Removing M2M table for field sessions on 'ConditionTest'
+        db.delete_table('pr_services_conditiontest_sessions')
+
+        # Removing M2M table for field session_user_role_requirements on 'ConditionTest'
+        db.delete_table('pr_services_conditiontest_session_user_role_requirements')
 
         # Deleting model 'Course'
         db.delete_table('pr_services_course')
@@ -2096,25 +2102,19 @@ class Migration(SchemaMigration):
         # Deleting model 'Response'
         db.delete_table('pr_services_response')
 
-        # Removing unique constraint on 'Response', fields ['exam_session', 'question']
-        db.delete_unique('pr_services_response', ['exam_session_id', 'question_id'])
-
         # Removing M2M table for field answers on 'Response'
         db.delete_table('pr_services_response_answers')
 
         # Deleting model 'FormPage'
         db.delete_table('pr_services_formpage')
 
-        # Removing unique constraint on 'FormPage', fields ['exam', 'number']
-        db.delete_unique('pr_services_formpage', ['exam_id', 'number'])
-
         # Deleting model 'FormWidget'
         db.delete_table('pr_services_formwidget')
-    
-    
+
+
     models = {
         'contenttypes.contenttype': {
-            'Meta': {'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
+            'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
             'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
@@ -2180,7 +2180,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.address': {
             'Meta': {'object_name': 'Address'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'country': ('django.db.models.fields.CharField', [], {'max_length': '2'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
@@ -2193,11 +2193,11 @@ class Migration(SchemaMigration):
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
         },
         'pr_services.answer': {
-            'Meta': {'object_name': 'Answer'},
+            'Meta': {'ordering': "['order']", 'object_name': 'Answer'},
             'correct': ('django.db.models.fields.NullBooleanField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'end_exam': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
-            'end_question_pool': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'end_exam': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
+            'end_question_pool': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'label': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'null': 'True'}),
@@ -2207,7 +2207,7 @@ class Migration(SchemaMigration):
             'owner': ('pr_services.fields.PRForeignKey', [], {'related_name': "'owned_answers'", 'null': 'True', 'to': "orm['pr_services.User']"}),
             'question': ('pr_services.fields.PRForeignKey', [], {'related_name': "'answers'", 'to': "orm['pr_services.Question']"}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'text_response': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'text_response': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'value': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'null': 'True'})
         },
         'pr_services.assignment': {
@@ -2224,10 +2224,10 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'product_claim': ('pr_services.fields.PRForeignKey', [], {'related_name': "'assignments'", 'null': 'True', 'to': "orm['pr_services.ProductClaim']"}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'sent_confirmation': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
-            'sent_late_notice': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
-            'sent_pre_reminder': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
-            'sent_reminder': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'sent_confirmation': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
+            'sent_late_notice': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
+            'sent_pre_reminder': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
+            'sent_reminder': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'serial_number': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'}),
             'status': ('django.db.models.fields.CharField', [], {'default': "'assigned'", 'max_length': '16', 'db_index': 'True'}),
             'task': ('pr_services.fields.PRForeignKey', [], {'related_name': "'assignments'", 'to': "orm['pr_services.Task']"}),
@@ -2246,7 +2246,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.authtoken': {
             'Meta': {'object_name': 'AuthToken'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'domain_affiliation': ('pr_services.fields.PRForeignKey', [], {'related_name': "'auth_tokens'", 'to': "orm['pr_services.DomainAffiliation']"}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
@@ -2318,7 +2318,7 @@ class Migration(SchemaMigration):
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'groups': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'condition_tests'", 'symmetrical': 'False', 'to': "orm['pr_services.Group']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'match_all_defined_parameters': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'match_all_defined_parameters': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'organizations': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'condition_tests'", 'symmetrical': 'False', 'to': "orm['pr_services.Organization']"}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'sequence': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
@@ -2418,7 +2418,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.curriculumtaskassociation': {
             'Meta': {'object_name': 'CurriculumTaskAssociation'},
-            'continue_automatically': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'continue_automatically': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'curriculum': ('pr_services.fields.PRForeignKey', [], {'related_name': "'curriculum_task_associations'", 'to': "orm['pr_services.Curriculum']"}),
             'days_before_start': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '0'}),
@@ -2461,11 +2461,11 @@ class Migration(SchemaMigration):
         'pr_services.domainaffiliation': {
             'Meta': {'unique_together': "(('username', 'domain'),)", 'object_name': 'DomainAffiliation'},
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'default': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'default': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'domain': ('pr_services.fields.PRForeignKey', [], {'related_name': "'domain_affiliations'", 'to': "orm['pr_services.Domain']"}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'may_log_me_in': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'may_log_me_in': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'password_hash': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'password_hash_type': ('django.db.models.fields.CharField', [], {'default': "'SHA-512'", 'max_length': '8'}),
             'password_salt': ('django.db.models.fields.CharField', [], {'max_length': '8', 'null': 'True'}),
@@ -2489,7 +2489,7 @@ class Migration(SchemaMigration):
             'notes': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'events'", 'symmetrical': 'False', 'to': "orm['pr_services.Note']"}),
             'organization': ('pr_services.fields.PRForeignKey', [], {'related_name': "'events'", 'to': "orm['pr_services.Organization']"}),
             'owner': ('pr_services.fields.PRForeignKey', [], {'related_name': "'owned_events'", 'null': 'True', 'to': "orm['pr_services.User']"}),
-            'product_line': ('pr_services.fields.PRForeignKey', [], {'related_name': "'events'", 'to': "orm['pr_services.ProductLine']"}),
+            'product_line': ('pr_services.fields.PRForeignKey', [], {'related_name': "'events'", 'null': 'True', 'to': "orm['pr_services.ProductLine']"}),
             'region': ('pr_services.fields.PRForeignKey', [], {'related_name': "'events'", 'null': 'True', 'to': "orm['pr_services.Region']"}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'start': ('django.db.models.fields.DateField', [], {}),
@@ -2554,10 +2554,10 @@ class Migration(SchemaMigration):
             'y': ('django.db.models.fields.PositiveIntegerField', [], {})
         },
         'pr_services.group': {
-            'Meta': {'object_name': 'Group'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'Meta': {'ordering': "('name',)", 'object_name': 'Group'},
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'default': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'default': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'managers': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'groups_managed'", 'symmetrical': 'False', 'to': "orm['pr_services.User']"}),
@@ -2568,7 +2568,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.note': {
             'Meta': {'object_name': 'Note'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -2578,7 +2578,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.organization': {
             'Meta': {'unique_together': "(('name', 'parent'),)", 'object_name': 'Organization'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'address': ('pr_services.fields.PRForeignKey', [], {'related_name': "'organizations'", 'null': 'True', 'to': "orm['pr_services.Address']"}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'department': ('django.db.models.fields.CharField', [], {'max_length': '127', 'null': 'True'}),
@@ -2617,7 +2617,7 @@ class Migration(SchemaMigration):
         'pr_services.orgrole': {
             'Meta': {'object_name': 'OrgRole'},
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'default': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'default': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'unique': 'True'}),
@@ -2625,7 +2625,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.payment': {
             'Meta': {'object_name': 'Payment'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'address_label': ('django.db.models.fields.CharField', [], {'max_length': '127'}),
             'amount': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'blame': ('pr_services.fields.PRForeignKey', [], {'to': "orm['pr_services.Blame']", 'null': 'True'}),
@@ -2675,7 +2675,7 @@ class Migration(SchemaMigration):
             'blame': ('pr_services.fields.PRForeignKey', [], {'related_name': "'product_claims'", 'null': 'True', 'to': "orm['pr_services.Blame']"}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'discounts': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'product_claims'", 'symmetrical': 'False', 'to': "orm['pr_services.ProductDiscount']"}),
-            'discounts_searched': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'discounts_searched': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'owner': ('pr_services.fields.PRForeignKey', [], {'related_name': "'owned_productclaims'", 'null': 'True', 'to': "orm['pr_services.User']"}),
@@ -2688,11 +2688,11 @@ class Migration(SchemaMigration):
         },
         'pr_services.productdiscount': {
             'Meta': {'object_name': 'ProductDiscount'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'blame': ('pr_services.fields.PRForeignKey', [], {'related_name': "'product_discounts'", 'null': 'True', 'to': "orm['pr_services.Blame']"}),
             'condition_test_collection': ('pr_services.fields.PRForeignKey', [], {'related_name': "'product_discounts'", 'null': 'True', 'to': "orm['pr_services.ConditionTestCollection']"}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'cumulative': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'cumulative': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'currency': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -2708,7 +2708,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.productline': {
             'Meta': {'object_name': 'ProductLine'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -2747,7 +2747,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.purchaseorder': {
             'Meta': {'object_name': 'PurchaseOrder'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'blame': ('pr_services.fields.PRForeignKey', [], {'to': "orm['pr_services.Blame']", 'null': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'expiration': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
@@ -2766,7 +2766,7 @@ class Migration(SchemaMigration):
             'user': ('pr_services.fields.PRForeignKey', [], {'to': "orm['pr_services.User']", 'null': 'True'})
         },
         'pr_services.question': {
-            'Meta': {'object_name': 'Question'},
+            'Meta': {'ordering': "['order']", 'object_name': 'Question'},
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'help_text': ('django.db.models.fields.TextField', [], {'default': 'None', 'null': 'True'}),
@@ -2784,15 +2784,15 @@ class Migration(SchemaMigration):
             'question_pool': ('pr_services.fields.PRForeignKey', [], {'related_name': "'questions'", 'to': "orm['pr_services.QuestionPool']"}),
             'question_type': ('django.db.models.fields.CharField', [], {'max_length': '31'}),
             'rejoinder': ('django.db.models.fields.TextField', [], {'default': 'None', 'null': 'True'}),
-            'required': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'required': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'text_regex': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'null': 'True'}),
-            'text_response': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'text_response': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'text_response_label': ('django.db.models.fields.TextField', [], {'default': 'None', 'null': 'True'}),
             'widget': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '31'})
         },
         'pr_services.questionpool': {
-            'Meta': {'object_name': 'QuestionPool'},
+            'Meta': {'ordering': "['order']", 'object_name': 'QuestionPool'},
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'exam': ('pr_services.fields.PRForeignKey', [], {'related_name': "'question_pools'", 'to': "orm['pr_services.Exam']"}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
@@ -2802,7 +2802,7 @@ class Migration(SchemaMigration):
             'number_to_answer': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'order': ('django.db.models.fields.PositiveIntegerField', [], {'default': 'None'}),
             'owner': ('pr_services.fields.PRForeignKey', [], {'related_name': "'owned_questionpools'", 'null': 'True', 'to': "orm['pr_services.User']"}),
-            'randomize_questions': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'randomize_questions': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'})
         },
@@ -2821,7 +2821,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.region': {
             'Meta': {'object_name': 'Region'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -2832,7 +2832,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.resource': {
             'Meta': {'object_name': 'Resource'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -2843,7 +2843,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.resourcetype': {
             'Meta': {'object_name': 'ResourceType'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -2854,7 +2854,7 @@ class Migration(SchemaMigration):
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
         },
         'pr_services.response': {
-            'Meta': {'unique_together': "(('exam_session', 'question'),)", 'object_name': 'Response'},
+            'Meta': {'ordering': "['order']", 'unique_together': "(('exam_session', 'question'),)", 'object_name': 'Response'},
             'answers': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'responses'", 'symmetrical': 'False', 'to': "orm['pr_services.Answer']"}),
             'bool_value': ('django.db.models.fields.NullBooleanField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'char_value': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '255', 'null': 'True'}),
@@ -2921,10 +2921,10 @@ class Migration(SchemaMigration):
         },
         'pr_services.session': {
             'Meta': {'object_name': 'Session'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'audience': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'}),
             'blame': ('pr_services.fields.PRForeignKey', [], {'to': "orm['pr_services.Blame']", 'null': 'True'}),
-            'confirmed': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'confirmed': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'default_price': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'description': ('django.db.models.fields.TextField', [], {'null': 'True'}),
@@ -2940,7 +2940,7 @@ class Migration(SchemaMigration):
             'owner': ('pr_services.fields.PRForeignKey', [], {'related_name': "'owned_sessions'", 'null': 'True', 'to': "orm['pr_services.User']"}),
             'room': ('pr_services.fields.PRForeignKey', [], {'related_name': "'sessions'", 'null': 'True', 'to': "orm['pr_services.Room']"}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'sent_reminders': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'sent_reminders': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'session_template': ('pr_services.fields.PRForeignKey', [], {'related_name': "'sessions'", 'null': 'True', 'to': "orm['pr_services.SessionTemplate']"}),
             'start': ('django.db.models.fields.DateTimeField', [], {}),
             'status': ('django.db.models.fields.CharField', [], {'max_length': '63'}),
@@ -2949,7 +2949,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.sessionresourcetyperequirement': {
             'Meta': {'object_name': 'SessionResourceTypeRequirement'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -2964,7 +2964,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.sessiontemplate': {
             'Meta': {'object_name': 'SessionTemplate'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'audience': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
@@ -2986,7 +2986,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.sessiontemplateresourcetypereq': {
             'Meta': {'object_name': 'SessionTemplateResourceTypeReq'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -3000,7 +3000,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.sessiontemplateuserrolereq': {
             'Meta': {'object_name': 'SessionTemplateUserRoleReq'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -3014,7 +3014,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.sessionuserrole': {
             'Meta': {'object_name': 'SessionUserRole'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -3025,10 +3025,10 @@ class Migration(SchemaMigration):
         },
         'pr_services.sessionuserrolerequirement': {
             'Meta': {'object_name': 'SessionUserRoleRequirement', '_ormbases': ['pr_services.Task']},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'credential_types': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'session_user_role_requirements'", 'symmetrical': 'False', 'to': "orm['pr_services.CredentialType']"}),
             'enrollment_status_test': ('pr_services.fields.PRForeignKey', [], {'related_name': "'session_user_role_requirements'", 'null': 'True', 'to': "orm['pr_services.ConditionTestCollection']"}),
-            'ignore_room_capacity': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'ignore_room_capacity': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'notes': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'session_user_role_requirements'", 'symmetrical': 'False', 'to': "orm['pr_services.Note']"}),
             'session': ('pr_services.fields.PRForeignKey', [], {'related_name': "'session_user_role_requirements'", 'to': "orm['pr_services.Session']"}),
             'session_user_role': ('pr_services.fields.PRForeignKey', [], {'related_name': "'session_user_role_requirements'", 'to': "orm['pr_services.SessionUserRole']"}),
@@ -3037,7 +3037,7 @@ class Migration(SchemaMigration):
         'pr_services.singleuseauthtoken': {
             'Meta': {'object_name': 'SingleUseAuthToken', '_ormbases': ['pr_services.AuthToken']},
             'authtoken_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['pr_services.AuthToken']", 'unique': 'True', 'primary_key': 'True'}),
-            'used': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'})
+            'used': ('pr_services.fields.PRBooleanField', [], {'default': 'False'})
         },
         'pr_services.task': {
             'Meta': {'object_name': 'Task'},
@@ -3052,8 +3052,8 @@ class Migration(SchemaMigration):
             'owner': ('pr_services.fields.PRForeignKey', [], {'related_name': "'owned_tasks'", 'null': 'True', 'to': "orm['pr_services.User']"}),
             'prerequisite_achievements': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'yielded_tasks'", 'symmetrical': 'False', 'to': "orm['pr_services.Achievement']"}),
             'prerequisite_tasks': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'yielded_tasks'", 'symmetrical': 'False', 'to': "orm['pr_services.Task']"}),
-            'prevent_duplicate_assignments': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
-            'public': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'prevent_duplicate_assignments': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
+            'public': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '191', 'null': 'True'}),
             'users': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'tasks'", 'symmetrical': 'False', 'through': "orm['pr_services.Assignment']", 'to': "orm['pr_services.User']"}),
@@ -3074,7 +3074,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.taskbundletaskassociation': {
             'Meta': {'object_name': 'TaskBundleTaskAssociation'},
-            'continue_automatically': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'continue_automatically': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -3090,7 +3090,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.trainingunitaccount': {
             'Meta': {'object_name': 'TrainingUnitAccount'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'blame': ('pr_services.fields.PRForeignKey', [], {'to': "orm['pr_services.Blame']", 'null': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
@@ -3120,7 +3120,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.trainingunittransaction': {
             'Meta': {'object_name': 'TrainingUnitTransaction'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'blame': ('pr_services.fields.PRForeignKey', [], {'to': "orm['pr_services.Blame']", 'null': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
@@ -3134,7 +3134,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.trainingvoucher': {
             'Meta': {'object_name': 'TrainingVoucher'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'blame': ('pr_services.fields.PRForeignKey', [], {'to': "orm['pr_services.Blame']", 'null': 'True'}),
             'code': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
@@ -3158,12 +3158,12 @@ class Migration(SchemaMigration):
             'domains': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'users'", 'symmetrical': 'False', 'through': "orm['pr_services.DomainAffiliation']", 'to': "orm['pr_services.Domain']"}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75'}),
             'email2': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'null': 'True'}),
-            'enable_paypal': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'enable_paypal': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'first_name': ('django.db.models.fields.CharField', [], {'max_length': '31'}),
             'groups': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'users'", 'symmetrical': 'False', 'to': "orm['pr_services.Group']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_staff': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'is_staff': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'last_name': ('django.db.models.fields.CharField', [], {'max_length': '31'}),
             'middle_name': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '31'}),
             'name_suffix': ('django.db.models.fields.CharField', [], {'max_length': '15', 'null': 'True'}),
@@ -3180,7 +3180,7 @@ class Migration(SchemaMigration):
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'shipping_address': ('pr_services.fields.PRForeignKey', [], {'related_name': "'users_shipping'", 'null': 'True', 'to': "orm['pr_services.Address']"}),
             'status': ('django.db.models.fields.CharField', [], {'max_length': '15', 'null': 'True'}),
-            'suppress_emails': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'blank': 'True'}),
+            'suppress_emails': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '15', 'null': 'True'}),
             'url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True'})
         },
@@ -3197,7 +3197,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.venue': {
             'Meta': {'object_name': 'Venue'},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True', 'blank': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'address': ('pr_services.fields.PRForeignKey', [], {'related_name': "'venues'", 'null': 'True', 'to': "orm['pr_services.Address']"}),
             'blame': ('pr_services.fields.PRForeignKey', [], {'to': "orm['pr_services.Blame']", 'null': 'True'}),
             'contact': ('django.db.models.fields.CharField', [], {'max_length': '63', 'null': 'True'}),
@@ -3213,5 +3213,5 @@ class Migration(SchemaMigration):
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
         }
     }
-    
+
     complete_apps = ['pr_services']

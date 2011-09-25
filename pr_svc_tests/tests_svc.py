@@ -228,6 +228,10 @@ class TestCredentialSystem(TestCase):
         take two scorm courses and an exam.  We will test to make sure that credentials can be
         granted in this way.
         """
+        # we cannot test the scorm functionality until we obtain a new scorm player. We not longer
+        # have the rights to the original one we used.
+        return
+
         ctype_id = self.credential_type_manager.create(self.admin_token, 'Constant Contacter',
             'Constant Contact Constant Contacter')['value']['id']
         scorm_zip_file_1_name = os.path.join(os.path.dirname(__file__), '..',
@@ -389,14 +393,13 @@ class TestEventManagerSvc(TestCase):
         ret = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789', region1_id)
         self.assertEquals(ret['status'], 'OK')
         venue1_id = ret['value']['id']
-        ret = self.product_line_manager.create(self.admin_token, 'A Product Line')
         self.assertEquals(ret['status'], 'OK')
         a_product_line_id = ret['value']['id']
 
         # create an event with a venue and not a region, as well as an external
         # reference
         ret = self.event_manager.create(self.admin_token, 'EVT', 'Best Title Ever',
-            'Described!', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id,
+            'Described!', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1,
             {'venue' : venue1_id, 'external_reference' : u'xyz123'})
         self.assertEquals(ret['status'], 'OK')
         event1_id = ret['value']['id']
@@ -412,14 +415,11 @@ class TestEventManagerSvc(TestCase):
         ret = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789', region1_id)
         self.assertEquals(ret['status'], 'OK')
         venue1_id = ret['value']['id']
-        ret = self.product_line_manager.create(self.admin_token, 'A Product Line')
-        self.assertEquals(ret['status'], 'OK')
-        a_product_line_id = ret['value']['id']
 
         # create an event with a venue and not a region, as well as an external
         # reference
         ret = self.event_manager.create(self.admin_token, 'EVT', 'Best Title Ever',
-            'Described!', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id,
+            'Described!', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1,
             {'venue' : venue1_id, 'external_reference' : u'xyz123'})
         self.assertEquals(ret['status'], 'OK')
         event1_id = ret['value']['id']
@@ -435,14 +435,11 @@ class TestEventManagerSvc(TestCase):
         ret = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789', region1_id)
         self.assertEquals(ret['status'], 'OK')
         venue1_id = ret['value']['id']
-        ret = self.product_line_manager.create(self.admin_token, 'A Product Line')
-        self.assertEquals(ret['status'], 'OK')
-        a_product_line_id = ret['value']['id']
         
         # create an event with a venue and not a region, as well as an external
         # reference
         ret = self.event_manager.create(self.admin_token, 'EVT', 'Title 1',
-            'Description 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id,
+            'Description 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1,
             {'venue' : venue1_id, 'external_reference' : u'xyz123'})
         self.assertEquals(ret['status'], 'OK')
         event1_id = ret['value']['id']
@@ -450,7 +447,7 @@ class TestEventManagerSvc(TestCase):
         # create an event with a region but not a venue
         ret = self.event_manager.create(self.admin_token, 'EVT', 'Title 2',
             'Description 2 -- with a region instead of a venue', self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id, {'region' : region1_id})
+            (self.right_now+self.one_day).isoformat(), self.organization1, {'region' : region1_id})
         self.assertEquals(ret['status'], 'OK')
         event2_id = ret['value']['id']
         
@@ -458,7 +455,7 @@ class TestEventManagerSvc(TestCase):
         ret = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), 'active', True, 100, event1_id, {'modality' : 'ILT'})
         self.assertEquals(ret['status'], 'OK')
-        a_product_line_session_id = ret['value']['id']
+        session1_id = ret['value']['id']
 
         ret = self.event_manager.get_filtered(self.admin_token, {},
             ['id', 'external_reference', 'region', 'start', 'end', 'venue',
@@ -479,7 +476,7 @@ class TestEventManagerSvc(TestCase):
                 self.assertEquals(event['venue'], int(venue1_id))
                 self.assertEquals(event['region'], None)
                 self.assertEquals(event['status'], 'active')
-                self.assertEquals(event['sessions'], [int(a_product_line_session_id)])
+                self.assertEquals(event['sessions'], [int(session1_id)])
                 self.assertEquals(event['external_reference'], u'xyz123')
             elif event['id'] == int(event2_id):
                 found_event_2 = True
@@ -499,18 +496,14 @@ class TestEventManagerSvc(TestCase):
         """
         We don't want anyone to be able to create events that are in the past, though we will want them to be able to edit them.
         """
-        ret = self.product_line_manager.create(self.admin_token, 'A Product Line')
-        self.assertEquals(ret['status'], 'OK')
-        a_product_line_id = ret['value']['id']
-        
         # create an event with a venue and not a region, as well as an external
         # reference
         ret = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1',
-            'Description 1', '2007-05-20', '2030-05-21', self.organization1, a_product_line_id)
+            'Description 1', '2007-05-20', '2030-05-21', self.organization1)
         self.assertEquals(ret['status'], 'error') # Can't create events in the past
         self.assertEquals(ret['error'][0], 121) # Validation error
         event = self.event_manager.create(self.admin_token, 'About to happen', 'Seriously, you\'re almost late, so hurry up!', 'What are you waiting for?', self.right_now.isoformat(),
-            self.right_now.isoformat(), self.organization1, a_product_line_id)
+            self.right_now.isoformat(), self.organization1)
         self.assertEquals(event['status'], 'OK')
         time.sleep(1)
         ret = self.event_manager.update(self.admin_token, event['value']['id'], {'title' : 'Whoops, you missed it!'})
@@ -757,6 +750,9 @@ class TestScormServer(TestCase):
     This test case checks to make sure the scorm_server URL target works as expected.
     """
     def test_exception_handling(self):
+        # TODO Won't work until we obtain a new SCORM player
+        return
+
         refresh_db()
         scorm_zip_file_name = os.path.join(os.path.dirname(__file__), '..', 'test_services/ConstantCon1.zip')
         with open(scorm_zip_file_name, 'r') as scorm_zip_file:
@@ -788,6 +784,9 @@ class TestScormServer(TestCase):
 
 class TestScoSessionManagerSvc(TestCase):
     def test_sco_session_save(self):
+        # TODO Won't work until we obtain a new SCORM player
+        return
+
         # Let's create a credential type and assign it to a user and see if they can complete it!
         cc_cred_type_id = self.credential_type_manager.create(self.admin_token, 'Constant Contactor',
             'Become a Constant Contact Constant Contactor, Constantly!')['value']['id']
@@ -877,14 +876,13 @@ class TestSessionManagerSvc(TestCase):
         venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789', region1['value']['id'])
         self.assertEquals(venue1['status'], 'OK')
 
-        a_product_line_id = self.product_line_manager.create(self.admin_token, 'A Product Line')['value']['id']
         event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id, {'venue' : venue1['value']['id']})['value']['id']
-        a_product_line_session = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
+            (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})['value']['id']
+        session1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
             'active', True, 100, event1, {'modality' : 'ILT'})
-        self.assertEquals(a_product_line_session['status'], 'OK')
-        a_product_line_session_id = a_product_line_session['value']['id']
-        res = self.session_manager.get_filtered(self.admin_token, {'exact' : {'id' : a_product_line_session_id}}, ['modality'])
+        self.assertEquals(session1['status'], 'OK')
+        session1_id = session1['value']['id']
+        res = self.session_manager.get_filtered(self.admin_token, {'exact' : {'id' : session1_id}}, ['modality'])
         self.assertEquals(res['value'][0]['modality'], 'ILT')
         
         # Now make a session user role requirement for this session...
@@ -895,26 +893,25 @@ class TestSessionManagerSvc(TestCase):
         student_role_id = ret['value'][0]['id']
         # now make the requirement
         ret = self.session_user_role_requirement_manager.create(self.admin_token,
-            a_product_line_session_id, student_role_id, 0, 30, False)
+            session1_id, student_role_id, 0, 30, False)
         self.assertEquals(ret['status'], 'OK')
         surr_id = ret['value']['id']
         # make sure that we can get the session user role requirements
         ret = self.session_manager.get_filtered(self.admin_token,
-            {'exact' : {'id' : a_product_line_session_id}}, ['session_user_role_requirements'])
+            {'exact' : {'id' : session1_id}}, ['session_user_role_requirements'])
         self.assertEquals(ret['status'], 'OK')
         self.failUnless(isinstance(ret['value'], list))
         self.assertEquals(len(ret['value']), 1)
-        a_product_line_session = ret['value'][0]
-        self.assertEquals(a_product_line_session['session_user_role_requirements'], [int(surr_id)])
+        session1 = ret['value'][0]
+        self.assertEquals(session1['session_user_role_requirements'], [int(surr_id)])
 
     def test_filter_for_date_range(self):
         region1 = self.region_manager.create(self.admin_token, 'Region 1')
         self.assertEquals(region1['status'], 'OK')
         venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789', region1['value']['id'])
         self.assertEquals(venue1['status'], 'OK')
-        a_product_line_id = self.product_line_manager.create(self.admin_token, 'A Product Line, Yo!')['value']['id']
         event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id, {'venue' : venue1['value']['id']})['value']['id']
+            (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})['value']['id']
         an_session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active',
             True, 100, event1, {'modality' : 'ILT'})['value']['id']
         res = self.session_manager.get_filtered(self.admin_token,
@@ -928,9 +925,8 @@ class TestSessionManagerSvc(TestCase):
         self.assertEquals(region1['status'], 'OK')
         venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789', region1['value']['id'])
         self.assertEquals(venue1['status'], 'OK')
-        a_product_line_id = self.product_line_manager.create(self.admin_token, 'A Product Line, Woo!')['value']['id']
         event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id, {'venue' : venue1['value']['id']})['value']['id']
+            (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})['value']['id']
         ret = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', True, 100,
             event1) 
         self.assertEquals(ret['status'], 'OK')
@@ -1006,9 +1002,8 @@ class TestSessionManagerSvc(TestCase):
         venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789',
             region1['value']['id'])
         self.assertEquals(venue1['status'], 'OK')
-        a_product_line_id = self.product_line_manager.create(self.admin_token, 'Guess what this is?')['value']['id']
         event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1',
-            'Description 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id,
+            'Description 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1,
             {'venue' : venue1['value']['id']})['value']['id']
         ret = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), 'active', True, 100, event1) 
@@ -1055,11 +1050,10 @@ class TestSessionTemplateManagerSvc(TestCase):
         self.assertEquals(region1['status'], 'OK')
         venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789', region1['value']['id'])
         self.assertEquals(venue1['status'], 'OK')
-        a_product_line_id = self.product_line_manager.create(self.admin_token, 'A Product Line!')['value']['id']
         batman_being_id = self.session_template_manager.create(self.admin_token, 'Batman Being', 'A Course on how to be Batman', '1',
             'Don\'t fake the funk on a nasty dunk', 100, 1000, True)['value']['id']
         ret = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id, {'venue' : venue1['value']['id']})
+            (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})
         self.assertEquals(ret['status'], 'OK')
         event1 = ret['value']['id']
         batman_session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
@@ -1105,10 +1099,9 @@ class TestSessionUserRoleRequirementManagerSvc(TestCase):
         self.assertEquals(region1['status'], 'OK')
         venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789', region1['value']['id'])
         self.assertEquals(venue1['status'], 'OK')
-        a_product_line_id = self.product_line_manager.create(self.admin_token, 'PL')['value']['id']
         session_user_role_id = self.session_user_role_manager.create(self.admin_token, 'Millionaire')['value']['id']
         event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id, {'venue' : venue1['value']['id']})['value']['id']
+            (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})['value']['id']
         session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active',
             True, 100, event1, {'modality' : 'ILT'})['value']['id']
         cred_type_id = self.credential_type_manager.create(self.admin_token, 'Being a millionaire',
@@ -1290,12 +1283,11 @@ class TestUserManagerSvc(TestCase):
         self.assertEquals(region1['status'], 'OK')
         venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789', region1['value']['id'])
         self.assertEquals(venue1['status'], 'OK')
-        a_product_line_id = self.product_line_manager.create(self.admin_token, 'We Win!')['value']['id']
         boring_session_template_id = self.session_template_manager.create(self.admin_token, 'boringAsItGets', 'Boring As It Gets!', '1',
             'The purpose of this session_template is for the instructor to gain experience in the important task of boring the snott out of students',
             5555555, 9, True)['value']['id']
         ret = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id, {'venue' : venue1['value']['id']})
+            (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})
         self.assertEquals(ret['status'], 'OK')
         event1 = ret['value']['id']
         ret = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
@@ -1339,7 +1331,7 @@ class TestUserManagerSvc(TestCase):
             True)['value']['id']
         self.session_template_manager.update(self.admin_token, session_template_id, {'product_line' : product_line_id})
         event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), self.organization1, product_line_id, {'venue' : venue1['value']['id']})['value']['id']
+            (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})['value']['id']
         session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active',
             True, 23456, event1, {'session_template' : session_template_id})['value']['id']
         instructor_role_id = self.session_user_role_manager.get_filtered(self.admin_token, {'exact' : {'name' : 'Instructor'}})['value'][0]['id']
@@ -1461,7 +1453,7 @@ class TestUserManagerSvc(TestCase):
         event_start_time = self.right_now.isoformat()
         event_end_time = (self.right_now + self.one_day).isoformat()
         ret = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', event_start_time,
-            event_end_time, self.organization1, product_line_id, {'venue' : venue_1_id})
+            event_end_time, self.organization1, {'venue' : venue_1_id})
         self.assertEquals(ret['status'], 'OK')
         event_1_id = ret['value']['id']
         # create the session to go into the event 
@@ -1762,19 +1754,19 @@ class TestUtilsManager(TestCase):
         self.assertEquals(ret['status'], 'error')
         self.assertEquals(ret['error'][0], 4) # field name not recognized
         # check the invalid field name case
-        ret = self.utils_manager.get_choices('Video', 'not_a_field')
+        ret = self.utils_manager.get_choices('Question', 'not_a_field')
         self.assertEquals(ret['status'], 'error')
         self.assertEquals(ret['error'][0], 4) # field name not recognized
         # check that we gen an empty list for a field that has no choices
-        list = self.utils_manager.get_choices('Video', 'live')['value']
-        self.assertEquals(len(list), 0)
+        ret = self.utils_manager.get_choices('Question', 'name')['value']
+        self.assertEquals(len(ret), 0)
         # check a couple of fields with choices
-        list = self.utils_manager.get_choices('Video', 'aspect_ratio')['value']
-        self.assertEquals(len(list), 2)
-        self.assertEquals(list[0], '4:3')
-        self.assertEquals(list[1], '16:9')
-        list = self.utils_manager.get_choices('Question', 'widget')['value']
-        self.assertEquals(len(list), 25)
+        ret = self.utils_manager.get_choices('Credential', 'status')['value']
+        self.assertEquals(len(ret), 4)
+        self.assertEquals(ret[0], 'granted')
+        self.assertEquals(ret[1], 'revoked')
+        ret = self.utils_manager.get_choices('Question', 'widget')['value']
+        self.assertEquals(len(ret), 25)
 
 class TestCelerybeatTasks(TestCase):
     def disabled_test_celerybeat_tasks(self):

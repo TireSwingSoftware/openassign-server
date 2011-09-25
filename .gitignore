@@ -1,3 +1,4 @@
 /local_settings.py
 /tests_svc_settings.py
 *.pyc
+/test_services

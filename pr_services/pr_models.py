@@ -1985,7 +1985,7 @@ class Event(OwnedPRModel):
     end = models.DateField()
     notes = models.ManyToManyField(Note, related_name='events')
     venue = PRForeignKey(Venue, related_name='events', null=True)
-    product_line = PRForeignKey(ProductLine, related_name='events')
+    product_line = PRForeignKey(ProductLine, related_name='events', null=True)
     #: Amount of time before an e-mail reminder should be sent, in seconds, relative to the start time of the event
     lead_time = models.PositiveIntegerField(null=True)
     #: Amount of time after an event in seconds at which the event should be marked completed, and e-mails should be sent out
