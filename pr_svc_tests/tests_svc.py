@@ -1776,6 +1776,59 @@ class TestUtilsManager(TestCase):
         list = self.utils_manager.get_choices('Question', 'widget')['value']
         self.assertEquals(len(list), 25)
 
+class TestAssignmentStatusChangeLog(TestCase):
+    # see TestAssignmentManager for helpful snippets
+    def setUp(self):
+        TestCase.setUp(self)
+        # create a new assignment with no history
+        self.student_id, self.student_auth_token = self.create_student()
+        assigned_task_id = self.exam_manager.create(self.admin_token, 'assignment_log_test_task',
+            'Assignment Log Test Task', {'passing_score': 100, 'prerequisite_tasks': []})['value']['id']
+        self.assignment_id = self.assignment_manager.create(self.admin_token, assigned_task_id, self.student_id)['value']['id']
+        self.assertTrue(isinstance(self.assignment_id, int))
+        #self.assertEquals(ret['status'], 'OK')
+
+    def test_empty_history_review(self):
+        # empty log (or initial creation entry) should be retrievable
+        ret = self.assignment_manager.get_filtered(self.admin_token, 
+            {'exact' : {'id' : self.assignment_id}}, ['status', 'status_change_log'])
+        self.assertEquals(ret['status'], 'OK')
+        # check for default initial status
+        self.assertEquals(ret['value'][0]['status'], 'assigned')
+        self.assertEquals(ret['value'][0]['status_change_log'], u'PROBE') #TODO
+
+    def test_anonymous_status_log_review(self):
+        # only admin should be able to review this log
+        ret = self.assignment_manager.get_filtered(None, 
+            {'exact' : {'id' : self.assignment_id}}, ['status', 'status_change_log'])
+        self.assertEquals(ret['status'], 'error')
+        # check for the expected error
+        self.assertEquals(ret['error'][0], 4) # TODO: Not authorized
+        self.assertEquals(ret['error'][1], 'FOO') # TODO: Not authorized
+
+    def test_unauthorized_status_log_review(self):
+        # only admin should be able to review this log
+        ret = self.assignment_manager.get_filtered(self.student_auth_token, 
+            {'exact' : {'id' : self.assignment_id}}, ['status', 'status_change_log'])
+        self.assertEquals(ret['status'], 'error')
+        # check for the expected error
+        self.assertEquals(ret['error'][0], 4) # TODO: Not authorized
+        self.assertEquals(ret['error'][1], 'FOO') # TODO: Not authorized
+
+    def test_busy_history_review(self):
+        # each entry should include several fields, in usable form
+        ret = self.assignment_manager.update(self.admin_token, 
+            self.assignment_id, {'status' : 'pending'})
+        ret = self.assignment_manager.update(self.admin_token, 
+            self.assignment_id, {'status' : 'completed'})
+        ret = self.assignment_manager.get_filtered(self.admin_token, 
+            {'exact' : {'id' : self.assignment_id}}, ['status', 'status_change_log'])
+        self.assertEquals(ret['status'], 'OK')
+        # check for default initial status
+        self.assertEquals(ret['value'][0]['status'], 'completed')
+        self.assertEquals(ret['value'][0]['status_change_log'], u'PROBE') #TODO
+
+
 class TestCelerybeatTasks(TestCase):
     def disabled_test_celerybeat_tasks(self):
         # create a used single-use and an expired ordinary token
