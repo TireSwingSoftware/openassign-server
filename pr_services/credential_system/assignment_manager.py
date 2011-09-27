@@ -26,6 +26,7 @@ class AssignmentManager(ObjectManager):
         self.getters.update({
             'user' : 'get_foreign_key',
             'status' : 'get_general',
+            'status_change_log' : 'get_general',
             'date_completed' : 'get_time',
             'date_started' : 'get_time',
             'due_date' : 'get_time',
@@ -40,6 +41,7 @@ class AssignmentManager(ObjectManager):
         self.setters.update({
             'user' : 'set_foreign_key',
             'status' : 'set_general',
+            'status_change_log' : 'set_general',
             'date_completed' : 'set_time',
             'date_started' : 'set_time',
             'due_date' : 'set_time',
@@ -131,7 +133,7 @@ class AssignmentManager(ObjectManager):
         # handle optional attributes that are simple so we avoid the problem
         # of using update permissions
         assignment = self.my_django_model(task=task_object, user=user_object, blame=blame)
-        for attribute in ['serial_number',]:
+        for attribute in ['serial_number','status_change_log']:
             if attribute in optional_parameters:
                 setattr(assignment, attribute, optional_parameters[attribute])
         for attribute in ['date_started', 'due_date', 'effective_date_assigned']:
