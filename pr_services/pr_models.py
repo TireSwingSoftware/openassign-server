@@ -21,6 +21,7 @@ import facade
 import pr_time
 import storage
 from fields import *
+from pr_services.middleware import get_client_ip
 
 def queryset_empty(queryset):
     """
@@ -1093,6 +1094,9 @@ class Assignment(PRModel):
         updates the status accordingly.
         """
 
+        # retrieve source IP address from request (to log status changes)
+        ip = get_client_ip()
+
         if self.pk is None:
             # The first time the object is saved, see if it requires payment.
             # By only checking the first time, we allow an admin to override
@@ -1100,8 +1104,8 @@ class Assignment(PRModel):
             if self.status != 'wait-listed' and self.payment_required:
                 self.status = 'unpaid'
             # Log creation and initial status of new assignments?
-            self.status_change_log += u'Object created by %s with status %s' % \
-                (repr(self.user), self.status)
+            self.status_change_log += u'Object created by %s (IP=%s), with initial status \'%s\'' % \
+                (repr(self.user), ip, self.status)
 
         else:
             old_status = self.__class__.objects.get(pk=self.pk).status
@@ -1117,7 +1121,7 @@ class Assignment(PRModel):
                 ## self.log_status_change(*args, **kwargs);
                 ## OR (assignment=self, oldStatus=old_status, newStatus=self.status );
                 self.status_change_log += u'\nStatus changed at %s by %s (IP=%s), from \'%s\' to \'%s\'' % \
-                        (datetime.utcnow(), repr(self.user), old_status, self.status)
+                    (datetime.utcnow(), repr(self.user), ip, old_status, self.status)
 
         super(Assignment, self).save(*args, **kwargs)
 
