@@ -1788,8 +1788,9 @@ class TestAssignmentStatusChangeLog(TestCase):
         self.assertEquals(ret['status'], 'OK')
         # check for default initial status
         self.assertEquals(ret['value'][0]['status'], 'assigned')
-        self.assertEquals(ret['value'][0]['status_change_log'], 
-            u'Object created by <User: Private Learning Student None> (IP=127.0.0.1), with initial status \'assigned\'')
+        log = ret['value'][0]['status_change_log']
+        self.assertTrue(log.startswith(u'Object created by <User: Private Learning Student None>'))
+        self.assertTrue(log.endswith(u'with initial status \'assigned\''))
 
     def test_anonymous_status_log_review(self):
         # only admin should be able to review this log
