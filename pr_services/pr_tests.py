@@ -1543,7 +1543,6 @@ class TestSessionManager(TestCase):
         the_event = self.event_manager.create(self.admin_token, 'The Event Event!', 'Whoo!', 'Wraw!', start_date_str, end_date_str,
             self.organization1.id, {'venue' : self.venue1.id})
         
-        
         the_session = self.session_manager.create(self.admin_token, start_date_str, end_date_str, 'active', True, None, the_event.id,
             {'session_template' : the_session_template.id})
         self.assertEquals(the_session.name[0:3], 'XYZ')
@@ -1698,12 +1697,26 @@ class TestSessionUserRoleRequirementManager(TestCase):
             (self.right_now + self.one_day).isoformat(), 'active', False, 100, self.e1.id)
 
     def test_creation(self):
-        eurr = self.session_user_role_requirement_manager.create(self.admin_token, self.session.id, self.instructor_role.id, 1,
+        surr = self.session_user_role_requirement_manager.create(self.admin_token, self.session.id, self.instructor_role.id, 1,
             2, [])
-        ret = self.session_user_role_requirement_manager.get_filtered(self.admin_token, {'exact':{'id':eurr.id}}, ['id', 'max'])
+        ret = self.session_user_role_requirement_manager.get_filtered(self.admin_token, {'exact':{'id':surr.id}}, ['id', 'max'])
         self.assertEquals(type(ret), list)
-        self.assertEquals(ret[0]['id'], eurr.id)
+        self.assertEquals(ret[0]['id'], surr.id)
         self.assertEquals(ret[0]['max'], 2)
+
+    def test_view(self):
+        surr1 = self.session_user_role_requirement_manager.create(self.admin_token, self.session.id, self.instructor_role.id, 1,
+            2, [])
+        surr2 = self.session_user_role_requirement_manager.create(self.admin_token, self.session.id, self.student_role.id, 1,
+            2, [])
+        ret = self.session_user_role_requirement_manager.surr_view(self.admin_token)
+        self.assertEquals(type(ret), list)
+        self.assertEquals(len(ret), 2)
+
+        ret = self.session_user_role_requirement_manager.surr_view(self.admin_token, [surr1.id])
+        self.assertEquals(type(ret), list)
+        self.assertEquals(len(ret), 1)
+        self.assertEquals(ret[0]['id'], surr1.id)
 
 class TestDomainManagement(TestCase):
     def test_affiliate_with_new_domain(self):

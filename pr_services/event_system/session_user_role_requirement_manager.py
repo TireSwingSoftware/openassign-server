@@ -5,8 +5,8 @@ SessionUserRoleRequirement manager class
 from datetime import datetime
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
+from pr_services.utils import Utils
 import facade
-import logging
 
 class SessionUserRoleRequirementManager(facade.managers.TaskManager):
     """
@@ -68,5 +68,14 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
             new_surr.save()
         self.authorizer.check_create_permissions(auth_token, new_surr)
         return new_surr
+
+    @service_method
+    def surr_view(self, auth_token, ids=None):
+        filters = {}
+        if ids is not None:
+            filters['member'] = {'id' : ids}
+        ret = self.get_filtered(auth_token, filters, ['session', 'session_user_role', 'min', 'max', 'credential_types'])
+
+        return Utils.merge_queries(ret, facade.managers.SessionUserRoleManager(), auth_token, ['name'], 'session_user_role')
 
 # vim:tabstop=4 shiftwidth=4 expandtab
