@@ -26,6 +26,7 @@ class AssignmentManager(ObjectManager):
         self.getters.update({
             'user' : 'get_foreign_key',
             'status' : 'get_general',
+            'status_change_log' : 'get_general',
             'date_completed' : 'get_time',
             'date_started' : 'get_time',
             'due_date' : 'get_time',

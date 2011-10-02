@@ -21,6 +21,7 @@ import facade
 import pr_time
 import storage
 from fields import *
+from pr_services.middleware import get_client_ip
 
 def queryset_empty(queryset):
     """
@@ -1000,6 +1001,8 @@ class Assignment(PRModel):
     )
     status = models.CharField(max_length=16, null=False, choices=STATUS_CHOICES, default='assigned',
         db_index=True)
+    #: a linewise record of all status changes (for admins)
+    status_change_log = models.TextField(blank=True)
     #: the date the User completed the Assignment
     date_completed = models.DateTimeField(null=True)
     #: the date the the User began the Assignment
@@ -1075,6 +1078,15 @@ class Assignment(PRModel):
         else:
             return False
 
+    ## def log_status_change(self, *args, **kwargs):
+    ##     # OR def log_status_change(assignment=self, oldStatus=old_status, newStatus=self.status)
+    ##     pass
+
+    def report_status_changes(self, filter=None):
+        # TODO: report the history of status changes for this Assignment only
+        # pass the call to the global Getter, with filter for this ID?
+        return self.status_change_log
+
     def save(self, *args, **kwargs):
         """
         Makes sure that the mark_completed() method gets run if the status has changed
@@ -1082,12 +1094,19 @@ class Assignment(PRModel):
         updates the status accordingly.
         """
 
+        # retrieve source IP address from request (to log status changes)
+        ip = get_client_ip()
+
         if self.pk is None:
             # The first time the object is saved, see if it requires payment.
             # By only checking the first time, we allow an admin to override
             # this and simply change the 'unpaid' status to something else
             if self.status != 'wait-listed' and self.payment_required:
                 self.status = 'unpaid'
+            # Log creation and initial status of new assignments?
+            self.status_change_log += u'Object created by %s (IP=%s), with initial status \'%s\'' % \
+                (repr(self.user), ip, self.status)
+
         else:
             old_status = self.__class__.objects.get(pk=self.pk).status
             if old_status != 'completed' and self.status == 'completed':
@@ -1096,6 +1115,13 @@ class Assignment(PRModel):
             elif old_status == 'unpaid':
                 if not self.payment_required:
                     self.status = 'assigned'
+
+            # if status is changing, log the change with some context
+            if old_status != self.status:
+                ## self.log_status_change(*args, **kwargs);
+                ## OR (assignment=self, oldStatus=old_status, newStatus=self.status );
+                self.status_change_log += u'\nStatus changed at %s by %s (IP=%s), from \'%s\' to \'%s\'' % \
+                    (datetime.utcnow(), repr(self.user), ip, old_status, self.status)
 
         super(Assignment, self).save(*args, **kwargs)
 

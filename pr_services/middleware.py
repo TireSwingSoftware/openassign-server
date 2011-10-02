@@ -13,6 +13,18 @@ def get_current_request():
     """
     return getattr(_thread_locals, 'request', None)
 
+def get_client_ip():
+    # adapted from solution at 
+    # http://stackoverflow.com/questions/4581789/how-do-i-get-user-ip-address-in-django
+    request = get_current_request()
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[-1].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
 class ThreadLocal(object):
     """
     Middleware that stores the request object to thread local storage.
