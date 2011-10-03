@@ -14,6 +14,7 @@ from pr_services.rpc.service import service_method
 import facade
 import logging
 from pr_messaging import send_message
+from pr_services.utils import Utils
 
 class SessionManager(ObjectManager):
     """
@@ -52,6 +53,7 @@ class SessionManager(ObjectManager):
             'description' : 'get_general',
             'room' : 'get_foreign_key',
             'event' : 'get_foreign_key',
+            'session_user_roles' : 'get_many_to_many',
             'session_user_role_requirements' : 'get_many_to_one',
         } )
         #: Dictionary of attribute names and the functions used to set them
@@ -70,6 +72,7 @@ class SessionManager(ObjectManager):
             'description' : 'set_general',
             'room' : 'set_foreign_key',
             'event' : 'set_foreign_key',
+            'session_user_roles' : 'set_many',
             'session_user_role_requirements' : 'set_many',
         })
         self.my_django_model = facade.models.Session
@@ -313,6 +316,14 @@ class SessionManager(ObjectManager):
                                                'response': r_dict})
             evals.append(eval_dict)
         return evals
+
+    @service_method
+    def detailed_surr_view(self, auth_token, filters=None, fields=None):
+        if filters is None:
+            filters = {}
+        ret = self.get_filtered(auth_token, filters, ['start', 'end', 'status', 'confirmed', 'event', 'name', 'title', 'url', 'description', 'session_user_role_requirements'])
+
+        return Utils.merge_queries(ret, facade.managers.SessionUserRoleRequirementManager(), auth_token, ['session', 'session_user_role', 'role_name', 'min', 'max', 'credential_types'], 'session_user_role_requirements')
 
 
 # vim:tabstop=4 shiftwidth=4 expandtab

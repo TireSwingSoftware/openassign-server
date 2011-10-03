@@ -1924,6 +1924,7 @@ class Session(OwnedPRModel):
     description = models.TextField(null = True)
     event = PRForeignKey('Event', related_name = 'sessions')
     sent_reminders = PRBooleanField(default=False)
+    session_user_roles = models.ManyToManyField('SessionUserRole', related_name='sessions', through='SessionUserRoleRequirement')
 
     def __unicode__(self):
         if self.session_template:
@@ -2174,6 +2175,17 @@ class SessionUserRoleRequirement(Task):
     session = PRForeignKey(Session, related_name='session_user_role_requirements')
     enrollment_status_test = PRForeignKey('ConditionTestCollection', related_name='session_user_role_requirements', null=True)
     ignore_room_capacity = PRBooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        self.name = self.session.name
+        self.title = 'Session: %s as %s' % (self.session.title, self.session_user_role.name)
+        datetime_format = '%b %d, %Y %I:%M %p'
+        self.description = 'Start: %s, End: %s' % (self.session.start.strftime(datetime_format), self.session.end.strftime(datetime_format))
+        super(SessionUserRoleRequirement, self).save(*args, **kwargs)
+
+    @property
+    def role_name(self):
+        return self.session_user_role.name
 
     @property
     def remaining_capacity(self):
