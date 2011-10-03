@@ -1125,6 +1125,12 @@ class Assignment(PRModel):
 
         super(Assignment, self).save(*args, **kwargs)
 
+        # test if the session's status should change from 'pending' to 'active'
+        if self.task.final_type.name == 'session user role requirement':
+            surr = self.task.downcast_completely()
+            session = surr.session
+            session.check_status()
+
     def __unicode__(self):
         return u'(Assignment for %s, id=%d, user=%s)' % \
             (repr(self.task), self.id, repr(self.user))
@@ -1932,6 +1938,21 @@ class Session(OwnedPRModel):
                                                                 self.event.name)
         else:
             return u'name: %s, event name: %s' % (self.name, self.event.name)
+
+    def check_status(self):
+        """
+        If all SURRs have met their minimum enrollment numbers, change the
+        status of this session to 'active' instead of 'pending'.
+        """
+        if self.status == 'pending':
+            set_active = True
+            for surr in self.session_user_role_requirements.all():
+                if surr.assignments.filter(status='assigned').count() < surr.min:
+                    set_active = False
+                    break
+            if set_active:
+                self.status = 'active'
+                self.save()
 
     @staticmethod
     def mangle_id(id):

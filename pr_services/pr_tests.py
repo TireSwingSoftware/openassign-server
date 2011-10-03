@@ -322,6 +322,28 @@ class TestAssignment(TestCase):
         self.assertEquals(facade.models.Assignment.objects.filter(user=self.user1).count(), 3)
         self.assertEquals(facade.models.AssignmentAttempt.objects.filter(assignment__user=self.user1).count(), 3)
 
+    # make sure status changes from 'pending' to 'assigned' when minimum enrollment numbers are met
+    def test_session_status_change(self):
+        one_day = timedelta(days = 1)
+        learner1 = self.user_manager.create(self.admin_token, 'learner_1', 'password', '', '', '', '', '', 'active')
+        learner2 = self.user_manager.create(self.admin_token, 'learner_2', 'password', '', '', '', '', '', 'active')
+        learner3 = self.user_manager.create(self.admin_token, 'learner_3', 'password', '', '', '', '', '', 'active')
+        self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
+            (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
+        session1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
+            (self.right_now+self.one_day).isoformat(), 'pending', True, 10000, self.e1.id)
+        student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
+        role_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(session1.id), str(student_role.id), 2, 3, True, None, {'prevent_duplicate_assignments' : True})
+
+        session = self.session_manager.get_filtered(self.admin_token, {'exact': {'id': session1.id}}, ['status'])
+        self.assertEquals(session[0]['status'], 'pending')
+        assignments = self.assignment_manager.bulk_create(self.admin_token, role_req1.id, [learner1.id])
+        session = self.session_manager.get_filtered(self.admin_token, {'exact': {'id': session1.id}}, ['status'])
+        self.assertEquals(session[0]['status'], 'pending')
+        assignments = self.assignment_manager.bulk_create(self.admin_token, role_req1.id, [learner2.id, learner3.id])
+        session = self.session_manager.get_filtered(self.admin_token, {'exact': {'id': session1.id}}, ['status'])
+        self.assertEquals(session[0]['status'], 'active')
+
     def test_assignment_related_dates(self):
         right_now = datetime.utcnow().replace(microsecond = 0, tzinfo = pr_time.UTC())
         learner1 = self.user_manager.create(self.admin_token, 'learner_1', 'password', '', '', '', '', '', 'active')
