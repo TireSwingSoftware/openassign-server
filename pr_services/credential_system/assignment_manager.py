@@ -10,6 +10,7 @@ from pr_services import pr_time
 from pr_services.rpc.service import service_method
 import facade
 from pr_services import exceptions
+from pr_services.utils import Utils
 from pr_messaging import send_message
 
 _logger = logging.getLogger('pr_services.credential_system.assignment_manager')
@@ -221,5 +222,13 @@ class AssignmentManager(ObjectManager):
                     status__in=['completed', 'late']):
             late_assignment.status = 'late'
             late_assignment.save()
+
+    @service_method
+    def detailed_user_view(self, auth_token, filters=None, fields=None):
+        if filters is None:
+            filters = {}
+        ret = self.get_filtered(auth_token, filters, ['user', 'status', 'task'])
+
+        return Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['username', 'first_name', 'last_name', 'email'], 'user')
 
 # vim:tabstop=4 shiftwidth=4 expandtab
