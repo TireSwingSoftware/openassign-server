@@ -24,6 +24,7 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
             'max' : 'get_general',
             'min' : 'get_general',
             'ignore_room_capacity' : 'get_general',
+            'role_name' : 'get_general',
         })
         self.setters.update({
             'credential_types' : 'set_many',
@@ -70,10 +71,9 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
         return new_surr
 
     @service_method
-    def surr_view(self, auth_token, ids=None):
-        filters = {}
-        if ids is not None:
-            filters['member'] = {'id' : ids}
+    def surr_view(self, auth_token, filters=None, fields=None):
+        if filters is None:
+            filters = {}
         ret = self.get_filtered(auth_token, filters, ['session', 'session_user_role', 'min', 'max', 'credential_types'])
 
         return Utils.merge_queries(ret, facade.managers.SessionUserRoleManager(), auth_token, ['name'], 'session_user_role')

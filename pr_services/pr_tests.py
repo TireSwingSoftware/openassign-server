@@ -1713,7 +1713,7 @@ class TestSessionUserRoleRequirementManager(TestCase):
         self.assertEquals(type(ret), list)
         self.assertEquals(len(ret), 2)
 
-        ret = self.session_user_role_requirement_manager.surr_view(self.admin_token, [surr1.id])
+        ret = self.session_user_role_requirement_manager.surr_view(self.admin_token, {'exact' : {'id' : surr1.id}})
         self.assertEquals(type(ret), list)
         self.assertEquals(len(ret), 1)
         self.assertEquals(ret[0]['id'], surr1.id)
