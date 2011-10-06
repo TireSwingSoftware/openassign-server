@@ -1,3 +1,4 @@
+import urlparse
 from django.conf.urls.defaults import *
 from django.conf import settings
 import facade
@@ -86,6 +87,18 @@ if 'ecommerce' in settings.INSTALLED_APPS:
 if 'vod_aws' in settings.INSTALLED_APPS:
     urlpatterns += patterns('',
         (r'^vod_aws/', include('vod_aws.urls', namespace='vod_aws')),
+    )
+
+if 'file_tasks' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('',
+        (r'^file_tasks/', include('file_tasks.urls', namespace='file_tasks')),
+    )
+
+if settings.DEBUG:
+    urlpatterns += patterns('',
+        url(r'^%s(?P<path>.*)$' % urlparse.urlsplit(settings.MEDIA_URL).path.lstrip('/'),
+            'django.views.static.serve',
+            {'document_root': settings.MEDIA_ROOT}),
     )
 
 # vim:tabstop=4 shiftwidth=4 expandtab

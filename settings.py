@@ -17,6 +17,17 @@ for setting in dir(global_settings):
 # A useful variable for building filesystem paths relative to the project root
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
+# Default to a SQLite database in the project root
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.abspath(os.path.join(PROJECT_ROOT, 'openassign.sqlite3')),
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+    }
+}
+
 # Local time zone for this installation. Choices can be found here:
 # http://www.postgresql.org/docs/8.1/static/datetime-keywords.html#DATETIME-TIMEZONE-SET-TABLE
 # although not all variations may be possible on all operating systems.
@@ -88,6 +99,7 @@ INSTALLED_APPS = (
     'south',
     'djcelery',
     'pr_messaging',
+    'file_tasks',
 )
 
 # List of apps to be skipped when running unit tests (see pr_services.__init__.py).
@@ -134,6 +146,8 @@ class Logger(logging.Logger):
         if self.isEnabledFor(logging.TRACE):
             self._log(logging.TRACE, msg, args, **kwargs)
 logging.setLoggerClass(Logger)
+LOGLEVEL = 'INFO'
+LOGFILE_LOCATION = None
 
 ## The following USER_PHOTO_* options should not be left to the whim of the
 ## local administrator.
@@ -244,7 +258,9 @@ if len(logging.getLogger().handlers) == 0:
     LOGFILE_ROTATE_WHEN = locals().get('LOGFILE_ROTATE_WHEN')
     LOGFILE_ROTATE_INTERVAL = locals().get('LOGFILE_ROTATE_INTERVAL')
     LOGFILE_ROTATE_BACKUP_COUNT = locals().get('LOGFILE_ROTATE_BACKUP_COUNT')
-    if LOGFILE_ROTATE_WHEN or LOGFILE_ROTATE_INTERVAL:
+    if not LOGFILE_LOCATION:
+        handler = logging.StreamHandler()
+    elif LOGFILE_ROTATE_WHEN or LOGFILE_ROTATE_INTERVAL:
         handler = logging.handlers.TimedRotatingFileHandler(LOGFILE_LOCATION,
             LOGFILE_ROTATE_WHEN or 'h', LOGFILE_ROTATE_INTERVAL or 1,
             LOGFILE_ROTATE_BACKUP_COUNT or 0)

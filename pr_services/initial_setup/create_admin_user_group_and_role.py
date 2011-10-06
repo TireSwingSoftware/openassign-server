@@ -272,6 +272,12 @@ def setup(machine):
             'u' : ['date_completed'],
             'd' : True,
         },
+        'FileDownload' : {
+            'c' : True,
+            'r' : ['name', 'description', 'file_size', 'file_url',],
+            'u' : ['name', 'description'],
+            'd' : True,
+        },
         'Group' : {
             'c' : True,
             'r' : ['categories', 'default', 'managers', 'name', 'users', 'notes'],
