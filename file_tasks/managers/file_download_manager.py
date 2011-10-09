@@ -1,24 +1,3 @@
-#import base64
-#from django import forms
-#from django.conf import settings
-#from django.core.files.uploadedfile import SimpleUploadedFile
-#from django.core.urlresolvers import reverse
-#from django.db import transaction
-#from django.http import HttpResponse
-#from django.utils import simplejson as json
-#import logging
-#from pr_services import exceptions
-#from pr_services import storage
-#from pr_services import middleware
-#from pr_services.utils import upload
-#from pr_services.utils import Utils
-#import traceback
-#from upload_queue import prepare_upload, queue_upload
-#from vod_aws.tasks import queue_encoding
-#from celery.task.sets import subtask
-#import urlparse
-#import os.path
-
 # PowerReg
 import facade
 from pr_services.credential_system.task_manager import TaskManager
@@ -31,6 +10,8 @@ class FileDownloadManager(TaskManager):
         super(FileDownloadManager, self).__init__()
         self.getters.update({
             'file_size': 'get_general',
+            'file_url': 'get_general',
+            'deleted': 'get_general',
             #'file_md5': 'get_general',
             #'file_type': 'get_general',
         })
@@ -46,10 +27,9 @@ class FileDownloadManager(TaskManager):
 
         :param auth_token:          The authentication token of the acting user
         :type auth_token:           facade.models.AuthToken
-        :param name:                The name of the file download to be created.
+        :param name:                The name of the file download.
         :type name:                 string
-        :param description:         The description of the file download to be
-                                    created.
+        :param description:         The description of the file download.
         :type description:          string
         :param optional_attributes: A dictionary of optional FileDownload
                                     attributes.
@@ -74,8 +54,9 @@ class FileDownloadManager(TaskManager):
         """Mark a file download as deleted and remove it from storage."""
         file_download = self._find_by_id(file_download_id)
         self.authorizer.check_delete_permissions(auth_token, file_download)
-        file_download.file_data.delete(False)
-        file_download.file_size = 0
+        if file_download.file_data.name:
+            file_download.file_data.delete(False)
+        file_download.deleted = True
         file_download.save()
 
 # vim:tabstop=4 shiftwidth=4 expandtab

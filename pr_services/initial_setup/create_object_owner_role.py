@@ -48,6 +48,12 @@ def setup(machine):
             'u' : ['date_completed'],
             'd' : False,
         },
+        'FileDownloadAttempt' : {
+            'c' : True,
+            'r' : ['assignment', 'date_started', 'date_completed'],
+            'u' : [],
+            'd' : False,
+        },
         'Response' : {
             'c' : True,
             'r' : ['exam_session', 'question', 'text', 'value', 'valid'],

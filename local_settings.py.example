@@ -289,4 +289,8 @@ VOD_TEMP_THUMBNAIL='example.jpg'
 # when running unit tests.
 VOD_ENABLE_VIDEO_UPLOAD_WORKFLOW = True # defaults to True
 
+# Storage backend to use for files associated with a FileDownload task.
+# Defaults to using the DEFAULT_FILE_STORAGE setting if not specified.
+FILE_TASKS_STORAGE_BACKEND = 'storages.backends.s3boto.S3BotoStorage'
+
 # vim:tabstop=4 shiftwidth=4 expandtab

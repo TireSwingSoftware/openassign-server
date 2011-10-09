@@ -274,8 +274,15 @@ def setup(machine):
         },
         'FileDownload' : {
             'c' : True,
-            'r' : ['name', 'description', 'file_size', 'file_url',],
+            'r' : ['name', 'description', 'file_size', 'file_url', 'deleted'],
             'u' : ['name', 'description'],
+            'd' : True,
+        },
+        'FileDownloadAttempt' : {
+            'c' : True,
+            'r' : ['assignment', 'date_started', 'date_completed', 'file_download',
+                   'user'],
+            'u' : ['date_completed'],
             'd' : True,
         },
         'Group' : {

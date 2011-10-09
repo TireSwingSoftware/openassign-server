@@ -98,6 +98,7 @@ INSTALLED_APPS = (
     'forum',
     'south',
     'djcelery',
+    'storages',
     'pr_messaging',
     'file_tasks',
 )
@@ -108,6 +109,7 @@ TEST_SKIP_APP_TESTS = (
     'tagging',
     'south',
     'djcelery',
+    'storages',
 )
 
 # django-celery requires this
