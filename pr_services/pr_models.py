@@ -2350,7 +2350,7 @@ class SessionResourceTypeRequirement(OwnedPRModel):
     resource_type = PRForeignKey(ResourceType, related_name='%(class)ss')
     #: actual Resources that fill this requirement
     resources = models.ManyToManyField(Resource, related_name='session_resource_type_requirements')
-    session = PRForeignKey(Session)
+    session = PRForeignKey(Session, related_name='session_resource_type_requirements')
     min = models.PositiveIntegerField()
     max = models.PositiveIntegerField()
     notes = models.ManyToManyField(Note, related_name = 'session_resource_type_requirements')

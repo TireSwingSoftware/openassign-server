@@ -53,6 +53,7 @@ class SessionManager(ObjectManager):
             'room' : 'get_foreign_key',
             'event' : 'get_foreign_key',
             'session_user_role_requirements' : 'get_many_to_one',
+            'session_resource_type_requirements' : 'get_many_to_one',
         } )
         #: Dictionary of attribute names and the functions used to set them
         self.setters.update({
@@ -71,6 +72,7 @@ class SessionManager(ObjectManager):
             'room' : 'set_foreign_key',
             'event' : 'set_foreign_key',
             'session_user_role_requirements' : 'set_many',
+            'session_resource_type_requirements' : 'set_many',
         })
         self.my_django_model = facade.models.Session
         self.session_user_role_requirement_manager = facade.managers.SessionUserRoleRequirementManager()

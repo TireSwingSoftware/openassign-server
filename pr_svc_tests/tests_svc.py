@@ -911,8 +911,26 @@ class TestSessionManagerSvc(TestCase):
         a_product_line_session = ret['value'][0]
         self.assertEquals(a_product_line_session['session_user_role_requirements'], [int(surr_id)])
 
-        # TODO: add tests for resource-type requirements
-
+        # Now make a resource-type requirement for this session
+        # ... and make sure we can get this requirement
+        restype_id = self.resource_type_manager.create(self.admin_token, 'Unobtainium')['value']['id']
+        # now make the requirement
+        ret = self.session_resource_type_requirement_manager.create(self.admin_token,
+            a_product_line_session_id, restype_id, 1, 5)
+        self.assertEquals(ret['status'], 'OK')
+        rtreq_id = ret['value']['id']
+        # make sure that we can get the session resource-type requirement
+        ret = self.session_manager.get_filtered(self.admin_token,
+            {'exact' : {'id' : a_product_line_session_id}}, ['session_resource_type_requirements'])
+        # Alternate query of requirements...
+        #ret = self.session_resource_type_requirement_manager.get_filtered(self.admin_token,
+        #    {'exact' : {'session' : a_product_line_session_id, 'resource_type' : restype_id } }, [])
+        self.assertEquals(ret['status'], 'OK')
+        self.failUnless(isinstance(ret['value'], list))
+        self.assertEquals(len(ret['value']), 1)
+        a_product_line_session = ret['value'][0]
+        self.assertEquals(a_product_line_session['session_resource_type_requirements'], [int(rtreq_id)])
+        
     def test_filter_for_date_range(self):
         region1 = self.region_manager.create(self.admin_token, 'Region 1')
         self.assertEquals(region1['status'], 'OK')
@@ -1106,7 +1124,14 @@ class TestSessionTemplateManagerSvc(TestCase):
         self.assertEquals(res['status'], 'OK')
         self.assertEquals(res['value'][0]['id'], int(batman_session_template_resource_type_requirement_id))
         self.assertEquals(len(res['value']), 1)
-        # TODO: query all resource templates based on this requirement; confirm that only this template is returned
+        # query all session templates based on this requirement; confirm that only this template is returned
+        res = self.session_template_manager.get_filtered(self.admin_token, 
+            {'exact' : { 'session_template_resource_type_requirements' : batman_session_template_resource_type_requirement_id } }, ['session_template_resource_type_requirements'])
+        self.assertEquals(len(res['value']), 1)
+        self.assertEquals(res['value'][0]['id'], int(batman_being_id))
+        reqs = res['value'][0]['session_template_resource_type_requirements']
+        self.assertEquals(len(reqs), 1)
+        self.assertEquals(reqs[0], batman_session_template_resource_type_requirement_id)
 
     def test_attributes(self):
         description = 'This course is intended for those who are new to Python, but have some familiarity with another programming language.'
