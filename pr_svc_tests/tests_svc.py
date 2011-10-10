@@ -109,12 +109,16 @@ class TestCase(BaseTestCase):
         self.room_manager = self.svcGateway.getService('RoomManager')
         self.sco_manager = self.svcGateway.getService('ScoManager')
         self.sco_session_manager = self.svcGateway.getService('ScoSessionManager')
+        self.resource_type_manager = self.svcGateway.getService('ResourceTypeManager')
         self.session_manager = self.svcGateway.getService('SessionManager')
         self.session_reminder_chg_cfg_manager = self.svcGateway.getService('SessionReminderChgCfgManager')
         self.session_template_manager = self.svcGateway.getService('SessionTemplateManager')
         self.session_template_user_role_requirement_manager = self.svcGateway.getService('SessionTemplateUserRoleRequirementManager')
+        self.session_template_resource_type_requirement_manager = self.svcGateway.getService('SessionTemplateResourceTypeRequirementManager')
         self.session_user_role_manager = self.svcGateway.getService('SessionUserRoleManager')
         self.session_user_role_requirement_manager = self.svcGateway.getService('SessionUserRoleRequirementManager')
+        self.session_resource_type_manager = self.svcGateway.getService('SessionResourceTypeManager')
+        self.session_resource_type_requirement_manager = self.svcGateway.getService('SessionResourceTypeRequirementManager')
         self.task_manager = self.svcGateway.getService('TaskManager')
         self.user_manager = self.svcGateway.getService('UserManager')
         self.utils_manager = self.svcGateway.getService('UtilsManager')
@@ -907,6 +911,8 @@ class TestSessionManagerSvc(TestCase):
         a_product_line_session = ret['value'][0]
         self.assertEquals(a_product_line_session['session_user_role_requirements'], [int(surr_id)])
 
+        # TODO: add tests for resource-type requirements
+
     def test_filter_for_date_range(self):
         region1 = self.region_manager.create(self.admin_token, 'Region 1')
         self.assertEquals(region1['status'], 'OK')
@@ -1064,6 +1070,7 @@ class TestSessionTemplateManagerSvc(TestCase):
         event1 = ret['value']['id']
         batman_session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
             'active', True, 100, event1, {'session_template' : batman_being_id})['value']['id']
+        # test for required user roles in a template
         batman_session_user_role_id = self.session_user_role_manager.create(self.admin_token, 'Batman!')['value']['id']
         batman_session_template_user_role_requirement_id = self.session_template_user_role_requirement_manager.create(
             self.admin_token, batman_being_id, batman_session_user_role_id, 0, 10, [])['value']['id']
@@ -1072,6 +1079,34 @@ class TestSessionTemplateManagerSvc(TestCase):
         self.assertEquals(res['status'], 'OK')
         self.assertEquals(res['value'][0]['id'], int(batman_session_template_user_role_requirement_id))
         self.assertEquals(len(res['value']), 1)
+
+    def test_get_session_template_resource_type_reqs(self):
+        region1 = self.region_manager.create(self.admin_token, 'Region 1')
+        self.assertEquals(region1['status'], 'OK')
+        venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789', region1['value']['id'])
+        self.assertEquals(venue1['status'], 'OK')
+        a_product_line_id = self.product_line_manager.create(self.admin_token, 'A Product Line!')['value']['id']
+        batman_being_id = self.session_template_manager.create(self.admin_token, 'Batman Being', 'A Course on how to be Batman', '1',
+            'Don\'t fake the funk on a nasty dunk', 100, 1000, True)['value']['id']
+        ret = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
+            (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id, {'venue' : venue1['value']['id']})
+        self.assertEquals(ret['status'], 'OK')
+        event1 = ret['value']['id']
+        batman_session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
+            'active', True, 100, event1, {'session_template' : batman_being_id})['value']['id']
+        # similar test for required resource types in a template
+        restype_id = self.resource_type_manager.create(self.admin_token, 'Batmobile')['value']['id']
+        ret = self.session_template_resource_type_requirement_manager.create(
+            self.admin_token, batman_being_id, restype_id, 0, 5)
+        self.assertEquals(ret['status'], 'OK')
+        batman_session_template_resource_type_requirement_id = ret['value']['id']
+        # confirm that this template shows the resource-type requirement
+        res = self.session_template_manager.get_filtered(self.admin_token, {'exact' : {'id' : batman_being_id}},
+            ['session_template_resource_type_requirements'])
+        self.assertEquals(res['status'], 'OK')
+        self.assertEquals(res['value'][0]['id'], int(batman_session_template_resource_type_requirement_id))
+        self.assertEquals(len(res['value']), 1)
+        # TODO: query all resource templates based on this requirement; confirm that only this template is returned
 
     def test_attributes(self):
         description = 'This course is intended for those who are new to Python, but have some familiarity with another programming language.'
@@ -1094,6 +1129,20 @@ class TestSessionUserRoleManagerSvc(TestCase):
         res = self.session_user_role_manager.update(self.admin_token, session_user_role_id, {'name' : 'Sweep It Upper'})
         session_user_roles = self.session_user_role_manager.get_filtered(self.admin_token, {'exact' : {'id' : session_user_role_id}}, ['name'])
         self.assertEquals(session_user_roles['value'][0]['name'], 'Sweep It Upper')
+
+class TestResourceTypeManagerSvc(TestCase):
+    def setUp(self):
+        TestCase.setUp(self)
+
+    def test_update(self):
+        unprivileged_user_id, unprivileged_at = self.create_unprivileged_user()
+        restype_id = self.resource_type_manager.create(self.admin_token, 'Unobtainium')['value']['id']
+        res = self.resource_type_manager.update(unprivileged_at, restype_id, {'name' : 'Adamantium'})
+        self.assertEquals(res['status'], 'error')
+        self.assertEquals(res['error'][0], 23)
+        res = self.resource_type_manager.update(self.admin_token, restype_id, {'name' : 'Adamantium'})
+        restype = self.resource_type_manager.get_filtered(self.admin_token, {'exact' : {'id' : restype_id}}, ['name'])
+        self.assertEquals(restype['value'][0]['name'], 'Adamantium')
 
 class TestSessionUserRoleRequirementManagerSvc(TestCase):
     def setUp(self):
@@ -1124,6 +1173,40 @@ class TestSessionUserRoleRequirementManagerSvc(TestCase):
             {'exact' : {'id' : session_user_role_requirement['value']['id']}}, ['credential_types'])
         self.assertEquals(res['status'], 'OK')
         self.assertEquals(res['value'][0]['credential_types'][0], int(cred_type_id))
+
+class TestSessionResourceTypeRequirementManagerSvc(TestCase):
+    def setUp(self):
+        TestCase.setUp(self)
+    
+    def test_create(self):
+        # warm up duplicates TestSessionFeatureTypeRequirementManagerSvc above
+        unprivileged_user_id, unprivileged_at = self.create_unprivileged_user()
+        region1 = self.region_manager.create(self.admin_token, 'Region 1')
+        self.assertEquals(region1['status'], 'OK')
+        venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789', region1['value']['id'])
+        self.assertEquals(venue1['status'], 'OK')
+        a_product_line_id = self.product_line_manager.create(self.admin_token, 'PL')['value']['id']
+        event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
+            (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id, {'venue' : venue1['value']['id']})['value']['id']
+        session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active',
+            True, 100, event1, {'modality' : 'ILT'})['value']['id']
+        # define a ResourceType and assign it as a requirement for this Session
+        restype_id = self.resource_type_manager.create(self.admin_token, 'Stock ticker')['value']['id']
+        ret = self.session_resource_type_requirement_manager.create(
+            self.admin_token, session_id, restype_id, 0, 5)
+        self.assertEquals(ret['status'], 'OK')
+        batman_session_template_resource_type_requirement_id = ret['value']['id']
+        session_resource_type_requirement = self.session_resource_type_requirement_manager.create(unprivileged_at, session_id,
+            restype_id, 1, 10, [])
+        self.assertEquals(session_resource_type_requirement['status'], 'error')
+        self.assertEquals(session_resource_type_requirement['error'][0], 23)
+        session_resource_type_requirement = self.session_resource_type_requirement_manager.create(self.admin_token, session_id,
+            restype_id, 1, 10, [])
+        self.assertEquals(session_resource_type_requirement['status'], 'OK')
+        res = self.session_resource_type_requirement_manager.get_filtered(self.admin_token,
+            {'exact' : {'id' : session_resource_type_requirement['value']['id']}}, ['resource_type'])
+        self.assertEquals(res['status'], 'OK')
+        self.assertEquals(res['value'][0]['resource_type'], int(restype_id))
 
 class TestTaskManagerSvc(TestCase):
     def test_create(self):
