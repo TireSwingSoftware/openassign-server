@@ -149,8 +149,6 @@ class TestCase(django.test.TestCase):
         self.session_template_user_role_requirement_manager = facade.managers.SessionTemplateUserRoleRequirementManager()
         self.session_user_role_manager = facade.managers.SessionUserRoleManager()
         self.session_user_role_requirement_manager = facade.managers.SessionUserRoleRequirementManager()
-        #self.session_resource_type_manager = facade.managers.SessionResourceTypeManager()
-        #self.session_resource_type_requirement_manager = facade.managers.SessionResourceTypeRequirementManager()
         self.task_bundle_manager = facade.managers.TaskBundleManager()
         self.task_fee_manager = facade.managers.TaskFeeManager()
         self.task_manager = facade.managers.TaskManager()

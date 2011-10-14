@@ -5,7 +5,6 @@ Resource manager class
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
-#from datetime import date, datetime, timedelta
 from pr_services import pr_time
 
 class ResourceManager(ObjectManager):
@@ -65,8 +64,6 @@ class ResourceManager(ObjectManager):
         conflicting_sessions = session_manager.get_filtered(auth_token,
             { 'greater_than_or_equal' : {'start' : start },
               'less_than_or_equal' : {'end' : end } }, ['name', 'status', 'session_resource_type_requirements'])
-        
-        #import pdb; pdb.set_trace()
         
         for sess in conflicting_sessions:
             for req_id in sess['session_resource_type_requirements']:

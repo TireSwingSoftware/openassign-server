@@ -175,7 +175,6 @@ class TestCase(BaseTestCase):
         return user_id, user_at
     
     def create_scheduled_sessions_and_resources(self):
-        # TODO: Decompose this even further as needed, if more repetition is found
         # create 4 Resources (Scheduled A, Scheduled B, Unscheduled)
         res1 = self.resource_manager.create(self.admin_token, 'Batmobile (scheduled)', 'This resource should be scheduled at least once.')
         res1_id = res1['value']['id']
@@ -202,7 +201,6 @@ class TestCase(BaseTestCase):
         rt2_id = rt2['value']['id']
 
         # create 3 SessionTemplateResourceTypeRequirements (w/ different types required)
-        # TODO: Looks like I was mistaken, you can't bind specific resources to a SessionTEMPLATEResourceTypeRequirement... rethink this.
         req1 = self.session_template_resource_type_requirement_manager.create( self.admin_token, st1_id, rt1_id, 0, 5)
         req1_id = req1['value']['id']
         req2 = self.session_template_resource_type_requirement_manager.create( self.admin_token, st2_id, rt2_id, 0, 5)
@@ -214,12 +212,12 @@ class TestCase(BaseTestCase):
         pl1 = self.product_line_manager.create(self.admin_token, 'Super Product Line')
         pl1_id = pl1['value']['id']
 
-        # TODO: create an event to hold these sessions
+        # create an event to hold these sessions
         evt1 = self.event_manager.create(self.admin_token, 'EVT', 'Super Event',
             'This event is super!', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1, pl1_id)
         evt1_id = evt1['value']['id']
 
-        # create a Session from each template (TODO: try to double-book one?)
+        # create a Session from each template
         sess1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), 'active', True, 100, evt1_id, 
             {'modality' : 'ILT', 'session_template' : st1_id })
@@ -997,9 +995,6 @@ class TestSessionManagerSvc(TestCase):
         # make sure that we can get the session resource-type requirement
         ret = self.session_manager.get_filtered(self.admin_token,
             {'exact' : {'id' : a_product_line_session_id}}, ['session_resource_type_requirements'])
-        # Alternate query of requirements...
-        #ret = self.session_resource_type_requirement_manager.get_filtered(self.admin_token,
-        #    {'exact' : {'session' : a_product_line_session_id, 'resource_type' : restype_id } }, [])
         self.assertEquals(ret['status'], 'OK')
         self.failUnless(isinstance(ret['value'], list))
         self.assertEquals(len(ret['value']), 1)
@@ -1200,12 +1195,6 @@ class TestResourceSchedulingRules(TestCase):
         self.assertEquals(ret['value'], False)
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res4_id'], five_days_ago, four_days_ago )
         self.assertEquals(ret['value'], False)
-
-    def test_session_and_resource_scheduling(self):
-        object_ids = self.create_scheduled_sessions_and_resources()
-        #self.assertEquals(object_ids, None)
-
-
 
 class TestSessionTemplateManagerSvc(TestCase):
     def test_get_session_template_user_role_reqs(self):
