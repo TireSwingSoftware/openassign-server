@@ -176,13 +176,13 @@ class TestCase(BaseTestCase):
     
     def create_scheduled_sessions_and_resources(self):
         # create 4 Resources (Scheduled A, Scheduled B, Unscheduled)
-        res1 = self.resource_manager.create(self.admin_token, 'Batmobile (scheduled)', 'This resource should be scheduled at least once.')
+        res1 = self.resource_manager.create(self.admin_token, 'Batmobile (scheduled)', {'description': 'This resource should be scheduled at least once.'} )
         res1_id = res1['value']['id']
-        res2 = self.resource_manager.create(self.admin_token, 'Invisible Jet (scheduled)', 'This resource should be scheduled at least once.')
+        res2 = self.resource_manager.create(self.admin_token, 'Invisible Jet (scheduled)', {'description': 'This resource should be scheduled at least once.'} )
         res2_id = res2['value']['id']
-        res3 = self.resource_manager.create(self.admin_token, 'Bat-Computer (un-scheduled)', 'This resource should not be scheduled initially.')
+        res3 = self.resource_manager.create(self.admin_token, 'Bat-Computer (un-scheduled)', {'description': 'This resource should not be scheduled initially.'} )
         res3_id = res3['value']['id']
-        res4 = self.resource_manager.create(self.admin_token, 'Green Lantern (un-scheduled)', 'This resource should not be scheduled initially.')
+        res4 = self.resource_manager.create(self.admin_token, 'Green Lantern (un-scheduled)', {'description': 'This resource should not be scheduled initially.'} )
         res4_id = res4['value']['id']
 
         # create 2 SessionTemplates (Resource Bound, No Resources)
@@ -1284,7 +1284,7 @@ class TestResourceManagerSvc(TestCase):
 
     def test_resource_optional_description(self):
         # create one Resource with a description, and one without
-        resource_with_desc = self.resource_manager.create(self.admin_token, 'Thing One', 'This is an excellent resource!')
+        resource_with_desc = self.resource_manager.create(self.admin_token, 'Thing One', {'description': 'This is an excellent resource!'})
         self.assertEquals( resource_with_desc['status'], 'OK' )
         resource_no_desc = self.resource_manager.create(self.admin_token, 'Thing Two')
         self.assertEquals( resource_no_desc['status'], 'OK')
@@ -1296,9 +1296,9 @@ class TestResourceManagerSvc(TestCase):
 
     def test_resource_unique_naming_requirement(self):
         # attempt to duplicate the name of an existing resource (this should fail)
-        good_resource = self.resource_manager.create(self.admin_token, 'Thing One', 'This resource has a new name (should be created).')
+        good_resource = self.resource_manager.create(self.admin_token, 'Thing One', {'description': 'This resource has a new name (should be created).'})
         self.assertEquals( good_resource['status'], 'OK' )
-        bad_resource = self.resource_manager.create(self.admin_token, 'Thing One', 'This resource has a duplicate name (should be blocked).')
+        bad_resource = self.resource_manager.create(self.admin_token, 'Thing One', {'description': 'This resource has a duplicate name (should be blocked).'})
         self.assertEquals(bad_resource['status'], 'error')
 
 class TestResourceTypeManagerSvc(TestCase):

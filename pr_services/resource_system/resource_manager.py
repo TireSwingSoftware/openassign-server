@@ -31,17 +31,22 @@ class ResourceManager(ObjectManager):
         self.my_django_model = facade.models.Resource
 
     @service_method
-    def create(self, auth_token, name, description=""):
+    def create(self, auth_token, name, optional_attributes=None):
         """
         Create a new Resource
         
         @param name               name of the Resource
-        @param description        optional description of the Resource
+        @param optional_attributes    Optional attribute values indexed by name
         @return                   instance of Resource
         """
+        if optional_attributes is None:
+            optional_attributes = {}
 
-        r = self.my_django_model(name=name, description=description)
+        r = self.my_django_model(name=name)
         r.save()
+        if optional_attributes:
+            facade.subsystems.Setter(auth_token, self, r, optional_attributes)
+            r.save()
         self.authorizer.check_create_permissions(auth_token, r)
         return r
 
