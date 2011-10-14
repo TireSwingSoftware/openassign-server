@@ -1269,6 +1269,7 @@ class Resource(OwnedPRModel):
     """
 
     name = models.CharField(max_length=255, unique=True)
+    description = models.TextField()
     notes = models.ManyToManyField(Note, related_name = 'resources')
     active = PRBooleanField(default = True)
     # many-to-many relationship with ResourceType gives us a resource_types field

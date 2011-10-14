@@ -76,6 +76,7 @@ class SessionManager(ObjectManager):
         })
         self.my_django_model = facade.models.Session
         self.session_user_role_requirement_manager = facade.managers.SessionUserRoleRequirementManager()
+        self.session_resource_type_requirement_manager = facade.managers.SessionResourceTypeRequirementManager()
         self.logger = logging.getLogger('pr_services.SessionManager')
 
     @service_method
@@ -145,8 +146,15 @@ class SessionManager(ObjectManager):
             if (the_session_template.session_template_user_role_requirements.all().count() != 0):
                 # We need to create a session_user_role_requirement for each of these and associate it with this session
                 for session_template_user_role_requirement in the_session_template.session_template_user_role_requirements.all():
-                    new_session_user_role_requirement = self.session_user_role_requirement_manager.create(auth_token, new_session.id,
+                    self.session_user_role_requirement_manager.create(auth_token, new_session.id,
                         session_template_user_role_requirement.session_user_role.id, session_template_user_role_requirement.min, session_template_user_role_requirement.max, False)
+
+            if (the_session_template.session_template_resource_type_requirements.all().count() != 0):
+                # We need to create a session_feature_type_requirement for each of these and associate it with this session
+                for session_template_resource_type_requirement in the_session_template.session_template_resource_type_requirements.all():
+                    self.session_resource_type_requirement_manager.create(auth_token, new_session.id,
+                        session_template_resource_type_requirement.resource_type.id, session_template_resource_type_requirement.min, session_template_resource_type_requirement.max)
+
             new_session.session_template = the_session_template
             del optional_attributes['session_template']
         new_session.name = new_session.name+new_session.mangle_id(new_session.id)

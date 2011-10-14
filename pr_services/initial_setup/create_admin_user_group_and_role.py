@@ -394,9 +394,9 @@ def setup(machine):
         },
         'Resource' : {
             'c' : True,
-            'r' : ['name', 'notes', 'resource_types',
+            'r' : ['name', 'description', 'notes', 'resource_types',
                    'session_resource_type_requirements'],
-            'u' : ['name', 'resource_types',
+            'u' : ['name', 'description', 'resource_types',
                    'session_resource_type_requirements'],
             'd' : True,
         },

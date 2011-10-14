@@ -109,6 +109,7 @@ class TestCase(BaseTestCase):
         self.room_manager = self.svcGateway.getService('RoomManager')
         self.sco_manager = self.svcGateway.getService('ScoManager')
         self.sco_session_manager = self.svcGateway.getService('ScoSessionManager')
+        self.resource_manager = self.svcGateway.getService('ResourceManager')
         self.resource_type_manager = self.svcGateway.getService('ResourceTypeManager')
         self.session_manager = self.svcGateway.getService('SessionManager')
         self.session_reminder_chg_cfg_manager = self.svcGateway.getService('SessionReminderChgCfgManager')
@@ -172,6 +173,81 @@ class TestCase(BaseTestCase):
             {'shipping_address' : shipping_address, 'billing_address' : billing_address})['value']['id']
         user_at = self.user_manager.login(username, 'password')['value']['auth_token']
         return user_id, user_at
+    
+    def create_scheduled_sessions_and_resources(self):
+        # TODO: Decompose this even further as needed, if more repetition is found
+        # create 4 Resources (Scheduled A, Scheduled B, Unscheduled)
+        res1 = self.resource_manager.create(self.admin_token, 'Batmobile (scheduled)', 'This resource should be scheduled at least once.')
+        res1_id = res1['value']['id']
+        res2 = self.resource_manager.create(self.admin_token, 'Invisible Jet (scheduled)', 'This resource should be scheduled at least once.')
+        res2_id = res2['value']['id']
+        res3 = self.resource_manager.create(self.admin_token, 'Bat-Computer (un-scheduled)', 'This resource should not be scheduled initially.')
+        res3_id = res3['value']['id']
+        res4 = self.resource_manager.create(self.admin_token, 'Green Lantern (un-scheduled)', 'This resource should not be scheduled initially.')
+        res4_id = res4['value']['id']
+
+        # create 2 SessionTemplates (Resource Bound, No Resources)
+        st1 = self.session_template_manager.create(self.admin_token, 'ST - Resource Bound', 'A template with abstract and concrete resource requirements', '1',
+           'no description', 100, 1000, True)
+        st1_id = st1['value']['id']
+    
+        st2 = self.session_template_manager.create(self.admin_token, 'ST - No Resources', 'A template with abstract and concrete resource requirements', '1',
+           'no description', 100, 1000, True)
+        st2_id = st2['value']['id']
+
+        # create a couple of resource types
+        rt1 = self.resource_type_manager.create(self.admin_token, 'Unobtainium')
+        rt1_id = rt1['value']['id']
+        rt2 = self.resource_type_manager.create(self.admin_token, 'Kryptonite')
+        rt2_id = rt2['value']['id']
+
+        # create 3 SessionTemplateResourceTypeRequirements (w/ different types required)
+        # TODO: Looks like I was mistaken, you can't bind specific resources to a SessionTEMPLATEResourceTypeRequirement... rethink this.
+        req1 = self.session_template_resource_type_requirement_manager.create( self.admin_token, st1_id, rt1_id, 0, 5)
+        req1_id = req1['value']['id']
+        req2 = self.session_template_resource_type_requirement_manager.create( self.admin_token, st2_id, rt2_id, 0, 5)
+        req2_id = req2['value']['id']
+        req3 = self.session_template_resource_type_requirement_manager.create( self.admin_token, st2_id, rt2_id, 0, 5)
+        req3_id = req3['value']['id']
+
+        # create a product line (required for event)
+        pl1 = self.product_line_manager.create(self.admin_token, 'Super Product Line')
+        pl1_id = pl1['value']['id']
+
+        # TODO: create an event to hold these sessions
+        evt1 = self.event_manager.create(self.admin_token, 'EVT', 'Super Event',
+            'This event is super!', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1, pl1_id)
+        evt1_id = evt1['value']['id']
+
+        # create a Session from each template (TODO: try to double-book one?)
+        sess1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
+            (self.right_now+self.one_day).isoformat(), 'active', True, 100, evt1_id, 
+            {'modality' : 'ILT', 'session_template' : st1_id })
+        sess1_id = sess1['value']['id']
+        sess2 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
+            (self.right_now+self.one_day).isoformat(), 'active', True, 100, evt1_id, 
+            {'modality' : 'ILT', 'session_template' : st2_id })
+        sess2_id = sess2['value']['id']
+
+        # return a dictionary with all IDs to the caller
+        return {
+            'res1_id' : res1_id,
+            'res2_id' : res2_id,
+            'res3_id' : res3_id,
+            'res4_id' : res4_id,
+            'st1_id' : st1_id,
+            'st2_id' : st2_id,
+            'rt1_id' : rt1_id,
+            'rt2_id' : rt2_id,
+            'req1_id' : req1_id,
+            'req2_id' : req2_id,
+            'req3_id' : req3_id,
+            'pl1_id' : pl1_id,
+            'evt1_id' : evt1_id,
+            'sess1_id' : sess1_id,
+            'sess2_id' : sess2_id,
+        }
+        
 
 ################################################################################################################################################
 #
@@ -912,7 +988,6 @@ class TestSessionManagerSvc(TestCase):
         self.assertEquals(a_product_line_session['session_user_role_requirements'], [int(surr_id)])
 
         # Now make a resource-type requirement for this session
-        # ... and make sure we can get this requirement
         restype_id = self.resource_type_manager.create(self.admin_token, 'Unobtainium')['value']['id']
         # now make the requirement
         ret = self.session_resource_type_requirement_manager.create(self.admin_token,
@@ -1072,7 +1147,66 @@ class TestSessionManagerSvc(TestCase):
         self.assertEquals(ret['status'], 'OK')
         ret = self.assignment_manager.bulk_create(self.admin_token, student_req_id, [learner_1_id])
         self.assertEquals(ret['status'], 'OK')
-        
+
+class TestResourceSchedulingRules(TestCase):
+    def setUp(self):
+        TestCase.setUp(self)
+
+    def test_scheduling_support_functions(self):
+        object_ids = self.create_scheduled_sessions_and_resources()
+
+        # assign some resources to existing sessions; first, create a new requirement with resource 2
+        self.session_resource_type_requirement_manager.create(self.admin_token, object_ids['sess2_id'], object_ids['rt1_id'], 0, 4, [ object_ids['res2_id'] ])
+        # now update an existing requirement (inherited from SessionTemplate) with resources 1 & 2
+        # (attach this to Session sess1, which inherits its requirements from SessionTemplate st1)
+        ret = self.session_manager.get_filtered(self.admin_token, { 'exact' : {'id': object_ids['sess1_id']} }, ['session_resource_type_requirements'] )
+        cloned_req_id = ret['value'][0]['session_resource_type_requirements'][0]
+        self.session_resource_type_requirement_manager.update(self.admin_token, cloned_req_id, {'resources' : [ object_ids['res1_id'], object_ids['res2_id'] ]})
+        # confirm that we've attached two resources to the Session's requirement
+        ret = self.session_resource_type_requirement_manager.get_filtered(self.admin_token, { 'exact' : {'id': cloned_req_id} }, ['resources'] )
+        self.assertEquals( len( ret['value'][0]['resources'] ), 2)
+
+        # find all Sessions using a specified Resource (based on assignments above)
+        ret = self.session_resource_type_requirement_manager.get_sessions_using_resource(self.admin_token, int(object_ids['res1_id']) )
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals( len(ret['value']) , 1)
+        ret = self.session_resource_type_requirement_manager.get_sessions_using_resource(self.admin_token, int(object_ids['res2_id']) )
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals( len(ret['value']) , 2)
+        ret = self.session_resource_type_requirement_manager.get_sessions_using_resource(self.admin_token, int(object_ids['res3_id']) )
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals( len(ret['value']) , 0)
+        ret = self.session_resource_type_requirement_manager.get_sessions_using_resource(self.admin_token, int(object_ids['res4_id']) )
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals( len(ret['value']) , 0)
+
+        # find all Resources available during a specified time period; first, match the times used for our session (2 used, 2 available)
+        now = self.right_now.isoformat()
+        tomorrow = (self.right_now+self.one_day).isoformat()
+        ret = self.resource_manager.find_available_resources( self.admin_token, now, tomorrow )
+        self.assertEquals(len(ret['value']), 2)
+        # ... and now on previous days (all 4 should be available)
+        five_days_ago = (self.right_now + timedelta(days = -5)).isoformat()
+        four_days_ago = (self.right_now + timedelta(days = -4)).isoformat()
+        ret = self.resource_manager.find_available_resources( self.admin_token, five_days_ago, four_days_ago )
+        self.assertEquals(len(ret['value']), 4)
+
+        # probe a single Resoure during a specified time period
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], now, tomorrow )
+        self.assertEquals(ret['value'], True)
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], five_days_ago, four_days_ago )
+        self.assertEquals(ret['value'], False)
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res4_id'], now, tomorrow )
+        self.assertEquals(ret['value'], False)
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res4_id'], five_days_ago, four_days_ago )
+        self.assertEquals(ret['value'], False)
+
+    def test_session_and_resource_scheduling(self):
+        object_ids = self.create_scheduled_sessions_and_resources()
+        #self.assertEquals(object_ids, None)
+
+
+
 class TestSessionTemplateManagerSvc(TestCase):
     def test_get_session_template_user_role_reqs(self):
         region1 = self.region_manager.create(self.admin_token, 'Region 1')
@@ -1154,6 +1288,29 @@ class TestSessionUserRoleManagerSvc(TestCase):
         res = self.session_user_role_manager.update(self.admin_token, session_user_role_id, {'name' : 'Sweep It Upper'})
         session_user_roles = self.session_user_role_manager.get_filtered(self.admin_token, {'exact' : {'id' : session_user_role_id}}, ['name'])
         self.assertEquals(session_user_roles['value'][0]['name'], 'Sweep It Upper')
+
+class TestResourceManagerSvc(TestCase):
+    def setUp(self):
+        TestCase.setUp(self)
+
+    def test_resource_optional_description(self):
+        # create one Resource with a description, and one without
+        resource_with_desc = self.resource_manager.create(self.admin_token, 'Thing One', 'This is an excellent resource!')
+        self.assertEquals( resource_with_desc['status'], 'OK' )
+        resource_no_desc = self.resource_manager.create(self.admin_token, 'Thing Two')
+        self.assertEquals( resource_no_desc['status'], 'OK')
+        # check saved descriptions for each
+        ret = self.resource_manager.get_filtered( self.admin_token, { 'exact' : {'name': 'Thing One'} }, ['name', 'description'] )
+        self.assertEquals( ret['value'][0]['description'], 'This is an excellent resource!' )
+        ret = self.resource_manager.get_filtered( self.admin_token, { 'exact' : {'name': 'Thing Two'} }, ['name', 'description'] )
+        self.assertEquals( ret['value'][0]['description'], '' )
+
+    def test_resource_unique_naming_requirement(self):
+        # attempt to duplicate the name of an existing resource (this should fail)
+        good_resource = self.resource_manager.create(self.admin_token, 'Thing One', 'This resource has a new name (should be created).')
+        self.assertEquals( good_resource['status'], 'OK' )
+        bad_resource = self.resource_manager.create(self.admin_token, 'Thing One', 'This resource has a duplicate name (should be blocked).')
+        self.assertEquals(bad_resource['status'], 'error')
 
 class TestResourceTypeManagerSvc(TestCase):
     def setUp(self):
