@@ -38,7 +38,7 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
 
     @service_method
     def create(self, auth_token, session_id, session_user_role_id, min, max,
-        unused, credential_type_ids=None, optional_attributes=None):
+        credential_type_ids=None, optional_attributes=None):
         
         """
         Create a new SessionUserRoleRequirement
@@ -47,7 +47,6 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
         @param session_user_role_id     Primary key for an session_user_role
         @param min                      Minimum number required
         @param max                      Maximum number allowed
-        @param unused                   bool: obsolete positional parameter retained for compatibility
         @param credential_type_ids      Array of credential_type primary keys
         @return                         A reference to the newly created SessionUserRoleRequirement
         """
