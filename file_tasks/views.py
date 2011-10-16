@@ -69,7 +69,7 @@ def upload_file_for_download(request, auth_token=None, pk=None):
             instance = facade.models.FileDownload.objects.get(pk=results[0]['id'])
         else:
             instance = None
-        return upload._render_response(request, 'file_tasks/upload_video_for_download.html',
+        return upload._render_response(request, 'file_tasks/upload_file_for_download.html',
             {'form': FileDownloadForm(initial={'auth_token': auth_token, 'id': pk}, instance=instance)})
     elif request.method == 'POST':
         form = FileDownloadForm(data=request.POST, files=request.FILES)
@@ -101,5 +101,5 @@ def upload_file_for_download(request, auth_token=None, pk=None):
                 return HttpResponse(str(file_download.id) if file_download else None)
         else:
             logging.info(str(form.errors))
-            return upload._render_response(request, 'file_tasks/upload_video_for_download.html',
+            return upload._render_response(request, 'file_tasks/upload_file_for_download.html',
                 {'form': form}, status=400)
