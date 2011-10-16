@@ -13,13 +13,15 @@ class TestFileDownload(TestCase):
     """Test cases for the FileDownload Task."""
 
     def setUp(self):
+        self.initial_setup_args = ['precor']
         super(TestFileDownload, self).setUp()
         self.file_download_manager = facade.managers.FileDownloadManager()
         self.file_download_attempt_manager = facade.managers.FileDownloadAttemptManager()
 
     def tearDown(self):
         for file_download in facade.models.FileDownload.objects.all():
-            file_download.delete()
+            if file_download.file_data.name:
+                file_download.file_data.delete()
         super(TestFileDownload, self).tearDown()
 
     def _upload_file(self, auth_token=None, file_name=None, name=None,
@@ -116,5 +118,21 @@ class TestFileDownload(TestCase):
 
     def test_download_file_as_user(self):
         file_download = self._upload_file()
-        self.file_download_attempt_manager
-        raise NotImplementedError
+        # Before having an assignment, the user cannot see any file downloads.
+        result = self.file_download_manager.get_filtered(self.auth_token, {})
+        self.assertFalse(result)
+        # Now register a download attempt, which creates an Assignment.
+        result = self.file_download_attempt_manager.register_file_download_attempt(\
+            self.auth_token, file_download.id)
+        self.assertTrue(result['id'])
+        # Now we can get the file download attempt fields.
+        result = self.file_download_attempt_manager.get_filtered(self.auth_token,
+            {'exact': {'id': result['id']}}, ['file_download'])
+        self.assertTrue(result)
+        self.assertTrue(result[0]['file_download'])
+        # And now the file download task info.
+        result = self.file_download_manager.get_filtered(self.auth_token,
+            {'exact': {'id': result[0]['file_download']}},
+            ['name', 'description', 'file_size', 'file_url'])
+        self.assertTrue(result)
+        self.assertTrue(result[0]['file_url'])

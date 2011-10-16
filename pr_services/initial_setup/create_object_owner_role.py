@@ -50,7 +50,7 @@ def setup(machine):
         },
         'FileDownloadAttempt' : {
             'c' : True,
-            'r' : ['assignment', 'date_started', 'date_completed'],
+            'r' : ['assignment', 'date_started', 'date_completed', 'file_download'],
             'u' : [],
             'd' : False,
         },

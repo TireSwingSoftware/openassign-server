@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+# Python
+import datetime
 
 # PowerReg
 from pr_services.credential_system.assignment_attempt_manager import AssignmentAttemptManager
@@ -51,26 +52,25 @@ class FileDownloadAttemptManager(AssignmentAttemptManager):
     @service_method
     def register_file_download_attempt(self, auth_token, file_download_id):
         """
-        Create an assignment to watch the video, if needed; then use it to
-        create a VideoSession object, if needed. If a VideoSession for this
-        (user, video) combination was created in the last 12 hours, does
-        nothing.
+        Create or find an assignment to download the file, then use it to
+        create a FileDownloadAttempt object. If a FileDownloadAttempt for this
+        (user, file download) combination was created in the last 12 hours,
+        does nothing.
 
-        @param auth_token   The authentication token of the acting user
-        @type auth_token    facade.models.AuthToken
-        @param assignment   FK for a video
-        @type assignment    int
+        @param auth_token           The authentication token of the acting user
+        @type auth_token            facade.models.AuthToken
+        @param file_download_id     FK for a file download
+        @type file_download_id      int
         """
-        # the next line is only here so that we get an exception if the
-        # video_id we are given is a valid task id but the task isn't a video
-        video = facade.models.Video.objects.get(id=video_id)
+        # Check that the given ID is for a FileDownload object.
+        file_download = facade.models.FileDownload.objects.get(id=file_download_id)
         assignments = facade.models.Assignment.objects.filter(
-            task__id=video_id, user__id=auth_token.user.id).order_by('-id')
+            task__id=file_download_id, user__id=auth_token.user.id).order_by('-id')
         if len(assignments):
             assignment = assignments[0]
         else:
-            assignment = facade.managers.AssignmentManager().create(auth_token, video_id)
-        start_cutoff = datetime.utcnow() - timedelta(hours=12)
+            assignment = facade.managers.AssignmentManager().create(auth_token, file_download_id)
+        start_cutoff = datetime.datetime.utcnow() - datetime.timedelta(hours=12)
         attempts = facade.models.AssignmentAttempt.objects.filter(
             assignment__id=assignment.id,
             date_started__gt=start_cutoff).order_by('-date_started')
@@ -79,4 +79,4 @@ class FileDownloadAttemptManager(AssignmentAttemptManager):
         else:
             attempt = self.my_django_model.objects.create(assignment=assignment)
             self.authorizer.check_create_permissions(auth_token, attempt)
-        return {'id':attempt.id}
+        return {'id': attempt.id}

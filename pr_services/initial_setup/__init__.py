@@ -45,6 +45,7 @@ class InitialSetupMachine(object):
               'create_category_manager_group_and_role',
               'create_video_uploader_role',
               'create_video_watcher_role',
+              'create_file_downloader_role',
               'create_precor_default_group',
             ],
         }

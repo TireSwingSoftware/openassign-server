@@ -12,11 +12,8 @@ class FileDownloadManager(TaskManager):
             'file_size': 'get_general',
             'file_url': 'get_general',
             'deleted': 'get_general',
-            #'file_md5': 'get_general',
-            #'file_type': 'get_general',
         })
         self.setters.update({
-            #'file_type': 'set_general',
         })
         self.my_django_model = facade.models.FileDownload
 
