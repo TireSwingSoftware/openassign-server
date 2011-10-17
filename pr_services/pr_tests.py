@@ -333,7 +333,7 @@ class TestAssignment(TestCase):
         session1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), 'pending', True, 10000, self.e1.id)
         student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
-        role_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(session1.id), str(student_role.id), 2, 3, True, None, {'prevent_duplicate_assignments' : True})
+        role_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(session1.id), str(student_role.id), 2, 3, None, {'prevent_duplicate_assignments' : True})
 
         session = self.session_manager.get_filtered(self.admin_token, {'exact': {'id': session1.id}}, ['status'])
         self.assertEquals(session[0]['status'], 'pending')
@@ -379,11 +379,11 @@ class TestAssignment(TestCase):
         session1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id)
         student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
-        role_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(session1.id), str(student_role.id), 1, 3, True, None, {'prevent_duplicate_assignments' : True})
+        role_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(session1.id), str(student_role.id), 1, 3, None, {'prevent_duplicate_assignments' : True})
         # This overlaps intentionally to test room capacity limits below
         session2 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id)
-        role_req2 = self.session_user_role_requirement_manager.create(self.admin_token, str(session2.id), str(student_role.id), 1, 3, True)
+        role_req2 = self.session_user_role_requirement_manager.create(self.admin_token, str(session2.id), str(student_role.id), 1, 3)
         tf1 = self.task_fee_manager.create(self.admin_token, 'TF001', 'slick deal', 'a really great deal', 200, 0, role_req1.id, {'starting_quantity' : 10})
         assignments = self.assignment_manager.bulk_create(self.admin_token, role_req1.id, [learner1.id, learner2.id, learner3.id])
         assignment_ids = [assignment['id'] for assignment in assignments.values()]
@@ -1830,7 +1830,7 @@ class TestTrainingVoucherManager(TestCase):
         self.s1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now + self.one_day).isoformat(), 'active',
             True, 100, self.e1.id)
         self.eur1 = self.session_user_role_manager.create(self.admin_token, 'Fancy Job')
-        self.eurr1 = self.session_user_role_requirement_manager.create(self.admin_token, self.s1.id, self.eur1.id, 10, 20, True)
+        self.eurr1 = self.session_user_role_requirement_manager.create(self.admin_token, self.s1.id, self.eur1.id, 10, 20)
         self.po1 = self.purchase_order_manager.create(self.admin_token)
 
     def test_create(self):
@@ -2380,9 +2380,9 @@ class TestUserManager(TestCase):
             {'exact' : {'name' :'Student'}}, ['id'])[0]
         self.assertTrue('id' in student_role)
         instructor_session_user_role_req =  self.session_user_role_requirement_manager.create(
-            self.admin_token, boring_session.id, instructor_role['id'], 1, 1, False)
+            self.admin_token, boring_session.id, instructor_role['id'], 1, 1)
         student_session_user_role_req = self.session_user_role_requirement_manager.create(
-            self.admin_token, boring_session.id, student_role['id'], 1, 2, False)
+            self.admin_token, boring_session.id, student_role['id'], 1, 2)
         self.assignment_manager.bulk_create(self.admin_token, instructor_session_user_role_req.id, [instructor.id])
         self.assignment_manager.bulk_create(self.admin_token, student_session_user_role_req.id, [student1.id, student2.id])
         # Now the instructor should be able to see some things about the user, like their email address
@@ -3322,14 +3322,14 @@ class TestUtils(object):
         student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
     
         # we need session user role requirements for each session before we can assign users
-        instructor_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(s1.id), str(instructor_role.id), 1, 2, False)
-        learner_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(s1.id), str(student_role.id), 1, 30, False)
-        instructor_req2 = self.session_user_role_requirement_manager.create(self.admin_token, str(self.s2.id), str(instructor_role.id),1, 2, False)
-        learner_req2 = self.session_user_role_requirement_manager.create(self.admin_token, str(self.s2.id), str(student_role.id), 1, 30, False)
-        instructor_req3 = self.session_user_role_requirement_manager.create(self.admin_token, str(self.s3.id), str(instructor_role.id), 1, 2, False)
-        learner_req3 = self.session_user_role_requirement_manager.create(self.admin_token, str(self.s3.id), str(student_role.id), 1, 30, False)
-        instructor_req4 = self.session_user_role_requirement_manager.create(self.admin_token, str(s4.id), str(instructor_role.id), 1, 2, False)
-        learner_req4 = self.session_user_role_requirement_manager.create(self.admin_token, str(s4.id), str(student_role.id), 1, 30, False)
+        instructor_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(s1.id), str(instructor_role.id), 1, 2)
+        learner_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(s1.id), str(student_role.id), 1, 30)
+        instructor_req2 = self.session_user_role_requirement_manager.create(self.admin_token, str(self.s2.id), str(instructor_role.id),1, 2)
+        learner_req2 = self.session_user_role_requirement_manager.create(self.admin_token, str(self.s2.id), str(student_role.id), 1, 30)
+        instructor_req3 = self.session_user_role_requirement_manager.create(self.admin_token, str(self.s3.id), str(instructor_role.id), 1, 2)
+        learner_req3 = self.session_user_role_requirement_manager.create(self.admin_token, str(self.s3.id), str(student_role.id), 1, 30)
+        instructor_req4 = self.session_user_role_requirement_manager.create(self.admin_token, str(s4.id), str(instructor_role.id), 1, 2)
+        learner_req4 = self.session_user_role_requirement_manager.create(self.admin_token, str(s4.id), str(student_role.id), 1, 30)
     
         # we need some users to be assigned in the various sessions
         instructor1 = self.user_manager.create(self.admin_token, 'instructor_1', 'password', 'Mr.', 'David', 'Smith', '', 'david@example.smith.us', 'active')
