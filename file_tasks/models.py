@@ -48,7 +48,7 @@ class FileDownload(pr_models.Task):
         # Generate signed URL for S3, fallback to the plain URL in case the S3
         # backend is not being used.
         try:
-            return self.file_data.file.key.generate_url(getattr(settings, 'AWS_URL_LIFETIME', 86400))
+            return self.file_data.file.key.generate_url(settings.AWS_URL_LIFETIME)
         except AttributeError:
             return self.file_data.url
 
