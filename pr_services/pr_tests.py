@@ -65,7 +65,8 @@ class TestCase(django.test.TestCase):
         self.auth_token2 = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('otherusername',
             'other_initial_password')['auth_token'])
         self.region1 = self.region_manager.create(self.admin_token, 'Region 1')
-        self.venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '1253462', self.region1.id)
+        address_dict = {'label' : '123 Main St', 'locality' : 'Raleigh', 'region' : 'NC', 'postal_code' : '27615', 'country' : 'US'}
+        self.venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '1253462', self.region1.id, {'address':address_dict})
         self.room1 = self.room_manager.create(self.admin_token, 'Room 1', self.venue1.id, 100)
         self.product_line1 = self.product_line_manager.create(self.admin_token, 'Product Line 1')
         self.right_now = datetime.utcnow().replace(microsecond=0, tzinfo=pr_time.UTC())
@@ -1273,6 +1274,38 @@ class TestSessionManager(TestCase):
     def setUp(self):
         TestCase.setUp(self)
         self.test_utils = TestUtils()
+
+    def test_view(self):
+        e1 = self.event_manager.create(self.admin_token, 'Event 1',
+            'First Event of My Unit Test', 'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
+            self.organization1.id, {'venue' : self.venue1.id})
+        session1 = self.session_manager.create(self.admin_token,
+            self.right_now.isoformat(),
+            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e1.id, {'room':self.room1.id})
+        ret = self.session_manager.detailed_surr_view(self.admin_token)
+        self.assertEquals(len(ret), 1)
+        fetched_session = ret[0]
+        self.assertTrue('room' in fetched_session)
+
+        room = fetched_session['room']
+        self.assertTrue('name' in room)
+        self.assertEquals(room['name'], self.room1.name)
+        self.assertTrue('id' in room)
+        self.assertTrue('venue_name' in room)
+        self.assertEquals(room['venue_name'], self.venue1.name)
+        self.assertTrue('venue_address' in room)
+
+        address = room['venue_address']
+        self.assertTrue('label' in address)
+        self.assertEquals(address['label'], self.venue1.address.label)
+        self.assertTrue('locality' in address)
+        self.assertEquals(address['locality'], self.venue1.address.locality)
+        self.assertTrue('region' in address)
+        self.assertEquals(address['region'], self.venue1.address.region)
+        self.assertTrue('postal_code' in address)
+        self.assertEquals(address['postal_code'], self.venue1.address.postal_code)
+        self.assertTrue('country' in address)
+        self.assertEquals(address['country'], self.venue1.address.country)
 
     def test_create(self):
         e1 = self.event_manager.create(self.admin_token, 'Event 1',
