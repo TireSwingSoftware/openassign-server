@@ -14,6 +14,7 @@ class FileDownloadManager(TaskManager):
             'deleted': 'get_general',
         })
         self.setters.update({
+            'deleted': 'get_general',
         })
         self.my_django_model = facade.models.FileDownload
 

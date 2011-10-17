@@ -43,7 +43,14 @@ class FileDownload(pr_models.Task):
 
     @property
     def file_url(self):
-        return self.file_data.url if self.file_data.name else None
+        if not self.file_data.name:
+            return None
+        # Generate signed URL for S3, fallback to the plain URL in case the S3
+        # backend is not being used.
+        try:
+            return self.file_data.file.key.generate_url(getattr(settings, 'AWS_URL_LIFETIME', 86400))
+        except AttributeError:
+            return self.file_data.url
 
     def save(self, *args, **kwargs):
         if self.file_data.name:
