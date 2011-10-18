@@ -96,13 +96,14 @@ class Utils(object):
 
         # replace PKs in q1 with data about the secondary object
         for item in q1:
-            if iterable_value:
-                new_list = []
-                for key in item.get(glue_field_name, []):
-                    new_list.append(q2_dict[key])
-                item[glue_field_name] = new_list
-            else:
-                item[glue_field_name] = q2_dict[item[glue_field_name]]
+            if item.get(glue_field_name, None) is not None:
+                if iterable_value:
+                    new_list = []
+                    for key in item.get(glue_field_name, []):
+                        new_list.append(q2_dict[key])
+                    item[glue_field_name] = new_list
+                else:
+                    item[glue_field_name] = q2_dict[item[glue_field_name]]
 
         return q1
 

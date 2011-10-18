@@ -1307,6 +1307,25 @@ class TestSessionManager(TestCase):
         self.assertTrue('country' in address)
         self.assertEquals(address['country'], self.venue1.address.country)
 
+        # test without a room defined, which tests the merging logic
+        e2 = self.event_manager.create(self.admin_token, 'Event 2',
+            'Second Event of My Unit Test', 'Event 2', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
+            self.organization1.id, {'venue' : self.venue1.id})
+        session2 = self.session_manager.create(self.admin_token,
+            self.right_now.isoformat(),
+            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e2.id)
+        ret = self.session_manager.detailed_surr_view(self.admin_token)
+
+    def test_view_without_room(self):
+        # test without a room defined, which tests the merging logic
+        e2 = self.event_manager.create(self.admin_token, 'Event 2',
+            'Second Event of My Unit Test', 'Event 2', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
+            self.organization1.id, {'venue' : self.venue1.id})
+        session2 = self.session_manager.create(self.admin_token,
+            self.right_now.isoformat(),
+            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e2.id)
+        ret = self.session_manager.detailed_surr_view(self.admin_token)
+
     def test_create(self):
         e1 = self.event_manager.create(self.admin_token, 'Event 1',
             'First Event of My Unit Test', 'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
