@@ -1,6 +1,6 @@
 {% extends "base_site.html" %}
 
-{% block title %}Upload File for Download{% endblock %} 
+{% block title %}Upload File{% endblock %} 
 
 {% block extrahead %}{{ block.super }}
 <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery-1.3.2.js"></script>
@@ -65,7 +65,7 @@ $(document).ready(function() {
 
 {% block content %}
 
-<form id="upload_form" enctype="multipart/form-data" action="{% url file_tasks:upload_file_for_download %}" method="POST">
+<form id="upload_form" enctype="multipart/form-data" action="{{ request.path }}" method="POST">
 <table border="1">
   <colgroup class="form_column_labels"></colgroup>
   <colgroup class="form_column_required"></colgroup>

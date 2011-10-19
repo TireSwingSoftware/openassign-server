@@ -285,6 +285,19 @@ def setup(machine):
             'u' : ['date_completed'],
             'd' : True,
         },
+        'FileUpload' : {
+            'c' : True,
+            'r' : ['name', 'description'],
+            'u' : ['name', 'description'],
+            'd' : True,
+        },
+        'FileUploadAttempt' : {
+            'c' : True,
+            'r' : ['assignment', 'date_started', 'date_completed', 'file_upload',
+                   'user', 'file_size', 'file_url', 'deleted'],
+            'u' : ['date_completed'],
+            'd' : True,
+        },
         'Group' : {
             'c' : True,
             'r' : ['categories', 'default', 'managers', 'name', 'users', 'notes'],

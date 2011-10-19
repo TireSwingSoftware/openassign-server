@@ -34,14 +34,11 @@ class TestFileDownload(TestCase):
         expected_return_code = expected_return_code or 200
         file_path = os.path.join(os.path.dirname(__file__), 'test_data', file_name)
         if use_form:
-            args = [auth_token.session_id]
-            if pk:
-                args.append(pk)
-            upload_url = reverse('file_tasks:upload_file_for_download_form', args=args)
+            upload_url = self.file_download_manager.get_upload_url(auth_token, pk)
             response = self.client.get(upload_url)
             self.assertEquals(response.status_code, expected_return_code)
         else:
-            upload_url = reverse('file_tasks:upload_file_for_download')
+            upload_url = self.file_download_manager.get_upload_url()
         with file(file_path, 'r') as f:
             postdata = {
                 'id': pk,
@@ -136,3 +133,79 @@ class TestFileDownload(TestCase):
             ['name', 'description', 'file_size', 'file_url'])
         self.assertTrue(result)
         self.assertTrue(result[0]['file_url'])
+
+class TestFileUpload(TestCase):
+    """Test cases for the FileUpload Task."""
+
+    def setUp(self):
+        self.initial_setup_args = ['precor']
+        super(TestFileUpload, self).setUp()
+        self.file_upload_manager = facade.managers.FileUploadManager()
+        self.file_upload_attempt_manager = facade.managers.FileUploadAttemptManager()
+
+    def tearDown(self):
+        for file_upload_attempt in facade.models.FileUploadAttempt.objects.all():
+            if file_upload_attempt.file_data.name:
+                file_upload_attempt.file_data.delete()
+        super(TestFileUpload, self).tearDown()
+
+    def _upload_file(self, auth_token=None, file_name=None,
+                     expected_return_code=None, use_form=False, pk=None):
+        auth_token = auth_token or self.auth_token
+        file_name = file_name or 'testfile.txt'
+        expected_return_code = expected_return_code or 200
+        file_path = os.path.join(os.path.dirname(__file__), 'test_data', file_name)
+        if use_form:
+            upload_url = self.file_upload_attempt_manager.get_upload_url(auth_token, pk)
+            response = self.client.get(upload_url)
+            self.assertEquals(response.status_code, expected_return_code)
+        else:
+            upload_url = self.file_upload_attempt_manager.get_upload_url()
+        with file(file_path, 'r') as f:
+            postdata = {
+                'id': pk,
+                'auth_token': auth_token.session_id,
+                'file_data': f,
+            }
+            if use_form:
+                del postdata['auth_token']
+            if use_form or not pk:
+                del postdata['id']
+            response = self.client.post(upload_url, postdata)
+        self.assertEquals(response.status_code, expected_return_code)
+        if expected_return_code != 200:
+            return
+        elif use_form:
+            return True
+        else:
+            file_upload_attempt_id = int(response.content)
+            return facade.models.FileUploadAttempt.objects.get(id=file_upload_attempt_id)
+
+    def test_create_file_upload_as_admin(self):
+        file_upload = self.file_upload_manager.create(self.admin_token, 'Test Upload',
+            'To complete this task, upload a file.')
+        self.assertTrue(file_upload)
+        result = self.file_upload_manager.get_filtered(self.admin_token,
+            {'exact': {'id': file_upload.id}},
+            ['name', 'description'])
+        self.assertTrue(result)
+        self.assertTrue(result[0]['name'])
+        self.assertTrue(result[0]['description'])
+        return file_upload
+
+    def test_upload_file_as_user(self):
+        file_upload = self.test_create_file_upload_as_admin()
+        result = self._upload_file(pk=file_upload.id)
+        self.assertTrue(result)
+        self.assertTrue(result.file_data.name)
+        self.assertTrue(result.file_url)
+        self.assertTrue(result.date_completed)
+
+    def test_upload_file_as_user_via_form(self):
+        file_upload = self.test_create_file_upload_as_admin()
+        result = self._upload_file(pk=file_upload.id, use_form=True)
+        self.assertTrue(result)
+        file_upload_attempt = facade.models.FileUploadAttempt.objects.get()
+        self.assertTrue(file_upload_attempt.file_data.name)
+        self.assertTrue(file_upload_attempt.file_url)
+        self.assertTrue(file_upload_attempt.date_completed)

@@ -1,10 +1,15 @@
+# Django
+from django.core.urlresolvers import reverse
+
 # PowerReg
 import facade
 from pr_services.credential_system.task_manager import TaskManager
 from pr_services.rpc.service import service_method
 
 class FileDownloadManager(TaskManager):
-    """Manage FileDownload tasks in the PowerReg system."""
+    """
+    Manage FileDownload tasks in the PowerReg system.
+    """
 
     def __init__(self):
         super(FileDownloadManager, self).__init__()
@@ -48,13 +53,41 @@ class FileDownloadManager(TaskManager):
         return file_download
 
     @service_method
+    def get_upload_url(self, auth_token=None, id=None):
+        """
+        Return the URL where POST data should be submitted to upload a file.
+        A GET request for this URL will return an HTML form where the file can
+        be submitted, useful if the client needs to display the upload form in
+        a iframe.  If present, auth_token and id will be used to construct the
+        returned URL.
+
+        :param auth_token:  The authentication token of the acting user.
+        :type auth_token:   facade.models.AuthToken or None
+        :param id:          The primary key of the FileDownload task.
+        :type id:           int or None
+        :return:            URL to the upload form.
+        """
+        if auth_token:
+            args = [auth_token.session_id]
+            if id:
+                args.append(id)
+            return reverse('file_tasks:upload_file_for_download_form', args=args)
+        else:
+            return reverse('file_tasks:upload_file_for_download')
+
+    @service_method
     def delete(self, auth_token, file_download_id):
-        """Mark a file download as deleted and remove it from storage."""
+        """
+        Mark a file download as deleted and remove it from storage.
+
+        :param auth_token:          The authentication token of the acting user
+        :type auth_token:           facade.models.AuthToken
+        :param file_download_id:    The primary key of the FileDownload task.
+        :type file_download_id:     int
+        """
         file_download = self._find_by_id(file_download_id)
         self.authorizer.check_delete_permissions(auth_token, file_download)
         if file_download.file_data.name:
             file_download.file_data.delete(False)
         file_download.deleted = True
         file_download.save()
-
-# vim:tabstop=4 shiftwidth=4 expandtab

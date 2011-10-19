@@ -29,6 +29,8 @@ class AssignmentAttemptManager(ObjectManager):
                       'kwargs' : {'fetch_all':False, 'resume':False}},
             'sco' : {'manager' : 'ScoSessionManager',},
             'video' : {'manager' : 'VideoSessionManager'},
+            'filedownload' : {'manager' : 'FileDownloadAttemptManager'},
+            'fileupload' : {'manager' : 'FileUploadAttemptManager'},
         }
 
     def _create(self, auth_token, assignment):

@@ -9,7 +9,9 @@ from pr_services.utils import Utils
 import facade
 
 class FileDownloadAttemptManager(AssignmentAttemptManager):
-    """Manage FileDownloadAttempt objects in the PowerReg system."""
+    """
+    Manage FileDownloadAttempt objects in the PowerReg system.
+    """
 
     def __init__(self):
         super(FileDownloadAttemptManager, self).__init__()

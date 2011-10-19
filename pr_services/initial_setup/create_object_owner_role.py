@@ -54,6 +54,12 @@ def setup(machine):
             'u' : [],
             'd' : False,
         },
+        'FileUploadAttempt' : {
+            'c' : True,
+            'r' : ['assignment', 'date_started', 'date_completed', 'file_upload'],
+            'u' : [],
+            'd' : False,
+        },
         'Response' : {
             'c' : True,
             'r' : ['exam_session', 'question', 'text', 'value', 'valid'],
