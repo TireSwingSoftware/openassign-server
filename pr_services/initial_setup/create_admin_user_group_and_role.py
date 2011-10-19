@@ -450,7 +450,7 @@ def setup(machine):
         },
         'Room' : {
             'c' : True,
-            'r' : ['name', 'capacity', 'venue'],
+            'r' : ['name', 'capacity', 'venue', 'venue_name', 'venue_address'],
             'u' : ['name', 'capacity', 'venue'],
             'd' : True,
         },

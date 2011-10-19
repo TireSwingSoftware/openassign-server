@@ -23,6 +23,8 @@ class RoomManager(ObjectManager):
             'name' : 'get_general',
             'capacity' : 'get_general',
             'venue' : 'get_foreign_key',
+            'venue_name' : 'get_general',
+            'venue_address' : 'get_general',
         })
         self.setters.update({
             'venue' : 'set_foreign_key',

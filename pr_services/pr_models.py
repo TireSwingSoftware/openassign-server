@@ -1483,6 +1483,15 @@ class Address(OwnedPRModel):
     label = models.CharField(max_length=255)
     active = PRBooleanField(default = True)
 
+    @property
+    def address_dict(self):
+        return {'country' : self.country,
+                'region' : self.region,
+                'locality' : self.locality,
+                'postal_code' : self.postal_code,
+                'label' : self.label,
+        }
+
     def __unicode__(self):
         return u'%s\n%s\n%s\n%s\n%s' % (self.label, self.locality, self.region, self.postal_code,
                                   self.country)
@@ -1827,6 +1836,14 @@ class Room(OwnedPRModel):
     name = models.CharField(max_length=63)
     capacity = models.PositiveIntegerField()
     notes = models.ManyToManyField(Note, related_name='rooms')
+
+    @property
+    def venue_name(self):
+        return self.venue.name
+
+    @property
+    def venue_address(self):
+        return self.venue.address.address_dict
 
     def get_remaining_capacity(self, start, end):
         """

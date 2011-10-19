@@ -319,9 +319,16 @@ class SessionManager(ObjectManager):
 
     @service_method
     def detailed_surr_view(self, auth_token, filters=None, fields=None):
+        """
+        Adds details about room and SURRs. May not perform well if fetching lots of
+        results at once, because fetching room and venue names might cause extra
+        database queries.
+        """
         if filters is None:
             filters = {}
-        ret = self.get_filtered(auth_token, filters, ['start', 'end', 'status', 'confirmed', 'event', 'name', 'title', 'url', 'description', 'session_user_role_requirements'])
+        ret = self.get_filtered(auth_token, filters, ['start', 'end', 'status', 'confirmed', 'event', 'name', 'room', 'title', 'url', 'description', 'session_user_role_requirements'])
+
+        ret = Utils.merge_queries(ret, facade.managers.RoomManager(), auth_token, ['name', 'venue_name', 'venue_address'], 'room')
 
         return Utils.merge_queries(ret, facade.managers.SessionUserRoleRequirementManager(), auth_token, ['session', 'session_user_role', 'role_name', 'min', 'max', 'credential_types'], 'session_user_role_requirements')
 
