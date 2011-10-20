@@ -1,7 +1,6 @@
 """
 SessionResourceTypeRequirement manager class
 """
-
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
@@ -46,8 +45,25 @@ class SessionResourceTypeRequirementManager(ObjectManager):
 
         if resource_ids is None:
             resource_ids = []
-
+            
         session_instance = self._find_by_id(session_id, facade.models.Session)
+        # if there are already assigned resources, make sure they're free during this session
+        if len(resource_ids) > 0:
+            for res_id in resource_ids:
+                scheduled_sessions = self.get_sessions_using_resource(auth_token, res_id)
+                
+                for test_session in scheduled_sessions:
+                    conflict_found = False
+                    # TODO: Add buffer time to allow for transportation, maintenance of resources? 
+                    # This is hard to anticipate for all possible resource types!
+                    if test_session.start > session_instance.start and test_session.start < session_instance.end:
+                        conflict_found = True
+                    if test_session.end > session_instance.start and test_session.end < session_instance.end:
+                        conflict_found = True
+                    if conflict_found:
+                        # an assigned resource is't free during this time period
+                        return None
+        
         resource_type_instance = self._find_by_id(resource_type_id, facade.models.ResourceType)
         e = self.my_django_model(session = session_instance,
                 resource_type=resource_type_instance, min=min, max=max)
@@ -58,5 +74,26 @@ class SessionResourceTypeRequirementManager(ObjectManager):
             facade.subsystems.Setter(auth_token, self, e, {'resources' : { 'add' : resource_ids}})
         self.authorizer.check_create_permissions(auth_token, e)
         return e
+
+    @service_method
+    def get_sessions_using_resource(self, auth_token, resource_id, activeOnly=False):
+        # TODO: implement activeOnly filter (if True, return only Sessions whose status is active)
+        # find all resource-type requirements that use this resource (use existing Resource.session_resource_type_requirements)
+        resource_mgr = facade.managers.ResourceManager()
+        res_info = resource_mgr.get_filtered(auth_token, {'exact' : {'id' :resource_id} }, ['session_resource_type_requirements'])
+        related_requirements = res_info[0]['session_resource_type_requirements']
+    
+        if len(related_requirements) == 0:
+            # this resource is not currently scheduled in any session
+            return []
+
+        session_mgr = facade.managers.SessionManager()
+        related_sessions = []
+        for req_id in related_requirements:
+            sessions = session_mgr.get_filtered(auth_token, 
+                { 'member' : {'session_resource_type_requirements' : [req_id] } }, ['name', 'description', 'start', 'end'])
+            related_sessions += sessions
+            
+        return related_sessions
 
 # vim:tabstop=4 shiftwidth=4 expandtab

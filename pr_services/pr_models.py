@@ -1275,6 +1275,7 @@ class Resource(OwnedPRModel):
     """
 
     name = models.CharField(max_length=255, unique=True)
+    description = models.TextField()
     notes = models.ManyToManyField(Note, related_name = 'resources')
     active = PRBooleanField(default = True)
     # many-to-many relationship with ResourceType gives us a resource_types field
@@ -2400,7 +2401,7 @@ class SessionResourceTypeRequirement(OwnedPRModel):
     resource_type = PRForeignKey(ResourceType, related_name='%(class)ss')
     #: actual Resources that fill this requirement
     resources = models.ManyToManyField(Resource, related_name='session_resource_type_requirements')
-    session = PRForeignKey(Session)
+    session = PRForeignKey(Session, related_name='session_resource_type_requirements')
     min = models.PositiveIntegerField()
     max = models.PositiveIntegerField()
     notes = models.ManyToManyField(Note, related_name = 'session_resource_type_requirements')
