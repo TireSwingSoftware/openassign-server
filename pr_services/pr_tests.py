@@ -3258,20 +3258,22 @@ class TestUtilsManager(TestCase):
         self.assertRaises(exceptions.FieldNameNotFoundException,
             self.utils_manager.get_choices,
                 'not_a_model', 'aspect_ratio')
-        # check the invalid field name case
-        self.assertRaises(exceptions.FieldNameNotFoundException,
+
+        if 'vod_aws' in settings.INSTALLED_APPS:
+            # check the invalid field name case
+            self.assertRaises(exceptions.FieldNameNotFoundException,
             self.utils_manager.get_choices,
                 'Video', 'not_a_field')
-        # check that we gen an empty list for a field that has no choices
-        list = self.utils_manager.get_choices('Video', 'live')
-        self.assertEquals(len(list), 0)
-        # check a couple of fields with choices
-        list = self.utils_manager.get_choices('Video', 'aspect_ratio')
-        self.assertEquals(len(list), 2)
-        self.assertEquals(list[0], '4:3')
-        self.assertEquals(list[1], '16:9')
-        list = self.utils_manager.get_choices('Question', 'widget')
-        self.assertEquals(len(list), 25)
+            # check that we gen an empty list for a field that has no choices
+            list = self.utils_manager.get_choices('Video', 'live')
+            self.assertEquals(len(list), 0)
+            # check a couple of fields with choices
+            list = self.utils_manager.get_choices('Video', 'aspect_ratio')
+            self.assertEquals(len(list), 2)
+            self.assertEquals(list[0], '4:3')
+            self.assertEquals(list[1], '16:9')
+            list = self.utils_manager.get_choices('Question', 'widget')
+            self.assertEquals(len(list), 25)
 
 
 ################################################################################################################################################
