@@ -2327,7 +2327,6 @@ class AuthToken(OwnedPRModel):
     #: The tokens may be renewed any number of times.
     time_of_expiration = models.DateTimeField()
 
-    #: The ip address gets corrected by the rpc.amf.PRGateway class
     ip = models.IPAddressField(default = '0.0.0.0')
     active = PRBooleanField(default = True)
 
