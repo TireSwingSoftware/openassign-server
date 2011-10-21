@@ -23,6 +23,7 @@ from cookiecache import CookieCache
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
+from django.utils.unittest import skipIf, skipUnless
 from initial_setup import InitialSetupMachine, default_read_fields
 from pr_services import exceptions
 from pr_services import pr_time
@@ -2741,6 +2742,7 @@ class TestUserManager(TestCase):
         self.assertEquals(len(ret), 1)
         self.assertTrue('groups' in ret[0])
     
+    @skipUnless(settings.LDAP_AUTHENTICATION, "ldap authentication disabled")
     def test_ldap_login(self):
         self.group_manager.create(self.admin_token, 'library').id
         self.group_manager.create(self.admin_token, 'student').id
