@@ -102,5 +102,19 @@ Run the following commands to perform the database initialization.
     $ ./manage.py setup
 
 
+## Running the test suite
+
+#### Local unit tests:
+
+    ./manage.py test pr_services
+
+#### Remote service tests:
+
+ Settings are defined in **test_svc_settings.py** which can be copied from the
+ **test_svc_settings.py.example** template file. These tests require running
+  the server.
+
+    ./manage.py runserver 127.0.0.1:12345
+    ./tests_svc.py
 
 
