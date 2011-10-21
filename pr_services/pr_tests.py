@@ -2108,6 +2108,11 @@ class TestUploadManager(TestCase):
         photo_file_name = os.path.join(os.path.dirname(__file__), 'test_data/testimage.png')
         settings.FILE_UPLOAD_MAX_MEMORY_SIZE = os.path.getsize(photo_file_name) / 2
         self._upload_user_photo(photo_file_name)
+        
+    def test_upload_corrupt_image(self):
+        image_file = os.path.join(os.path.dirname(__file__), 'test_data/corrupt.jpg')
+        settings.FILE_UPLOAD_MAX_MEMORY_SIZE = os.path.getsize(image_file) * 2
+        self.assertRaises(facade.models.ModelDataValidationError, self._upload_user_photo, image_file)
 
 class TestUserManager(TestCase):
     def test_addresses(self):
