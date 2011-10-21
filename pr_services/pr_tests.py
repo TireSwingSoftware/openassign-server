@@ -2017,7 +2017,7 @@ class TestOrganizationManager(TestCase):
 
         org = self.organization_manager.create(self.admin_token, 'Testing Organization', org_dict)
             
-        photo_file_name = os.path.join(os.path.dirname(__file__), 'test_data/biglebowski.jpg')
+        photo_file_name = os.path.join(os.path.dirname(__file__), 'test_data/testimage.png')
         settings.FILE_UPLOAD_MAX_MEMORY_SIZE = os.path.getsize(photo_file_name) * 2
 
         the_org = self.organization_manager.get_filtered(self.admin_token, {'exact' : {'id' : org.id}}, ['photo_url'])[0]
@@ -2099,13 +2099,13 @@ class TestUploadManager(TestCase):
         self.assertEquals(the_user['photo_url'][-4:], '.png')
 
     def test_upload_user_photo(self):
-        photo_file_name = os.path.join(os.path.dirname(__file__), 'test_data/biglebowski.jpg')
+        photo_file_name = os.path.join(os.path.dirname(__file__), 'test_data/testimage.png')
         settings.FILE_UPLOAD_MAX_MEMORY_SIZE = os.path.getsize(photo_file_name) * 2
         self._upload_user_photo(photo_file_name)
 
     def test_upload_large_user_photo(self):
         # Test with a photo larger than the max memory size for file uploads
-        photo_file_name = os.path.join(os.path.dirname(__file__), 'test_data/biglebowski.jpg')
+        photo_file_name = os.path.join(os.path.dirname(__file__), 'test_data/testimage.png')
         settings.FILE_UPLOAD_MAX_MEMORY_SIZE = os.path.getsize(photo_file_name) / 2
         self._upload_user_photo(photo_file_name)
 
