@@ -27,17 +27,18 @@ are required for the python packages that will be installed below.
 - mysqlclient
 - pq
 - curl4 (with openssl)
+- memcached
 
 The package commands are listed below for common deployments.
 
 #### Debian
 
-    $ apt-get install git swig sqlite3 lib{ssl,mysqlclient,pq,curl4-openssl}-dev python{,2.6-dev,-{ldap,setuptools}}
+    $ apt-get install git swig sqlite3 memcached lib{ssl,mysqlclient,pq,curl4-openssl}-dev python{,2.6-dev,-{ldap,setuptools}}
 
 
 #### Ubuntu
 
-    $ apt-get install git swig sqlite3 lib{ssl,mysqlclient,pq}-dev python{,2.7-dev} python-{ldap,setuptools}
+    $ apt-get install git swig sqlite3 memcached lib{ssl,mysqlclient,pq}-dev python{,2.7-dev} python-{ldap,setuptools}
 
 
 ### Getting the Source Code
