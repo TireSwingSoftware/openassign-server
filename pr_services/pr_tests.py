@@ -27,6 +27,7 @@ from django.utils.unittest import skipIf, skipUnless
 from initial_setup import InitialSetupMachine, default_read_fields
 from pr_services import exceptions
 from pr_services import pr_time
+from pr_services import pr_models
 from pr_services.utils import UnicodeCsvWriter
 from pr_services.rpc.service import service_method, wrap_service_method, RpcService, create_rpc_service
 from pr_services.object_manager import ObjectManager
@@ -3264,21 +3265,21 @@ class TestUtilsManager(TestCase):
             self.utils_manager.get_choices,
                 'not_a_model', 'aspect_ratio')
 
-        if 'vod_aws' in settings.INSTALLED_APPS:
-            # check the invalid field name case
-            self.assertRaises(exceptions.FieldNameNotFoundException,
-            self.utils_manager.get_choices,
-                'Video', 'not_a_field')
-            # check that we gen an empty list for a field that has no choices
-            list = self.utils_manager.get_choices('Video', 'live')
-            self.assertEquals(len(list), 0)
-            # check a couple of fields with choices
-            list = self.utils_manager.get_choices('Video', 'aspect_ratio')
-            self.assertEquals(len(list), 2)
-            self.assertEquals(list[0], '4:3')
-            self.assertEquals(list[1], '16:9')
-            list = self.utils_manager.get_choices('Question', 'widget')
-            self.assertEquals(len(list), 25)
+        self.assertRaises(exceptions.FieldNameNotFoundException,
+            self.utils_manager.get_choices, 'Assignment', 'not_a_field')
+
+        get_choices = self.utils_manager.get_choices
+
+        # check that we gen an empty list for a field that has no choices
+        choices = get_choices('Assignment', 'date_started')
+        self.assertEquals(len(choices), 0)
+
+        # check a couple of fields with choices
+        choices = get_choices('Assignment', 'status')
+        self.assertEquals(pr_models.Assignment.STATUS_CHOICES, choices)
+
+        choices = get_choices('Domain', 'password_hash_type')
+        self.assertEquals(pr_models.Domain.PASSWORD_HASH_TYPE_CHOICES, choices)
 
 
 ################################################################################################################################################
