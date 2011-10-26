@@ -208,13 +208,9 @@ class TestCase(BaseTestCase):
         req3 = self.session_template_resource_type_requirement_manager.create( self.admin_token, st2_id, rt2_id, 0, 5)
         req3_id = req3['value']['id']
 
-        # create a product line (required for event)
-        pl1 = self.product_line_manager.create(self.admin_token, 'Super Product Line')
-        pl1_id = pl1['value']['id']
-
         # create an event to hold these sessions
         evt1 = self.event_manager.create(self.admin_token, 'EVT', 'Super Event',
-            'This event is super!', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1, pl1_id)
+            'This event is super!', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1)
         evt1_id = evt1['value']['id']
 
         # create a Session from each template
@@ -240,7 +236,6 @@ class TestCase(BaseTestCase):
             'req1_id' : req1_id,
             'req2_id' : req2_id,
             'req3_id' : req3_id,
-            'pl1_id' : pl1_id,
             'evt1_id' : evt1_id,
             'sess1_id' : sess1_id,
             'sess2_id' : sess2_id,
@@ -980,24 +975,24 @@ class TestSessionManagerSvc(TestCase):
         self.assertEquals(ret['status'], 'OK')
         self.failUnless(isinstance(ret['value'], list))
         self.assertEquals(len(ret['value']), 1)
-        session1 = ret['value'][0]
-        self.assertEquals(session1['session_user_role_requirements'], [int(surr_id)])
+        session2 = ret['value'][0]
+        self.assertEquals(session2['session_user_role_requirements'], [int(surr_id)])
 
         # Now make a resource-type requirement for this session
         restype_id = self.resource_type_manager.create(self.admin_token, 'Unobtainium')['value']['id']
         # now make the requirement
         ret = self.session_resource_type_requirement_manager.create(self.admin_token,
-            a_product_line_session_id, restype_id, 1, 5)
+            session1_id, restype_id, 1, 5)
         self.assertEquals(ret['status'], 'OK')
         rtreq_id = ret['value']['id']
         # make sure that we can get the session resource-type requirement
         ret = self.session_manager.get_filtered(self.admin_token,
-            {'exact' : {'id' : a_product_line_session_id}}, ['session_resource_type_requirements'])
+            {'exact' : {'id' : session1_id}}, ['session_resource_type_requirements'])
         self.assertEquals(ret['status'], 'OK')
         self.failUnless(isinstance(ret['value'], list))
         self.assertEquals(len(ret['value']), 1)
-        a_product_line_session = ret['value'][0]
-        self.assertEquals(a_product_line_session['session_resource_type_requirements'], [int(rtreq_id)])
+        session3 = ret['value'][0]
+        self.assertEquals(session3['session_resource_type_requirements'], [int(rtreq_id)])
         
     def test_filter_for_date_range(self):
         region1 = self.region_manager.create(self.admin_token, 'Region 1')
@@ -1220,11 +1215,10 @@ class TestSessionTemplateManagerSvc(TestCase):
         self.assertEquals(region1['status'], 'OK')
         venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789', region1['value']['id'])
         self.assertEquals(venue1['status'], 'OK')
-        a_product_line_id = self.product_line_manager.create(self.admin_token, 'A Product Line!')['value']['id']
         batman_being_id = self.session_template_manager.create(self.admin_token, 'Batman Being', 'A Course on how to be Batman', '1',
             'Don\'t fake the funk on a nasty dunk', 100, 1000, True)['value']['id']
         ret = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id, {'venue' : venue1['value']['id']})
+            (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})
         self.assertEquals(ret['status'], 'OK')
         event1 = ret['value']['id']
         batman_session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
@@ -1331,7 +1325,7 @@ class TestSessionUserRoleRequirementManagerSvc(TestCase):
         self.assertEquals(session_user_role_requirement['status'], 'error')
         self.assertEquals(session_user_role_requirement['error'][0], 23)
         session_user_role_requirement = self.session_user_role_requirement_manager.create(self.admin_token, session_id,
-            session_user_role_id, 1, 10, False, [cred_type_id])
+            session_user_role_id, 1, 10, [cred_type_id])
         self.assertEquals(session_user_role_requirement['status'], 'OK')
         res = self.session_user_role_requirement_manager.get_filtered(self.admin_token,
             {'exact' : {'id' : session_user_role_requirement['value']['id']}}, ['credential_types'])
@@ -1351,7 +1345,7 @@ class TestSessionResourceTypeRequirementManagerSvc(TestCase):
         self.assertEquals(venue1['status'], 'OK')
         a_product_line_id = self.product_line_manager.create(self.admin_token, 'PL')['value']['id']
         event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), self.organization1, a_product_line_id, {'venue' : venue1['value']['id']})['value']['id']
+            (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})['value']['id']
         session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active',
             True, 100, event1, {'modality' : 'ILT'})['value']['id']
         # define a ResourceType and assign it as a requirement for this Session
