@@ -1186,7 +1186,7 @@ class TestEvaluations(pr_tests.TestCase):
                                            'Event 1', 'Event 1',
                                            self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id,
-            self.product_line1.id, {'venue' : self.venue1.id})
+            {'venue' : self.venue1.id})
         session1 = self.session_manager.create(self.admin_token,
                                                self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), 'active', True, 10000,

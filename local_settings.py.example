@@ -1,12 +1,6 @@
 # This file is loaded after the defaults have been defined in settings.py, and
 # all variables defined there are available in the local namespace.
 
-# This file was last changed in $Rev: 8607 $.
-# Compare the revision in the example file with the value in your own
-# local_settings.py, and run a command similar to the following to update your
-# own local_settings with any changes:
-#   svn diff -r MYREV:REV local_settings.py.example | patch local_settings.py
-
 ##############################################################
 # general
 ##############################################################
@@ -23,7 +17,6 @@ SKIP_SOUTH_TESTS = True
 
 # List additional apps that only need to be used for development/testing.
 INSTALLED_APPS += (
-#    'test_services',
 #    'pr_svc_tests',
 )
 
@@ -32,7 +25,7 @@ FRONTEND_URL = 'http://local.poweru.net/'
 BACKEND_URL = urlparse.urljoin(FRONTEND_URL, 'svc/')
 
 # Debug settings. All should be "false" for production deployments
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 RPC_TRACE = True
 
@@ -295,5 +288,9 @@ VOD_TEMP_THUMBNAIL='example.jpg'
 # Whether to queue async tasks for video upload workflow.  This should be False
 # when running unit tests.
 VOD_ENABLE_VIDEO_UPLOAD_WORKFLOW = True # defaults to True
+
+# Storage backend to use for files associated with a FileDownload task.
+# Defaults to using the DEFAULT_FILE_STORAGE setting if not specified.
+FILE_TASKS_STORAGE_BACKEND = 'storages.backends.s3boto.S3BotoStorage'
 
 # vim:tabstop=4 shiftwidth=4 expandtab

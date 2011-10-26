@@ -1125,6 +1125,12 @@ class Assignment(PRModel):
 
         super(Assignment, self).save(*args, **kwargs)
 
+        # test if the session's status should change from 'pending' to 'active'
+        if self.task.final_type.name == 'session user role requirement':
+            surr = self.task.downcast_completely()
+            session = surr.session
+            session.check_status()
+
     def __unicode__(self):
         return u'(Assignment for %s, id=%d, user=%s)' % \
             (repr(self.task), self.id, repr(self.user))
@@ -1478,6 +1484,15 @@ class Address(OwnedPRModel):
     label = models.CharField(max_length=255)
     active = PRBooleanField(default = True)
 
+    @property
+    def address_dict(self):
+        return {'country' : self.country,
+                'region' : self.region,
+                'locality' : self.locality,
+                'postal_code' : self.postal_code,
+                'label' : self.label,
+        }
+
     def __unicode__(self):
         return u'%s\n%s\n%s\n%s\n%s' % (self.label, self.locality, self.region, self.postal_code,
                                   self.country)
@@ -1823,6 +1838,14 @@ class Room(OwnedPRModel):
     capacity = models.PositiveIntegerField()
     notes = models.ManyToManyField(Note, related_name='rooms')
 
+    @property
+    def venue_name(self):
+        return self.venue.name
+
+    @property
+    def venue_address(self):
+        return self.venue.address.address_dict
+
     def get_remaining_capacity(self, start, end):
         """
         For a given block of time, does this Room have extra capacity?
@@ -1925,6 +1948,7 @@ class Session(OwnedPRModel):
     description = models.TextField(null = True)
     event = PRForeignKey('Event', related_name = 'sessions')
     sent_reminders = PRBooleanField(default=False)
+    session_user_roles = models.ManyToManyField('SessionUserRole', related_name='sessions', through='SessionUserRoleRequirement')
 
     def __unicode__(self):
         if self.session_template:
@@ -1932,6 +1956,21 @@ class Session(OwnedPRModel):
                                                                 self.event.name)
         else:
             return u'name: %s, event name: %s' % (self.name, self.event.name)
+
+    def check_status(self):
+        """
+        If all SURRs have met their minimum enrollment numbers, change the
+        status of this session to 'active' instead of 'pending'.
+        """
+        if self.status == 'pending':
+            set_active = True
+            for surr in self.session_user_role_requirements.all():
+                if surr.assignments.filter(status='assigned').count() < surr.min:
+                    set_active = False
+                    break
+            if set_active:
+                self.status = 'active'
+                self.save()
 
     @staticmethod
     def mangle_id(id):
@@ -2012,7 +2051,7 @@ class Event(OwnedPRModel):
     end = models.DateField()
     notes = models.ManyToManyField(Note, related_name='events')
     venue = PRForeignKey(Venue, related_name='events', null=True)
-    product_line = PRForeignKey(ProductLine, related_name='events')
+    product_line = PRForeignKey(ProductLine, related_name='events', null=True)
     #: Amount of time before an e-mail reminder should be sent, in seconds, relative to the start time of the event
     lead_time = models.PositiveIntegerField(null=True)
     #: Amount of time after an event in seconds at which the event should be marked completed, and e-mails should be sent out
@@ -2176,6 +2215,17 @@ class SessionUserRoleRequirement(Task):
     enrollment_status_test = PRForeignKey('ConditionTestCollection', related_name='session_user_role_requirements', null=True)
     ignore_room_capacity = PRBooleanField(default=False)
 
+    def save(self, *args, **kwargs):
+        self.name = self.session.name
+        self.title = 'Session: %s as %s' % (self.session.title, self.session_user_role.name)
+        datetime_format = '%b %d, %Y %I:%M %p'
+        self.description = 'Start: %s, End: %s' % (self.session.start.strftime(datetime_format), self.session.end.strftime(datetime_format))
+        super(SessionUserRoleRequirement, self).save(*args, **kwargs)
+
+    @property
+    def role_name(self):
+        return self.session_user_role.name
+
     @property
     def remaining_capacity(self):
         remaining_assignments = super(SessionUserRoleRequirement, self).remaining_capacity
@@ -2277,7 +2327,6 @@ class AuthToken(OwnedPRModel):
     #: The tokens may be renewed any number of times.
     time_of_expiration = models.DateTimeField()
 
-    #: The ip address gets corrected by the rpc.amf.PRGateway class
     ip = models.IPAddressField(default = '0.0.0.0')
     active = PRBooleanField(default = True)
 

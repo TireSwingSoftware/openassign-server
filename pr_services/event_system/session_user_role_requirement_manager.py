@@ -5,8 +5,8 @@ SessionUserRoleRequirement manager class
 from datetime import datetime
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
+from pr_services.utils import Utils
 import facade
-import logging
 
 class SessionUserRoleRequirementManager(facade.managers.TaskManager):
     """
@@ -24,6 +24,7 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
             'max' : 'get_general',
             'min' : 'get_general',
             'ignore_room_capacity' : 'get_general',
+            'role_name' : 'get_general',
         })
         self.setters.update({
             'credential_types' : 'set_many',
@@ -37,7 +38,7 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
 
     @service_method
     def create(self, auth_token, session_id, session_user_role_id, min, max,
-        unused, credential_type_ids=None, optional_attributes=None):
+        credential_type_ids=None, optional_attributes=None):
         
         """
         Create a new SessionUserRoleRequirement
@@ -46,7 +47,6 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
         @param session_user_role_id     Primary key for an session_user_role
         @param min                      Minimum number required
         @param max                      Maximum number allowed
-        @param unused                   bool: obsolete positional parameter retained for compatibility
         @param credential_type_ids      Array of credential_type primary keys
         @return                         A reference to the newly created SessionUserRoleRequirement
         """
@@ -68,5 +68,13 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
             new_surr.save()
         self.authorizer.check_create_permissions(auth_token, new_surr)
         return new_surr
+
+    @service_method
+    def surr_view(self, auth_token, filters=None, fields=None):
+        if filters is None:
+            filters = {}
+        ret = self.get_filtered(auth_token, filters, ['session', 'session_user_role', 'min', 'max', 'credential_types'])
+
+        return Utils.merge_queries(ret, facade.managers.SessionUserRoleManager(), auth_token, ['name'], 'session_user_role')
 
 # vim:tabstop=4 shiftwidth=4 expandtab

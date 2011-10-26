@@ -17,11 +17,15 @@ def get_client_ip():
     # adapted from solution at 
     # http://stackoverflow.com/questions/4581789/how-do-i-get-user-ip-address-in-django
     request = get_current_request()
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[-1].strip()
+    if request is not None:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[-1].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR')
     else:
-        ip = request.META.get('REMOTE_ADDR')
+        # if no request exists, we must be calling direct through a python interpreter.
+        ip = '127.0.0.1'
     return ip
 
 

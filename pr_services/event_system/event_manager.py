@@ -63,7 +63,7 @@ class EventManager(ObjectManager):
         self.my_django_model = facade.models.Event
 
     @service_method
-    def create(self, auth_token, name_prefix, title, description, start, end, organization, product_line,
+    def create(self, auth_token, name_prefix, title, description, start, end, organization,
             optional_attributes=None):
         
         """
@@ -79,8 +79,7 @@ class EventManager(ObjectManager):
         @param end                  Date on which the Event ends, as an ISO8601 string.
                                     If you provide hour, minute, or second, they will be ignored.
         @param organization         FK for organization
-        @param product_line         Foreign Key for a product_line
-        @param optional_attributes  currently only 'venue', 'region', 'event_template', and 'lead_time'
+        @param optional_attributes  currently only 'venue', 'region', 'event_template', 'product_line' and 'lead_time'
         @return                     a reference to the newly created Event
         """
         
@@ -94,7 +93,6 @@ class EventManager(ObjectManager):
         e = self.my_django_model.objects.create(title=title, description=description,
                 start=start_date,
                 organization = self._find_by_id(organization, facade.models.Organization),
-                product_line = self._find_by_id(product_line, facade.models.ProductLine),
                 end = end_date,
                 owner = auth_token.user)
         e.name = '%s%d' % (name_prefix if name_prefix is not None else '', e.id)

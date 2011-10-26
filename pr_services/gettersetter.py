@@ -231,13 +231,7 @@ class Getter(object):
         if hasattr(result_object, field_name): 
             a = getattr(result_object, field_name)
             if isinstance(a, facade.models.Address):
-                ret = { 'country' : a.country,
-                        'region' : a.region,
-                        'locality' : a.locality,
-                        'postal_code' : a.postal_code,
-                        'label' : a.label,
-                }
-
+                ret = a.address_dict
         return ret
 
     @is_for_derived_attribute
