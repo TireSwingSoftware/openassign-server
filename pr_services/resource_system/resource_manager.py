@@ -51,7 +51,7 @@ class ResourceManager(ObjectManager):
         return r
 
     @service_method
-    def find_available_resources(self, auth_token, start, end):
+    def find_available_resources(self, auth_token, start, end, requested_fields=['name','description']):
         # build a list of blocked resources, then exclude them from final results
         blocked_resource_ids = []
 
@@ -74,7 +74,7 @@ class ResourceManager(ObjectManager):
         # remove duplicates from the list of blocked IDs
         blocked_resource_ids = list(set(blocked_resource_ids))
         # return all NON-blocked resources (ie, those still available during this time)
-        return self.get_filtered(auth_token, {'not': {'member' : {'id' : blocked_resource_ids} } }, ['name', 'description'])
+        return self.get_filtered(auth_token, {'not': {'member' : {'id' : blocked_resource_ids} } }, requested_fields)
 
     @service_method    
     def resource_used_during(self, auth_token, resource_id, start, end):
