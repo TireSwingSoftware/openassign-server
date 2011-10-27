@@ -186,7 +186,7 @@ SERVER_EMAIL = 'no-reply@example.poweru.com'
 # e-commerce app, celery and rpc services for sending emails to sysadmins.
 ADMINS = [
     # ('Your Name', 'your_email@domain.com'),
-    ('', 'it-support-staff@example.com'),
+    # ('', 'it-support-staff@example.com'),
 ]
 
 # this is the standard Django setting; used when sending messages to ADMINS

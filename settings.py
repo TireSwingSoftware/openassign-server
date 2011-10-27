@@ -276,7 +276,7 @@ if len(logging.getLogger().handlers) == 0:
 # Add additional error logging to admins using the pr_messaging app.
 from pr_messaging.logger import MessagingHandler
 # Only executes this part once when settings is imported as 'settings'.
-if '.' not in __name__:
+if '.' not in __name__ and ADMINS:
     handler = MessagingHandler(level=logging.ERROR, message_type='log-message',
                                recipients=ADMINS)
     logging.getLogger().addHandler(handler)
