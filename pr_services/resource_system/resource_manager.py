@@ -61,14 +61,20 @@ class ResourceManager(ObjectManager):
         # eg,  [{'id': 1}, {'id': 2}, {'id': 3}, {'id': 4}]
         
         # convert time arguments from isoformat string to datetime, if not already
-        if isinstance(start, basestring):
-            start = pr_time.iso8601_to_datetime(start)
-        if isinstance(end, basestring):
-            end = pr_time.iso8601_to_datetime(end)
+        #if isinstance(start, basestring):
+        #    start = pr_time.iso8601_to_datetime(start)
+        #if isinstance(end, basestring):
+        #    end = pr_time.iso8601_to_datetime(end)
             
         conflicting_sessions = session_manager.get_filtered(auth_token,
-            { 'greater_than_or_equal' : {'start' : start },
-              'less_than_or_equal' : {'end' : end } }, ['name', 'status', 'session_resource_type_requirements'])
+            #{ 'greater_than_or_equal' : {'start' : start },
+            #  'less_than_or_equal' : {'end' : end } }, 
+              {'or' : [  # if session start OR end-time falls within the test period...
+                {'range' : {'start': [start, end],},},
+                {'range' : {'end': [start, end],},},
+                ],
+              },       
+            ['name', 'status', 'session_resource_type_requirements'])
         
         for sess in conflicting_sessions:
             for req_id in sess['session_resource_type_requirements']:
@@ -91,17 +97,35 @@ class ResourceManager(ObjectManager):
         session_manager = facade.managers.SessionManager()
         related_sessions = res_requirement_manager.get_sessions_using_resource(auth_token, resource_id)
 
-        if isinstance(start, basestring):
-            start = pr_time.iso8601_to_datetime(start)
-        if isinstance(end, basestring):
-            end = pr_time.iso8601_to_datetime(end)
+        #if isinstance(start, basestring):
+        #    start = pr_time.iso8601_to_datetime(start)
+        #if isinstance(end, basestring):
+        #    end = pr_time.iso8601_to_datetime(end)
     
-        session_ids = [s['id'] for s in related_sessions ]  # TODO: use list comprehension to extract just IDs?
+        session_ids = [s['id'] for s in related_sessions ]  # use list comprehension to extract just IDs?
         conflicting_sessions = session_manager.get_filtered(auth_token, 
-            { 'member' : {'id': session_ids},
-              'greater_than_or_equal' : {'start' : start},
-              'less_than_or_equal' : {'end' : end}
-            }, [])
+            {'and': [
+             {'member' : {'id': session_ids},},
+             {'or' : [  # if session start OR end-time falls within the test period...
+                {'range' : {'start': [start, end],},},
+                {'range' : {'end': [start, end],},},
+                # TODO: This collides on boundary values (eg, exact start time)! 
+                # Can we opt to disregard boundary values?
+                
+                # TODO: why didn't this work? wrong types!?
+                #{'and' : [
+                #        {'greater_than' : {'start' : start}},
+                #        {'less_than' : {'end' : start}},
+                #         ]
+                #},
+                #{'and' : [
+                #        {'greater_than' : {'start' : end}},
+                #        {'less_than' : {'end' : end}},
+                #         ],
+                #}
+                ],
+              },
+             ],}, ['start','end'])
         if len(conflicting_sessions) > 0:
             return True
         return False # no conflict found

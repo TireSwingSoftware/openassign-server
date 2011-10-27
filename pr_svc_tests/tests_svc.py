@@ -76,6 +76,8 @@ class TestCase(BaseTestCase):
         self.admin_user_id = self.user_manager.get_authenticated_user(self.admin_token)['value']['id']
         self.right_now = datetime.utcnow().replace(microsecond=0, tzinfo=pr_services.pr_time.UTC())
         self.one_day = timedelta(days = 1)
+        self.half_day = timedelta(days = 0.5)
+        self.one_moment = timedelta(days = 0.001)
         self.organization1 = self.organization_manager.create(self.admin_token, 'Organization 1')['value']['id']
 
     def tearDown(self):
@@ -1168,6 +1170,8 @@ class TestResourceSchedulingRules(TestCase):
         # find all Resources available during a specified time period; first, match the times used for our session (2 used, 2 available)
         now = self.right_now.isoformat()
         tomorrow = (self.right_now+self.one_day).isoformat()
+        one_moment_ago = (self.right_now - self.one_moment).isoformat()
+        twelve_hours_from_now = (self.right_now+self.half_day).isoformat()
         ret = self.resource_manager.find_available_resources( self.admin_token, now, tomorrow )
         self.assertEquals(len(ret['value']), 2)
         # ... and now on previous days (all 4 should be available)
@@ -1176,11 +1180,19 @@ class TestResourceSchedulingRules(TestCase):
         ret = self.resource_manager.find_available_resources( self.admin_token, five_days_ago, four_days_ago )
         self.assertEquals(len(ret['value']), 4)
 
-        # probe a single Resoure during a specified time period
+        # probe a single Resource during a specified time period
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], four_days_ago, twelve_hours_from_now )
+        self.assertEquals(ret['value'], True)   # overlaps the session period, end time is halfway through session
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], twelve_hours_from_now, tomorrow )
+        self.assertEquals(ret['value'], True)   # overlaps the session period, same end time
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], four_days_ago, one_moment_ago )
+        self.assertEquals(ret['value'], False)  # test-end a moment before session start time (no conflict)
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], four_days_ago, now )
+        self.assertEquals(ret['value'], False)  # test-end matches session start time (this should NOT conflict!)
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], now, tomorrow )
-        self.assertEquals(ret['value'], True)
+        self.assertEquals(ret['value'], True)   # exactly matching start and end times (direct conflict)
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], five_days_ago, four_days_ago )
-        self.assertEquals(ret['value'], False)
+        self.assertEquals(ret['value'], False)  # not even close
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res4_id'], now, tomorrow )
         self.assertEquals(ret['value'], False)
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res4_id'], five_days_ago, four_days_ago )
