@@ -80,9 +80,7 @@ class ResourceManager(ObjectManager):
     def resource_used_during(self, auth_token, resource_id, start, end):
         # A more targeted "probe" for a particular Resource during a specified time span.
         # Returns True if the resource is already scheduled within the chosen duration, False if not
-        res_requirement_manager = facade.managers.SessionResourceTypeRequirementManager()
-        related_sessions = res_requirement_manager.get_sessions_using_resource(auth_token, resource_id)
-        related_session_ids = [s['id'] for s in related_sessions ]
+        related_sessions = facade.models.Session.resource_tracker.get_sessions_using_resource(resource_id)
 
         if isinstance(start, basestring):
             start = pr_time.iso8601_to_datetime(start)
@@ -91,7 +89,6 @@ class ResourceManager(ObjectManager):
     
         # This collides on boundary values (eg, identical test-end and session-start times)
         # TODO: Should we opt to disregard boundary values?
-        related_sessions = facade.models.Session.objects.filter(pk__in=related_session_ids)
         conflicting_sessions = (
             related_sessions.filter(start__range=[start, end]) | 
             related_sessions.filter(end__range=[start, end])

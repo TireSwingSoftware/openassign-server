@@ -77,23 +77,9 @@ class SessionResourceTypeRequirementManager(ObjectManager):
 
     @service_method
     def get_sessions_using_resource(self, auth_token, resource_id, activeOnly=False):
-        # TODO: implement activeOnly filter (if True, return only Sessions whose status is active)
-        # find all resource-type requirements that use this resource (use existing Resource.session_resource_type_requirements)
-        resource_mgr = facade.managers.ResourceManager()
-        res_info = resource_mgr.get_filtered(auth_token, {'exact' : {'id' :resource_id} }, ['session_resource_type_requirements'])
-        related_requirements = res_info[0]['session_resource_type_requirements']
-    
-        if len(related_requirements) == 0:
-            # this resource is not currently scheduled in any session
-            return []
-
-        session_mgr = facade.managers.SessionManager()
-        related_sessions = []
-        for req_id in related_requirements:
-            sessions = session_mgr.get_filtered(auth_token, 
-                { 'member' : {'session_resource_type_requirements' : [req_id] } }, ['name', 'description', 'start', 'end'])
-            related_sessions += sessions
-            
+        # if activeOnly is True, return only Sessions whose status is active
+        related_sessions = facade.models.Session.resource_tracker.get_sessions_using_resource(resource_id, activeOnly)
+        # TODO: impose added security via get_filtered()?
         return related_sessions
 
 # vim:tabstop=4 shiftwidth=4 expandtab
