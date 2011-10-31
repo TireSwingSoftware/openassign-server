@@ -6,6 +6,7 @@ import os
 import cPickle
 import random
 import re
+import shutil
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -3056,14 +3057,7 @@ class Course(OwnedPRModel):
         # assuming there are no symbolic links.
         # CAUTION:  This is dangerous!  For example, if course_path == '/', it
         # could delete disk files.
-        for root, dirs, files in os.walk(course_path, topdown=False):
-            for name in files:
-                os.remove(os.path.join(root, name))
-            for name in dirs:
-                os.rmdir(os.path.join(root, name))
-        # Finally, remove the directory the course was in
-        os.rmdir(course_path)
-
+        shutil.rmtree(course_path)
 
 class Sco(Task):
     """ 
