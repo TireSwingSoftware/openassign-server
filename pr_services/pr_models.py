@@ -1,9 +1,9 @@
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+import cPickle
 import itertools
 import logging
 import os
-import cPickle
 import random
 import re
 import shutil
@@ -27,37 +27,37 @@ from pr_services.middleware import get_client_ip
 def queryset_empty(queryset):
     """
     Returns True if a Django queryset is empty, False otherwise.
-    
+
     @param queryset a Django queryset
-    
+
     This code is copied from the Django source code, from
     django/forms/models.py:255, svn revision 10283
     """
-    
+
     # This cute trick with extra/values is the most efficient way to
     # tell if a particular query returns any results.
     if queryset.extra(select={'a': 1}).values('a').order_by():
         return False
     else:
         return True
-    
+
 def add_validation_error(validation_errors, attname, message):
     """
     Small helper method to help in accruing validation errors to the
     dictionary compiled by the PRModel.validate() method and validate()
     methods on descendants of PRModel.
-    
+
     This quietly changes null or empty values of attname to "__SELF__"
     so that we don't end up trying to send dictionaries with empty strings
     as keys through AMF (see #2880).
     """
-    
+
     # re #2880 (validation code tries to send dictionaries with empty string keys)
     # use a magic string rather than the empty string, so that we won't break
     # AMF
     if not attname:
         attname = "__SELF__"
-    
+
     if not validation_errors.has_key(attname):
         validation_errors[attname] = list()
     validation_errors[attname].append(message)
@@ -67,16 +67,16 @@ def change_charfield_choices(model, attname, new_choices):
     Change the choices available for a charfield.  Make sure
     that you make a copy of the previous choices list before
     replacing it.
-    
+
     Example:
-    
+
     import facade
     from pr_services.pr_models import change_charfield_choices
-    STATUS_CHOICES = copy.deepcopy(facade.models.User.STATUS_CHOICES) 
+    STATUS_CHOICES = copy.deepcopy(facade.models.User.STATUS_CHOICES)
     STATUS_CHOICES.extend([('funky', 'funky')])
     change_charfield_choices(facade.models.User, 'status', STATUS_CHOICES)
     """
-    
+
     for field in model._meta.fields:
         if field.attname == attname:
             field._choices = new_choices
@@ -89,12 +89,12 @@ class ModelDataValidationError(Exception):
         @param validation_errors
         @type validation_errors dict
         """
-        
+
         self.validation_errors = validation_errors
 
     def __str__(self):
         return repr(self.validation_errors)
-    
+
     def __unicode__(self):
         return unicode(self.validation_errors)
 
@@ -115,13 +115,13 @@ def alters_data(func):
     to setting the alters_data attribute of a function to True
     after defining the function, but I prefer to do this with a
     decorator.
-    
+
     The Django community doesn't seem to want this, but I think
     it's cleaner, so I'm including it here.  See the following
     ticket in the Django trac instance for details:
         http://code.djangoproject.com/ticket/3009
     """
-    
+
     func.alters_data = True
     return func
 
@@ -158,7 +158,7 @@ class Versionable(models.Model):
         """
         if validation_errors is None:
             validation_errors = dict()
-        
+
         if self.version_id is not None and self.version_fields:
             unique_field_set = tuple(self.version_fields + ('version_id', 'version_label'))
             lookup_kw_args = {}
@@ -171,19 +171,19 @@ class Versionable(models.Model):
             # creating a new object
             if self.pk is not None:
                 possible_duplicates = possible_duplicates.exclude(pk=self.pk)
-            
+
             if not queryset_empty(possible_duplicates):
                 add_validation_error(validation_errors, '__SELF__',
                     u'The following fields together are not unique: %s' %\
                      (unicode(unique_field_set)))
-        
+
         return super(Versionable, self).validate(validation_errors)
 
 
 class PRModel(models.Model):
     """
     PRModel - abstract base class for all models in the Power Reg system
-    
+
     This provides a few different capabilities and behaviors from
     the standard Django model:
       (1) It has a delete method that changes django.db.models.ProtectedError
@@ -222,34 +222,34 @@ class PRModel(models.Model):
     #: timestamp of the last save operation
     save_timestamp = models.DateTimeField(auto_now=True)
 
-    
+
     def truncate_charfields(self):
         """
         Silently truncate CharFields to their maximum lengths.
-        
+
         I believe that this was happening on its own in Django 1.0, but
         does not happen automatically in Django 1.1.  This needs to
         be done before the validate() method is run, so that truncated
         values are validated rather than given values.
         """
-        
+
         for field in self._meta.fields:
             if isinstance(field, models.CharField):
                 value = getattr(self, field.attname)
                 if value:
                     setattr(self, field.attname, value[0:field.max_length])
-    
+
     def validate(self, validation_errors=None):
         """
         Nota bene:
-        
+
         AMF can't handle dictionaries with empty strings as keys.  Before #2880
         was discovered, empty strings were used as fake attribute names and (real)
         dictionary keys to indicate errors which spanned more than one field.
         The magic name '__SELF__' should be used instead.  If you use the
         add_validation_error() function, this will happen automatically if
-        you pass None or '' for the attribute name. 
-        
+        you pass None or '' for the attribute name.
+
         @param validation_errors dictionary of validation errors encountered so far,
             indexed by attribute name
         @type validation_errors dict or None
@@ -263,7 +263,7 @@ class PRModel(models.Model):
             # skip fields whose names end in 'ptr_id'
             if field.attname[-len('ptr_id'):] == 'ptr_id':
                 continue
-            
+
             current_value = getattr(self, field.attname, None)
             form_field = field.formfield()
 
@@ -275,7 +275,7 @@ class PRModel(models.Model):
                     validation_errors[field.attname] = [unicode(m) for m in v.messages]
                 except Exception, e:
                     validation_errors[field.attname] = [unicode(e)]
-            
+
             if form_field and current_value not in (None, ''):
                 try:
                     form_field.clean(current_value)
@@ -286,7 +286,7 @@ class PRModel(models.Model):
             # don't check for uniqueness of the id field
             if field.attname == 'id':
                 continue
-            
+
             # test for uniqueness if this field has unique set to true
             # based on the Django BaseModelForm's validate_unique method
             if current_value not in (None, '') and field.unique == True:
@@ -294,19 +294,19 @@ class PRModel(models.Model):
                     attname = field.name
                 else:
                     attname = field.attname
-                                
+
                 lookup_kw_args = {attname : field.to_python(current_value)}
                 possible_duplicates = self.__class__.objects.filter(**lookup_kw_args)
-                
+
                 # exclude the current object from the query if we're not
                 # creating a new object
                 if self.id is not None:
                     possible_duplicates = possible_duplicates.exclude(id=self.id)
-                    
+
                 if not queryset_empty(possible_duplicates):
                     add_validation_error(validation_errors, attname,
                         u"Value is not unique.")
-        
+
         unique_field_sets = []
         if self._meta.unique_together:
             # handle the shorthand ('field_name_1', field_name_2') for
@@ -317,9 +317,9 @@ class PRModel(models.Model):
             else:
                 for unique_field_set in self._meta.unique_together:
                     unique_field_sets.append(unique_field_set)
-            for unique_field_set in unique_field_sets:                
+            for unique_field_set in unique_field_sets:
                 lookup_kw_args = dict()
-                
+
                 for unique_field in unique_field_set:
                     value = getattr(self, unique_field, None)
                     lookup_kw_args[unique_field] = value
@@ -329,14 +329,14 @@ class PRModel(models.Model):
                 # creating a new object
                 if self.pk is not None:
                     possible_duplicates = possible_duplicates.exclude(pk=self.pk)
-                
+
                 if not queryset_empty(possible_duplicates):
                     add_validation_error(validation_errors, '__SELF__',
                         u'The following fields together are not unique: %s' %\
                          (unicode(unique_field_set)))
-        
+
         return validation_errors
-                    
+
     @alters_data
     def delete(self):
         """
@@ -358,7 +358,7 @@ class PRModel(models.Model):
         """
         Modified save method that stores this object's type in its
         final_type attribute on its first invocation.
-        
+
         This is based on the following thread in the django-users group:
         (subject: 'dynamic upcast', author of original message: 'dadapapa@gmail.com',
          url of archive:
@@ -366,29 +366,29 @@ class PRModel(models.Model):
         ) and the following article by Harold Fellermann:
           http://harold.teerun.de/article/dynamicdjango/
         """
-        
+
         # silently truncate charfields
         self.truncate_charfields()
-        
+
         # uncomment the next line to enable model data validation on every save
         validation_errors = self.validate()
         if len(validation_errors) > 0:
             logging.debug('validation errors: ' + str(validation_errors))
             raise ModelDataValidationError(validation_errors)
-        
+
         # set the final type attribute only on its first save
         if not self.id:
             self.final_type = ContentType.objects.get_for_model(type(self))
         models.Model.save(self, *args, **kw_args)
-        
+
     def downcast_completely(self):
         """
         Return an instance of this object, converted to the most specific model
         type possible.
-        
+
         That is, if this is an instance of a subclass that uses multi-table
         inheritance, return an instance of that subclass.
-        
+
         This is based on the following thread in the django-users group:
         (subject: 'dynamic upcast', author of original message: 'dadapapa@gmail.com',
          url of archive:
@@ -396,13 +396,13 @@ class PRModel(models.Model):
         ) and the following article by Harold Fellermann:
           http://harold.teerun.de/article/dynamicdjango/
         """
-        
+
         # don't hit the database unless we need to
         if ContentType.objects.get_for_model(type(self)) != self.final_type:
             return self.final_type.get_object_for_this_type(id=self.id)
         else:
             return self
-        
+
     class Meta:
         abstract = True
 
@@ -418,7 +418,7 @@ class OwnedPRModel(PRModel):
 class Note(OwnedPRModel):
     """
     Note
-    
+
     A Note is used to store additional text on other objects
     """
 
@@ -429,7 +429,7 @@ class Note(OwnedPRModel):
 class Organization(OwnedPRModel):
     """
     A Organization
-    
+
     relationships:
      - users (0..* User to 0..* Organization)
      - roles (0..* OrgRole to 0..* Organization)
@@ -506,7 +506,7 @@ class Organization(OwnedPRModel):
 class OrgRole(PRModel):
     """
     A role that Users can have in an Oranization
-    
+
     relationships:
      - users (0..* Users to 0..* OrgRoles)
      - orgs (0..* Orgs to 0..* OrgRoles)
@@ -834,7 +834,7 @@ class Curriculum(PRModel):
     achievements = models.ManyToManyField('Achievement', related_name='curriculums')
     tasks = models.ManyToManyField('Task', through='CurriculumTaskAssociation', related_name='curriculums')
 
-    
+
 class CurriculumTaskAssociation(PRModel):
     """
     Collection of tasks and achievements that must be completed. Also has a name
@@ -965,7 +965,7 @@ class CurriculumEnrollmentUserAssociation(PRModel):
 
     def save(self, *args, **kwargs):
         ret = super(CurriculumEnrollmentUserAssociation, self).save(*args, **kwargs)
-        
+
         # make assignments automatically if they don't already exist
         for task in self.curriculum_enrollment.curriculum.tasks.all():
             assignment, created = Assignment.objects.get_or_create(user=self.user, task=task, curriculum_enrollment=self.curriculum_enrollment)
@@ -979,7 +979,7 @@ class CurriculumEnrollmentUserAssociation(PRModel):
                     assignment.due_date = self.curriculum_enrollment.end
                 assignment.save()
         return ret
-        
+
 
 class Assignment(PRModel):
     """
@@ -1019,7 +1019,7 @@ class Assignment(PRModel):
     authority = models.CharField(max_length=255, null=True)
     #: the ID of the assginment given by the authority
     serial_number = models.CharField(max_length=255, null=True)
-    
+
     #: whether the assignment confirmation email has been sent
     #: (which is typically sent around the effective_date_assigned)
     sent_confirmation = PRBooleanField(default=False)
@@ -1033,7 +1033,7 @@ class Assignment(PRModel):
     curriculum_enrollment = PRForeignKey('CurriculumEnrollment', null=True, related_name='assignments')
     #: whether a "pre-reminder" has been sent
     sent_pre_reminder = PRBooleanField(default=False)
-    
+
     @property
     def task_content_type(self):
         return self.task.final_type.app_label + '.' + self.task.final_type.name
@@ -1069,7 +1069,7 @@ class Assignment(PRModel):
     @property
     def payment_required(self):
         """
-        Returns True if this Assignment requires payment before it can be 
+        Returns True if this Assignment requires payment before it can be
         attempted.  This does not consider the current status.  If this Assignment
         has a status other than 'unpaid', the user may safely disregart this
         value.
@@ -1223,7 +1223,7 @@ class TaskBundleTaskAssociation(PRModel):
 class ProductLine(OwnedPRModel):
     """
     A ProductLine is a collection of classes
-    
+
     relationships:
      - session_template (1 SessionTemplate to 0..1 ProductLine)
     """
@@ -1245,7 +1245,7 @@ class ProductLine(OwnedPRModel):
 class Region(OwnedPRModel):
     """
     A geographic region in which Venues exist
-    
+
     relationships:
      - venue (1 Venue to 0..1 region)
      - session (1 Session to 0..1 region)
@@ -1267,12 +1267,12 @@ class Resource(OwnedPRModel):
     the Session class, and the User class.
     The field names for collections of related objects of these classes
     are Resources, Sessions, and Users, respectively.
-    
+
     from the glossary:
       Resource: any kind of item that can be listed as an Session/SessionTemplate
     requirement that is not a User, Venue, or a date/time element. End
     users are able to define Resources and associate any number of
-    ResourceTypes to them. 
+    ResourceTypes to them.
     """
 
     name = models.CharField(max_length=255, unique=True)
@@ -1350,7 +1350,7 @@ class ACL(OwnedPRModel):
     #:       'd' : False,
     #:   },
     #: }
-    acl = models.TextField() 
+    acl = models.TextField()
     #: The arbitrary_perm_list is a pickled list of strings that
     #: represent some arbitrary permission names that can be
     #: granted.  The vast majority of possible permissions are
@@ -1439,7 +1439,7 @@ class ACMethodCall(OwnedPRModel):
     AC is for "Access Control". The ACMethodCall model describes a
     method call that should return True or False to indicate whether
     an actor is acting in a particular Role or not.
-    
+
     This is a through table for a many-to-many relationship between
     the 'ACCheckMethod' and 'Role' models.  Its primary purpose
     is to include additional information to pass to the boolean
@@ -1466,7 +1466,7 @@ class ACMethodCall(OwnedPRModel):
 class Address(OwnedPRModel):
     """
     These objects should only be associated with one other object.
-    
+
     relationships:
       - user (1 User to 0..1 Address) [shipping_address]
       - user (1 User to 0..1 Address) [billing_address]
@@ -1508,8 +1508,8 @@ class Domain(PRModel):
     )
     password_hash_type = models.CharField(max_length=8, choices=PASSWORD_HASH_TYPE_CHOICES,
             default='SHA-512')
-    
-    
+
+
 class DomainAffiliation(PRModel):
     default = PRBooleanField(default=False)
     domain = PRForeignKey('Domain', related_name='domain_affiliations')
@@ -1531,7 +1531,7 @@ class DomainAffiliation(PRModel):
     username = models.CharField(max_length=31, blank=False, db_index=True)
     #: these are characters that are not permitted for the username field
     USERNAME_ILLEGAL_CHARACTERS = '!$%^&;"+=/?\|()[]{}`~\''
-    
+
     class Meta:
         unique_together = (('username', 'domain'),)
 
@@ -1542,7 +1542,7 @@ class DomainAffiliation(PRModel):
         """
         if validation_errors is None:
             validation_errors = dict()
-        
+
         validation_errors = PRModel.validate(self, validation_errors)
 
         try:
@@ -1551,10 +1551,10 @@ class DomainAffiliation(PRModel):
                 add_validation_error(validation_errors, 'username', u"The username %s is already in use."%self.username)
         except self.__class__.DoesNotExist:
             pass
-        
+
         if len(self.username) < 1:
             add_validation_error(validation_errors, 'username', u"Username must be at least one character long.")
-        
+
         if self.username.strip() != self.username:
             add_validation_error(validation_errors, 'username', u"Usernames may not begin or end in whitespace.")
 
@@ -1566,7 +1566,7 @@ class DomainAffiliation(PRModel):
                         self.__class__.USERNAME_ILLEGAL_CHARACTERS)
 
         return validation_errors
-    
+
 
 class User(OwnedPRModel):
     """Our representation of a user, which is currently distinct from django.contrib.auth.User.
@@ -1748,7 +1748,7 @@ class Blame(OwnedPRModel):
     """
     This object can be attached to any other object for which we want to track
     creation info
-    
+
     relationships:
      - user (1 User to 1 Blame)
      - session (1 Session to 1 Blame)
@@ -1799,7 +1799,7 @@ class SessionTemplate(OwnedPRModel):
     event_template = PRForeignKey('EventTemplate', related_name='session_templates', null=True)
 
     def __str__(self):
-        return '(%s, %s)' % (self.shortname, self.fullname)    
+        return '(%s, %s)' % (self.shortname, self.fullname)
     def __unicode__(self):
         return u'%s' % (str(self))
 
@@ -1807,7 +1807,7 @@ class SessionTemplate(OwnedPRModel):
 class Venue(OwnedPRModel):
     """
     A Venue is a location at which an Session occurs
-    
+
     relationships:
       - address (1 Venue to 0..1 Address)
       - session (1 Session to 0..1 Venue)
@@ -1859,7 +1859,7 @@ class Room(OwnedPRModel):
         @return         remaining capacity in people
         @rtype          int
         """
-        
+
         surrs = SessionUserRoleRequirement.sort_by_time_block(start, end, self.get_surrs_by_time(start, end))
 
         for surr_set in surrs:
@@ -1879,7 +1879,7 @@ class Room(OwnedPRModel):
         @type  start    datetime
         @param end      End of the block of time in question
         @type  end      datetime
-        
+
         @return         QuerySet of SessionUserRoleRequirements
         @rtype          QuerySet
         """
@@ -1890,9 +1890,9 @@ class Room(OwnedPRModel):
     def validate(self, validation_errors=None):
         if validation_errors is None:
             validation_errors = dict()
-        
+
         validation_errors = PRModel.validate(self, validation_errors)
-        
+
         # make sure that Room names are unique within Venues
         possible_duplicates = self.venue.rooms.filter(name=self.name)
         # exclude ourself if we're updating
@@ -1901,7 +1901,7 @@ class Room(OwnedPRModel):
         if not queryset_empty(possible_duplicates):
             add_validation_error(validation_errors, 'name',
                 u"Name conflicts with another Room in the same Venue.")
-        
+
         return validation_errors
 
 
@@ -1990,26 +1990,26 @@ class Session(OwnedPRModel):
     def validate(self, validation_errors=None):
         if validation_errors is None:
             validation_errors = dict()
-        
+
         validation_errors = super(Session, self).validate(validation_errors)
 
         if not self.start <= self.end:
             add_validation_error(validation_errors, 'start',
                 u'Session start time must come before Session end time')
-        
+
         if not self.start >= datetime(self.event.start.year,
             self.event.start.month, self.event.start.day):
-            
+
             add_validation_error(validation_errors, 'start',
                 u"starting time %s is not on or after event's starting time %s" %\
                 (unicode(self.start), unicode(self.event.start)))
         if not self.end < (datetime(self.event.end.year,
             self.event.end.month, self.event.end.day) + timedelta(days=1)):
-            
+
             add_validation_error(validation_errors, 'end',
                 u"ending time %s is not before or on event's ending time %s" %\
                 (unicode(self.end), unicode(self.event.end)))
-        
+
         return validation_errors
 
 
@@ -2037,7 +2037,7 @@ class EventTemplate(OwnedPRModel):
     twitter_template = models.CharField(max_length=255, default='I just signed up for {{event}}! Join me! {{url}}')
     #: A url for the Event
     url = models.URLField(max_length=255, null=True, verify_exists=False)
-    
+
     def __unicode__(self):
         return unicode(self.title)
 
@@ -2094,7 +2094,7 @@ class Event(OwnedPRModel):
 
     def __unicode__(self):
         return unicode(self.title)
-    
+
     def get_status(self):
         """
         Returns the status for an Event based on the statuses of its Sessions. The algorithm is detailed below.
@@ -2103,12 +2103,12 @@ class Event(OwnedPRModel):
         @rtype string
 
         <pre>
-        Proposed:   All Sessions of this Event have a proposed status. 
+        Proposed:   All Sessions of this Event have a proposed status.
         Pending:    At least one Session has a pending status.
         Active:     At least one Session of this Event has an active status. All Sessions of this Event are either active, completed
                     or canceled.
         Completed:  At least one Session of this Event has completed status. All other Sessions are either completed or canceled.
-        Canceled:   All Sessions of this Event have canceled status. 
+        Canceled:   All Sessions of this Event have canceled status.
         </pre>
         """
         sessions = self.sessions.all()
@@ -2131,9 +2131,9 @@ class Event(OwnedPRModel):
     def validate(self, validation_errors=None):
         if validation_errors is None:
             validation_errors = dict()
-        
+
         validation_errors = PRModel.validate(self, validation_errors)
-        
+
         try:
             old_event = Event.objects.get(id = self.id)
         except Event.DoesNotExist:
@@ -2160,7 +2160,7 @@ class Event(OwnedPRModel):
 class SessionUserRole(OwnedPRModel):
     """
     roles that Users can have at Sessions
-    
+
     relationships:
      - session_user_role_requirement (0..* SessionUserRoleRequirement to 1 SessionUserRole)
        [session_user_role_requirements]
@@ -2180,7 +2180,7 @@ class SessionUserRole(OwnedPRModel):
 class ResourceType(OwnedPRModel):
     """
     This has a many-to-many relationship with the Resource class.
-    
+
     relationships:
      - session_tempalte_resource_type_requirement (1 SessionTemplateResourceTypeRequirement
                                          to 1 ResourceType)
@@ -2203,7 +2203,7 @@ class SessionUserRoleRequirement(Task):
     """
     Defines a role for a Session, how many Users may fill the role, what
     CredentialTypes they must have,  and which Users are filling the role
-    
+
     relationships:
      - session (1 Session to 0..1 SessionUserRoleRequirement)
      - session_user_role (1 SessionUserRoleRequirement to 1 SessionUserRole)
@@ -2256,13 +2256,13 @@ class SessionUserRoleRequirement(Task):
         Example usage is when you need to find the highest enrollment number in
         a Room during a block of time with overlapping SURRs.  You would find
         those SURRs, run them through this method, and then find the total
-        enrollment for each resulting set. 
+        enrollment for each resulting set.
 
         @param  start    Start of the block of time in question
         @type  start    datetime
         @param end      End of the block of time in question
         @type  end      datetime
-        
+
         @return         list of sets of SessionUserRoleRequirements
         @rtype          set
         """
@@ -2299,7 +2299,7 @@ class SessionUserRoleRequirement(Task):
 class SessionTemplateUserRoleReq(OwnedPRModel):
     """
     Template for SessionUserRoleRequirement
-    
+
     relationships:
      - session_user_role (1 SessionTempalteUserRoleRequirement to 1 SessionUserRole)
      - session_template (1 SessionTemplateUserRoleRequirement to 1 SessionTemplate)
@@ -2374,8 +2374,8 @@ class AuthTokenVoucher(OwnedPRModel):
 
 class SessionTemplateResourceTypeReq(OwnedPRModel):
     """
-    Defines a resource type that is required by a SessionTemplate 
-    
+    Defines a resource type that is required by a SessionTemplate
+
     relationships:
      - resource_type (1 SessionTemplateResourceTypeRequirement to 1 ResourceType)
      - session_template (1 SessionTemplate to 0..* SessionTemplateResourceTypeRequirement)
@@ -2392,9 +2392,9 @@ class SessionTemplateResourceTypeReq(OwnedPRModel):
 class SessionResourceTypeRequirement(OwnedPRModel):
     """
     Defines a resource type that is required by a Session.
-    
+
     This also includes Resources used to fulfill the requirement.
-    
+
     relationships:
      - resource_type (1 SessionResourceTypeRequirement to 1 ResourceType)
      - session (1 Session to 0..* SessionResourceTypeRequirements)
@@ -2415,7 +2415,7 @@ class PurchaseOrder(OwnedPRModel):
     """
     Purchase order, generated before the purchase is completed.  This could
     potentially sit around for a while before the customer decides to pay.
-    
+
     relationships:
      - Organization (1 PurchaseOrder to 0..1 Organization)
      - user (1 PurchaseOrder to 0..1 User)
@@ -2489,7 +2489,7 @@ class PurchaseOrder(OwnedPRModel):
         """
         Calculate the total billable value of this purchase order,
         iterating through Products
-    
+
         @return total value in cents
         """
 
@@ -2499,7 +2499,7 @@ class PurchaseOrder(OwnedPRModel):
         """
         Calculate the total billable value of this purchase order,
         iterating through Products
-    
+
         @return total value in cents
         """
 
@@ -2511,7 +2511,7 @@ class PurchaseOrder(OwnedPRModel):
     def _is_paid(self):
         """
         Is this purchase order paid for?
-        
+
         @return boolean
         """
 
@@ -2750,8 +2750,8 @@ class Product(OwnedPRModel):
             if ret['training_units'] is not None:
                 ret['training_units'] = min([ret['training_units'] * (Decimal(1) - (Decimal(percentages[0])/Decimal(100))), ret['training_units'] - training_unit_amounts[0]])
 
-        return ret 
-            
+        return ret
+
 
 class TaskFee(Product):
     """
@@ -2887,9 +2887,9 @@ class ClaimProductOffers(OwnedPRModel):
 class ProductTransaction(OwnedPRModel):
     """
     Track inventory transactions
-    
+
     By doing this, we avoid a potential race condition where simultaneous Sessions
-    could overwrite one or the other's inventory adjustment.  Thus, we calculate 
+    could overwrite one or the other's inventory adjustment.  Thus, we calculate
     inventory numbers on the fly. Use product.starting_quantity to reduce transactions
     to a fixed number, and remove those corresponding transactions. This might make a
     good periodic task.
@@ -3040,7 +3040,7 @@ class ConditionTest(PRModel):
 
 
 class Course(OwnedPRModel):
-    """ 
+    """
     This model represents a SCORM course.
     """
 
@@ -3063,7 +3063,7 @@ class Course(OwnedPRModel):
         shutil.rmtree(course_path)
 
 class Sco(Task):
-    """ 
+    """
     This is the Shareable Content Object.
     """
 
@@ -3095,7 +3095,7 @@ class Sco(Task):
 
 
 class ScoSession(AssignmentAttempt):
-    """ 
+    """
     This model represents a session of a User interacting with a SCO.
     """
 
