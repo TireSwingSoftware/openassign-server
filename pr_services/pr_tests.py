@@ -7,7 +7,6 @@ from __future__ import with_statement
 
 import cPickle
 import cStringIO
-from datetime import datetime, date, timedelta
 import hashlib
 import inspect
 import operator
@@ -15,31 +14,36 @@ import os
 import sys
 import time
 import urllib2
-import django.test.client
-from django.utils import simplejson as json
-import django.utils.dateformat
-from celery import conf
 
-from cookiecache import CookieCache
+import django.test.client
+import django.utils.dateformat
+import django.utils.unittest
+
+from celery import conf
+from datetime import datetime, date, timedelta
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
+from django.utils import simplejson as json
 from django.utils.unittest import skipIf, skipUnless
+
+import pr_models
+
+from cookiecache import CookieCache
 from initial_setup import InitialSetupMachine, default_read_fields
 from pr_services import exceptions
 from pr_services import pr_time
-from pr_services import pr_models
-from pr_services.utils import UnicodeCsvWriter
-from pr_services.rpc.service import service_method, wrap_service_method, RpcService, create_rpc_service
-from pr_services.object_manager import ObjectManager
 from pr_services.gettersetter import Getter, Setter
+from pr_services.object_manager import ObjectManager
+from pr_services.rpc.service import service_method, wrap_service_method, RpcService, create_rpc_service
+from pr_services.utils import UnicodeCsvWriter
 
 import facade
 
 # make stdout and stderr use UTF-8 encoding so that printing out
 # UTF-8 data while debugging doesn't choke
 
-class TestCase(django.test.TestCase):
+class TestCase(django.test.TestCase, django.utils.unittest.TestCase):
     """Super-class used to do basic setup for almost all power reg test cases.
 
     This is useful for getting authentication taken care of without duplicating
@@ -3541,5 +3545,129 @@ class TestEmailGeneration(TestCase):
         mess = mail.outbox[1]
         self.assertTrue('CRITICAL Message Logged' in mess.subject)
         self.assertTrue('this is a critical test' in mess.body)
+
+
+class TestOrgSlots(TestCase):
+    """
+    Test cases for organization slots.
+
+    Organization slots are UserOrgRole objects which persist
+    regardless of whether or not a user is associated with the `UserOrgRole`.
+
+    Reference Issue #17
+
+    """
+    def setUp(self):
+        super(TestOrgSlots, self).setUp()
+
+        UserOrgRole = facade.models.UserOrgRole
+        create_org = self.organization_manager.create
+        create_role = self.org_role_manager.create
+
+        # create some slots
+        self.slot1 = UserOrgRole.objects.create(
+                organization=create_org(self.admin_token, 'foo org'),
+                role=create_role(self.admin_token, 'foo role'),
+                title='slot1', persistent=True)
+
+        self.slot2 = UserOrgRole.objects.create(
+                organization=create_org(self.admin_token, 'bar org'),
+                role=create_role(self.admin_token, 'bar role'),
+                title='slot2', persistent=True)
+
+        self.user1, self.user1_token = self.create_student()
+        self.user2, self.user2_token = self.create_student()
+
+        self.user_org_role_manager.update(self.admin_token, self.slot1.id,
+                {'owner': self.user1.id})
+        self.user_org_role_manager.update(self.admin_token, self.slot2.id,
+                {'owner': self.user2.id})
+
+    def _get_user_roles(self, user):
+        return self.user_manager.get_filtered(self.admin_token,
+            {'exact': {'id': user.id}}, ['roles'])[0]['roles']
+
+    def _clear_user_roles(self, user):
+        self.user_manager.update(self.admin_token, user.id,
+                {'roles': {'remove': self._get_user_roles(user)}})
+
+    def test_free_slot(self):
+        """
+        Test that roles marked "persistent" remain after having been
+        disassociated with a user.
+
+        """
+        UserOrgRole = facade.models.UserOrgRole
+
+        # add one role which is not persistent
+        some_org = self.organization_manager.create(self.admin_token,
+                "Foo-Bar Legal Associates")
+        some_role = self.org_role_manager.create(self.admin_token,
+                "Paper Pusher")
+        self.user_manager.update(self.admin_token, self.user1.id,
+                {'roles': {'add': [
+                    {'id': some_role.id,
+                     'organization': some_org.id
+                    }]}})
+
+        # check that roles are set up as we expect
+        user1_roles = self._get_user_roles(self.user1)
+        self.assertEquals(len(user1_roles), 2)
+        user2_roles = self._get_user_roles(self.user2)
+        self.assertEquals(len(user2_roles), 1)
+
+        # clear roles for user1 and user2
+        self._clear_user_roles(self.user1)
+        self._clear_user_roles(self.user2)
+
+        # check that roles were cleared
+        user1_roles = self._get_user_roles(self.user1)
+        self.assertEquals(len(user1_roles), 0)
+        user2_roles = self._get_user_roles(self.user2)
+        self.assertEquals(len(user2_roles), 0)
+
+        # compare remaining UserOrgRole object's with the slots we made earlier
+        self.assertEquals(len(UserOrgRole.objects.all()), 2)
+        self.assertEquals(UserOrgRole.objects.get(id=self.slot1.id), self.slot1)
+        self.assertEquals(UserOrgRole.objects.get(id=self.slot2.id), self.slot2)
+
+        # check that slots are not associated with users
+        self.assertEquals(self.slot1.owner, None)
+        self.assertEquals(self.slot2.owner, None)
+
+    def test_delete(self):
+        """
+        Ensure that UserOrgRoles which have persistent=True can
+        be explicitly deleted if necessary
+
+        """
+        UserOrgRole = facade.models.UserOrgRole
+        delete = self.user_org_role_manager.delete
+
+        # check that we made 2 role objects
+        self.assertEquals(len(UserOrgRole.objects.all()), 2)
+
+        # clear all users' roles
+        self._clear_user_roles(self.user1)
+        self._clear_user_roles(self.user2)
+
+        # check that roles are not owned
+        self.assertEquals(self.slot1.owner, None)
+        self.assertEquals(self.slot2.owner, None)
+
+        # explicitly delete both slots
+        delete(self.admin_token, self.slot1.id)
+        delete(self.admin_token, self.slot2.id)
+
+        # check that slots were deleted
+        self.assertEquals(len(UserOrgRole.objects.all()), 0)
+
+    def test_create(self):
+        result = self._get_user_roles(self.user1)
+        self.assertEqual(result[0], self.slot1.role.id)
+
+        result = self._get_user_roles(self.user2)
+        self.assertEqual(result[0], self.slot2.role.id)
+
 
 # vim:tabstop=4 shiftwidth=4 expandtab
