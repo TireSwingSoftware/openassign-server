@@ -10,6 +10,7 @@ import cStringIO
 from datetime import datetime, date, timedelta
 import hashlib
 import inspect
+import operator
 import os
 import sys
 import time
@@ -3260,26 +3261,31 @@ class TestUtilsManager(TestCase):
         self.utils_manager = facade.managers.UtilsManager()
 
     def test_get_choices(self):
+        get_choices = self.utils_manager.get_choices
+
         # check the invalid model name case
         self.assertRaises(exceptions.FieldNameNotFoundException,
-            self.utils_manager.get_choices,
-                'not_a_model', 'aspect_ratio')
+            get_choices, 'not_a_model', 'aspect_ratio')
 
         self.assertRaises(exceptions.FieldNameNotFoundException,
-            self.utils_manager.get_choices, 'Assignment', 'not_a_field')
-
-        get_choices = self.utils_manager.get_choices
+            get_choices, 'Assignment', 'not_a_field')
 
         # check that we gen an empty list for a field that has no choices
         choices = get_choices('Assignment', 'date_started')
         self.assertEquals(len(choices), 0)
 
         # check a couple of fields with choices
-        choices = get_choices('Assignment', 'status')
-        self.assertEquals(pr_models.Assignment.STATUS_CHOICES, choices)
+        def django_choices(s):
+            choice = operator.itemgetter(0)
+            return map(choice, s)
 
-        choices = get_choices('Domain', 'password_hash_type')
-        self.assertEquals(pr_models.Domain.PASSWORD_HASH_TYPE_CHOICES, choices)
+        expected = django_choices(pr_models.Assignment.STATUS_CHOICES)
+        test = get_choices('Assignment', 'status')
+        self.assertEqual(test, expected)
+
+        expected = django_choices(pr_models.Domain.PASSWORD_HASH_TYPE_CHOICES)
+        test = get_choices('Domain', 'password_hash_type')
+        self.assertEquals(test, expected)
 
 
 ################################################################################################################################################
