@@ -335,7 +335,7 @@ class TestAssignment(TestCase):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         session1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'pending', True, 10000, self.e1.id)
+            (self.right_now+self.one_day).isoformat(), 'pending', True, 10000, self.e1.id, 'Short Name 1', 'Long Name 1')
         student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
         role_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(session1.id), str(student_role.id), 2, 3, None, {'prevent_duplicate_assignments' : True})
 
@@ -381,12 +381,12 @@ class TestAssignment(TestCase):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         session1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id)
+            (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id, 'Short Name 1', 'Full Name 1')
         student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
         role_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(session1.id), str(student_role.id), 1, 3, None, {'prevent_duplicate_assignments' : True})
         # This overlaps intentionally to test room capacity limits below
         session2 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id)
+            (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id, 'Short Name 1', 'Full Name 1')
         role_req2 = self.session_user_role_requirement_manager.create(self.admin_token, str(session2.id), str(student_role.id), 1, 3)
         tf1 = self.task_fee_manager.create(self.admin_token, 'TF001', 'slick deal', 'a really great deal', 200, 0, role_req1.id, {'starting_quantity' : 10})
         assignments = self.assignment_manager.bulk_create(self.admin_token, role_req1.id, [learner1.id, learner2.id, learner3.id])
@@ -905,11 +905,11 @@ class TestModels(TestCase):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day*3).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         session1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now + self.one_day).isoformat(), 'active', True, 10000, self.e1.id)
+            (self.right_now + self.one_day).isoformat(), 'active', True, 10000, self.e1.id, 'Short Name 1', 'Full Name 1')
         student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
         role_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(session1.id), str(student_role.id), 1, 3, False)
         session2 = self.session_manager.create(self.admin_token, (self.right_now+self.one_day*2).isoformat(),
-            (self.right_now+self.one_day*3).isoformat(), 'active', True, 10000, self.e1.id)
+            (self.right_now+self.one_day*3).isoformat(), 'active', True, 10000, self.e1.id, 'Short Name 1', 'Full Name 1')
         role_req2 = self.session_user_role_requirement_manager.create(self.admin_token, str(session2.id), str(student_role.id), 1, 3, False)
         session1.room = self.room1
         session2.room = self.room1
@@ -1284,7 +1284,7 @@ class TestSessionManager(TestCase):
             self.organization1.id, {'venue' : self.venue1.id})
         session1 = self.session_manager.create(self.admin_token,
             self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e1.id, {'room':self.room1.id})
+            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e1.id, 'Short Name 1', 'Full Name 1', {'room':self.room1.id})
         ret = self.session_manager.detailed_surr_view(self.admin_token)
         self.assertEquals(len(ret), 1)
         fetched_session = ret[0]
@@ -1316,7 +1316,7 @@ class TestSessionManager(TestCase):
             self.organization1.id, {'venue' : self.venue1.id})
         session2 = self.session_manager.create(self.admin_token,
             self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e2.id)
+            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e2.id, 'short name 1', 'long name 1')
         ret = self.session_manager.detailed_surr_view(self.admin_token)
 
     def test_view_without_room(self):
@@ -1326,7 +1326,7 @@ class TestSessionManager(TestCase):
             self.organization1.id, {'venue' : self.venue1.id})
         session2 = self.session_manager.create(self.admin_token,
             self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e2.id)
+            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e2.id, 'short name 1', 'long name 1')
         ret = self.session_manager.detailed_surr_view(self.admin_token)
 
     def test_create(self):
@@ -1335,7 +1335,7 @@ class TestSessionManager(TestCase):
             self.organization1.id, {'venue' : self.venue1.id})
         session1 = self.session_manager.create(self.admin_token,
             self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e1.id)
+            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e1.id, 'short name 1', 'long name 1')
         self.assertEquals(session1.status, 'active')
 
         # Make sure we get a valid paypal url
@@ -1358,24 +1358,24 @@ class TestSessionManager(TestCase):
         self.assertRaises(facade.models.ModelDataValidationError,
             self.session_manager.create, self.admin_token,
             '1994-11-05T18:15:30+00:00', '1994-11-05T16:15:30Z', 'active',
-            False, 10000, e1.id)
+            False, 10000, e1.id, 'short name 1', 'long name 1')
         # session start not >= event start
         self.assertRaises(facade.models.ModelDataValidationError,
             self.session_manager.create, self.admin_token,
             '1994-11-04T13:15:30+00:00', '1994-11-05T16:15:30Z', 'active',
-            False, 10000, e1.id)
+            False, 10000, e1.id, 'short name 1', 'long name 1')
         # session end not <= event end
         self.assertRaises(facade.models.ModelDataValidationError,
             self.session_manager.create, self.admin_token,
             '1994-11-05T13:15:30+00:00', '1994-11-06T16:15:30Z', 'active',
-            False, 10000, e1.id)
+            False, 10000, e1.id, 'short name 1', 'long name 1')
 
     def test_create_perm_denied(self):
         e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1',
             self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         self.assertRaises(exceptions.PermissionDeniedException, self.session_manager.create,
             self.auth_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id)
+            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id, 'short name 1', 'long name 1')
 
     def test_create_by_pl(self):
         prod = self.product_line_manager.create(self.admin_token, 'Earn your MBA overnight!')
@@ -1393,7 +1393,7 @@ class TestSessionManager(TestCase):
             'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1.id,
             {'venue' : self.venue1.id})
         pl_evt = self.session_manager.create(pu_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id,
+            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id, 'short name 1', 'long name 1',
             {'session_template' : str(crs.id)})
         # session associated with a session_template in a different product line, should fail
         prod_2 = self.product_line_manager.create(self.admin_token, 'pottery')
@@ -1402,22 +1402,22 @@ class TestSessionManager(TestCase):
             'ILT', {'product_line' : prod_2.id})
         self.assertRaises(exceptions.PermissionDeniedException, self.session_manager.create,
             pu_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
-            'active', False, 100, e1.id, {'session_template' : str(crs_2.id)})
+            'active', False, 100, e1.id, 'short name 1', 'long name 1', {'session_template' : str(crs_2.id)})
         # session not associated with a session_template, should fail
         self.assertRaises(exceptions.PermissionDeniedException, self.session_manager.create,
             pu_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
-            'active', False, 100, e1.id)
+            'active', False, 100, e1.id, 'short name 1', 'long name 1')
 
     def test_update(self):
         e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1',
             'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1.id,
             {'venue' : self.venue1.id})
         session_1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id)
-        self.session_manager.update(self.admin_token, session_1.id, {'name' : 'an even longer name',
+            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id, 'short name 1', 'long name 1')
+        self.session_manager.update(self.admin_token, session_1.id, {'fullname' : 'an even longer name',
             'start' : self.right_now.isoformat(), 'confirmed' : True})
         session = facade.models.Session.objects.get(id=session_1.id)
-        self.assertEquals(session.name, 'an even longer name')
+        self.assertEquals(session.fullname, 'an even longer name')
         self.assertEquals(session.confirmed, True)
 
     def test_update_denied(self):
@@ -1425,10 +1425,11 @@ class TestSessionManager(TestCase):
             'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1.id,
             {'venue' : self.venue1.id})
         session_1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id)
+            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id, 'short name 1', 'long name 1')
+        # fails because start date is in the past.
         self.assertRaises(exceptions.PermissionDeniedException,
             self.session_manager.update, self.auth_token, session_1.id,
-            {'name' : 'an even longer name',
+            {'fullname' : 'an even longer name',
             'start':'1994-11-04T13:15:30+00:00'})
 
     def test_update_by_pl(self):
@@ -1448,7 +1449,7 @@ class TestSessionManager(TestCase):
             self.organization1.id, {'venue' : self.venue1.id})
         pl_evt = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(),
-            'active', False, 100, e1.id, {'modality' : 'ILT', 'session_template' : str(crs.id)})
+            'active', False, 100, e1.id, 'short name 1', 'long name 1', {'modality' : 'ILT', 'session_template' : str(crs.id)})
         self.session_manager.update(pu_token, str(pl_evt.id), {'default_price':250})
         # refresh the persistent object manually, since it doesn't get
         # invalidated or refreshed automatically (see ticket #160 in trac)
@@ -1464,7 +1465,7 @@ class TestSessionManager(TestCase):
             self.organization1.id, {'venue' : self.venue1.id})
         evt_2 = self.session_manager.create(self.admin_token,
             self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', False,
-            100, e2.id, {'session_template' : str(crs_2.id)})
+            100, e2.id, 'short name 1', 'long name 1', {'session_template' : str(crs_2.id)})
         self.assertRaises(exceptions.PermissionDeniedException, self.session_manager.update,
             pu_token, str(evt_2.id), {'default_price':250})
         # session not associated with a session_template, should fail
@@ -1473,7 +1474,7 @@ class TestSessionManager(TestCase):
             {'venue' : self.venue1.id})
         evt_3 = self.session_manager.create(self.admin_token,
             self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', False, 100,
-            e3.id)
+            e3.id, 'short name 1', 'long name 1')
         self.assertRaises(exceptions.PermissionDeniedException, self.session_manager.update, pu_token,
             str(evt_3.id), {'default_price':500})
 
@@ -1483,18 +1484,18 @@ class TestSessionManager(TestCase):
             {'venue' : self.venue1.id})
         s1 = self.session_manager.create(self.admin_token,
             self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', False, 100,
-            e1.id)
+            e1.id, 'short name 1', 'long name 1')
         e2 = self.event_manager.create(self.admin_token, 'Event 2', 'Event 2', 'Event 2',
             (self.right_now+self.one_day*2).isoformat(), (self.right_now+self.one_day*3).isoformat(), self.organization1.id,
             {'venue' : self.venue1.id})
         s2 = self.session_manager.create(self.admin_token, (self.right_now+self.one_day*2).isoformat(),
-            (self.right_now+self.one_day*3).isoformat(), 'active', False, 100, e2.id)
+            (self.right_now+self.one_day*3).isoformat(), 'active', False, 100, e2.id, 'short name 1', 'long name 1')
         ret = self.session_manager.get_filtered(self.admin_token,
             {'range' : {'start' : ((self.right_now+self.one_day).isoformat(), (self.right_now+self.one_day*2).isoformat())}},
-            ['id', 'name'])
+            ['id', 'shortname'])
         self.assertEquals(len(ret), 1)
         self.assertEquals(str(ret[0]['id']), str(s2.id))
-        self.assertEquals(ret[0]['name'], s2.name)
+        self.assertEquals(ret[0]['shortname'], s2.shortname)
 
     def test_get_filtered_case_insensitive(self):
         # Create events
@@ -1531,11 +1532,11 @@ class TestSessionManager(TestCase):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         session_1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', False, 100,
-            self.e1.id)
+            self.e1.id, 'short name 1', 'long name 1')
         self.e2 = self.event_manager.create(self.admin_token, 'Event 2', 'Event 2', 'Event 2', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         session_2 = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
-                      'active', False, 100, self.e2.id)
+                      'active', False, 100, self.e2.id, 'short name 1', 'long name 1')
         ret = self.session_manager.get_filtered(self.admin_token, {}, ['id'])
         self.assertEquals(type(ret), list)
         self.assertEquals(len(ret), 2)
@@ -1548,8 +1549,8 @@ class TestSessionManager(TestCase):
         tu.setup_test_sessions()
         sessions = self.session_manager._get_sessions_needing_reminders()
         self.assertEquals(len(sessions), 2)
-        session2 = facade.models.Session.objects.get(name=tu.s2.name)
-        session3 = facade.models.Session.objects.get(name=tu.s3.name)
+        session2 = facade.models.Session.objects.get(pk=tu.s2.id)
+        session3 = facade.models.Session.objects.get(pk=tu.s3.id)
         self.failUnless(session2 in sessions)
         self.failUnless(session3 in sessions)
 
@@ -1585,7 +1586,7 @@ class TestSessionManager(TestCase):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         evt1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id)
+            (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id, 'short name 1', 'long name 1')
         student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
         role_req = self.session_user_role_requirement_manager.create(self.admin_token, str(evt1.id), str(student_role.id), 1, 3, False)
         enroll_ret = self.assignment_manager.bulk_create(self.admin_token, str(role_req.id), [learner1.id])
@@ -1605,42 +1606,6 @@ class TestSessionManager(TestCase):
         ret = self.user_manager.get_filtered(self.admin_token, {'exact' : {'id' : learner1.id}}, ['id', 'session_user_role_requirements'])
         self.assertRaises(exceptions.PermissionDeniedException, self.assignment_manager.update, proctor_token, assignment_ret[learner1.id]['id'], {'status' : 'canceled'})
 
-    def test_session_inherits_session_template(self):
-        the_session_template = self.session_template_manager.create(self.admin_token, 'XYZ', 'Ex, Why, Zeee!', '1.0', 'Alphabet nonsense', 100, 1,
-            True, 'Generic')
-        student_role_id = self.session_user_role_manager.get_filtered(self.admin_token, {'exact' : {'name' : 'Student'}})[0]['id']
-        the_session_template_user_role_requirement = self.session_template_user_role_requirement_manager.create(self.admin_token,
-            the_session_template.id, student_role_id, 1, 25)
-
-        start_date = date.today() + timedelta(weeks=3)
-        start_date_str = start_date.isoformat()
-        end_date = start_date + timedelta(days=2)
-        end_date_str = end_date.isoformat()
-
-        the_event = self.event_manager.create(self.admin_token, 'The Event Event!', 'Whoo!', 'Wraw!', start_date_str, end_date_str,
-            self.organization1.id, {'venue' : self.venue1.id})
-
-        the_session = self.session_manager.create(self.admin_token, start_date_str, end_date_str, 'active', True, None, the_event.id,
-            {'session_template' : the_session_template.id})
-        self.assertEquals(the_session.name[0:3], 'XYZ')
-        self.assertEquals(the_session.description, 'Alphabet nonsense')
-        self.assertEquals(the_session.default_price, 100)
-        self.assertEquals(the_session.modality, 'Generic')
-
-        ret = self.session_user_role_requirement_manager.get_filtered(self.admin_token, {'exact' : {'session' : the_session.id}},
-            ['session_user_role', 'min', 'max'])
-        self.assertEquals(len(ret), 1)
-        self.assertEquals(ret[0]['session_user_role'], student_role_id)
-        self.assertEquals(ret[0]['min'], 1)
-        self.assertEquals(ret[0]['max'], 25)
-
-        # specify modality, description, and default_price (200)
-        the_session = self.session_manager.create(self.admin_token, start_date_str, end_date_str, 'active', True, 200, the_event.id,
-            {'modality' : 'ILT', 'session_template' : the_session_template.id, 'description' : 'Alphabet soup'})
-        self.assertEquals(the_session.name[0:3], 'XYZ')
-        self.assertEquals(the_session.description, 'Alphabet soup')
-        self.assertEquals(the_session.default_price, 200)
-        self.assertEquals(the_session.modality, 'ILT')
 
 class TestSessionTemplateManager(TestCase):
     def test_create(self):
@@ -1771,7 +1736,7 @@ class TestSessionUserRoleRequirementManager(TestCase):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         self.session = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now + self.one_day).isoformat(), 'active', False, 100, self.e1.id)
+            (self.right_now + self.one_day).isoformat(), 'active', False, 100, self.e1.id, 'short name 1', 'long name 1')
 
     def test_creation(self):
         surr = self.session_user_role_requirement_manager.create(self.admin_token, self.session.id, self.instructor_role.id, 1,
@@ -1883,7 +1848,7 @@ class TestTrainingVoucherManager(TestCase):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         self.s1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now + self.one_day).isoformat(), 'active',
-            True, 100, self.e1.id)
+            True, 100, self.e1.id, 'short name 1', 'long name 1')
         self.eur1 = self.session_user_role_manager.create(self.admin_token, 'Fancy Job')
         self.eurr1 = self.session_user_role_requirement_manager.create(self.admin_token, self.s1.id, self.eur1.id, 10, 20)
         self.po1 = self.purchase_order_manager.create(self.admin_token)
@@ -2431,7 +2396,7 @@ class TestUserManager(TestCase):
         e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1',
             self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         boring_session = self.session_manager.create(self.admin_token,
-            self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', True, 23456, e1.id,
+            self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', True, 23456, e1.id, 'short name 1', 'long name 1',
             {'session_template' : boring_session_template.id})
         instructor_role = self.session_user_role_manager.get_filtered(self.admin_token,
             {'exact' : {'name' :'Instructor'}}, ['id'])[0]
@@ -2985,11 +2950,11 @@ class TestObjectManager(TestCase):
         s1_start = event_start
         s1_end = event_start + timedelta(hours=1)
         s1 = self.session_manager.create(self.admin_token, s1_start.isoformat() + 'Z',
-            s1_end.isoformat() + 'Z', 'active', True, 0, e1.id)
+            s1_end.isoformat() + 'Z', 'active', True, 0, e1.id, 'short name 1', 'long name 1')
         s2_start = s1_end + timedelta(hours=1)
         s2_end = s2_start + timedelta(hours=1)
         s2 = self.session_manager.create(self.admin_token, s2_start.isoformat() + 'Z',
-            s2_end.isoformat() + 'Z', 'active', True, 0, e1.id)
+            s2_end.isoformat() + 'Z', 'active', True, 0, e1.id, 'short name 1', 'long name 1')
 
         direct_query = facade.models.Event.objects.filter(
             venue__address__postal_code__exact=venue.address.postal_code)
@@ -3011,7 +2976,7 @@ class TestObjectManager(TestCase):
         s3_end = s3_start + timedelta(hours=1)
 
         s3 = self.session_manager.create(self.admin_token, s3_start.isoformat() + 'Z',
-            s3_end.isoformat() + 'Z', 'active', True, 0, e2.id)
+            s3_end.isoformat() + 'Z', 'active', True, 0, e2.id, 'short name 1', 'full name 1')
 
         direct_query = facade.models.Event.objects.filter(sessions__start__exact=s3_start)
         self.assertEquals(len(direct_query), 1)
@@ -3347,7 +3312,7 @@ class TestUtils(object):
         e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', s1_begin.isoformat(), s1_end.isoformat(),
             self.organization2.id, {'venue' : self.venue2.id, 'lead_time' : 86400})
         s1 = self.session_manager.create(self.admin_token, s1_begin.isoformat(), s1_end.isoformat(), s1_status,
-            s1_confirmed, s1_price, e1.id, {'modality' : s1_modality})
+            s1_confirmed, s1_price, e1.id, 'short name 1', 'long name 1', {'modality' : s1_modality})
 
         # session 2 will occur in 1 day and has a lead time of 2 days
         s2_begin = now + timedelta(days=1)
@@ -3359,7 +3324,7 @@ class TestUtils(object):
         e2 = self.event_manager.create(self.admin_token, 'Event 2', 'Event 2', 'Event 2', s2_begin.isoformat(), s2_end.isoformat(),
             self.organization2.id, {'venue' : self.venue2.id, 'lead_time' : 172800})
         self.s2 = self.session_manager.create(self.admin_token, s2_begin.isoformat(), s2_end.isoformat(), s2_status,
-            s2_confirmed, s2_price, e2.id, {'modality' : s2_modality})
+            s2_confirmed, s2_price, e2.id, 'short name 1', 'long name 1', {'modality' : s2_modality})
 
         # session 3 will occur in 3 days and has a lead time of 3 days
         s3_begin = now + timedelta(days=3)
@@ -3371,7 +3336,7 @@ class TestUtils(object):
         e3 = self.event_manager.create(self.admin_token, 'Event 3', 'Event 3', 'Event 3', s3_begin.isoformat(), s3_end.isoformat(),
             self.organization2.id, {'venue' : self.venue2.id, 'lead_time' : 259200})
         self.s3 = self.session_manager.create(self.admin_token, s3_begin.isoformat(), s3_end.isoformat(), s3_status,
-            s3_confirmed, s3_price, e3.id, {'modality' : s3_modality})
+            s3_confirmed, s3_price, e3.id, 'short name 1', 'long name 1', {'modality' : s3_modality})
 
         # session 4 will occur in 10 days and has a lead time of 7 days
         s4_begin = now + timedelta(days=10)
@@ -3383,7 +3348,7 @@ class TestUtils(object):
         e4 = self.event_manager.create(self.admin_token, 'Event 4', 'Event 4', 'Event 4', s4_begin.isoformat(), s4_end.isoformat(),
             self.organization2.id, {'venue' : self.venue2.id, 'lead_time' : 604800})
         s4 = self.session_manager.create(self.admin_token, s4_begin.isoformat(), s4_end.isoformat(), s4_status,
-            s4_confirmed, s4_price, e4.id, {'modality' : s4_modality})
+            s4_confirmed, s4_price, e4.id, 'short name 1', 'long name 1', {'modality' : s4_modality})
 
         # we need session user roles before we can assign users
         instructor_role = facade.models.SessionUserRole.objects.get(name__exact='Instructor')

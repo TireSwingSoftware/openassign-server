@@ -1782,7 +1782,7 @@ class SessionTemplate(OwnedPRModel):
 
     sequence = models.PositiveIntegerField(null=True)
     shortname = models.CharField(max_length=31, unique=True)
-    fullname = models.CharField(max_length=255)
+    fullname = models.CharField(max_length=255, unique=True)
     version = models.CharField(max_length=15)
     description = models.TextField()
     #: Description of the intended audience
@@ -1926,7 +1926,8 @@ class Session(OwnedPRModel):
     start = models.DateTimeField()
     end = models.DateTimeField()
     session_template = PRForeignKey(SessionTemplate, null=True, related_name='sessions')
-    name = models.CharField(max_length=255, unique=True)
+    shortname = models.CharField(max_length=31)
+    fullname = models.CharField(max_length=255)
     #: description of the intended audience
     audience = models.CharField(max_length=255, null=True)
     title = models.CharField(max_length=127, null=True)
@@ -2217,8 +2218,8 @@ class SessionUserRoleRequirement(Task):
     ignore_room_capacity = PRBooleanField(default=False)
 
     def save(self, *args, **kwargs):
-        self.name = self.session.name
-        self.title = 'Session: %s as %s' % (self.session.title, self.session_user_role.name)
+        self.name = self.session.shortname
+        self.title = 'Session: %s as %s' % (self.session.shortname, self.session_user_role.name)
         datetime_format = '%b %d, %Y %I:%M %p'
         self.description = 'Start: %s, End: %s' % (self.session.start.strftime(datetime_format), self.session.end.strftime(datetime_format))
         super(SessionUserRoleRequirement, self).save(*args, **kwargs)

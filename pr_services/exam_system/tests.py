@@ -1190,7 +1190,7 @@ class TestEvaluations(pr_tests.TestCase):
         session1 = self.session_manager.create(self.admin_token,
                                                self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), 'active', True, 10000,
-            event1.id)
+            event1.id, 'short name 1', 'full name 1')
         session1.evaluation = evaluation
         session1.save()
 

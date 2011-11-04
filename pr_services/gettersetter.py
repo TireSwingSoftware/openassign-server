@@ -377,7 +377,7 @@ class Getter(object):
         owner = result_object.event.owner
         if result_object.default_price > 0 and owner.enable_paypal and owner.paypal_address != None and len(owner.paypal_address):
             start = str(result_object.start)
-            date_and_code = '%s, %s' % (start, result_object.name)
+            date_and_code = '%s, %s' % (start, result_object.shortname)
             if result_object.title != None:
                 title = result_object.title
             elif result_object.event.title != None:

@@ -43,9 +43,10 @@ class SessionManager(ObjectManager):
             'default_price' : 'get_general',
             'end' : 'get_time',
             'evaluation' : 'get_foreign_key',
+            'fullname' : 'get_general',
             'modality' : 'get_general',
-            'name' : 'get_general',
             'paypal_url' : 'get_paypal_url_from_session',
+            'shortname' : 'get_general',
             'start' : 'get_time',
             'status' : 'get_general',
             'title' : 'get_general',
@@ -64,8 +65,9 @@ class SessionManager(ObjectManager):
             'session_template' : 'set_foreign_key',
             'default_price' : 'set_general',
             'end' : 'set_time',
+            'fullname' : 'set_general',
             'modality' : 'set_general',
-            'name' : 'set_general',
+            'shortname' : 'set_general',
             'start' : 'set_time',
             'status' : 'set_general',
             'title' : 'set_general',
@@ -84,43 +86,52 @@ class SessionManager(ObjectManager):
 
     @service_method
     def create(self, auth_token, start, end, status, confirmed, default_price,
-            event, optional_attributes=None):
+            event, shortname, fullname, optional_attributes=None):
         """
         Create a new Session
 
-        @param start                  Start time as ISO8601 string
+        @param start                Start time as ISO8601 string
         @type start string
-        @param end                    End time as ISO8601 string
+        @param end                  End time as ISO8601 string
         @type end string
-        @param status                 String: one of 'active', 'pending', 'canceled', 'completed'
-        @param confirmed              is this Session confirmed?
+        @param status               String: one of 'active', 'pending', 'canceled', 'completed'
+        @param confirmed            is this Session confirmed?
         @type confirmed bool
-        @param default_price          Default Price in cents
-        @param event                  Foreign Key for an event
-        @param optional_attributes    Optional attribute values indexed by name
-        @return                       Instance of Session
-                                      dict with new primary key indexed as 'id'
+        @param default_price        Default Price in cents
+        @param event                Foreign Key for an event
+        @param shortname            human-readable short name
+        @type shortname string
+        @param fullname             human-readable long name
+        @type fullname string
+        @param optional_attributes  Optional attribute values indexed by name
+        @return                     Instance of Session
+                                    dict with new primary key indexed as 'id'
         """
 
         if optional_attributes is None:
             optional_attributes = {}
 
         new_session = self._create(auth_token, start, end, status, confirmed, default_price,
-                event, optional_attributes)
+                event, shortname, fullname, optional_attributes)
         self.authorizer.check_create_permissions(auth_token, new_session)
         return new_session
 
     def _create(self, auth_token, start, end, status, confirmed, default_price,
-            event, optional_attributes=None):
+            event, shortname, fullname, optional_attributes=None):
         """
         Create a new Session
         
-        @param start          Start time, ISO8601 string
-        @param end            End time, ISO8601 string
-        @param status         String: one of 'active', 'pending', 'canceled', 'completed'
-        @param confirmed      Boolean: is this Session confirmed?
-        @param default_price  Default price for the Session in US cents
-        @return               Instance of Session
+        @param start                Start time, ISO8601 string
+        @param end                  End time, ISO8601 string
+        @param status               String: one of 'active', 'pending', 'canceled', 'completed'
+        @param confirmed            Boolean: is this Session confirmed?
+        @param default_price        Default price for the Session in US cents
+        @param event                Foreign Key for an event
+        @param shortname            human-readable short name
+        @type shortname string
+        @param fullname             human-readable long name
+        @type fullname string
+        @return                     Instance of Session
         """
 
         if optional_attributes is None:
@@ -128,24 +139,16 @@ class SessionManager(ObjectManager):
 
         actor = auth_token.user
         b = facade.managers.BlameManager().create(auth_token)
+        start = pr_time.iso8601_to_datetime(start)
         end = pr_time.iso8601_to_datetime(end)
-        name = str(end.year)+str(end.month)+str(end.day)
-        new_session = self.my_django_model(start = pr_time.iso8601_to_datetime(start), end=end, name=name,
+        new_session = self.my_django_model(start=start, end=end,
                 status=status, confirmed=confirmed, default_price=default_price,
-                blame=b)
-        if 'session_template' in optional_attributes:
-            the_session_template = self._find_by_id(optional_attributes['session_template'], facade.models.SessionTemplate)
-            if the_session_template.shortname:
-                new_session.name = the_session_template.shortname + name
-            if the_session_template.description is not None:
-                new_session.description = the_session_template.description
-            if (the_session_template.price is not None) and (new_session.default_price is None):
-                new_session.default_price = the_session_template.price
-            if (the_session_template.modality is not None) and (new_session.modality is None):
-                new_session.modality = the_session_template.modality
+                shortname=shortname, fullname=fullname, blame=b)
         new_session.event = self._find_by_id(event, facade.models.Event)
         new_session.save()
         if 'session_template' in optional_attributes:
+            the_session_template = self._find_by_id(optional_attributes['session_template'], facade.models.SessionTemplate)
+
             if (the_session_template.session_template_user_role_requirements.all().count() != 0):
                 # We need to create a session_user_role_requirement for each of these and associate it with this session
                 for session_template_user_role_requirement in the_session_template.session_template_user_role_requirements.all():
@@ -160,7 +163,6 @@ class SessionManager(ObjectManager):
 
             new_session.session_template = the_session_template
             del optional_attributes['session_template']
-        new_session.name = new_session.name+new_session.mangle_id(new_session.id)
         new_session.save()
         if optional_attributes:
             facade.subsystems.Setter(auth_token, self, new_session, optional_attributes)
@@ -336,7 +338,7 @@ class SessionManager(ObjectManager):
         """
         if filters is None:
             filters = {}
-        ret = self.get_filtered(auth_token, filters, ['start', 'end', 'status', 'confirmed', 'event', 'name', 'room', 'title', 'url', 'description', 'session_user_role_requirements'])
+        ret = self.get_filtered(auth_token, filters, ['start', 'end', 'status', 'confirmed', 'event', 'fullname', 'room', 'shortname', 'title', 'url', 'description', 'session_user_role_requirements'])
 
         ret = Utils.merge_queries(ret, facade.managers.RoomManager(), auth_token, ['name', 'venue_name', 'venue_address'], 'room')
 

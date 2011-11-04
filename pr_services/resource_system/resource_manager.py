@@ -68,7 +68,7 @@ class ResourceManager(ObjectManager):
             
         conflicting_sessions = session_manager.get_filtered(auth_token,
             { 'greater_than_or_equal' : {'start' : start },
-              'less_than_or_equal' : {'end' : end } }, ['name', 'status', 'session_resource_type_requirements'])
+              'less_than_or_equal' : {'end' : end } }, ['shortname', 'fullname', 'status', 'session_resource_type_requirements'])
         
         for sess in conflicting_sessions:
             for req_id in sess['session_resource_type_requirements']:

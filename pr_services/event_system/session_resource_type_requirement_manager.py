@@ -91,7 +91,7 @@ class SessionResourceTypeRequirementManager(ObjectManager):
         related_sessions = []
         for req_id in related_requirements:
             sessions = session_mgr.get_filtered(auth_token, 
-                { 'member' : {'session_resource_type_requirements' : [req_id] } }, ['name', 'description', 'start', 'end'])
+                { 'member' : {'session_resource_type_requirements' : [req_id] } }, ['fullname', 'shortname', 'description', 'start', 'end'])
             related_sessions += sessions
             
         return related_sessions
