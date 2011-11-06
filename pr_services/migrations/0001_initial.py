@@ -670,7 +670,7 @@ class Migration(SchemaMigration):
             ('description', self.gf('django.db.models.fields.TextField')()),
             ('audience', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
             ('price', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('lead_time', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('lead_time', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
             ('duration', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
             ('product_line', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.ProductLine'], null=True)),
             ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
@@ -763,6 +763,7 @@ class Migration(SchemaMigration):
             ('description', self.gf('django.db.models.fields.TextField')(null=True)),
             ('event', self.gf('pr_services.fields.PRForeignKey')(related_name='sessions', to=orm['pr_services.Event'])),
             ('sent_reminders', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('lead_time', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
         ))
         db.send_create_signal('pr_services', ['Session'])
 
@@ -2940,6 +2941,7 @@ class Migration(SchemaMigration):
             'fullname': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'graphic': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'null': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'lead_time': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True'}),
             'modality': ('django.db.models.fields.CharField', [], {'default': "'Generic'", 'max_length': '31'}),
             'notes': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'sessions'", 'symmetrical': 'False', 'to': "orm['pr_services.Note']"}),
             'owner': ('pr_services.fields.PRForeignKey', [], {'related_name': "'owned_sessions'", 'null': 'True', 'to': "orm['pr_services.User']"}),
@@ -2980,7 +2982,7 @@ class Migration(SchemaMigration):
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'fullname': ('django.db.models.fields.CharField', [], {'max_length': '255', 'unique': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'lead_time': ('django.db.models.fields.PositiveIntegerField', [], {}),
+            'lead_time': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True'}),
             'modality': ('django.db.models.fields.CharField', [], {'default': "'Generic'", 'max_length': '31'}),
             'notes': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'session_templates'", 'symmetrical': 'False', 'to': "orm['pr_services.Note']"}),
             'owner': ('pr_services.fields.PRForeignKey', [], {'related_name': "'owned_sessiontemplates'", 'null': 'True', 'to': "orm['pr_services.User']"}),

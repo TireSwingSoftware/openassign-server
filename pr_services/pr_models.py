@@ -1790,8 +1790,8 @@ class SessionTemplate(OwnedPRModel):
     #: price measured in training units
     price = models.PositiveIntegerField()
     #: lead time for the SessionTemplate in seconds
-    lead_time = models.PositiveIntegerField()
-    duration = models.PositiveIntegerField(null = True)
+    lead_time = models.PositiveIntegerField(null=True)
+    duration = models.PositiveIntegerField(null=True)
     product_line = PRForeignKey(ProductLine, null=True)
     notes = models.ManyToManyField(Note, related_name = 'session_templates')
     active = PRBooleanField(default = True)
@@ -1951,6 +1951,8 @@ class Session(OwnedPRModel):
     event = PRForeignKey('Event', related_name = 'sessions')
     sent_reminders = PRBooleanField(default=False)
     session_user_roles = models.ManyToManyField('SessionUserRole', related_name='sessions', through='SessionUserRoleRequirement')
+    #: lead time for the Session in seconds
+    lead_time = models.PositiveIntegerField(null=True)
 
     def __unicode__(self):
         if self.session_template:

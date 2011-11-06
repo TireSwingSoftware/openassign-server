@@ -1289,7 +1289,7 @@ class TestEventManager(TestCase):
                 'default_price' : 0,
                 'shortname' : 'Session 1',
                 'fullname' : 'The very first Session!',
-                'optional_attributes' : {'url' : 'http://openassign.org'},
+                'optional_attributes' : {'lead_time' : 60*60*24*3, 'url' : 'http://openassign.org'},
             },
             {
                 'start' : self.right_now.isoformat(),
@@ -1299,7 +1299,7 @@ class TestEventManager(TestCase):
                 'default_price' : 0,
                 'shortname' : 'Session 2',
                 'fullname' : 'The second Session!',
-                'optional_attributes' : {'url' : 'http://openassign.org'},
+                'optional_attributes' : {'lead_time' : 60*60*24*3, 'url' : 'http://openassign.org'},
             }
         ]
 
@@ -1313,15 +1313,12 @@ class TestEventManager(TestCase):
         self.assertEquals(len(sessions), 2)
         self.assertEquals(event.title, 'First Event of My Unit Test')
         self.assertEquals(event.description, 'Event 1')
-        session1 = sessions[0]
-        session2 = sessions[1]
 
-        self.assertEquals(session1.status, 'pending')
-        self.assertTrue(session1.shortname.startswith('Session'))
-        self.assertEquals(session1.url, 'http://openassign.org')
-        self.assertEquals(session2.status, 'pending')
-        self.assertTrue(session2.shortname.startswith('Session'))
-        self.assertEquals(session2.url, 'http://openassign.org')
+        for session in sessions:
+            self.assertEquals(session.status, 'pending')
+            self.assertTrue(session.shortname.startswith('Session'))
+            self.assertEquals(session.url, 'http://openassign.org')
+            self.assertEquals(session.lead_time, 60*60*24*3)
 
 
 class TestSessionManager(TestCase):
