@@ -1273,6 +1273,57 @@ class TestEventTemplateManager(TestCase):
         self.assertTrue(e[0]['id'] in et[0]['events'])
         self.assertEquals(e[0]['name'], '%s%d' % (event_template.name_prefix, event.id))
 
+
+class TestEventManager(TestCase):
+    def setUp(self):
+        TestCase.setUp(self)
+        self.test_utils = TestUtils()
+
+    def test_create_with_sessions(self):
+        sessions = [
+            {
+                'start' : self.right_now.isoformat(),
+                'end' : (self.right_now + self.one_day).isoformat(),
+                'status' : 'pending',
+                'confirmed' : False,
+                'default_price' : 0,
+                'shortname' : 'Session 1',
+                'fullname' : 'The very first Session!',
+                'optional_attributes' : {'url' : 'http://openassign.org'},
+            },
+            {
+                'start' : self.right_now.isoformat(),
+                'end' : (self.right_now + self.one_day).isoformat(),
+                'status' : 'pending',
+                'confirmed' : False,
+                'default_price' : 0,
+                'shortname' : 'Session 2',
+                'fullname' : 'The second Session!',
+                'optional_attributes' : {'url' : 'http://openassign.org'},
+            }
+        ]
+
+        e1 = self.event_manager.create(self.admin_token, 'Event 1',
+            'First Event of My Unit Test', 'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
+            self.organization1.id, {'venue' : self.venue1.id, 'sessions' : sessions})
+        
+        # verify results
+        event = facade.models.Event.objects.get(id=e1.pk)
+        sessions = event.sessions.all()
+        self.assertEquals(len(sessions), 2)
+        self.assertEquals(event.title, 'First Event of My Unit Test')
+        self.assertEquals(event.description, 'Event 1')
+        session1 = sessions[0]
+        session2 = sessions[1]
+
+        self.assertEquals(session1.status, 'pending')
+        self.assertTrue(session1.shortname.startswith('Session'))
+        self.assertEquals(session1.url, 'http://openassign.org')
+        self.assertEquals(session2.status, 'pending')
+        self.assertTrue(session2.shortname.startswith('Session'))
+        self.assertEquals(session2.url, 'http://openassign.org')
+
+
 class TestSessionManager(TestCase):
     def setUp(self):
         TestCase.setUp(self)
