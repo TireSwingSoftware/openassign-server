@@ -1974,10 +1974,10 @@ class Session(OwnedPRModel):
 
     def __unicode__(self):
         if self.session_template:
-            return u'name: %s, template: %s, event name: %s' % (self.name, unicode(self.session_template),
+            return u'name: %s, template: %s, event name: %s' % (self.shortname, unicode(self.session_template),
                                                                 self.event.name)
         else:
-            return u'name: %s, event name: %s' % (self.name, self.event.name)
+            return u'name: %s, event name: %s' % (self.shortname, self.event.name)
 
     def check_status(self):
         """
