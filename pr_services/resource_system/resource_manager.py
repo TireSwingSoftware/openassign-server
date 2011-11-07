@@ -52,6 +52,14 @@ class ResourceManager(ObjectManager):
 
     @service_method
     def find_available_resources(self, auth_token, start, end, requested_fields=['name','description']):
+        """
+        Return a list of resources that are available during the specified timespan
+        
+        @param start              Start time as ISO8601 string or datetime
+        @param end                End time as ISO8601 string or datetime
+        @param requested_fields   Optional list of field names to be returned
+        @return                   a filtered list of available resources, with the requested fields
+        """
         # build a list of blocked resources, then exclude them from final results
         blocked_resource_ids = []
 
@@ -78,8 +86,14 @@ class ResourceManager(ObjectManager):
 
     @service_method    
     def resource_used_during(self, auth_token, resource_id, start, end):
-        # A more targeted "probe" for a particular Resource during a specified time span.
-        # Returns True if the resource is already scheduled within the chosen duration, False if not
+        """
+        Probe for a particular Resource during a specified timespan
+        
+        @param resource_id        ID of the Resource
+        @param start              Start time as ISO8601 string or datetime
+        @param end                End time as ISO8601 string or datetime
+        @return                   True if resource is already scheduled within the chosen duration, False if not 
+        """
         related_sessions = facade.models.Session.resource_tracker.get_sessions_using_resource(resource_id)
 
         if isinstance(start, basestring):

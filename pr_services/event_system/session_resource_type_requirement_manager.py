@@ -77,6 +77,13 @@ class SessionResourceTypeRequirementManager(ObjectManager):
 
     @service_method
     def get_sessions_using_resource(self, auth_token, resource_id, activeOnly=False):
+        """
+        Return all sessions using the specified resource
+        
+        @param resource_id        Primary key for the specified resource
+        @param activeOnly         Optional filter to return only active sessions (currently unused) 
+        @return                   A filtered collection of matching sessions
+        """
         # if activeOnly is True, return only Sessions whose status is active
         related_sessions = facade.models.Session.resource_tracker.get_sessions_using_resource(resource_id, activeOnly)
         # TODO: impose added security via get_filtered()?
