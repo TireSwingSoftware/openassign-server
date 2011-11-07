@@ -527,7 +527,15 @@ class UserOrgRole(OwnedPRModel):
     organization = PRForeignKey('Organization', related_name='user_org_roles')
     role = PRForeignKey('OrgRole', related_name='user_org_roles')
     parent = PRForeignKey('self', null=True, related_name='children')
-    
+
+    # optional title for a slot
+    title = models.CharField(max_length=255, null=True)
+
+    # persistent flag determines if the UserOrgRole will persist
+    # as a "slot" regardless of whether or not it is occupied by
+    # a user.
+    persistent = PRBooleanField(default=False)
+
     def save(self, *args, **kwargs):
         try:
             self.role
@@ -537,6 +545,16 @@ class UserOrgRole(OwnedPRModel):
 
     class Meta:
         unique_together = ('owner', 'organization', 'role')
+
+    def delete(self):
+        # Prevent deleting persistent slots when a user is
+        # disassociated with the slot object.
+        if self.persistent and self.owner:
+            self.owner = None
+            self.save()
+        else:
+            super(UserOrgRole, self).delete()
+
 
     @property
     def role_name(self):

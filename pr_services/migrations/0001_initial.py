@@ -79,6 +79,8 @@ class Migration(SchemaMigration):
             ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='user_org_roles', to=orm['pr_services.Organization'])),
             ('role', self.gf('pr_services.fields.PRForeignKey')(related_name='user_org_roles', to=orm['pr_services.OrgRole'])),
             ('parent', self.gf('pr_services.fields.PRForeignKey')(related_name='children', null=True, to=orm['pr_services.UserOrgRole'])),
+            ('title', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
+            ('persistent', self.gf('pr_services.fields.PRBooleanField')(default=False)),
         ))
         db.send_create_signal('pr_services', ['UserOrgRole'])
 
@@ -3201,8 +3203,10 @@ class Migration(SchemaMigration):
             'organization': ('pr_services.fields.PRForeignKey', [], {'related_name': "'user_org_roles'", 'to': "orm['pr_services.Organization']"}),
             'owner': ('pr_services.fields.PRForeignKey', [], {'related_name': "'owned_userorgroles'", 'null': 'True', 'to': "orm['pr_services.User']"}),
             'parent': ('pr_services.fields.PRForeignKey', [], {'related_name': "'children'", 'null': 'True', 'to': "orm['pr_services.UserOrgRole']"}),
+            'persistent': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
             'role': ('pr_services.fields.PRForeignKey', [], {'related_name': "'user_org_roles'", 'to': "orm['pr_services.OrgRole']"}),
-            'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
+            'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
+            'title': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'})
         },
         'pr_services.venue': {
             'Meta': {'object_name': 'Venue'},

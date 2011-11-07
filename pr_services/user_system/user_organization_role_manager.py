@@ -21,13 +21,17 @@ class UserOrgRoleManager(ObjectManager):
             'organization_name' : 'get_general',
             'role' : 'get_foreign_key',
             'role_name' : 'get_general',
+            'title': 'get_general',
+            'persistent': 'get_general',
             'parent' : 'get_foreign_key',
             'children' : 'get_many_to_one',
         })
         self.setters.update({
-            'owner' : 'set_forbidden', # placeholder
+            'owner' : 'set_foreign_key',
             'organization' : 'set_forbidden', # placeholder
             'role' : 'set_forbidden', # placeholder
+            'title': 'set_forbidden',
+            'persistent': 'set_general',
             'parent' : 'set_foreign_key',
         })
         self.my_django_model = facade.models.UserOrgRole
