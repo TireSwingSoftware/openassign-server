@@ -18,10 +18,10 @@ def setup(machine):
         'Session' : {
             'c' : True,
             'r' : ['default_price', 'room', 'evaluation',
-                      'start', 'end', 'session_template', 'name',
+                      'start', 'end', 'session_template', 'shortname', 'fullname',
                       'audience', 'title', 'confirmed', 'status',
                       'url', 'modality'],
-            'u' : [ 'default_price', 'room', 'start', 'end', 'session_template', 'name', 'audience', 'title',
+            'u' : [ 'default_price', 'room', 'start', 'end', 'session_template', 'shortname', 'fullname', 'audience', 'title',
                     'confirmed', 'status', 'url', 'modality'],
             'd' : True,
         },

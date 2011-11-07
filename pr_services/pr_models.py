@@ -6,6 +6,7 @@ import os
 import cPickle
 import random
 import re
+import shutil
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -1781,7 +1782,7 @@ class SessionTemplate(OwnedPRModel):
 
     sequence = models.PositiveIntegerField(null=True)
     shortname = models.CharField(max_length=31, unique=True)
-    fullname = models.CharField(max_length=255)
+    fullname = models.CharField(max_length=255, unique=True)
     version = models.CharField(max_length=15)
     description = models.TextField()
     #: Description of the intended audience
@@ -1789,8 +1790,8 @@ class SessionTemplate(OwnedPRModel):
     #: price measured in training units
     price = models.PositiveIntegerField()
     #: lead time for the SessionTemplate in seconds
-    lead_time = models.PositiveIntegerField()
-    duration = models.PositiveIntegerField(null = True)
+    lead_time = models.PositiveIntegerField(null=True)
+    duration = models.PositiveIntegerField(null=True)
     product_line = PRForeignKey(ProductLine, null=True)
     notes = models.ManyToManyField(Note, related_name = 'session_templates')
     active = PRBooleanField(default = True)
@@ -1943,7 +1944,8 @@ class Session(OwnedPRModel):
     start = models.DateTimeField()
     end = models.DateTimeField()
     session_template = PRForeignKey(SessionTemplate, null=True, related_name='sessions')
-    name = models.CharField(max_length=255, unique=True)
+    shortname = models.CharField(max_length=31)
+    fullname = models.CharField(max_length=255)
     #: description of the intended audience
     audience = models.CharField(max_length=255, null=True)
     title = models.CharField(max_length=127, null=True)
@@ -1967,6 +1969,8 @@ class Session(OwnedPRModel):
     event = PRForeignKey('Event', related_name = 'sessions')
     sent_reminders = PRBooleanField(default=False)
     session_user_roles = models.ManyToManyField('SessionUserRole', related_name='sessions', through='SessionUserRoleRequirement')
+    #: lead time for the Session in seconds
+    lead_time = models.PositiveIntegerField(null=True)
 
     def __unicode__(self):
         if self.session_template:
@@ -2234,8 +2238,8 @@ class SessionUserRoleRequirement(Task):
     ignore_room_capacity = PRBooleanField(default=False)
 
     def save(self, *args, **kwargs):
-        self.name = self.session.name
-        self.title = 'Session: %s as %s' % (self.session.title, self.session_user_role.name)
+        self.name = self.session.shortname
+        self.title = 'Session: %s as %s' % (self.session.shortname, self.session_user_role.name)
         datetime_format = '%b %d, %Y %I:%M %p'
         self.description = 'Start: %s, End: %s' % (self.session.start.strftime(datetime_format), self.session.end.strftime(datetime_format))
         super(SessionUserRoleRequirement, self).save(*args, **kwargs)
@@ -3074,14 +3078,7 @@ class Course(OwnedPRModel):
         # assuming there are no symbolic links.
         # CAUTION:  This is dangerous!  For example, if course_path == '/', it
         # could delete disk files.
-        for root, dirs, files in os.walk(course_path, topdown=False):
-            for name in files:
-                os.remove(os.path.join(root, name))
-            for name in dirs:
-                os.rmdir(os.path.join(root, name))
-        # Finally, remove the directory the course was in
-        os.rmdir(course_path)
-
+        shutil.rmtree(course_path)
 
 class Sco(Task):
     """ 

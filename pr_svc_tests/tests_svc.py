@@ -188,11 +188,11 @@ class TestCase(BaseTestCase):
         res4_id = res4['value']['id']
 
         # create 2 SessionTemplates (Resource Bound, No Resources)
-        st1 = self.session_template_manager.create(self.admin_token, 'ST - Resource Bound', 'A template with abstract and concrete resource requirements', '1',
+        st1 = self.session_template_manager.create(self.admin_token, 'ST - Resource Bound', 'A template with abstract and concrete resource requirements 1', '1',
            'no description', 100, 1000, True)
         st1_id = st1['value']['id']
     
-        st2 = self.session_template_manager.create(self.admin_token, 'ST - No Resources', 'A template with abstract and concrete resource requirements', '1',
+        st2 = self.session_template_manager.create(self.admin_token, 'ST - No Resources', 'A template with abstract and concrete resource requirements 2', '1',
            'no description', 100, 1000, True)
         st2_id = st2['value']['id']
 
@@ -217,11 +217,11 @@ class TestCase(BaseTestCase):
 
         # create a Session from each template
         sess1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', True, 100, evt1_id, 
+            (self.right_now+self.one_day).isoformat(), 'active', True, 100, evt1_id, 'short name 1', 'full name 1', 
             {'modality' : 'ILT', 'session_template' : st1_id })
         sess1_id = sess1['value']['id']
         sess2 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', True, 100, evt1_id, 
+            (self.right_now+self.one_day).isoformat(), 'active', True, 100, evt1_id, 'short name 1', 'full name 1', 
             {'modality' : 'ILT', 'session_template' : st2_id })
         sess2_id = sess2['value']['id']
 
@@ -528,7 +528,7 @@ class TestEventManagerSvc(TestCase):
         
         # create a session in one of the events
         ret = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', True, 100, event1_id, {'modality' : 'ILT'})
+            (self.right_now+self.one_day).isoformat(), 'active', True, 100, event1_id, 'short name 1', 'full name 1', {'modality' : 'ILT'})
         self.assertEquals(ret['status'], 'OK')
         session1_id = ret['value']['id']
 
@@ -954,7 +954,7 @@ class TestSessionManagerSvc(TestCase):
         event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})['value']['id']
         session1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
-            'active', True, 100, event1, {'modality' : 'ILT'})
+            'active', True, 100, event1, 'short name 1', 'full name 1', {'modality' : 'ILT'})
         self.assertEquals(session1['status'], 'OK')
         session1_id = session1['value']['id']
         res = self.session_manager.get_filtered(self.admin_token, {'exact' : {'id' : session1_id}}, ['modality'])
@@ -1004,10 +1004,10 @@ class TestSessionManagerSvc(TestCase):
         event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})['value']['id']
         an_session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active',
-            True, 100, event1, {'modality' : 'ILT'})['value']['id']
+            True, 100, event1, 'short name 1', 'full name 1', {'modality' : 'ILT'})['value']['id']
         res = self.session_manager.get_filtered(self.admin_token,
             {'greater_than' : {'start' : (self.right_now.date()-self.one_day).isoformat()},
-            'less_than' : {'end' : (self.right_now.date()+2*self.one_day).isoformat()}}, ['name', 'status'])
+            'less_than' : {'end' : (self.right_now.date()+2*self.one_day).isoformat()}}, ['shortname', 'status'])
         self.assertEquals(res['status'], 'OK')
         self.assertEquals(res['value'][0]['status'], 'active')
 
@@ -1019,7 +1019,7 @@ class TestSessionManagerSvc(TestCase):
         event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})['value']['id']
         ret = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', True, 100,
-            event1) 
+            event1, 'short name 1', 'full name 1') 
         self.assertEquals(ret['status'], 'OK')
         evt_id = ret['value']['id']
 
@@ -1097,7 +1097,7 @@ class TestSessionManagerSvc(TestCase):
             'Description 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1,
             {'venue' : venue1['value']['id']})['value']['id']
         ret = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', True, 100, event1) 
+            (self.right_now+self.one_day).isoformat(), 'active', True, 100, event1, 'shortname 1', 'fullname 1') 
         self.assertEquals(ret['status'], 'OK')
         evt_id = ret['value']['id']
 
@@ -1211,7 +1211,7 @@ class TestSessionTemplateManagerSvc(TestCase):
         self.assertEquals(ret['status'], 'OK')
         event1 = ret['value']['id']
         batman_session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
-            'active', True, 100, event1, {'session_template' : batman_being_id})['value']['id']
+            'active', True, 100, event1, 'shortname 1', 'fullname 1', {'session_template' : batman_being_id})['value']['id']
         # test for required user roles in a template
         batman_session_user_role_id = self.session_user_role_manager.create(self.admin_token, 'Batman!')['value']['id']
         batman_session_template_user_role_requirement_id = self.session_template_user_role_requirement_manager.create(
@@ -1234,7 +1234,7 @@ class TestSessionTemplateManagerSvc(TestCase):
         self.assertEquals(ret['status'], 'OK')
         event1 = ret['value']['id']
         batman_session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
-            'active', True, 100, event1, {'session_template' : batman_being_id})['value']['id']
+            'active', True, 100, event1, 'shortname 1', 'fullname 1', {'session_template' : batman_being_id})['value']['id']
         # similar test for required resource types in a template
         restype_id = self.resource_type_manager.create(self.admin_token, 'Batmobile')['value']['id']
         ret = self.session_template_resource_type_requirement_manager.create(
@@ -1329,11 +1329,11 @@ class TestSessionUserRoleRequirementManagerSvc(TestCase):
         event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})['value']['id']
         session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active',
-            True, 100, event1, {'modality' : 'ILT'})['value']['id']
+            True, 100, event1, 'shortname 1', 'fullname 1', {'modality' : 'ILT'})['value']['id']
         cred_type_id = self.credential_type_manager.create(self.admin_token, 'Being a millionaire',
             'You must be a millionaire, or you are not worthy')['value']['id']
         session_user_role_requirement = self.session_user_role_requirement_manager.create(unprivileged_at, session_id,
-            session_user_role_id, 1, 10, False, [cred_type_id])
+            session_user_role_id, 1, 10, [cred_type_id])
         self.assertEquals(session_user_role_requirement['status'], 'error')
         self.assertEquals(session_user_role_requirement['error'][0], 23)
         session_user_role_requirement = self.session_user_role_requirement_manager.create(self.admin_token, session_id,
@@ -1359,7 +1359,7 @@ class TestSessionResourceTypeRequirementManagerSvc(TestCase):
         event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})['value']['id']
         session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active',
-            True, 100, event1, {'modality' : 'ILT'})['value']['id']
+            True, 100, event1, 'shortname 1', 'fullname 1', {'modality' : 'ILT'})['value']['id']
         # define a ResourceType and assign it as a requirement for this Session
         restype_id = self.resource_type_manager.create(self.admin_token, 'Stock ticker')['value']['id']
         ret = self.session_resource_type_requirement_manager.create(
@@ -1551,7 +1551,7 @@ class TestUserManagerSvc(TestCase):
         self.assertEquals(ret['status'], 'OK')
         event1 = ret['value']['id']
         ret = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
-            'active', True, 23456, event1, {'session_template' : boring_session_template_id})
+            'active', True, 23456, event1, 'shortname 1', 'fullname 1', {'session_template' : boring_session_template_id})
         self.assertEquals(ret['status'], 'OK')
         boring_session_id = ret['value']['id']
         instructor_role_id = self.session_user_role_manager.get_filtered(self.admin_token, {'exact' : {'name' : 'Instructor'}})['value'][0]['id']
@@ -1593,7 +1593,7 @@ class TestUserManagerSvc(TestCase):
         event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})['value']['id']
         session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active',
-            True, 23456, event1, {'session_template' : session_template_id})['value']['id']
+            True, 23456, event1, 'shortname 1', 'fullname 1', {'session_template' : session_template_id})['value']['id']
         instructor_role_id = self.session_user_role_manager.get_filtered(self.admin_token, {'exact' : {'name' : 'Instructor'}})['value'][0]['id']
         student_role_id = self.session_user_role_manager.get_filtered(self.admin_token, {'exact' : {'name' : 'Student'}})['value'][0]['id']
         instructor_session_user_role_req_id = self.session_user_role_requirement_manager.create(self.admin_token, session_id, instructor_role_id, 1,
@@ -1718,7 +1718,7 @@ class TestUserManagerSvc(TestCase):
         event_1_id = ret['value']['id']
         # create the session to go into the event 
         ret = self.session_manager.create(self.admin_token, event_start_time, event_end_time,'active',
-            True, 23456, event_1_id, {'session_template' : session_template_id})
+            True, 23456, event_1_id, 'shortname 1', 'fullname 1', {'session_template' : session_template_id})
         self.assertEquals(ret['status'], 'OK')
         session_id = ret['value']['id']
             

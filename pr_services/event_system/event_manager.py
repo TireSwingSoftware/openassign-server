@@ -79,7 +79,10 @@ class EventManager(ObjectManager):
         @param end                  Date on which the Event ends, as an ISO8601 string.
                                     If you provide hour, minute, or second, they will be ignored.
         @param organization         FK for organization
-        @param optional_attributes  currently only 'venue', 'region', 'event_template', 'product_line' and 'lead_time'
+        @param optional_attributes  currently only 'venue', 'region', 'event_template', 'product_line', 'lead_time'
+                                    and 'sessions'. For 'sessions', provide a list of dicts with all attributes for
+                                    the SessionManager.create() method except 'event', which will obviously be
+                                    filled in by this method after the event is created.
         @return                     a reference to the newly created Event
         """
         
@@ -98,6 +101,16 @@ class EventManager(ObjectManager):
         e.name = '%s%d' % (name_prefix if name_prefix is not None else '', e.id)
         if 'lag_time' not in optional_attributes:
             optional_attributes['lag_time'] = settings.DEFAULT_EVENT_LAG_TIME
+
+        # create sessions if provided.
+        if 'sessions' in optional_attributes:
+            e.save()
+            session_manager = facade.managers.SessionManager()
+            for session in optional_attributes['sessions']:
+                session['event'] = e.pk
+                session_manager.create(auth_token, **session)
+            del optional_attributes['sessions']
+
         facade.subsystems.Setter(auth_token, self, e, optional_attributes)
         e.save()
         
