@@ -54,7 +54,7 @@ class CurriculumManager(ObjectManager):
 
         ret = Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name'], 'achievements')
 
-        return Utils.merge_queries(ret, facade.managers.CurriculumTaskAssociationManager(), auth_token, ['task_name'], 'curriculum_task_associations')
+        return Utils.merge_queries(ret, facade.managers.CurriculumTaskAssociationManager(), auth_token, ['task', 'task_name'], 'curriculum_task_associations')
     
 
 # vim:tabstop=4 shiftwidth=4 expandtab
