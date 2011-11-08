@@ -24,22 +24,6 @@ import memcache
 from fields import *
 from pr_services.middleware import get_client_ip
 
-def queryset_empty(queryset):
-    """
-    Returns True if a Django queryset is empty, False otherwise.
-
-    @param queryset a Django queryset
-
-    This code is copied from the Django source code, from
-    django/forms/models.py:255, svn revision 10283
-    """
-
-    # This cute trick with extra/values is the most efficient way to
-    # tell if a particular query returns any results.
-    if queryset.extra(select={'a': 1}).values('a').order_by():
-        return False
-    else:
-        return True
 
 def add_validation_error(validation_errors, attname, message):
     """
@@ -229,7 +213,7 @@ class Versionable(models.Model):
             if self.pk is not None:
                 possible_duplicates = possible_duplicates.exclude(pk=self.pk)
 
-            if not queryset_empty(possible_duplicates):
+            if possible_duplicates:
                 add_validation_error(validation_errors, '__SELF__',
                     u'The following fields together are not unique: %s' %\
                      (unicode(unique_field_set)))
@@ -360,7 +344,7 @@ class PRModel(models.Model):
                 if self.id is not None:
                     possible_duplicates = possible_duplicates.exclude(id=self.id)
 
-                if not queryset_empty(possible_duplicates):
+                if possible_duplicates:
                     add_validation_error(validation_errors, attname,
                         u"Value is not unique.")
 
@@ -387,7 +371,7 @@ class PRModel(models.Model):
                 if self.pk is not None:
                     possible_duplicates = possible_duplicates.exclude(pk=self.pk)
 
-                if not queryset_empty(possible_duplicates):
+                if possible_duplicates:
                     add_validation_error(validation_errors, '__SELF__',
                         u'The following fields together are not unique: %s' %\
                          (unicode(unique_field_set)))
@@ -1973,7 +1957,7 @@ class Room(OwnedPRModel):
         # exclude ourself if we're updating
         if self.pk:
             possible_duplicates = possible_duplicates.exclude(pk=self.pk)
-        if not queryset_empty(possible_duplicates):
+        if possible_duplicates:
             add_validation_error(validation_errors, 'name',
                 u"Name conflicts with another Room in the same Venue.")
 

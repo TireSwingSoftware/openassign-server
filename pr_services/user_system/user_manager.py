@@ -19,7 +19,6 @@ import ldap
 from django.conf import settings
 
 from pr_services import exceptions
-from pr_services.pr_models import queryset_empty
 from pr_services import pr_time
 from pr_services import storage
 from pr_services.object_manager import ObjectManager
@@ -374,7 +373,7 @@ class UserManager(ObjectManager):
         for c in facade.models.DomainAffiliation.USERNAME_ILLEGAL_CHARACTERS:
             suggested_username = suggested_username.replace(str(c), '')
         # Check to see if we already have the current username
-        if not queryset_empty(facade.models.DomainAffiliation.objects.filter(username=suggested_username, domain__name=domain)):
+        if facade.models.DomainAffiliation.objects.filter(username=suggested_username, domain__name=domain):
             # We can append a suffix on the end of the requested username and try that.
             # Let's try starting with 1.
             integer_suffix = 1
@@ -382,7 +381,7 @@ class UserManager(ObjectManager):
             # While we haven't found a good username, let's keep trying with different
             # suffixes.
             while not found_good_username:
-                if queryset_empty(facade.models.DomainAffiliation.objects.filter(username=suggested_username+str(integer_suffix), domain__name=domain)):
+                if not facade.models.DomainAffiliation.objects.filter(username=suggested_username+str(integer_suffix), domain__name=domain):
                     # We've found a good username, so let's quit the while and return it
                     found_good_username = True
                     suggested_username = suggested_username + str(integer_suffix)

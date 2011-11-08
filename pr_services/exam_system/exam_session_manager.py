@@ -11,7 +11,6 @@ from datetime import datetime
 from pr_services import exceptions
 from pr_services import pr_time
 from pr_services.credential_system.assignment_attempt_manager import AssignmentAttemptManager
-from pr_services.models import queryset_empty
 from pr_services.rpc.service import service_method
 import facade
 
@@ -147,7 +146,7 @@ class ExamSessionManager(AssignmentAttemptManager):
         if resume and isinstance(auth_token, facade.models.AuthToken):
             exam_sessions = facade.models.ExamSession.objects.filter(assignment__id=assignment_object.id,
                 date_completed__isnull=True).order_by('-date_started')
-            if not queryset_empty(exam_sessions):
+            if exam_sessions:
                 return self.resume(auth_token, exam_sessions[0].id, fetch_all)
         exam_session = self._create(auth_token, assignment_object, fetch_all)
         return exam_session
