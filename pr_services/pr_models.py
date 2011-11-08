@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 import cPickle
 import logging
@@ -1993,15 +1993,17 @@ class Session(OwnedPRModel):
             add_validation_error(validation_errors, 'start',
                 u'Session start time must come before Session end time')
 
-        if not self.start >= datetime(self.event.start.year,
-            self.event.start.month, self.event.start.day):
+        event_start = datetime.combine(self.event.start, time(0, 0, 0))
+        event_end = datetime.combine(self.event.end, time(23, 59, 59))
+        grace_period = timedelta(hours=12)
 
+        if not (self.start >= event_start or
+                event_start - self.start <= grace_period):
             add_validation_error(validation_errors, 'start',
                 u"starting time %s is not on or after event's starting time %s" %\
                 (unicode(self.start), unicode(self.event.start)))
-        if not self.end < (datetime(self.event.end.year,
-            self.event.end.month, self.event.end.day) + timedelta(days=1)):
 
+        if not (self.end <= event_end or self.end - event_end <= grace_period):
             add_validation_error(validation_errors, 'end',
                 u"ending time %s is not before or on event's ending time %s" %\
                 (unicode(self.end), unicode(self.event.end)))
