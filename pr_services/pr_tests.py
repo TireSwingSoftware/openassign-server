@@ -1305,7 +1305,7 @@ class TestEventManager(TestCase):
         e1 = self.event_manager.create(self.admin_token, 'Event 1',
             'First Event of My Unit Test', 'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
             self.organization1.id, {'venue' : self.venue1.id, 'sessions' : sessions})
-        
+
         # verify results
         event = facade.models.Event.objects.get(id=e1.pk)
         sessions = event.sessions.all()

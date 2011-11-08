@@ -50,10 +50,10 @@ class EventTemplateManager(ObjectManager):
 
     @service_method
     def create(self, auth_token, name_prefix, title, description, optional_attributes=None):
-        
+
         """
         Create a new EventTemplate.
-        
+
         @param name_prefix          Prefix that will be used in generating a unique name
         @param title                title of the EventTemplate
         @param description          description of the EventTemplate
@@ -61,16 +61,16 @@ class EventTemplateManager(ObjectManager):
                                     organization, product_line, twitter_template, url
         @return                     a reference to the newly created EventTemplate
         """
-        
+
         if optional_attributes is None:
             optional_attributes = {}
-        
+
         e = self.my_django_model.objects.create(name_prefix=name_prefix, title=title, description=description)
         if 'lag_time' not in optional_attributes:
             optional_attributes['lag_time'] = settings.DEFAULT_EVENT_LAG_TIME
         facade.subsystems.Setter(auth_token, self, e, optional_attributes)
         e.save()
-        
+
         self.authorizer.check_create_permissions(auth_token, e)
         return e
 

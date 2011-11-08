@@ -81,9 +81,9 @@ class ExamManager(TaskManager):
     def create_from_xml(self, auth_token, xml_data):
         """
         Create an exam session from an XML document.
-        
+
         The XML schema is defined as a Relax-NG schema in exam_schema.xml.
-        
+
         :param auth_token:  The authentication token of the acting user
         :type auth_token:   pr_services.models.AuthToken
         :param xml_data:    the XML document, as a string
@@ -195,7 +195,7 @@ class ExamManager(TaskManager):
         """
         Create an XML document representing an exam that is already stored in the
         database.
-        
+
         :param auth_token:  The authentication token of the acting user
         :type auth_token:   pr_services.models.AuthToken
         :param exam_id:     primary key of the exam
@@ -272,7 +272,7 @@ class ExamManager(TaskManager):
                     if include_pk:
                         add_attribute(a, 'pk', a_obj, 'id')
                     add_attribute(a, 'id', a_obj, 'name')
-                    
+
                     for aname, atype in [('text_response', boolean), ('value', None),
                         ('correct', nullboolean), ('end_question_pool', boolean),
                         ('end_exam', boolean)]:

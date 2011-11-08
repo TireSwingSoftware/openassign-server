@@ -418,7 +418,7 @@ class ExamSessionManager(AssignmentAttemptManager):
     def _finish(self, auth_token, exam_session):
         """
         Complete the exam session, or return more questions if available.
-        
+
         :param auth_token:      The authentication token of the acting user
         :type auth_token:       facade.models.AuthToken
         :param exam_session:    Reference to the exam session.

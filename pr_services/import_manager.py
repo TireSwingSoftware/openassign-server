@@ -12,7 +12,7 @@ class ImportManager(object):
     Import data from CSV. The first row should define the attribute names for the columns. For boolean
     values, use '1' and '0'.  See the appropriate _manager.create()
     method for details on field types and descriptions.
-   
+
     For each method, csv_data is a foreign key for a csv_data object.  Those are
     created by uploading a text file to upload_csv/ with a POST request, and the
     auth_token variable passed with name 'auth_token'.  When the request is
@@ -33,7 +33,7 @@ class ImportManager(object):
     def import_session_templates(self, auth_token, csv_object, interactive=False):
         """
         Common method to import session_templates from csv data
-        
+
         @param csv_object   A csv_data object.  Every field should be in double quotes.
         @return             A list of primary keys for the newly created session_templates
         """
@@ -68,11 +68,11 @@ class ImportManager(object):
         if len(exception_message):
             raise exceptions.InvalidDataException(exception_message)
         return keys
-        
+
     def import_sessions(self, auth_token, csv_data, interactive=False):
         """
         Common method for importing sessions from csv data
-        
+
         @param csv_data A csv_data object. Every field should be in double quotes.
         @return         A list of primary keys for the newly created Sessions
         """
@@ -144,7 +144,7 @@ class ImportManager(object):
     def import_users(self, auth_token, csv_data, interactive=False):
         """
         Common method to import users from csv data
-        
+
         @param csv_data   A csv_data object.
         @return           A list of primary keys for the newly created users
         """
@@ -184,7 +184,7 @@ class ImportManager(object):
     def import_venues(self, auth_token, csv_data, interactive=False):
         """
         Import venues from CSV data.
-        
+
         @param auth_token
         @type auth_token    models.AuthToken
         @param csv_data     A csv_data object.
@@ -206,7 +206,7 @@ class ImportManager(object):
     def import_organizations(self, auth_token, csv_data, interactive=False):
         """
         Import organizations from CSV data.
-        
+
         @param auth_token
         @type auth_token    models.AuthToken
         @param csv_data     A csv_data object.
@@ -234,7 +234,7 @@ class ImportManager(object):
         """
         Generic method to import CSV data and run it through the create() method
         of a manager.
-        
+
         @param csv_data             A csv_data object
         @type  csv_data             models.csv
         @param manager              Instance of manager that corresponds to the
@@ -322,7 +322,7 @@ class ImportManager(object):
     def import_regions(self, auth_token, csv_data, interactive=False):
         """
         Import regions from CSV data.
-        
+
         @param auth_token
         @type auth_token    models.AuthToken
         @param csv_data     A csv_data object.
@@ -354,7 +354,7 @@ class ImportManager(object):
     def import_rooms(self, auth_token, csv_data, interactive=False):
         """
         Common method for importing venues from csv data
-        
+
         @param csv_data   A foreign key for a csv_data object as returned from a POST
                 request to upload_csv/. Every field should be in double quotes.
                 Fields in order are: name, venue (foreign key), capacity
@@ -496,7 +496,7 @@ class ImportManager(object):
         """
         Import the list of ac_check_methods with attributes that will be stored in
         the database for frontend use
-        
+
         @param        xml_text    A string containing the XML in question
         """
 

@@ -57,16 +57,16 @@ class PhotoStorage(FileSystemStorage):
             else:
                 # OK, the file save worked. Break out of the loop.
                 break
-        
+
         if settings.FILE_UPLOAD_PERMISSIONS is not None:
             os.chmod(full_path, settings.FILE_UPLOAD_PERMISSIONS)
-        
+
         return name
 
     def get_valid_name(self, name):
         """Run the name through Django's validator, just in case"""
         return get_valid_filename(name)
-        
+
     def get_available_name(self, name):
         """Generate a filename based on UUID with the preferred image extension"""
         # uuid4() returns a randomly generated v4 UUID, per RFC 4122

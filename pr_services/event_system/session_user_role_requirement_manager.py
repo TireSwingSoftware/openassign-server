@@ -10,7 +10,7 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
     """
     Manage SessionUserRoleRequirements in the Power Reg system
     """
-    
+
     def __init__(self):
         """ constructor """
 
@@ -37,10 +37,10 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
     @service_method
     def create(self, auth_token, session_id, session_user_role_id, min, max,
         credential_type_ids=None, optional_attributes=None):
-        
+
         """
         Create a new SessionUserRoleRequirement
-        
+
         @param session_id               Primary key for an session
         @param session_user_role_id     Primary key for an session_user_role
         @param min                      Minimum number required

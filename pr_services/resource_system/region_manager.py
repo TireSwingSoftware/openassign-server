@@ -31,7 +31,7 @@ class RegionManager(ObjectManager):
     def create(self, auth_token, name, optional_attributes=None):
         """
         Create a new Region
-        
+
         @param name                name of the Region
         @return                    a reference to the newly created Region
         """

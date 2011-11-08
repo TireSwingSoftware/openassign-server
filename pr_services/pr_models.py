@@ -523,7 +523,7 @@ class UserOrgRole(OwnedPRModel):
     organization = PRForeignKey('Organization', related_name='user_org_roles')
     role = PRForeignKey('OrgRole', related_name='user_org_roles')
     parent = PRForeignKey('self', null=True, related_name='children')
-    
+
     def save(self, *args, **kwargs):
         try:
             self.role
