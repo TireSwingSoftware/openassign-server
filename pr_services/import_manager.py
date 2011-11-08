@@ -283,28 +283,14 @@ class ImportManager(object):
                     sys.stderr.write('.')
             except ValueError, ve:
                 exception_details[line_num] = u'ValueError: %s' % unicode(ve)
-                if interactive:
-                    sys.stderr.write('E')
-                    print >> sys.stderr, "\nline %d: [%s]" % (line_num,
-                        exception_details[line_num])
-                    print >> sys.stderr, '\n', row, '\n'
             except exceptions.InvalidDataException, ide:
                 exception_details[line_num] = unicode(ide)
-                if interactive:
-                    sys.stderr.write('E')
-                    print >> sys.stderr, "\nline %d: [%s]" % (line_num,
-                        exception_details[line_num])
-                    print >> sys.stderr, '\n', row, '\n'
             except facade.models.ModelDataValidationError, ve:
                 exception_details[line_num] = u'ValidationError: %s' % unicode(ve)
-                if interactive:
-                    sys.stderr.write('E')
-                    print >> sys.stderr, "\nline %d: [%s]" % (line_num,
-                        exception_details[line_num])
-                    print >> sys.stderr, '\n', row, '\n'
             except Exception, e:
                 exception_details[line_num] = unicode(e)
-                if interactive:
+            finally:
+                if line_num in exception_details and interactive:
                     sys.stderr.write('E')
                     print >> sys.stderr, "\nline %d: [%s]" % (line_num,
                         exception_details[line_num])
