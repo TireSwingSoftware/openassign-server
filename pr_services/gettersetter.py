@@ -10,9 +10,8 @@ import cPickle
 import urllib
 import warnings
 from django.conf import settings
-from django.db import IntegrityError, connection
+from django.db import connection
 from django.db.models.fields import FieldDoesNotExist
-from storage import UserPhotoStorage
 import django.db
 import django.db.backends.util
 import django.db.models

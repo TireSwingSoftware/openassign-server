@@ -2,8 +2,6 @@
 SessionUserRoleRequirement manager class
 """
 
-from datetime import datetime
-from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 from pr_services.utils import Utils
 import facade

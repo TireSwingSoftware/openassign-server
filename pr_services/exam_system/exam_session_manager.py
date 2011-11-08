@@ -6,7 +6,6 @@ __docformat__ = "restructuredtext en"
 
 # Python
 from datetime import datetime
-from decimal import Decimal, ROUND_UP
 
 # PowerReg
 from pr_services import exceptions

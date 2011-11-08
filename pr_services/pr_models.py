@@ -1,9 +1,7 @@
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 import cPickle
-import itertools
 import logging
-import os
 import random
 import re
 import shutil
@@ -11,7 +9,6 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.template import Template, Context
-from django.template.loader import render_to_string
 from django.utils.hashcompat import sha_constructor
 import django.core.exceptions # for ValidationError
 import django.db
@@ -19,7 +16,6 @@ import django.db.models.fields.related
 import django.forms.util # for ValidationError
 import exceptions
 import facade
-import pr_time
 import storage
 from fields import *
 from pr_services.middleware import get_client_ip

@@ -3,10 +3,6 @@ Session manager class
 """
 
 from datetime import datetime, timedelta
-from django.core.mail import EmailMessage
-from django.db import IntegrityError
-from django.template import Template, Context
-from django.template.loader import get_template
 from pr_services import pr_time
 from pr_services import exceptions
 from pr_services.object_manager import ObjectManager

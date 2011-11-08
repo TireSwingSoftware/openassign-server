@@ -8,7 +8,6 @@ __docformat__ = "restructuredtext en"
 import codecs
 from decimal import Decimal
 from cStringIO import StringIO
-import sys
 import xml.dom.minidom
 import xml.etree.cElementTree as elementtree
 

@@ -5,7 +5,7 @@ from django.core.files.storage import FileSystemStorage
 from django.core.files.move import file_move_safe
 from django.utils._os import safe_join
 from django.utils.text import get_valid_filename
-from PIL import Image, ImageFile
+from PIL import Image
 import os
 import errno
 import exceptions

@@ -9,9 +9,6 @@ import codecs
 from decimal import Decimal
 import random
 
-# Django
-from django.conf import settings
-
 # PowerReg
 from pr_services import exceptions
 from pr_services import pr_tests

@@ -3,7 +3,6 @@ TaskBundleManager class
 """
 __docformat__ = "restructuredtext en"
 
-from pr_services import exceptions
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade

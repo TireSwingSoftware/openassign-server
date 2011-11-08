@@ -5,15 +5,12 @@ User manager class
 __docformat__ = "restructuredtext en"
 
 from datetime import date, datetime, timedelta
-import hashlib
-import logging
 import os
 import random
 import re
 from recaptcha.client import captcha
 import string
 import time
-import threading
 import uuid
 import urllib2
 

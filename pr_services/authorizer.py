@@ -6,17 +6,21 @@ model.
 """
 
 from __future__ import with_statement
-import copy
+
 import cPickle
-from datetime import datetime, timedelta
+import copy
+import logging
 import threading
-from django.core.exceptions import ObjectDoesNotExist
+
+from datetime import datetime
+
 from authorizer_decorators import *
+from django.core.exceptions import ObjectDoesNotExist
+from utils import Utils
+
 import exceptions
 import facade
 import pr_models
-import logging
-from utils import Utils
 
 class Authorizer(object):
     # Store a single instance of an Authorizer object, so we can manage the ACL cache effectively

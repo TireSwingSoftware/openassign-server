@@ -3,13 +3,11 @@ abstract base class for classes that manage persistent objects in the Power Reg 
 """
 __docformat__ = "restructuredtext en"
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.models.fields import FieldDoesNotExist
 from django.db.models.fields.related import RelatedField, RelatedObject
 from django.db.models.query import ValuesQuerySet
 from utils import Utils
-import django
 import exceptions
 import facade
 import logging

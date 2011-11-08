@@ -1,11 +1,9 @@
-from datetime import datetime
 import sys
+
 from utils import Utils
-from xml import dom
-from xml.dom import minidom
 from xml.etree import ElementTree
 from xml.parsers import expat
-import csv
+
 import exceptions
 import facade
 

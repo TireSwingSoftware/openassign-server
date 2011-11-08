@@ -6,8 +6,6 @@ import cStringIO
 import datetime
 import hashlib
 import logging
-import os
-import sys
 import unicodedata
 from django.db import transaction
 from pr_services import exceptions

@@ -12,7 +12,6 @@ import hashlib
 import inspect
 import operator
 import os
-import sys
 import time
 import urllib2
 import django.test.client
@@ -24,7 +23,7 @@ from cookiecache import CookieCache
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.utils.unittest import skipIf, skipUnless
+from django.utils.unittest import skipUnless
 from initial_setup import InitialSetupMachine, default_read_fields
 from pr_services import exceptions
 from pr_services import pr_time

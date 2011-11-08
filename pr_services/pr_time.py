@@ -5,7 +5,6 @@ This modules deals with time and date conversion
 import datetime
 import iso8601
 import exceptions
-import sys
 
 class UTC(datetime.tzinfo):
     """

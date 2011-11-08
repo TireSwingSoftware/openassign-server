@@ -3,11 +3,8 @@ ScoSessionManager class
 """
 
 from pr_services.credential_system.assignment_attempt_manager import AssignmentAttemptManager
-from pr_services.exceptions import OperationNotPermittedException
 from pr_services.rpc.service import service_method
 import facade
-
-from datetime import datetime
 
 class ScoSessionManager(AssignmentAttemptManager):
     """

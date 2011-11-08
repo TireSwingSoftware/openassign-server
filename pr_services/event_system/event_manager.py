@@ -2,7 +2,6 @@
 Event manager class
 """
 
-from datetime import datetime, timedelta
 from pr_services import pr_time
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method

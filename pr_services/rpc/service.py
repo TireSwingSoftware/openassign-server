@@ -4,10 +4,9 @@ Class used as a shim for functions invoked via RPC
 
 # Python
 import datetime
-from inspect import getargspec, getdoc
 import logging
-import sys
 import traceback
+from inspect import getargspec
 
 # Django
 from django.conf import settings
