@@ -1084,8 +1084,7 @@ class Assignment(PRModel):
     ##     pass
 
     def report_status_changes(self, filter=None):
-        # TODO: report the history of status changes for this Assignment only
-        # pass the call to the global Getter, with filter for this ID?
+        # report the history of status changes for this Assignment only
         return self.status_change_log
 
     def save(self, *args, **kwargs):
@@ -1907,7 +1906,17 @@ class Room(OwnedPRModel):
     
 class SessionResourceTracker(models.Manager):
     def get_sessions_using_resource(self, resource_id, activeOnly=False):
-        # TODO: implement activeOnly filter (if True, return only Sessions whose status is active)
+        """
+        Retrieve all sessions using the specified resource, possibly only those whose status is active.
+
+        @param resource_id    ID of the specified Resource
+        @param activeOnly     Include only active Sessions?
+        @type  activeOnly     boolean
+
+        @return               queryset iterator of all matching Sessions
+        """
+        
+        # if activeOnly=True, apply a filter that returns only Sessions whose status is active
         # find all resource-type requirements that use this resource (use existing Resource.session_resource_type_requirements)
         resource_instance = facade.models.Resource.objects.get(pk=resource_id)
         its_reqs = resource_instance.session_resource_type_requirements.all()
@@ -1918,6 +1927,10 @@ class SessionResourceTracker(models.Manager):
         related_sessions = facade.models.Session.objects.filter(
             session_resource_type_requirements__in=its_reqs
         )
+        if activeOnly:
+            related_sessions = related_sessions.filter(
+                status='active'
+            )
         return related_sessions
     
 class Session(OwnedPRModel):

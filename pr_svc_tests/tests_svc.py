@@ -1168,6 +1168,16 @@ class TestResourceSchedulingRules(TestCase):
         self.assertEquals(ret['status'], 'OK')
         self.assertEquals( len(ret['value']) , 0)
 
+        # test the activeOnly filter
+        self.session_manager.update(self.admin_token, int(object_ids['res1_id']), {'status' : 'pending'} )
+        ret = self.session_resource_type_requirement_manager.get_sessions_using_resource(self.admin_token, int(object_ids['res1_id']), True )  # activeOnly=True
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals( len(ret['value']) , 0)
+        self.session_manager.update(self.admin_token, int(object_ids['res1_id']), {'status' : 'active'} )
+        ret = self.session_resource_type_requirement_manager.get_sessions_using_resource(self.admin_token, int(object_ids['res1_id']), True )  # activeOnly=True
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals( len(ret['value']) , 1)
+
         # find all Resources available during a specified time period; first, match the times used for our session (2 used, 2 available)
         now = self.right_now.isoformat()
         tomorrow = (self.right_now+self.one_day).isoformat()
