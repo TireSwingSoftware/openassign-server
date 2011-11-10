@@ -3,10 +3,6 @@ Session manager class
 """
 
 from datetime import datetime, timedelta
-from django.core.mail import EmailMessage
-from django.db import IntegrityError
-from django.template import Template, Context
-from django.template.loader import get_template
 from pr_services import pr_time
 from pr_services import exceptions
 from pr_services.object_manager import ObjectManager
@@ -29,7 +25,7 @@ class SessionManager(ObjectManager):
     a SessionUserRoleRequirement primary key. All you really need to know is
     that each association of a Session with a SessionUserRole yields a
     SessionUserRoleRequirement.
-    
+
     """
 
     def __init__(self):
@@ -122,7 +118,7 @@ class SessionManager(ObjectManager):
             event, shortname, fullname, optional_attributes=None):
         """
         Create a new Session
-        
+
         @param start                Start time, ISO8601 string
         @param end                  End time, ISO8601 string
         @param status               String: one of 'active', 'pending', 'canceled', 'completed'
@@ -175,7 +171,7 @@ class SessionManager(ObjectManager):
     def get_sessions_by_user_role(self, auth_token, user_id, session_user_role_id):
         """
         Get Sessions by user and SessionUserRole
-        
+
         @param user_id                user primary key
         @param session_user_role_id   SessionUserRole primary key
         @return                       array of Session primary keys
@@ -198,7 +194,7 @@ class SessionManager(ObjectManager):
     def get_user_filtered(self, auth_token, user_id, filters):
         """
         Get Sessions filtered by various limits, including a particular user.
-        
+
         @param user_id    Primary key for a user
         @param filters    A struct of structs indexed by filter name. Each
                           filter's struct should contain values indexed by
@@ -230,7 +226,7 @@ class SessionManager(ObjectManager):
                 timedelta(seconds=session.event.lead_time)
             if current_time >= expiration_time and session.status == 'active':
                 res.append(session)
-                
+
         return res
 
     def _process_session_reminders(self):

@@ -4,10 +4,9 @@ Class used as a shim for functions invoked via RPC
 
 # Python
 import datetime
-from inspect import getargspec, getdoc
 import logging
-import sys
 import traceback
+from inspect import getargspec
 
 # Django
 from django.conf import settings
@@ -54,7 +53,7 @@ class RpcServiceMeta(type):
     """
     Metaclass for creating subclasses of RpcService.
     """
-    
+
     def __new__(meta, classname, bases, class_dict):
         # First create the class itself.
         cls = type.__new__(meta, classname, bases, class_dict)
@@ -90,7 +89,7 @@ class RpcServiceMeta(type):
 class RpcService(object):
     """
     Base class for a service exposed via RPC.
-    
+
     Create a service by inheriting from this class and setting the class
     variable action_class to any class or type.  Expose methods in the
     action_class by decorating those methods with the service_method
@@ -192,7 +191,7 @@ class ShimInvoke:
     def _run(self, *parameters):
         """
         Execute a call
-        
+
         @param parameters    All of the parameters that were passed
         
         @return               A data structure indicating status as well
@@ -258,7 +257,7 @@ class ShimInvoke:
                 rpc_ret['value'] = {}
             if settings.RPC_TRACE == True:
                 logger.info(self.format_trace_log_message(start_time, stop_time, rpc_ret, *parameters))
-        
+
         return rpc_ret
 
     def blank_out_sensitive_parameters(self, *method_parameters):
@@ -287,7 +286,7 @@ class ShimInvoke:
                 ret[2] = 'xxxxxxxx'
         # hide all of the parameters for any call to the payment manager
         elif isinstance(self.instance, facade.managers.PaymentManager):
-            ret = ['xxxxxxxx [all parameters hidden] xxxxxxxx'] 
+            ret = ['xxxxxxxx [all parameters hidden] xxxxxxxx']
         return ret
 
     def truncate_rpc_return_value(self, rpc_ret):

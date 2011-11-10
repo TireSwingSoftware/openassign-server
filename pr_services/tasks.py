@@ -1,8 +1,10 @@
-from celery.decorators import task
-from datetime import datetime, timedelta
-import facade
+from datetime import datetime
 
+from celery.decorators import task
+
+import facade
 import settings
+
 if 'ecommerce' in settings.INSTALLED_APPS:
     from ecommerce import paypal_tools
 

@@ -5,15 +5,12 @@ User manager class
 __docformat__ = "restructuredtext en"
 
 from datetime import date, datetime, timedelta
-import hashlib
-import logging
 import os
 import random
 import re
 from recaptcha.client import captcha
 import string
 import time
-import threading
 import uuid
 import urllib2
 
@@ -126,29 +123,29 @@ class UserManager(ObjectManager):
                 ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, settings.LDAP_CACERT_FILE)
             self.ldap_connection = ldap.initialize(settings.LDAP_URL)
         self.photo_storage_engine = storage.UserPhotoStorage()
-    
+
     @service_method
     def check_password_against_policy(self, proposed_password, messages=None):
         """
         Checks a proposed password against the password policy, raising a
         PasswordPolicyViolation exception with details about what was wrong
         if it doesn't meet the requirements.
-        
+
         Automatically generated passwords are generally checked against
         password policy through this method.  If you are overridding this
         method to provide a more interesting password policy, please also
         modify the _generate_password() method so that it always generates
         valid passwords.
-        
+
         Should be overridden by variants when they have password policies.
-        
+
         :param proposed_password: proposed password to check
         :type proposed_password: string
         :param messages: messages already accumulated (useful for extending without overriding entirely)
         :type messages: None or list
-        
+
         :returns: None
-        
+
         :raises: pr_services.exceptions.PasswordPolicyViolation if the password policy wasn't
                  met.  The exception should have a 'details' attribute, which in turn should
                  have a 'messages' key, which should have information about what, specifically,
@@ -169,16 +166,16 @@ class UserManager(ObjectManager):
         if forbidden_characters_seen:
             messages.append(u'the following forbidden characters were used: "%s"' %
                 forbidden_characters_string)
-                 
+
         if messages:
             raise exceptions.PasswordPolicyViolation(messages)
-    
+
     def _generate_password(self):
         """
         Generates a password, which must meet the password requirements as defined by the
         check_password_against_policy() method.
         """
-        
+
         return self._generate_random_string(8,
             string.ascii_lowercase + string.ascii_uppercase + string.digits)
 
@@ -187,9 +184,9 @@ class UserManager(ObjectManager):
                phone, email, status, optional_attributes=None):
         """
         Create a new User in the system.
-        
+
         to email the user's password to them, including 'send_password' : True in optional_attributes
-        
+
         :param auth_token:            The authentication token of the acting User.  Can be
                                       passed as a blank string to indicate a guest User.
         :param username:              The username
@@ -204,7 +201,7 @@ class UserManager(ObjectManager):
         :param optional_attributes:   dictionary of optional attribute values indexed by name,
             including domain
         :return:                      User instance
-        
+
         :raises: pr_services.exceptions.PasswordPolicyViolation
         """
 
@@ -222,7 +219,7 @@ class UserManager(ObjectManager):
             domain_object = facade.models.Domain.objects.get(name=domain)
         except facade.models.Domain.DoesNotExist:
             raise exceptions.ObjectNotFoundException('domain')
-        
+
         # FIXME: there should be a better way to determine whether to exempt
         # a password from being checked against requirements.  For example,
         # we may want to support multiple LDAP directories.
@@ -241,7 +238,7 @@ class UserManager(ObjectManager):
 
         da = facade.models.DomainAffiliation.objects.create(user=u, domain=domain_object, password_salt=salt,
             username=username, password_hash=password_hash, password_hash_type=password_hash_type, default=True)
-        
+
         # if this User was created by an anonymous User, get an auth token for
         # the User that was created, so that we can set the
         # blame to the newly created User
@@ -250,11 +247,11 @@ class UserManager(ObjectManager):
             should_unauth = True
             old_auth_token = auth_token
             auth_token = self._generate_auth_token(da)
-        
+
         user_blame = self.blame_manager.create(auth_token)
         u.blame = user_blame
         u.owner = u
-        
+
         facade.subsystems.Setter(auth_token, self, u, optional_attributes)
         # we set groups manualy because self-registering users don't have
         # permission to do it
@@ -287,7 +284,7 @@ class UserManager(ObjectManager):
         }
         if len(organizations):
             context['organization'] = organizations[0]
- 
+
         if send_password:
             context['initial_password'] = initial_password
             send_message(message_type='initial-password', recipient=u,
@@ -305,7 +302,7 @@ class UserManager(ObjectManager):
         domain=u'local'):
         """
         Change a User's password.
-        
+
         :param user_id:      The id of the User who's password we want to change
         :param new_password: The User's new password
         :type new_password:  string
@@ -315,7 +312,7 @@ class UserManager(ObjectManager):
         :type old_password:  string or none
         :param domain:       the User's domain
         :type domain:        string
-        
+
         :raises: pr_services.exceptions.PasswordPolicyViolation
         """
 
@@ -328,12 +325,12 @@ class UserManager(ObjectManager):
             self._authenticate(da.username, old_password, domain)
         else:
             # Check that the user has permission to change other users passowrds
-            self.authorizer.check_arbitrary_permissions(auth_token, 
+            self.authorizer.check_arbitrary_permissions(auth_token,
                 'change_password_of_other_users')
         # Then we set the new password (we won't get here if the previous line
         # raised an exception)
         self._change_password(da, new_password)
-    
+
     @service_method
     def generate_username(self, auth_token, first_name, last_name, domain=u'local'):
         """
@@ -345,7 +342,7 @@ class UserManager(ObjectManager):
         :type last_name: string
         :param domain: the domain to generate the username for
         :type domain: string
-        
+
         :return:             A suggested username for the new User that will be valid
         """
 
@@ -365,7 +362,7 @@ class UserManager(ObjectManager):
         :type requested_username: string
         :param domain: the domain for which to suggest the username
         :type domain: string
-        
+
         :return: suggested_username  The username that should be valid for the new system
         """
 
@@ -397,14 +394,14 @@ class UserManager(ObjectManager):
     def _change_password(self, domain_affiliation, new_password):
         """
         Common method to change a User's password to a new value
-        
+
         :param domain_affiliation:  Instance of the DomainAffiliation for which we wish to change the password
         :param new_password:        the new password
         :type new_password: string
-        
+
         :raises: pr_services.exceptions.PasswordPolicyViolation
         """
-        
+
         self.check_password_against_policy(new_password)
         domain_affiliation.password_hash_type = 'SHA-512'
         salt = self._generate_password_salt()
@@ -449,7 +446,7 @@ class UserManager(ObjectManager):
         the new password.  The User must supply their username and
         at least one valid e-mail address (must match one of the
         e-mail addresses we have on file for the User.)
-        
+
         :param username: The username of the user who wants their
                         password to be reset
         :type username:  string
@@ -460,14 +457,14 @@ class UserManager(ObjectManager):
         :type email:     string
         :param domain:   the user's domain
         :type domain:    string
-        
+
         :raises: pr_services.exceptions.PasswordPolicyViolation (however, if this is raised,
                  then there is a bug in the _generate_password() method, the
                  check_password_against_policy() method, or both)
         """
 
         da = self._find_da_by_username(username, domain)
-            
+
         actee = da.user
         # domain names are case insensitive as per RFC 4343
         # email addresses are usually case sensitive, and are for qinetiq always
@@ -508,7 +505,7 @@ class UserManager(ObjectManager):
     def batch_create(self, auth_token, account_detail_list):
         """
         Create multiple User accounts at once
-        
+
         :param account_detail_list:   Array of structs containing the arguments taken
                                       by the create() method indexed by field name
 
@@ -528,19 +525,19 @@ class UserManager(ObjectManager):
     def login(self, username, password, domain=u'local'):
         """
         Authenticate a user by password, returning an authentication token if successful.
-        
+
         :param username:                        username of the user to authenticate
         :type username:                         string
         :param password:                        password to use for authentication
         :type password:                         string
         :param domain:                          name of the domain to use for the username given
         :type domain:                           string
-        
+
         :return:                                a dictionary containing a session_id/auth token
                                                 string and it's expiration date, indexed
                                                 by 'auth_token' and 'expiration'
         :rtype:                                 dict
-        
+
         :raises AuthenticationFailureException: on an incorrect username or password
         :raises UserInactiveException:          when an inactive user tries to authenticate
         :raises UserSuspendedException:         when a suspended user tries to authenticate
@@ -676,10 +673,10 @@ class UserManager(ObjectManager):
         """
         renew a current authenticated session. We used to require full authentication credentials,
         but we now require none.  Please note the deprecation statements below.
-        
+
         :param auth_token:  The auth_token of the session to be renewed
         :type auth_token:   facade.models.AuthToken
-        
+
         :return:            dictionary containing values 'auth_token', 'expiration', 'username', 'domain', 'id', 'groups'
         :rtype:             dict
         """
@@ -696,7 +693,7 @@ class UserManager(ObjectManager):
             raise exceptions.UserSuspendedException
         if auth_token.time_of_expiration < datetime.utcnow():
             self._fail_authentication('')
-        
+
         auth_token.session_id = self._generate_session_id()
         auth_token.number_of_renewals += 1
         auth_token.renewal_timestamp = datetime.utcnow()
@@ -761,7 +758,7 @@ class UserManager(ObjectManager):
                     'expiration' : auth_token.time_of_expiration.replace(microsecond=0, tzinfo=pr_time.UTC()).isoformat()})
 
         return ret
-            
+
     @service_method
     def get_authenticated_user(self, auth_token):
         """
@@ -846,14 +843,14 @@ class UserManager(ObjectManager):
         :param domain: the domain
         :type domain: string
         """
-        
+
         time.sleep(settings.AUTHENTICATION_FAILURE_DELAY)
         raise exceptions.AuthenticationFailureException()
 
     def _generate_random_string(self, num_bytes, allowed_characters=string.hexdigits):
         """
         Generate a cryptographic quality pseudo-random string
-        
+
         :param num_bytes: the number of bytes desired for the string
         """
 
@@ -912,7 +909,7 @@ class UserManager(ObjectManager):
         but an assertion may fail instead if the database contains
         two User records with the same username or some
         other invalid state)
-        
+
         :param actee:   the User object
         :type actee:    facade.models.User
         """
@@ -932,7 +929,7 @@ class UserManager(ObjectManager):
         but an assertion may fail instead if the database contains
         two User records with the same username or some
         other invalid state)
-        
+
         :param actee:   the User object
         :type actee:    facade.models.User
         """
@@ -943,7 +940,7 @@ class UserManager(ObjectManager):
 
         if not Utils._verify_hash(password, salt, domain_affiliation.password_hash_type, domain_affiliation.password_hash):
             self._fail_authentication(domain_affiliation.username, domain_affiliation.domain.name)
-    
+
         # If the user isn't using SHA-512, let's go ahead and update them to SHA-512 since they've authenticated
         if domain_affiliation.password_hash_type != 'SHA-512':
             self._change_password(domain_affiliation, password)
@@ -952,10 +949,10 @@ class UserManager(ObjectManager):
     def logout(self, auth_token):
         """
         unauthenticate a User (logout)
-        
+
         :param auth_token: the auth token
         :type auth_token: facade.models.AuthToken
-        
+
         This simply removes an auth token from the database.
         """
 
@@ -967,7 +964,7 @@ class UserManager(ObjectManager):
         delete a User    We don't like this.  De-activate them instead.
                          Be nice to your sysadmin or database administrator
                          if you really, really want to do this.
-        
+
         This overrides pr2_object_manager.delete()
         """
 
@@ -976,7 +973,7 @@ class UserManager(ObjectManager):
     def _deactivate(self, auth_token, user_id, domain=u'local'):
         """
         De-activate a User.
-        
+
         :param user_id: id of User to deactivate
         :type user_id: int
         :param domain:   the domain
@@ -1078,7 +1075,7 @@ class UserManager(ObjectManager):
 
         ret = Utils.merge_queries(ret, facade.managers.UserOrgRoleManager(), auth_token, ['role', 'role_name', 'organization', 'organization_name'], 'owned_userorgroles')
 
-        return Utils.merge_queries(ret, facade.managers.GroupManager(), auth_token, 
+        return Utils.merge_queries(ret, facade.managers.GroupManager(), auth_token,
             ['name'], 'groups')
 
     @service_method

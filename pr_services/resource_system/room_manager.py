@@ -2,7 +2,6 @@
 Room manager class
 """
 
-from pr_services import exceptions
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
@@ -10,7 +9,7 @@ import facade
 class RoomManager(ObjectManager):
     """
     Manage Rooms in the Power Reg system
-    
+
     This class manages physical addresses.
     """
 
@@ -37,7 +36,7 @@ class RoomManager(ObjectManager):
     def create(self, auth_token, name, venue, capacity):
         """
         Create a new Room
-        
+
         @param name               Name for the Room
         @param venue              Foreign Key for a venue
         @param capacity           Number of people who can be in the Room
@@ -51,7 +50,7 @@ class RoomManager(ObjectManager):
     def _create(self, auth_token, name, venue, capacity):
         """
         Common method for Room creation
-        
+
         @param name               Name for the Room
         @param venue              Foreign Key for a venue
         @param capacity           Number of people who can be in the Room

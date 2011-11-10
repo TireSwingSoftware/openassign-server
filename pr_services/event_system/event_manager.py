@@ -2,7 +2,6 @@
 Event manager class
 """
 
-from datetime import datetime, timedelta
 from pr_services import pr_time
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
@@ -65,12 +64,12 @@ class EventManager(ObjectManager):
     @service_method
     def create(self, auth_token, name_prefix, title, description, start, end, organization,
             optional_attributes=None):
-        
+
         """
         Create a new Event.
-        
+
         A region or a venue must be provided.
-        
+
         @param name_prefix          prefix for the human-readable unique identifier 'name'
         @param title                title of the Event
         @param description          description of the Event
@@ -85,10 +84,10 @@ class EventManager(ObjectManager):
                                     filled in by this method after the event is created.
         @return                     a reference to the newly created Event
         """
-        
+
         if optional_attributes is None:
             optional_attributes = {}
-        
+
         start_date = pr_time.iso8601_to_datetime(start).replace(microsecond=0, second=0,
             minute=0, hour=0)
         end_date = pr_time.iso8601_to_datetime(end).replace(microsecond=0, second=0,
@@ -113,7 +112,7 @@ class EventManager(ObjectManager):
 
         facade.subsystems.Setter(auth_token, self, e, optional_attributes)
         e.save()
-        
+
         self.authorizer.check_create_permissions(auth_token, e)
         return e
 

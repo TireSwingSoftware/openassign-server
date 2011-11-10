@@ -8,9 +8,6 @@
 import string
 import urlparse
 
-def explode(x):
-    return [_ for _ in x]
-
 SOUTH_TESTS_MIGRATE = False
 
 SKIP_SOUTH_TESTS = True
@@ -65,11 +62,7 @@ AUTH_TOKEN_SINGLE_USE_EXPIRATION_INTERVAL = 4 * 60
 AUTH_TOKEN_VOUCHER_LIFE = 30
 
 # iterable collection of characters allowed in passwords
-PASSWORD_CHARACTER_WHITELIST = explode(string.ascii_uppercase)
-PASSWORD_CHARACTER_WHITELIST += explode(string.ascii_lowercase)
-PASSWORD_CHARACTER_WHITELIST += explode(string.digits)
-PASSWORD_CHARACTER_WHITELIST += explode(string.punctuation)
-PASSWORD_CHARACTER_WHITELIST.append(' ')
+PASSWORD_CHARACTER_WHITELIST = string.printable
 
 # Require a user to confirm their email address before being allowed to login?
 USER_EMAIL_CONFIRMATION = True
@@ -81,7 +74,7 @@ USER_CONFIRMATION_AUTO_LOGIN = True
 ASSIGN_ORG_ROLES_FROM_EMAIL = True
 
 ################################################################
-# directory services / LDAP 
+# directory services / LDAP
 ################################################################
 
 # URL for the LDAP server to query for LDAP users
@@ -99,14 +92,14 @@ LDAP_CREATE_ON_LOGIN = True
 LDAP_CACERT_FILE = '/etc/ssl/certs/arica.crt'
 
 # This crazy Python dict describes the LDAP schema
-LDAP_SCHEMA = { 
-    'User' : { 
+LDAP_SCHEMA = {
+    'User' : {
         'ldap_object_class' : 'mcgPerson',
-        'local_attributes' : { 
+        'local_attributes' : {
             'first_name' : {'query_type' : 'simple', 'ldap_name' : 'givenName'},
             'last_name' : {'query_type' : 'simple', 'ldap_name' : 'sn'},
             'email' : {'query_type' : 'simple', 'ldap_name' : 'mail'},
-            'groups' : {'query_type' : 'many_to_many', 'ldap_name' : 'groupMembership', 'name_mapping' : { 
+            'groups' : {'query_type' : 'many_to_many', 'ldap_name' : 'groupMembership', 'name_mapping' : {
                 'cn=VOD_LIBRARY_G,ou=LDAP,ou=SVS,'+LDAP_BASE : 'library',
                 'cn=VOD_STUDENT_G,ou=LDAP,ou=SVS,'+LDAP_BASE : 'student',
                 'cn=VOD_COMMS_G,ou=LDAP,ou=SVS,'+LDAP_BASE : 'press',

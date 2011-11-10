@@ -10,9 +10,8 @@ import cPickle
 import urllib
 import warnings
 from django.conf import settings
-from django.db import IntegrityError, connection
+from django.db import connection
 from django.db.models.fields import FieldDoesNotExist
-from storage import UserPhotoStorage
 import django.db
 import django.db.backends.util
 import django.db.models
@@ -30,7 +29,7 @@ def is_for_derived_attribute(func):
     to determine whether attributes exposed via the manager
     classes are derived.
     """
-    
+
     func.is_for_derived_attribute = True
     return func
 
@@ -94,21 +93,21 @@ class Getter(object):
     def get_final_type(self, result_object, field_name):
         """
         Returns the name of the class of the final type of the result_object.
-        
+
         .. deprecated
         """
-        
+
         warnings.warn("The get_final_type() getter is deprecated in favor of the get_content_type() getter. (ARI Redmine #2829)",
             DeprecationWarning, stacklevel=2)
         return result_object.downcast_completely().__class__.__name__
-    
+
     @is_for_derived_attribute
     def get_content_type(self, result_object, field_name):
         """
         Returns a string representing an object's content type (using its final_type attribute to give
         the most specific one possible if present)
         """
-        
+
         if isinstance(result_object, pr_models.PRModel):
             # we know exactly what the most specific type is -- use that
             return result_object.final_type.app_label + '.' + result_object.final_type.name
@@ -121,10 +120,10 @@ class Getter(object):
     def get_time(self, result_object, field_name):
         """
         Gets a date/time value and convert it to an ISO8601 string.
-        
+
         :param result_object: Instance of the django model in question
         :param field_name:    Name of the attribute we seek
-        
+
         :return:              ISO8601 string
         """
 
@@ -153,7 +152,7 @@ class Getter(object):
             return getattr(result_object, field_name).all().values_list('id', flat = True)
         except AttributeError:
             raise exceptions.FieldNameNotFoundException(field_name)
-        
+
     def get_many_to_many(self, result_object, field_name):
         """
         Gets a list of foreign keys for objects with which this object is related
@@ -162,10 +161,10 @@ class Getter(object):
         The advantage we gain from this method is that it grabs the entire through
         table, caches it, and then can spit out m2m relationships for as many
         objects as we want very quickly.
-        
+
         :param result_object: Instance of the django model in question
         :param field_name:    Name of the attribute we seek
-        
+
         :return:              List of foreign keys for objects with which this object is related through
                               the requested many-to-many relationship.
         """
@@ -228,7 +227,7 @@ class Getter(object):
 
     def get_address(self, result_object, field_name):
         ret = None
-        if hasattr(result_object, field_name): 
+        if hasattr(result_object, field_name):
             a = getattr(result_object, field_name)
             if isinstance(a, facade.models.Address):
                 ret = a.address_dict
@@ -295,7 +294,7 @@ class Getter(object):
     @is_for_derived_attribute
     def get_used_value_from_training_unit_authorization(self, result_object, field_name):
         return result_object.get_used_value()
-    
+
     @is_for_derived_attribute
     def get_session_user_role_requirements_from_user(self, result_object, field_name):
         surr_ids = facade.models.SessionUserRoleRequirement.objects.filter(assignments__user__id=result_object.id).values_list('id', flat=True)
@@ -329,10 +328,10 @@ class Getter(object):
     def get_decimal(self, result_object, field_name):
         """
         Returns a string representation of a decimal field.
-        
+
         :rtype: unicode or None
         """
-        
+
         if hasattr(result_object, field_name):
             value = getattr(result_object, field_name)
             if value is not None:
@@ -341,13 +340,13 @@ class Getter(object):
                 return None
         else:
             raise exceptions.FieldNameNotFoundException(field_name)
-        
+
 
     @is_for_derived_attribute
     def get_inventory_from_product(self, result_object, field_name):
         """
         Gets the current inventory for a product via a method on the product model
-        
+
         :return: current product inventory level
         :rtype: int
         """
@@ -357,13 +356,13 @@ class Getter(object):
     def get_status_from_event(self, result_object, field_name):
         """
         Gets the status of an event by calling the event's get_status() method.
-        
+
         :todo: ARI Redmine #2903 replace this with a property on the Event model
-        
+
         :return: status of the event
         :rtype: string
         """
-        
+
         if not isinstance(result_object, facade.models.Event):
             raise exceptions.InvalidActeeTypeException()
 
@@ -384,7 +383,7 @@ class Getter(object):
                 title = result_object.event.title
             else:
                 title = ''
-            
+
             arguments = {   'amount' : str(decimal.Decimal(result_object.default_price) / decimal.Decimal(100)),
                             'business' : owner.paypal_address,
                             'cmd' : '_xclick',
@@ -401,7 +400,7 @@ class Getter(object):
         for tag in tags:
             tag_list.append(tag.name)
         return tag_list
-    
+
     def get_tasks_from_task_bundle(self, result_object, field_name):
         """
         Returns an ordered list of dictionaries describing tasks in a
@@ -414,32 +413,32 @@ class Getter(object):
         the return value.
 
         Sample return value::
-        
+
             [{'id': 3, 'presentation_order': 1, 'content_type': 'pr_services.video',
               'continue_automatically': False},
              {'id': 9, 'presentation_order': 2, 'content_type': 'pr_services.sco',
               'continue_automatically': True},
              {'id': 7, 'presentation_order': 3, 'content_type': 'pr_services.exam',
               'continue_automatically': False}]
-         
+
         The content type is made from the final_type attribute of the tasks,
         using its app_label attribute, followed by a dot, followed by its name
         attribute.
-        
+
         :todo: use content_type getter here
         """
-        
+
         if not isinstance(result_object, facade.models.TaskBundle):
             raise exceptions.InvalidActeeTypeException()
-        
+
         if field_name != 'tasks':
             raise exceptions.InvalidDataException('field_name must be "tasks"')
-        
+
         associations = facade.models.TaskBundleTaskAssociation.objects.filter(
             task_bundle__id=result_object.id).order_by('presentation_order')
-        
+
         ordered_task_list = []
-        
+
         # the ternary expression for 'continue_automatically' is here
         # so that versions of Django <= 1.1 on MySQL won't result in
         # 1 or 0 being returned rather than True or False.  grrrr!
@@ -450,7 +449,7 @@ class Getter(object):
                                  association.task.final_type.name),
                 'continue_automatically':
                     True if association.continue_automatically else False})
-        
+
         return ordered_task_list
 
 class Setter(object):
@@ -482,7 +481,7 @@ class Setter(object):
             self.setters[field](field, self.setter_dict[field])
 
     def set_address(self, field_name, address_value_dictionary):
-        if hasattr(self.django_object, field_name): 
+        if hasattr(self.django_object, field_name):
             a = getattr(self.django_object, field_name)
             if isinstance(a, facade.models.Address):
                 setattr(self.django_object, field_name, None)
@@ -498,21 +497,21 @@ class Setter(object):
     def set_decimal(self, field_name, value):
         """
         Set a decimal field, given a string representation of its value.
-        
+
         :param field_name: name of the field to set
         :type field_name: string
         :param value: value represented as a string
         :type value: string
         """
-        
+
         if field_name not in self.django_object._meta.fields:
             raise exceptions.FieldNameNotFoundException(field_name)
-        
+
         if value in (None, ''):
             setattr(self.django_object, field_name, None)
         else:
             setattr(self.django_object, field_name, decimal.Decimal(value))
-        
+
     def set_foreign_key(self, field_name, foreign_key):
         winning_field = None
         for field in self.django_object._meta.fields:
@@ -545,7 +544,7 @@ class Setter(object):
         """
         This is a generic setter for use with models.ManyToManyField() relationships or the
         "many" end of a ForeignKey relationship.
-        
+
         If you are setting a m2m relationship that has extra parameters by way of a 'through'
         table, you may specify those by making the items in the 'add' list dictionaries of their
         own. Each object being added is a dictionary with primary key indexed as 'id', and any
@@ -577,7 +576,7 @@ class Setter(object):
             through_model_name_or_reference = attribute.through
             if isinstance(through_model_name_or_reference, basestring):
                 if through_model_name_or_reference == django.db.models.related.RECURSIVE_RELATIONSHIP_CONSTANT:
-                    through_model = self.django_object.__class__    
+                    through_model = self.django_object.__class__
                 elif through_model_name_or_reference.find('.') != -1:
                     app_label, model_name = through_model_name_or_reference.split('.')
                 else:
@@ -587,21 +586,21 @@ class Setter(object):
                     through_model = django.db.models.get_model(app_label, model_name, False)
             else:
                 through_model = through_model_name_or_reference
-            
+
             this_model = self.django_object.__class__
             other_model = attribute.model
-            
+
             this_model_field_name = None
             other_model_field_name = None
-            
+
             for field in through_model._meta.fields:
                 if isinstance(field, django.db.models.fields.related.ForeignKey):
                     if issubclass(this_model, field.rel.to):
                         this_model_field_name = field.name
                     elif issubclass(other_model, field.rel.to):
                         other_model_field_name = field.name
-            
-            
+
+
             assert this_model_field_name is not None
             assert other_model_field_name is not None
 
@@ -652,7 +651,7 @@ class Setter(object):
                     through_model_instance.save()
                     self.authorizer.check_create_permissions(self.auth_token,
                         through_model_instance)
-                    
+
         # Remove things
         if through_model is None:
             attribute.remove(*remove_keys)
@@ -687,21 +686,21 @@ class Setter(object):
         to simulate model polymorphism, thereby using subclasses' implementations
         of the change_status method even when given an instance of a superclass
         that happens to also correspond to an instance of a subclass.
-        
+
         :param field_name: unused
         :param new_value: new status value
         :type new_value: string
         """
-        
+
         # make the object polymorphic, so that the most specific
-        # implementation of its change_status method gets used 
+        # implementation of its change_status method gets used
         if hasattr(self.django_object, 'downcast_completely'):
             self.django_object = self.django_object.downcast_completely()
         self.django_object.change_status(new_value)
 
     def set_acl(self, field_name, new_value):
         setattr(self.django_object, field_name, cPickle.dumps(new_value))
-    
+
     def set_forbidden(self, field_name, new_value):
         """
         This simply disallows the setting of an attribute, raising an
@@ -713,17 +712,17 @@ class Setter(object):
     def set_tags(self, field_name, new_value):
         """
         Modifies the tags for a given object.
-        
+
         :param field_name: this is ignored
         :type field_name: string
         :param new_value: a dictionary with an 'add' or 'remove' key
         :type new_value: dict
-        
+
         If ``new_value`` has a key named 'add', that key must point to a list
         of tag names to add.  Likewise, if it has a key named 'removed',
         that key must point to a list of tag names to remove.
         """
-        
+
         if isinstance(new_value, dict):
             tags_to_add = None
             tags_to_remove = None
@@ -754,41 +753,41 @@ class Setter(object):
         else:
             raise exceptions.InvalidDataException(
                 'input to the set_tags() setter must be a dictionary')
-            
+
     def set_tasks_for_task_bundle(self, field_name, new_value):
         """
         Replaces the task associations for a task bundle with a new set of task
         associations.
-        
+
         Nota bene:
-        
+
         Because this function replaces the task associations for a task bundle,
         a race condition is possible where one user adds a task to the
         task bundle after another user has read the contents of a task bundle.
         If the user who has just read the (old) contents of the task bundle
         then adds a different task to it, the previous update is lost.
-        
+
         :param field_name: the name of the field to set
         :type field_name: string
         :param new_value: ordered list of tasks to associate with this
             task bundle, replaces previous associations
         :type new_value: list
-        
+
         The structure of the new_value field should be almost exactly the same
         as the structure of the return value given by
         Getter.get_tasks_from_task_bundle.  However, the 'content_type'
         attributes are not required (and are ignored if present).  Additionally,
         the items do not need to be ordered by presentation_order.  If
         'continue_automatically' is not specified, False will be assumed.
-        
+
         Example new_value::
-        
+
             [{'id': 3, 'presentation_order': 3, 'continue_automatically': False},
             {'id': 9, 'presentation_order': 1, 'continue_automatically': True},
             {'id': 7, 'presentation_order': 2, 'continue_automatically': False}]
-            
+
         """
-        
+
         self.django_object.tasks.clear()
         for association in new_value:
             if (not isinstance(association, dict) or 'id' not in association or

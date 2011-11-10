@@ -12,7 +12,6 @@ import hashlib
 import inspect
 import operator
 import os
-import sys
 import time
 import urllib2
 import django.test.client
@@ -24,7 +23,7 @@ from cookiecache import CookieCache
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.utils.unittest import skipIf, skipUnless
+from django.utils.unittest import skipUnless
 from initial_setup import InitialSetupMachine, default_read_fields
 from pr_services import exceptions
 from pr_services import pr_time
@@ -1325,7 +1324,7 @@ class TestEventManager(TestCase):
         e1 = self.event_manager.create(self.admin_token, 'Event 1',
             'First Event of My Unit Test', 'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
             self.organization1.id, {'venue' : self.venue1.id, 'sessions' : sessions})
-        
+
         # verify results
         event = facade.models.Event.objects.get(id=e1.pk)
         sessions = event.sessions.all()
