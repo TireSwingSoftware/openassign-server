@@ -108,7 +108,7 @@ class ResourceManager(ObjectManager):
             related_sessions.filter(end__range=[start, end])
         )
 
-        if len(conflicting_sessions) > 0:
+        if conflicting_sessions.count() > 0:
             return True
         return False # no conflict found
         
