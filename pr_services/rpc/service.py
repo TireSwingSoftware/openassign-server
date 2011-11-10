@@ -19,7 +19,7 @@ from pr_services import exceptions
 from pr_services.utils import Utils
 import facade
 
-# Decorator module (included in current directory)
+# Decorator module
 import decorator
 
 logger = logging.getLogger('pr_services.rpc')
@@ -180,7 +180,7 @@ class ServiceManagers(object):
 
 class ShimInvoke:
     """
-    Calls methods, catches exceptions, and returns XML struct
+    Calls methods, catches exceptions, and returns data struct
     """
 
     def __init__(self, instance, method):
@@ -195,7 +195,7 @@ class ShimInvoke:
         
         @param parameters    All of the parameters that were passed
         
-        @return               An XML struct indicating status as well
+        @return               A data structure indicating status as well
                               as a return value if the invocation was
                               successful.
         """

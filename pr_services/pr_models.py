@@ -17,10 +17,14 @@ import django.core.exceptions # for ValidationError
 import django.db
 import django.db.models.fields.related
 import django.forms.util # for ValidationError
+from django.db.models.signals import pre_save, post_delete
+from django.dispatch import receiver
+from django.core.cache import cache
 import exceptions
 import facade
 import pr_time
 import storage
+import memcache
 from fields import *
 from pr_services.middleware import get_client_ip
 
@@ -124,6 +128,63 @@ def alters_data(func):
     
     func.alters_data = True
     return func
+
+
+class CachingModelManager(models.Manager):
+    """
+    This class currently only caches individual instances, and only when calling
+    its get() method. It otherwise behaves like a standard django model manager.
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        :param cachefield:      the unique field that the cache key will be generated with,
+                                defaults to 'id'
+        :param cachelife:       cache life in seconds, defaults to 1 hour
+        :lazy_fields_to_cache:  fields that load other remote objects in a lazy fashion
+                                where we want to cache those remote objects also.
+                                great for foreign keys where we want to access the related object and
+                                cache it, although beware that changes to that object will not
+                                invalidate the cached item. A good candidate here is "final_type",
+                                because it won't change.
+        """
+        self._cachefield = kwargs.pop('cachefield', 'id')
+        self._cachelife = kwargs.pop('cachelife', 60*60)
+        self._lazy_fields_to_cache = kwargs.pop('lazy_fields_to_cache', [])
+        self.__logger = None
+
+        super(CachingModelManager, self).__init__(*args, **kwargs)
+
+    @property
+    def _logger(self):
+        """necessary because we don't have self.model when __init__ is called"""
+        if self.__logger is None:
+            self.__logger = logging.getLogger('pr_models.%s.caching_model_manager' % self.model._meta.object_name)
+        return self.__logger
+
+    def get(self, *args, **kwargs):
+        """
+        You must pass get() exactly one keyword argument with the key being the
+        cachefield, and you must not use "__exact". If you do not meet both of these
+        conditions, the cache will not be used and normal django ORM functionality will
+        proceed.
+        """
+        if self._cachefield in kwargs and len(kwargs) == 1:
+            try:
+                ret = cache.get(self.model.generate_cache_key(kwargs[self._cachefield]))
+                if ret is not None:
+                    return ret
+            # memcache doesn't accept some characters. This should be rare, but
+            # if we fail for that reason, just proceed without the cache
+            except memcache.Client.MemcachedKeyCharacterError:
+                self._logger.warning('cache key was too long for memcache')
+
+        ret = super(CachingModelManager, self).select_related(*self._lazy_fields_to_cache).get(*args, **kwargs)
+        for field in self._lazy_fields_to_cache:
+            # access each field just so it loads its remote object,
+            # in case the select_related didn't already do it
+            getattr(ret, field)
+        cache.set(ret.cache_key, ret, self._cachelife)
+        return ret
 
 
 class Versionable(models.Model):
@@ -402,6 +463,10 @@ class PRModel(models.Model):
             return self.final_type.get_object_for_this_type(id=self.id)
         else:
             return self
+
+    @property
+    def cache_key(self):
+        return '%s%sID%dFT%d' % (self._meta.app_label, self._meta.object_name, self.pk, self.final_type_id)
         
     class Meta:
         abstract = True
@@ -2322,6 +2387,9 @@ class AuthToken(OwnedPRModel):
     """
     represents a token which uniquely identifies an authenticated session
     """
+    objects = CachingModelManager(cachefield='session_id',\
+        cachelife=60*settings.AUTH_TOKEN_EXPIRATION_INTERVAL,\
+        lazy_fields_to_cache=['domain_affiliation', 'final_type'])
 
     session_id = models.CharField(max_length=32, unique=True, db_index=True)
     domain_affiliation = PRForeignKey('DomainAffiliation', related_name='auth_tokens')
@@ -2340,10 +2408,22 @@ class AuthToken(OwnedPRModel):
     def __unicode__(self):
         return u'%s' % (self.session_id)
 
-    def _get_user(self):
+    @property
+    def user(self):
         return self.domain_affiliation.user
 
-    user = property(_get_user)
+    @property
+    def user_id(self):
+        """Allows us to get the user's PK without loading the User object from the database"""
+        return self.domain_affiliation.user_id
+
+    @property
+    def cache_key(self):
+        return AuthToken.generate_cache_key(self.session_id)
+
+    @staticmethod
+    def generate_cache_key(session_id):
+        return '%s%sSERIAL%s' % (AuthToken._meta.app_label, AuthToken._meta.object_name, session_id)
 
 
 class SingleUseAuthToken(AuthToken):
@@ -3146,5 +3226,34 @@ class CustomAction(PRModel):
 class DBSetting(models.Model):
     name = models.CharField(max_length=127, unique=True)
     pickled_value = models.TextField()
+
+
+# Cache management
+
+@receiver(pre_save, sender=AuthToken)
+def auth_token_save_handler(sender, **kwargs):
+    """
+    When an auth_token is saved, we need to clear the stale one from the cache
+    """
+    if 'instance' in kwargs:
+        instance = kwargs['instance']
+        # this work is not needed for new objects (which lack an ID)
+        if hasattr(instance, 'id') and instance.id is not None:
+            try:
+                # UserManager.relogin() changes the session_id, which means we need to
+                # find the old token, generate its cache_key, and delete that from
+                # the cache.
+                old_token = AuthToken.objects.get(id=instance.id)
+                cache.delete(old_token.cache_key)
+            except AuthToken.DoesNotExist:
+                pass
+        cache.delete(instance.cache_key)
+
+@receiver(post_delete, sender=AuthToken)
+def auth_token_delete_handler(sender, **kwargs):
+    """ on delete, also clear from cache """
+    if 'instance' in kwargs:
+        cache.delete(kwargs['instance'].cache_key)
+
 
 # vim:tabstop=4 shiftwidth=4 expandtab

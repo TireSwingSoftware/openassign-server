@@ -457,7 +457,7 @@ class Authorizer(object):
         try:
             if actee.owner is None:
                 return True
-            elif auth_token.user.id == actee.owner.id:
+            elif auth_token.user_id == actee.owner.id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -514,7 +514,7 @@ class Authorizer(object):
         if not isinstance(actee, facade.models.Assignment):
             raise exceptions.InvalidActeeTypeException()
         try:
-            if auth_token.user.id == actee.user.id:
+            if auth_token.user_id == actee.user.id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -642,7 +642,7 @@ class Authorizer(object):
         if not isinstance(actee, facade.models.Credential):
             raise exceptions.InvalidActeeTypeException()
         try:
-            if auth_token.user.id == actee.user.id:
+            if auth_token.user_id == actee.user.id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -666,7 +666,7 @@ class Authorizer(object):
         if not isinstance(actee, facade.models.DomainAffiliation):
             raise exceptions.InvalidActeeTypeException()
 
-        return bool(auth_token.user.id == actee.user.id)
+        return bool(auth_token.user_id == actee.user.id)
 
     #################################################################################
     #
@@ -682,7 +682,7 @@ class Authorizer(object):
             raise exceptions.InvalidActeeTypeException()
 
         try:
-            if auth_token.user.id == actee.owner.id:
+            if auth_token.user_id == actee.owner.id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -768,7 +768,7 @@ class Authorizer(object):
             raise exceptions.InvalidActeeTypeException()
             
         try:
-            if auth_token.user.id in actee.product_line.managers.values_list('id', flat=True):
+            if auth_token.user_id in actee.product_line.managers.values_list('id', flat=True):
                 return True
         except ObjectDoesNotExist:
             pass
@@ -777,7 +777,7 @@ class Authorizer(object):
 
         # Now see if this session's session_template has the actor as a PLM
         try:
-            if auth_token.user.id in actee.session_template.product_line.managers.values_list('id', flat = True):
+            if auth_token.user_id in actee.session_template.product_line.managers.values_list('id', flat = True):
                 return True
         except ObjectDoesNotExist:
             pass
@@ -801,7 +801,7 @@ class Authorizer(object):
         if not isinstance(actee, facade.models.SessionTemplate):
             raise exceptions.InvalidActeeTypeException()
         try:
-            if auth_token.user.id in actee.product_line.managers.values_list('id',
+            if auth_token.user_id in actee.product_line.managers.values_list('id',
                     flat = True):
                 return True
         except ObjectDoesNotExist:
@@ -868,7 +868,7 @@ class Authorizer(object):
         if not isinstance(actee, facade.models.Group):
             raise exceptions.InvalidActeeTypeException()
         try:
-            if auth_token.user.id in actee.managers.values_list('id', flat=True):
+            if auth_token.user_id in actee.managers.values_list('id', flat=True):
                 return True
         except ObjectDoesNotExist:
             pass
@@ -882,7 +882,7 @@ class Authorizer(object):
         if not isinstance(actee, facade.models.Group):
             raise exceptions.InvalidActeeTypeException()
         try:
-            if auth_token.user.id in actee.users.values_list('id', flat=True):
+            if actee.users.filter(id=auth_token.user_id).exists():
                 return True
         except ObjectDoesNotExist:
             pass
@@ -928,7 +928,7 @@ class Authorizer(object):
             raise exceptions.InvalidActeeTypeException()
             
         try:
-            if auth_token.user.id == actee.purchase_order.user.id:
+            if auth_token.user_id == actee.purchase_order.user_id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -952,7 +952,7 @@ class Authorizer(object):
         if not isinstance(actee, facade.models.ProductLine):
             raise exceptions.InvalidActeeTypeException()
             
-        if auth_token.user.id in actee.managers.values_list('id', flat = True):
+        if auth_token.user_id in actee.managers.values_list('id', flat = True):
             return True
         else:
             return False
@@ -998,7 +998,7 @@ class Authorizer(object):
             raise exceptions.InvalidActeeTypeException()
             
         try:
-            if auth_token.user.id == actee.user.id:
+            if auth_token.user_id == actee.user_id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -1053,7 +1053,7 @@ class Authorizer(object):
         if not isinstance(actee, facade.models.Task):
             raise exceptions.InvalidActeeTypeException()
         if facade.models.Assignment.objects.filter(\
-            task__id=actee.id, user__id=auth_token.user.id).count():
+            task__id=actee.id, user__id=auth_token.user_id).count():
             return True
         else:
             return False
@@ -1075,7 +1075,7 @@ class Authorizer(object):
             raise exceptions.InvalidActeeTypeException()
             
         try:
-            if auth_token.user.id == actee.user.id:
+            if auth_token.user_id == actee.user_id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -1183,7 +1183,7 @@ class Authorizer(object):
             session_user_role_requirements__session_user_role__id=actee_sur_id
             ).values_list('id', flat=True))
         actor_sessions = set(facade.models.Session.objects.filter(
-            session_user_role_requirements__assignments__user__id=auth_token.user.id,
+            session_user_role_requirements__assignments__user__id=auth_token.user_id,
             session_user_role_requirements__session_user_role__id=actor_sur_id
             ).values_list('id', flat = True))
         # The union of the two sets will be the set of sessions that they
@@ -1202,7 +1202,7 @@ class Authorizer(object):
 
         if not isinstance(actee, facade.models.User):
             raise exceptions.InvalidActeeTypeException()
-        if auth_token.user.id == actee.id:
+        if auth_token.user_id == actee.id:
             return True
         return False
 
@@ -1221,7 +1221,7 @@ class Authorizer(object):
                 instructors__id__exact=actee.id).values_list('id', flat=True))
         actor_product_lines_im_for = set(
             facade.models.ProductLine.objects.filter(
-                instructor_managers__id__exact=auth_token.user.id
+                instructor_managers__id__exact=auth_token.user_id
             ).values_list('id', flat = True))
         if actor_product_lines_im_for & actee_product_lines_instructor_in:
             return True
@@ -1242,7 +1242,7 @@ class Authorizer(object):
                 instructors__id__exact=actee.id).values_list('id', flat=True))
         actor_product_lines_plm_for = set(
             facade.models.ProductLine.objects.filter(
-                managers__id__exact=auth_token.user.id
+                managers__id__exact=auth_token.user_id
             ).values_list('id', flat=True))
         if actor_product_lines_plm_for & actee_product_lines_instructor_in:
             return True
@@ -1262,7 +1262,7 @@ class Authorizer(object):
         if not isinstance(actee, facade.models.Venue):
             raise exceptions.InvalidActeeTypeException()
         try:
-            if auth_token.user.id == actee.blame.user.id:
+            if auth_token.user_id == actee.blame.user.id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -1311,8 +1311,7 @@ class Authorizer(object):
                 per authorization system requirements
         @param group_id   The primary key of the group we wish to test membership in
         """
-        group_object = Utils.find_by_id(group_id, facade.models.Group)
-        if group_object.users.filter(id=auth_token.user.id).exists():
+        if facade.models.Group.objects.filter(id=group_id, users__id=auth_token.user_id).exists():
             return True
         return False
 

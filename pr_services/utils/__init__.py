@@ -170,7 +170,7 @@ class Utils(object):
             now = datetime.datetime.utcnow()
 
         try:
-            at = facade.models.AuthToken.objects.get(session_id__exact=auth_token_session_id)
+            at = facade.models.AuthToken.objects.get(session_id=auth_token_session_id)
         except facade.models.AuthToken.DoesNotExist:
             raise exceptions.NotLoggedInException()
         if at.time_of_expiration < now:

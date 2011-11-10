@@ -68,8 +68,13 @@ MIDDLEWARE_CLASSES = (
 # A cache backend that shares data across processes is required for the upload
 # progress bar to work.  In this case, create a file-based cache in the system
 # temp directory.
-CACHE_BACKEND = 'file://%s' % os.path.join(tempfile.gettempdir(), \
-    'upload-progress-cache' + str(hash(os.path.abspath(__file__))))
+CACHES = {
+    'default' : {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION' : os.path.join(tempfile.gettempdir(), \
+            'upload-progress-cache' + str(hash(os.path.abspath(__file__))))
+    }
+}
 
 FILE_UPLOAD_HANDLERS = ('pr_services.utils.upload.UploadProgressCachedHandler',) + \
     global_settings.FILE_UPLOAD_HANDLERS
