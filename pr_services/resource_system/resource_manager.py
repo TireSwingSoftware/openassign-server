@@ -69,10 +69,10 @@ class ResourceManager(ObjectManager):
         if isinstance(end, basestring):
             end = pr_time.iso8601_to_datetime(end)
         
-        # emulate logical OR by combining query-sets
+        # get the intersection of two filters (modifies query)
         conflicting_sessions = (
-            facade.models.Session.objects.filter(start__range=[start, end]) | 
-            facade.models.Session.objects.filter(end__range=[start, end])
+            facade.models.Session.objects.filter(start__lt=end) & 
+            facade.models.Session.objects.filter(end__gt=start)
         )
         for sess in conflicting_sessions:
             for req in sess.session_resource_type_requirements.all():
@@ -101,11 +101,10 @@ class ResourceManager(ObjectManager):
         if isinstance(end, basestring):
             end = pr_time.iso8601_to_datetime(end)
     
-        # This collides on boundary values (eg, identical test-end and session-start times)
-        # TODO: Should we opt to disregard boundary values?
+        # This allows identical boundary values (eg, identical test-end and session-start times)
         conflicting_sessions = (
-            related_sessions.filter(start__range=[start, end]) | 
-            related_sessions.filter(end__range=[start, end])
+            related_sessions.filter(start__lt=end) & 
+            related_sessions.filter(end__gt=start)
         )
 
         if conflicting_sessions.count() > 0:

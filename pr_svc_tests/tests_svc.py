@@ -78,6 +78,7 @@ class TestCase(BaseTestCase):
         self.one_day = timedelta(days = 1)
         self.half_day = timedelta(days = 0.5)
         self.one_moment = timedelta(days = 0.001)
+        self.one_hour = timedelta(hours = 1)
         self.organization1 = self.organization_manager.create(self.admin_token, 'Organization 1')['value']['id']
 
     def tearDown(self):
@@ -1171,6 +1172,7 @@ class TestResourceSchedulingRules(TestCase):
         now = self.right_now.isoformat()
         tomorrow = (self.right_now+self.one_day).isoformat()
         one_moment_ago = (self.right_now - self.one_moment).isoformat()
+        one_hour_from_now = (self.right_now+self.one_hour).isoformat()
         twelve_hours_from_now = (self.right_now+self.half_day).isoformat()
         ret = self.resource_manager.find_available_resources( self.admin_token, now, tomorrow )
         self.assertEquals(len(ret['value']), 2)
@@ -1179,6 +1181,13 @@ class TestResourceSchedulingRules(TestCase):
         four_days_ago = (self.right_now + timedelta(days = -4)).isoformat()
         ret = self.resource_manager.find_available_resources( self.admin_token, five_days_ago, four_days_ago )
         self.assertEquals(len(ret['value']), 4)
+        # ... and now with outlying start and end times (all scheduled resources should be taken, so just 2 un-scheduled resources)
+        five_days_from_now = (self.right_now + timedelta(days = 5)).isoformat()
+        ret = self.resource_manager.find_available_resources( self.admin_token, five_days_ago, five_days_from_now )
+        self.assertEquals(len(ret['value']), 2)
+        # ... and now with both start and end times within a session (all scheduled resources should be taken, so just 2 un-scheduled resources)
+        ret = self.resource_manager.find_available_resources( self.admin_token, one_hour_from_now, twelve_hours_from_now )
+        self.assertEquals(len(ret['value']), 2)
 
         # probe a single Resource during a specified time period
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], four_days_ago, twelve_hours_from_now )
@@ -1188,11 +1197,19 @@ class TestResourceSchedulingRules(TestCase):
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], four_days_ago, one_moment_ago )
         self.assertEquals(ret['value'], False)  # test-end a moment before session start time (no conflict)
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], four_days_ago, now )
-        self.assertEquals(ret['value'], True)  # test-end matches session start time (TODO: this should NOT conflict!)
+        self.assertEquals(ret['value'], False)  # test-end matches session start time (exactly matching boundaries should not conflict)
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], now, tomorrow )
         self.assertEquals(ret['value'], True)   # exactly matching start and end times (direct conflict)
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], five_days_ago, four_days_ago )
         self.assertEquals(ret['value'], False)  # not even close
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], five_days_ago, five_days_from_now )
+        self.assertEquals(ret['value'], True)   # YES, it's a scheduled resources
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res2_id'], one_hour_from_now, twelve_hours_from_now )
+        self.assertEquals(ret['value'], True)   # YES, it's a scheduled resources
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res3_id'], five_days_ago, five_days_from_now )
+        self.assertEquals(ret['value'], False)  # NO, not a scheduled resource
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res4_id'], one_hour_from_now, twelve_hours_from_now )
+        self.assertEquals(ret['value'], False)  # NO, not a scheduled resource
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res4_id'], now, tomorrow )
         self.assertEquals(ret['value'], False)
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res4_id'], five_days_ago, four_days_ago )
