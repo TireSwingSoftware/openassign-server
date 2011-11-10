@@ -1156,7 +1156,6 @@ class TestResourceSchedulingRules(TestCase):
 
         # find all Sessions using a specified Resource (based on assignments above)
         ret = self.session_resource_type_requirement_manager.get_sessions_using_resource(self.admin_token, int(object_ids['res1_id']) )
-        self.assertEquals(ret['status'], 'OK')
         self.assertEquals( len(ret['value']) , 1)
         ret = self.session_resource_type_requirement_manager.get_sessions_using_resource(self.admin_token, int(object_ids['res2_id']) )
         self.assertEquals(ret['status'], 'OK')
