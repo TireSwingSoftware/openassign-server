@@ -4,6 +4,7 @@ SessionResourceTypeRequirement manager class
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
+import session_manager
 
 class SessionResourceTypeRequirementManager(ObjectManager):
     """
@@ -50,7 +51,8 @@ class SessionResourceTypeRequirementManager(ObjectManager):
         # if there are already assigned resources, make sure they're free during this session
         if len(resource_ids) > 0:
             for res_id in resource_ids:
-                scheduled_sessions = self.get_sessions_using_resource(auth_token, res_id)
+                # Note that we're bypassing get_filtered to check all Sessions, but that seems appropriate here
+                scheduled_sessions = facade.models.Session.resource_tracker.get_sessions_using_resource(res_id, True) # activeOnly=True
                 
                 for test_session in scheduled_sessions:
                     conflict_found = False
@@ -77,23 +79,17 @@ class SessionResourceTypeRequirementManager(ObjectManager):
 
     @service_method
     def get_sessions_using_resource(self, auth_token, resource_id, activeOnly=False):
-        # TODO: implement activeOnly filter (if True, return only Sessions whose status is active)
-        # find all resource-type requirements that use this resource (use existing Resource.session_resource_type_requirements)
-        resource_mgr = facade.managers.ResourceManager()
-        res_info = resource_mgr.get_filtered(auth_token, {'exact' : {'id' :resource_id} }, ['session_resource_type_requirements'])
-        related_requirements = res_info[0]['session_resource_type_requirements']
-    
-        if len(related_requirements) == 0:
-            # this resource is not currently scheduled in any session
-            return []
-
-        session_mgr = facade.managers.SessionManager()
-        related_sessions = []
-        for req_id in related_requirements:
-            sessions = session_mgr.get_filtered(auth_token, 
-                { 'member' : {'session_resource_type_requirements' : [req_id] } }, ['fullname', 'shortname', 'description', 'start', 'end'])
-            related_sessions += sessions
-            
-        return related_sessions
+        """
+        Return all sessions using the specified resource (callable via RCP, so use get_filtered)
+        
+        @param resource_id        Primary key for the specified resource
+        @param activeOnly         Optional filter to return only active sessions (currently unused) 
+        @return                   A filtered collection of matching sessions (typical RPC response)
+        """
+        # if activeOnly is True, return only Sessions whose status is active
+        related_sessions = facade.models.Session.resource_tracker.get_sessions_using_resource(resource_id, activeOnly)
+        related_session_ids = [sess.id for sess in related_sessions]
+        # impose added security via get_filtered(), passing IDs found via the internal method above
+        return session_manager.SessionManager().get_filtered(auth_token, {'member' : {'id' : related_session_ids} }, ['fullname','description'])
 
 # vim:tabstop=4 shiftwidth=4 expandtab

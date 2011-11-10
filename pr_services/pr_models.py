@@ -1080,8 +1080,7 @@ class Assignment(PRModel):
     ##     pass
 
     def report_status_changes(self, filter=None):
-        # TODO: report the history of status changes for this Assignment only
-        # pass the call to the global Getter, with filter for this ID?
+        # report the history of status changes for this Assignment only
         return self.status_change_log
 
     def save(self, *args, **kwargs):
@@ -1900,7 +1899,36 @@ class Room(OwnedPRModel):
 
         return validation_errors
 
+    
+class SessionResourceTracker(models.Manager):
+    def get_sessions_using_resource(self, resource_id, activeOnly=False):
+        """
+        Retrieve all sessions using the specified resource, possibly only those whose status is active.
 
+        @param resource_id    ID of the specified Resource
+        @param activeOnly     Include only active Sessions?
+        @type  activeOnly     boolean
+
+        @return               queryset iterator of all matching Sessions
+        """
+        
+        # if activeOnly=True, apply a filter that returns only Sessions whose status is active
+        # find all resource-type requirements that use this resource (use existing Resource.session_resource_type_requirements)
+        resource_instance = facade.models.Resource.objects.get(pk=resource_id)
+        its_reqs = resource_instance.session_resource_type_requirements.all()
+        if len(its_reqs) == 0:
+            # this resource is not currently scheduled in any session
+            return facade.models.Session.objects.none()
+
+        related_sessions = facade.models.Session.objects.filter(
+            session_resource_type_requirements__in=its_reqs
+        )
+        if activeOnly:
+            related_sessions = related_sessions.filter(
+                status='active'
+            )
+        return related_sessions
+    
 class Session(OwnedPRModel):
     """
      - template (1 Session to 0..1 SessionTemplate)
@@ -1914,6 +1942,9 @@ class Session(OwnedPRModel):
                                         0..* SessionResourceTypeRequirements)
        [session_resource_type_requirements]
     """
+    # add a custom model manager to easily query for sessions using a given resource
+    resource_tracker = SessionResourceTracker()
+    objects = models.Manager()  # explicitly redefine default model manager
 
     #: default price measured in training units
     default_price = models.PositiveIntegerField()
@@ -1952,10 +1983,10 @@ class Session(OwnedPRModel):
 
     def __unicode__(self):
         if self.session_template:
-            return u'name: %s, template: %s, event name: %s' % (self.name, unicode(self.session_template),
+            return u'name: %s, template: %s, event name: %s' % (self.shortname, unicode(self.session_template),
                                                                 self.event.name)
         else:
-            return u'name: %s, event name: %s' % (self.name, self.event.name)
+            return u'name: %s, event name: %s' % (self.shortname, self.event.name)
 
     def check_status(self):
         """
