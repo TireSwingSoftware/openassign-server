@@ -3,7 +3,6 @@ Payment manager class
 """
 
 from pr_services import exceptions
-from pr_services import pr_time
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
@@ -18,7 +17,7 @@ if 'ecommerce' in settings.INSTALLED_APPS:
 class PaymentManager(ObjectManager):
     """
     Manage Payments in the Power Reg system.
-    
+
     <pre>
     payment attributes:
       purchase_order        Foreign Key for a purchase order
@@ -98,7 +97,7 @@ class PaymentManager(ObjectManager):
             zip, country, cvv2, optional_parameters=None):
         """
         Create a Payment
-        
+
         @param po                     Foreign Key for a purchase order
         @param card_type              One of: Visa, MasterCard, Discover, Amex
         @param card_number            Credit Card number
@@ -114,7 +113,7 @@ class PaymentManager(ObjectManager):
         @param country                2-letter country code as defined in ISO-3166
         @param cvv2                   CVV2 value.
         @param optional_parameters    sales_tax
-        
+
         @return                       Reference to newly created Payment
         """
 
@@ -153,11 +152,11 @@ class PaymentManager(ObjectManager):
     def refund(self, auth_token, payment, amount, card_number=None):
         """
         Make a refund
-        
+
         @param payment      Primary Key for a Payment
         @param amount       Amount in cents
         @param card_number  Card number, only required for certain merchant service providers
-        
+
         @return             Sucessfully refunded amount
         """
 
@@ -192,10 +191,10 @@ class PaymentManager(ObjectManager):
         """
         Begin Paypal's Express Checkout process. No further calls are necessary
         for the Payment to be completed.
-        
+
         @param po                 Foreign Key for a purchase order
         @param amount             Amount in cents
-        
+
         @return    a URL which will take the user to Paypal's website to complete the transaction
         """
 
@@ -203,7 +202,7 @@ class PaymentManager(ObjectManager):
             raise exceptions.InvalidAmountException()
         po = self._find_by_id(po, purchase_order)
         for transaction_hook in self.my_pre_transaction_hooks:
-            transaction_hook(po)    
+            transaction_hook(po)
 
         x = str(amount)
         while len(x) < 3:
@@ -222,7 +221,7 @@ class PaymentManager(ObjectManager):
     def _complete_express_checkout(self, token, amount, transaction_id):
         """
         This gets called by the ecommerce app to complete a transaction
-        
+
         @param token              String containing unique identifier from Paypal
         @param amount             Amount of transaction, in traditional decimal notation
         @param transaction_id     Transaction ID as given by Paypal
@@ -270,6 +269,6 @@ class PaymentManager(ObjectManager):
         send_message(message_type='payment-confirmation',
                      context={'purchase_order': po},
                      recipient=po.user)
-        
+
 
 # vim:tabstop=4 shiftwidth=4 expandtab

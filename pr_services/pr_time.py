@@ -5,13 +5,12 @@ This modules deals with time and date conversion
 import datetime
 import iso8601
 import exceptions
-import sys
 
 class UTC(datetime.tzinfo):
     """
     time zone (tzinfo) class for UTC
     """
-    
+
     def utcoffset(self, dt):
         return datetime.timedelta(0)
     def tzname(self, dt):
@@ -22,7 +21,7 @@ class UTC(datetime.tzinfo):
 def iso8601_to_datetime(time):
     """
     Convert an ISO8601 string to a python datetime object.
-    
+
     @param time       ISO8601 string
     @return           python datetime object without tzinfo
     """
@@ -37,7 +36,7 @@ def iso8601_to_datetime(time):
 def is_iso8601(time):
     """
     Return true if time is a valid iso8601 time value.
-    
+
     @param time   the time we wish to validate
     @return       boolean False if it is invalid, else True
     """

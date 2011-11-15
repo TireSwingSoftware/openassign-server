@@ -2,7 +2,6 @@
 TrainingUnitAuthorization manager class
 """
 
-from datetime import datetime
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
@@ -37,7 +36,7 @@ class TrainingUnitAuthorizationManager(ObjectManager):
     def create(self, auth_token, training_unit_account, user, start, end, max_value):
         """
         Create a new TrainingUnitAuthorization
-        
+
         @param training_unit_account    Foreign Key for a training unit account
         @param user                     Foreign Key for a user
         @param start                    Start time as ISO8601 string

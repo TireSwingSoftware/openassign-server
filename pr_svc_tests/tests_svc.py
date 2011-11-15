@@ -76,6 +76,9 @@ class TestCase(BaseTestCase):
         self.admin_user_id = self.user_manager.get_authenticated_user(self.admin_token)['value']['id']
         self.right_now = datetime.utcnow().replace(microsecond=0, tzinfo=pr_services.pr_time.UTC())
         self.one_day = timedelta(days = 1)
+        self.half_day = timedelta(days = 0.5)
+        self.one_moment = timedelta(days = 0.001)
+        self.one_hour = timedelta(hours = 1)
         self.organization1 = self.organization_manager.create(self.admin_token, 'Organization 1')['value']['id']
 
     def tearDown(self):
@@ -208,10 +211,6 @@ class TestCase(BaseTestCase):
         req3 = self.session_template_resource_type_requirement_manager.create( self.admin_token, st2_id, rt2_id, 0, 5)
         req3_id = req3['value']['id']
 
-        # create a product line
-        pl1 = self.product_line_manager.create(self.admin_token, 'Super Product Line')
-        pl1_id = pl1['value']['id']
-
         # create an event to hold these sessions
         evt1 = self.event_manager.create(self.admin_token, 'EVT', 'Super Event',
             'This event is super!', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1)
@@ -240,7 +239,6 @@ class TestCase(BaseTestCase):
             'req1_id' : req1_id,
             'req2_id' : req2_id,
             'req3_id' : req3_id,
-            'pl1_id' : pl1_id,
             'evt1_id' : evt1_id,
             'sess1_id' : sess1_id,
             'sess2_id' : sess2_id,
@@ -980,8 +978,8 @@ class TestSessionManagerSvc(TestCase):
         self.assertEquals(ret['status'], 'OK')
         self.failUnless(isinstance(ret['value'], list))
         self.assertEquals(len(ret['value']), 1)
-        session1 = ret['value'][0]
-        self.assertEquals(session1['session_user_role_requirements'], [int(surr_id)])
+        session2 = ret['value'][0]
+        self.assertEquals(session2['session_user_role_requirements'], [int(surr_id)])
 
         # Now make a resource-type requirement for this session
         restype_id = self.resource_type_manager.create(self.admin_token, 'Unobtainium')['value']['id']
@@ -996,8 +994,8 @@ class TestSessionManagerSvc(TestCase):
         self.assertEquals(ret['status'], 'OK')
         self.failUnless(isinstance(ret['value'], list))
         self.assertEquals(len(ret['value']), 1)
-        a_product_line_session = ret['value'][0]
-        self.assertEquals(a_product_line_session['session_resource_type_requirements'], [int(rtreq_id)])
+        session3 = ret['value'][0]
+        self.assertEquals(session3['session_resource_type_requirements'], [int(rtreq_id)])
         
     def test_filter_for_date_range(self):
         region1 = self.region_manager.create(self.admin_token, 'Region 1')
@@ -1158,7 +1156,6 @@ class TestResourceSchedulingRules(TestCase):
 
         # find all Sessions using a specified Resource (based on assignments above)
         ret = self.session_resource_type_requirement_manager.get_sessions_using_resource(self.admin_token, int(object_ids['res1_id']) )
-        self.assertEquals(ret['status'], 'OK')
         self.assertEquals( len(ret['value']) , 1)
         ret = self.session_resource_type_requirement_manager.get_sessions_using_resource(self.admin_token, int(object_ids['res2_id']) )
         self.assertEquals(ret['status'], 'OK')
@@ -1170,9 +1167,22 @@ class TestResourceSchedulingRules(TestCase):
         self.assertEquals(ret['status'], 'OK')
         self.assertEquals( len(ret['value']) , 0)
 
+        # test the activeOnly filter
+        self.session_manager.update(self.admin_token, int(object_ids['res1_id']), {'status' : 'pending'} )
+        ret = self.session_resource_type_requirement_manager.get_sessions_using_resource(self.admin_token, int(object_ids['res1_id']), True )  # activeOnly=True
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals( len(ret['value']) , 0)
+        self.session_manager.update(self.admin_token, int(object_ids['res1_id']), {'status' : 'active'} )
+        ret = self.session_resource_type_requirement_manager.get_sessions_using_resource(self.admin_token, int(object_ids['res1_id']), True )  # activeOnly=True
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals( len(ret['value']) , 1)
+
         # find all Resources available during a specified time period; first, match the times used for our session (2 used, 2 available)
         now = self.right_now.isoformat()
         tomorrow = (self.right_now+self.one_day).isoformat()
+        one_moment_ago = (self.right_now - self.one_moment).isoformat()
+        one_hour_from_now = (self.right_now+self.one_hour).isoformat()
+        twelve_hours_from_now = (self.right_now+self.half_day).isoformat()
         ret = self.resource_manager.find_available_resources( self.admin_token, now, tomorrow )
         self.assertEquals(len(ret['value']), 2)
         # ... and now on previous days (all 4 should be available)
@@ -1180,12 +1190,35 @@ class TestResourceSchedulingRules(TestCase):
         four_days_ago = (self.right_now + timedelta(days = -4)).isoformat()
         ret = self.resource_manager.find_available_resources( self.admin_token, five_days_ago, four_days_ago )
         self.assertEquals(len(ret['value']), 4)
+        # ... and now with outlying start and end times (all scheduled resources should be taken, so just 2 un-scheduled resources)
+        five_days_from_now = (self.right_now + timedelta(days = 5)).isoformat()
+        ret = self.resource_manager.find_available_resources( self.admin_token, five_days_ago, five_days_from_now )
+        self.assertEquals(len(ret['value']), 2)
+        # ... and now with both start and end times within a session (all scheduled resources should be taken, so just 2 un-scheduled resources)
+        ret = self.resource_manager.find_available_resources( self.admin_token, one_hour_from_now, twelve_hours_from_now )
+        self.assertEquals(len(ret['value']), 2)
 
-        # probe a single Resoure during a specified time period
+        # probe a single Resource during a specified time period
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], four_days_ago, twelve_hours_from_now )
+        self.assertEquals(ret['value'], True)   # overlaps the session period, end time is halfway through session
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], twelve_hours_from_now, tomorrow )
+        self.assertEquals(ret['value'], True)   # overlaps the session period, same end time
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], four_days_ago, one_moment_ago )
+        self.assertEquals(ret['value'], False)  # test-end a moment before session start time (no conflict)
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], four_days_ago, now )
+        self.assertEquals(ret['value'], False)  # test-end matches session start time (exactly matching boundaries should not conflict)
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], now, tomorrow )
-        self.assertEquals(ret['value'], True)
+        self.assertEquals(ret['value'], True)   # exactly matching start and end times (direct conflict)
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], five_days_ago, four_days_ago )
-        self.assertEquals(ret['value'], False)
+        self.assertEquals(ret['value'], False)  # not even close
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res1_id'], five_days_ago, five_days_from_now )
+        self.assertEquals(ret['value'], True)   # YES, it's a scheduled resources
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res2_id'], one_hour_from_now, twelve_hours_from_now )
+        self.assertEquals(ret['value'], True)   # YES, it's a scheduled resources
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res3_id'], five_days_ago, five_days_from_now )
+        self.assertEquals(ret['value'], False)  # NO, not a scheduled resource
+        ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res4_id'], one_hour_from_now, twelve_hours_from_now )
+        self.assertEquals(ret['value'], False)  # NO, not a scheduled resource
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res4_id'], now, tomorrow )
         self.assertEquals(ret['value'], False)
         ret = self.resource_manager.resource_used_during( self.admin_token, object_ids['res4_id'], five_days_ago, four_days_ago )
@@ -1348,10 +1381,9 @@ class TestSessionResourceTypeRequirementManagerSvc(TestCase):
         self.assertEquals(region1['status'], 'OK')
         venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '123456789', region1['value']['id'])
         self.assertEquals(venue1['status'], 'OK')
-        ret = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})
-        self.assertEquals(ret['status'], 'OK')
-        event1 = ret['value']['id']
+        a_product_line_id = self.product_line_manager.create(self.admin_token, 'PL')['value']['id']
+        event1 = self.event_manager.create(self.admin_token, 'Name 1', 'Title 1', 'Description 1', self.right_now.isoformat(),
+            (self.right_now+self.one_day).isoformat(), self.organization1, {'venue' : venue1['value']['id']})['value']['id']
         session_id = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active',
             True, 100, event1, 'shortname 1', 'fullname 1', {'modality' : 'ILT'})['value']['id']
         # define a ResourceType and assign it as a requirement for this Session

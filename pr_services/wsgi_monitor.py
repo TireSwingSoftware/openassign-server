@@ -1,9 +1,8 @@
-# Pulled from 
+# Pulled from
 # http://code.google.com/p/modwsgi/wiki/ReloadingSourceCode#Restarting_Daemon_Processes
 
 import os
 import sys
-import time
 import signal
 import threading
 import atexit

@@ -9,9 +9,6 @@ import codecs
 from decimal import Decimal
 import random
 
-# Django
-from django.conf import settings
-
 # PowerReg
 from pr_services import exceptions
 from pr_services import pr_tests
@@ -140,7 +137,7 @@ class TestExamModels(pr_tests.TestCase):
         # Check the default ordering of question pools.
         for x, y in zip((qp2, qp1), exam.question_pools.all()):
             self.assertEquals(x, y)
-        
+
         # Check the default ordering of questions in a pool.
         for x, y in zip((q2_2, q2_1), qp2.questions.all()):
             self.assertEquals(x, y)
@@ -244,7 +241,7 @@ class TestExamModels(pr_tests.TestCase):
 
     def test_create_answers(self):
         #"""Test various options for creating answers to a question."""
-        
+
         # Create initial exams, question pools and questions.
         e1 = self._create_exam(name='e1', title='The Exam Answers')
         e1_qp1 = self._create_question_pool(e1, title='Questions-R-Us')
@@ -269,14 +266,14 @@ class TestExamModels(pr_tests.TestCase):
         self.assertRaises(facade.models.ModelDataValidationError, a1.save)
         a1.next_question_pool = e1_qp3
         a1.save()
-        
+
         # Test validation of exam and all questions and answers.
         e1.validate(related=True)
 
     def _take_exam(self, auth_token, assignment_id, answer_key, score=None, passed=None):
         """
         Take the exam using the given answer key and verify the score.
-        
+
         :param auth_token: auth token for the current user
         :type auth_token: facade.models.AuthToken
         :param assignment_id: primary key of the assigment of the user to the exam
@@ -285,16 +282,16 @@ class TestExamModels(pr_tests.TestCase):
         :type answer_key: dict
         :param score: [OUT] output parameter for the exam score if passed as None
         :type score: None (if any other type will not be modified)
-        :param passed: [OUT] output parameter for whether the exam was passed if passed in as None 
+        :param passed: [OUT] output parameter for whether the exam was passed if passed in as None
         :type passed: None (if any other type will not be modified)
-        
+
         :returns: the exam session (also has two output parameters)
         :rtype: facade.models.ExamSession
         """
 
         # Create the exam session and answer the questions according to the
         # answer key.
-        
+
         assignment = facade.models.Assignment.objects.get(id=assignment_id)
         exam_session = self._create_exam_session(assignment)
         next_questions = exam_session.get_next_questions()
@@ -512,7 +509,7 @@ class TestExamModels(pr_tests.TestCase):
     def _test_response_options(self, q_type, q_kw={}, test_cases=[], **kwargs):
         """
         Run response option tests using a test case array.
-        
+
         :param q_type: question type
         :type q_type: string
         :param q_kw: keyword arguments to pass to facade.models.Question.objects.create()
@@ -521,7 +518,7 @@ class TestExamModels(pr_tests.TestCase):
         :type test_cases: list
         :param **kwargs: these will be passed to self._test_quesetion_responses()
         :type **kwargs: variable keyword argument list
-        
+
         Takes a test case array similar to the following:
         [
             (
@@ -617,7 +614,7 @@ class TestExamModels(pr_tests.TestCase):
             ),
             # FIXME
         ]
-        
+
         # Test decimal response.
         decimal_test_cases = numeric_test_cases + [
             # FIXME
@@ -689,7 +686,7 @@ class TestExamModels(pr_tests.TestCase):
                                              'text_response': True},
                                         text_response_test_cases,
                                         response_key='text')
-            
+
         # Test responses that are simply text fields.
         text_test_cases = [
             # FIXME
@@ -700,7 +697,7 @@ class TestExamModels(pr_tests.TestCase):
             self._test_response_options(qt, {}, text_test_cases)
 
 class TestExamManagers(pr_tests.TestCase):
-    
+
     def setUp(self):
         super(TestExamManagers, self).setUp()
         if not hasattr(self, 'exam_manager'):
@@ -768,7 +765,7 @@ class TestExamManagers(pr_tests.TestCase):
                    resume=False):
         """
         Take the exam using the given answer key and verify the score.
-        
+
         :param auth_token: auth token for the acting user
         :type auth_token: facade.models.AuthToken
         :param assignment: the assignment to the exam for the actor
@@ -960,7 +957,7 @@ class TestExamManagers(pr_tests.TestCase):
         # now let's try limiting the number of questions that get asked
         qp1.number_to_answer = 3
         qp1.save()
-        
+
         assignment = self.assignment_manager.create(self.admin_token, exam.id, student.id)
         exam_session = self.exam_session_manager.create(self.admin_token, assignment.id,
                                                       fetch_all=False, resume=False)
@@ -1087,7 +1084,7 @@ class TestExamManagers(pr_tests.TestCase):
         # Create a char question with a correct answer.
         q2 = self._create_question(qp1, 'char', label='Spell "7"')
         q2_a1 = self._create_answer(q2, correct=True, value='seven')
-        
+
         student, student_at = self.create_student()
         assignment = self.assignment_manager.create(self.admin_token, exam.id, student.id)
 
@@ -1102,7 +1099,7 @@ class TestExamManagers(pr_tests.TestCase):
         self.assertEquals(Decimal(exam_session_1['score']), Decimal('50.00'))
         self.assertFalse(exam_session_1['passed'])
         self.assertNotEqual(exam_session_1['date_completed'], None)
-        
+
         all_correct_answer_key = {
             q1.id: {'value': True},
             q2.id: {'value': 'seven'},
@@ -1114,9 +1111,9 @@ class TestExamManagers(pr_tests.TestCase):
         self.assertEquals(Decimal(exam_session_2['score']), Decimal('100.00'))
         self.assertTrue(exam_session_2['passed'])
         self.assertNotEqual(exam_session_2['date_completed'], None)
-        
+
         self.assertNotEqual(exam_session_id_1, exam_session_id_2)
-        
+
     def test_exam_session_survey(self):
         #"""Test an exam session when used for a survey or application."""
         # (No answers are labelled as correct or incorrect.)

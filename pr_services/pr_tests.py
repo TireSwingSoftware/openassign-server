@@ -11,7 +11,6 @@ import hashlib
 import inspect
 import operator
 import os
-import sys
 import time
 import urllib2
 
@@ -223,6 +222,25 @@ class TestAuthToken(TestCase):
         admin_users_auth_tokens = da.auth_tokens.values_list('session_id', flat=True)
         self.assertTrue(self.admin_token.session_id in admin_users_auth_tokens)
         self.assertTrue(new_admin_token.session_id in admin_users_auth_tokens)
+
+    def test_caching(self):
+        user1 = self.user_manager.create(self.admin_token, 'cached_user', 'letmein',
+            'Mr.', 'Primo', 'Uomo', '555.555.5555', 'user1@acme-u.com', 'active')
+        auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('cached_user',
+            'letmein')['auth_token'])
+        ret = facade.models.AuthToken.objects.get(session_id=auth_token.session_id)
+        self.assertEquals(auth_token.id, ret.id)
+        self.assertEquals(auth_token.session_id, ret.session_id)
+        # by now it should be cached, so let's try again
+        ret = facade.models.AuthToken.objects.get(session_id=auth_token.session_id)
+        self.assertEquals(auth_token.id, ret.id)
+        self.assertEquals(auth_token.session_id, ret.session_id)
+        # relogin is a special case, since it changes the session_id (which is
+        # used to generate the cache key). Thus, we need to confirm that the old
+        # token under its old cache key gets purged from the cache.
+        old_session_id = auth_token.session_id
+        new_session_id = self.user_manager.relogin(auth_token)['auth_token']
+        self.assertRaises(facade.models.AuthToken.DoesNotExist, facade.models.AuthToken.objects.get, session_id=old_session_id)
 
 class TestBackendInfo(TestCase):
     def test_backend_info(self):
@@ -1310,7 +1328,7 @@ class TestEventManager(TestCase):
         e1 = self.event_manager.create(self.admin_token, 'Event 1',
             'First Event of My Unit Test', 'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
             self.organization1.id, {'venue' : self.venue1.id, 'sessions' : sessions})
-        
+
         # verify results
         event = facade.models.Event.objects.get(id=e1.pk)
         sessions = event.sessions.all()

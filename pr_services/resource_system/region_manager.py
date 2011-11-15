@@ -2,7 +2,6 @@
 Region manager class
 """
 
-from pr_services import exceptions
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
@@ -32,7 +31,7 @@ class RegionManager(ObjectManager):
     def create(self, auth_token, name, optional_attributes=None):
         """
         Create a new Region
-        
+
         @param name                name of the Region
         @return                    a reference to the newly created Region
         """

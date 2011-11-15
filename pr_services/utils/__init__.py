@@ -6,8 +6,6 @@ import cStringIO
 import datetime
 import hashlib
 import logging
-import os
-import sys
 import unicodedata
 from django.db import transaction
 from pr_services import exceptions
@@ -131,7 +129,7 @@ class Utils(object):
         @rtype str
 
         """
-        # make sure that s is a unicode object 
+        # make sure that s is a unicode object
         s = unicode(s)
         asciified =  unicodedata.normalize('NFKD', s).encode('ascii', 'ignore')
         if len(s) != len(asciified):
@@ -170,7 +168,7 @@ class Utils(object):
             now = datetime.datetime.utcnow()
 
         try:
-            at = facade.models.AuthToken.objects.get(session_id__exact=auth_token_session_id)
+            at = facade.models.AuthToken.objects.get(session_id=auth_token_session_id)
         except facade.models.AuthToken.DoesNotExist:
             raise exceptions.NotLoggedInException()
         if at.time_of_expiration < now:
@@ -393,7 +391,7 @@ class LazyImporter(object):
         :type module_name: string
 
         """
-        # By using a dictionary with managers as keys, overriding managers 
+        # By using a dictionary with managers as keys, overriding managers
         # is done by calling "add_import" in variants.
         self.import_map[attribute_name] = module_name
         attr = LazyImportObjectProxy()
@@ -468,7 +466,7 @@ class LazyImporter(object):
         import the class defined by that object and then store the imported
         object on the attribute for future use.
         """
-        # Get the attribute from the super class 
+        # Get the attribute from the super class
         # (i.e., do the traditional behavior for this method)
         attribute = object.__getattribute__(self, name)
         # If the attribute is a LazyImport object, let's actually import the

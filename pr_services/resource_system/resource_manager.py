@@ -51,58 +51,63 @@ class ResourceManager(ObjectManager):
         return r
 
     @service_method
-    # TODO: confirm that service_method is appropriate here
-    def find_available_resources(self, auth_token, start, end):
-        session_manager = facade.managers.SessionManager()
-        res_requirement_manager = facade.managers.SessionResourceTypeRequirementManager()
-        # start with all IDs, then filter out those who are associated with sessions during this time
-        available_resource_info = self.get_filtered(auth_token, {})
-        available_resource_ids = [res['id'] for res in available_resource_info]
-        # eg,  [{'id': 1}, {'id': 2}, {'id': 3}, {'id': 4}]
+    def find_available_resources(self, auth_token, start, end, requested_fields=['name','description']):
+        """
+        Return a list of resources that are available during the specified timespan
         
+        @param start              Start time as ISO8601 string or datetime
+        @param end                End time as ISO8601 string or datetime
+        @param requested_fields   Optional list of field names to be returned
+        @return                   a filtered list of available resources, with the requested fields
+        """
+        # build a list of blocked resources, then exclude them from final results
+        blocked_resource_ids = []
+
         # convert time arguments from isoformat string to datetime, if not already
         if isinstance(start, basestring):
             start = pr_time.iso8601_to_datetime(start)
         if isinstance(end, basestring):
             end = pr_time.iso8601_to_datetime(end)
-            
-        conflicting_sessions = session_manager.get_filtered(auth_token,
-            { 'greater_than_or_equal' : {'start' : start },
-              'less_than_or_equal' : {'end' : end } }, ['shortname', 'fullname', 'status', 'session_resource_type_requirements'])
         
+        # get the intersection of two filters (modifies query)
+        conflicting_sessions = (
+            facade.models.Session.objects.filter(start__lt=end) & 
+            facade.models.Session.objects.filter(end__gt=start)
+        )
         for sess in conflicting_sessions:
-            for req_id in sess['session_resource_type_requirements']:
-                blocked_resource_info = res_requirement_manager.get_filtered(auth_token,
-                     {'member' : {'resources' : [req_id]} }, [])
-                blocked_resource_ids = [res['id'] for res in blocked_resource_info]
+            for req in sess.session_resource_type_requirements.all():
+                # add its resource IDs to our growing list
+                blocked_resource_ids.extend( req.resources.all().values_list('id', flat=True) )
             
-                # chase resource-type requirements to any underlying resources
-                for blocked_id in blocked_resource_ids:
-                    if blocked_id in available_resource_ids:
-                        available_resource_ids.remove( blocked_id )
-                
-        return self.get_filtered(auth_token, {'member' : {'id' : available_resource_ids} }, ['name', 'description'])
+        # remove duplicates from the list of blocked IDs
+        blocked_resource_ids = list(set(blocked_resource_ids))
+        # return all NON-blocked resources (ie, those still available during this time)
+        return self.get_filtered(auth_token, {'not': {'member' : {'id' : blocked_resource_ids} } }, requested_fields)
 
     @service_method    
     def resource_used_during(self, auth_token, resource_id, start, end):
-        # A more targeted "probe" for a particular Resource during a specified time span.
-        # Returns True if the resource is already scheduled within the chosen duration, False if not
-        res_requirement_manager = facade.managers.SessionResourceTypeRequirementManager()
-        session_manager = facade.managers.SessionManager()
-        related_sessions = res_requirement_manager.get_sessions_using_resource(auth_token, resource_id)
+        """
+        Probe for a particular Resource during a specified timespan
+        
+        @param resource_id        ID of the Resource
+        @param start              Start time as ISO8601 string or datetime
+        @param end                End time as ISO8601 string or datetime
+        @return                   True if resource is already scheduled within the chosen duration, False if not 
+        """
+        related_sessions = facade.models.Session.resource_tracker.get_sessions_using_resource(resource_id)
 
         if isinstance(start, basestring):
             start = pr_time.iso8601_to_datetime(start)
         if isinstance(end, basestring):
             end = pr_time.iso8601_to_datetime(end)
     
-        session_ids = [s['id'] for s in related_sessions ]  # TODO: use list comprehension to extract just IDs?
-        conflicting_sessions = session_manager.get_filtered(auth_token, 
-            { 'member' : {'id': session_ids},
-              'greater_than_or_equal' : {'start' : start},
-              'less_than_or_equal' : {'end' : end}
-            }, [])
-        if len(conflicting_sessions) > 0:
+        # This allows identical boundary values (eg, identical test-end and session-start times)
+        conflicting_sessions = (
+            related_sessions.filter(start__lt=end) & 
+            related_sessions.filter(end__gt=start)
+        )
+
+        if conflicting_sessions.count() > 0:
             return True
         return False # no conflict found
         

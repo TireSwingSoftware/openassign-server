@@ -1,9 +1,7 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 import cPickle
-import itertools
 import logging
-import os
 import random
 import re
 import shutil
@@ -11,16 +9,18 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.template import Template, Context
-from django.template.loader import render_to_string
 from django.utils.hashcompat import sha_constructor
 import django.core.exceptions # for ValidationError
 import django.db
 import django.db.models.fields.related
 import django.forms.util # for ValidationError
+from django.db.models.signals import pre_save, post_delete
+from django.dispatch import receiver
+from django.core.cache import cache
 import exceptions
 import facade
-import pr_time
 import storage
+import memcache
 from fields import *
 from pr_services.middleware import get_client_ip
 
@@ -124,6 +124,63 @@ def alters_data(func):
 
     func.alters_data = True
     return func
+
+
+class CachingModelManager(models.Manager):
+    """
+    This class currently only caches individual instances, and only when calling
+    its get() method. It otherwise behaves like a standard django model manager.
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        :param cachefield:      the unique field that the cache key will be generated with,
+                                defaults to 'id'
+        :param cachelife:       cache life in seconds, defaults to 1 hour
+        :lazy_fields_to_cache:  fields that load other remote objects in a lazy fashion
+                                where we want to cache those remote objects also.
+                                great for foreign keys where we want to access the related object and
+                                cache it, although beware that changes to that object will not
+                                invalidate the cached item. A good candidate here is "final_type",
+                                because it won't change.
+        """
+        self._cachefield = kwargs.pop('cachefield', 'id')
+        self._cachelife = kwargs.pop('cachelife', 60*60)
+        self._lazy_fields_to_cache = kwargs.pop('lazy_fields_to_cache', [])
+        self.__logger = None
+
+        super(CachingModelManager, self).__init__(*args, **kwargs)
+
+    @property
+    def _logger(self):
+        """necessary because we don't have self.model when __init__ is called"""
+        if self.__logger is None:
+            self.__logger = logging.getLogger('pr_models.%s.caching_model_manager' % self.model._meta.object_name)
+        return self.__logger
+
+    def get(self, *args, **kwargs):
+        """
+        You must pass get() exactly one keyword argument with the key being the
+        cachefield, and you must not use "__exact". If you do not meet both of these
+        conditions, the cache will not be used and normal django ORM functionality will
+        proceed.
+        """
+        if self._cachefield in kwargs and len(kwargs) == 1:
+            try:
+                ret = cache.get(self.model.generate_cache_key(kwargs[self._cachefield]))
+                if ret is not None:
+                    return ret
+            # memcache doesn't accept some characters. This should be rare, but
+            # if we fail for that reason, just proceed without the cache
+            except memcache.Client.MemcachedKeyCharacterError:
+                self._logger.warning('cache key was too long for memcache')
+
+        ret = super(CachingModelManager, self).select_related(*self._lazy_fields_to_cache).get(*args, **kwargs)
+        for field in self._lazy_fields_to_cache:
+            # access each field just so it loads its remote object,
+            # in case the select_related didn't already do it
+            getattr(ret, field)
+        cache.set(ret.cache_key, ret, self._cachelife)
+        return ret
 
 
 class Versionable(models.Model):
@@ -402,6 +459,10 @@ class PRModel(models.Model):
             return self.final_type.get_object_for_this_type(id=self.id)
         else:
             return self
+
+    @property
+    def cache_key(self):
+        return '%s%sID%dFT%d' % (self._meta.app_label, self._meta.object_name, self.pk, self.final_type_id)
 
     class Meta:
         abstract = True
@@ -1102,8 +1163,7 @@ class Assignment(PRModel):
     ##     pass
 
     def report_status_changes(self, filter=None):
-        # TODO: report the history of status changes for this Assignment only
-        # pass the call to the global Getter, with filter for this ID?
+        # report the history of status changes for this Assignment only
         return self.status_change_log
 
     def save(self, *args, **kwargs):
@@ -1922,7 +1982,36 @@ class Room(OwnedPRModel):
 
         return validation_errors
 
+    
+class SessionResourceTracker(models.Manager):
+    def get_sessions_using_resource(self, resource_id, activeOnly=False):
+        """
+        Retrieve all sessions using the specified resource, possibly only those whose status is active.
 
+        @param resource_id    ID of the specified Resource
+        @param activeOnly     Include only active Sessions?
+        @type  activeOnly     boolean
+
+        @return               queryset iterator of all matching Sessions
+        """
+        
+        # if activeOnly=True, apply a filter that returns only Sessions whose status is active
+        # find all resource-type requirements that use this resource (use existing Resource.session_resource_type_requirements)
+        resource_instance = facade.models.Resource.objects.get(pk=resource_id)
+        its_reqs = resource_instance.session_resource_type_requirements.all()
+        if len(its_reqs) == 0:
+            # this resource is not currently scheduled in any session
+            return facade.models.Session.objects.none()
+
+        related_sessions = facade.models.Session.objects.filter(
+            session_resource_type_requirements__in=its_reqs
+        )
+        if activeOnly:
+            related_sessions = related_sessions.filter(
+                status='active'
+            )
+        return related_sessions
+    
 class Session(OwnedPRModel):
     """
      - template (1 Session to 0..1 SessionTemplate)
@@ -1936,6 +2025,9 @@ class Session(OwnedPRModel):
                                         0..* SessionResourceTypeRequirements)
        [session_resource_type_requirements]
     """
+    # add a custom model manager to easily query for sessions using a given resource
+    resource_tracker = SessionResourceTracker()
+    objects = models.Manager()  # explicitly redefine default model manager
 
     #: default price measured in training units
     default_price = models.PositiveIntegerField()
@@ -1974,10 +2066,10 @@ class Session(OwnedPRModel):
 
     def __unicode__(self):
         if self.session_template:
-            return u'name: %s, template: %s, event name: %s' % (self.name, unicode(self.session_template),
+            return u'name: %s, template: %s, event name: %s' % (self.shortname, unicode(self.session_template),
                                                                 self.event.name)
         else:
-            return u'name: %s, event name: %s' % (self.name, self.event.name)
+            return u'name: %s, event name: %s' % (self.shortname, self.event.name)
 
     def check_status(self):
         """
@@ -2015,15 +2107,17 @@ class Session(OwnedPRModel):
             add_validation_error(validation_errors, 'start',
                 u'Session start time must come before Session end time')
 
-        if not self.start >= datetime(self.event.start.year,
-            self.event.start.month, self.event.start.day):
+        event_start = datetime.combine(self.event.start, time(0, 0, 0))
+        event_end = datetime.combine(self.event.end, time(23, 59, 59))
+        grace_period = timedelta(hours=12)
 
+        if not (self.start >= event_start or
+                event_start - self.start <= grace_period):
             add_validation_error(validation_errors, 'start',
                 u"starting time %s is not on or after event's starting time %s" %\
                 (unicode(self.start), unicode(self.event.start)))
-        if not self.end < (datetime(self.event.end.year,
-            self.event.end.month, self.event.end.day) + timedelta(days=1)):
 
+        if not (self.end <= event_end or self.end - event_end <= grace_period):
             add_validation_error(validation_errors, 'end',
                 u"ending time %s is not before or on event's ending time %s" %\
                 (unicode(self.end), unicode(self.event.end)))
@@ -2340,6 +2434,9 @@ class AuthToken(OwnedPRModel):
     """
     represents a token which uniquely identifies an authenticated session
     """
+    objects = CachingModelManager(cachefield='session_id',\
+        cachelife=60*settings.AUTH_TOKEN_EXPIRATION_INTERVAL,\
+        lazy_fields_to_cache=['domain_affiliation', 'final_type'])
 
     session_id = models.CharField(max_length=32, unique=True, db_index=True)
     domain_affiliation = PRForeignKey('DomainAffiliation', related_name='auth_tokens')
@@ -2358,10 +2455,22 @@ class AuthToken(OwnedPRModel):
     def __unicode__(self):
         return u'%s' % (self.session_id)
 
-    def _get_user(self):
+    @property
+    def user(self):
         return self.domain_affiliation.user
 
-    user = property(_get_user)
+    @property
+    def user_id(self):
+        """Allows us to get the user's PK without loading the User object from the database"""
+        return self.domain_affiliation.user_id
+
+    @property
+    def cache_key(self):
+        return AuthToken.generate_cache_key(self.session_id)
+
+    @staticmethod
+    def generate_cache_key(session_id):
+        return '%s%sSERIAL%s' % (AuthToken._meta.app_label, AuthToken._meta.object_name, session_id)
 
 
 class SingleUseAuthToken(AuthToken):
@@ -3164,5 +3273,34 @@ class CustomAction(PRModel):
 class DBSetting(models.Model):
     name = models.CharField(max_length=127, unique=True)
     pickled_value = models.TextField()
+
+
+# Cache management
+
+@receiver(pre_save, sender=AuthToken)
+def auth_token_save_handler(sender, **kwargs):
+    """
+    When an auth_token is saved, we need to clear the stale one from the cache
+    """
+    if 'instance' in kwargs:
+        instance = kwargs['instance']
+        # this work is not needed for new objects (which lack an ID)
+        if hasattr(instance, 'id') and instance.id is not None:
+            try:
+                # UserManager.relogin() changes the session_id, which means we need to
+                # find the old token, generate its cache_key, and delete that from
+                # the cache.
+                old_token = AuthToken.objects.get(id=instance.id)
+                cache.delete(old_token.cache_key)
+            except AuthToken.DoesNotExist:
+                pass
+        cache.delete(instance.cache_key)
+
+@receiver(post_delete, sender=AuthToken)
+def auth_token_delete_handler(sender, **kwargs):
+    """ on delete, also clear from cache """
+    if 'instance' in kwargs:
+        cache.delete(kwargs['instance'].cache_key)
+
 
 # vim:tabstop=4 shiftwidth=4 expandtab
