@@ -231,4 +231,29 @@ class AssignmentManager(ObjectManager):
 
         return Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['username', 'first_name', 'last_name', 'email'], 'user')
 
+    @service_method
+    def assignments_for_user(self, auth_token, filters=None, fields=None):
+        # apply our filters even if the passed filters is empty
+        if not filters:
+            filters = {'exact' : {'user' : auth_token.user_id}}
+        # apply our fields even if the passed fields is empty
+        if not fields:
+            fields = ['user', 'status', 'task']
+        ret = self.get_filtered(auth_token, filters, fields)
+
+        return Utils.merge_queries(ret, facade.managers.TaskManager(), auth_token, ['name', 'title', 'type', 'description'], 'task')
+
+    @service_method
+    def file_download_assignments_for_user(self, auth_token, filters=None, fields=None):
+        # apply our filters even if the passed filters is empty
+        if not filters:
+            filters = {'exact' : {'user' : auth_token.user_id}}
+        # apply our fields even if the passed fields is empty
+        if not fields:
+            fields = ['user', 'status', 'task']
+        query_set = self.my_django_model.objects.filter(task__final_type__name='file download', user__id=auth_token.user_id)
+        ret = facade.subsystems.Getter(auth_token, self, query_set, fields).results
+
+        return Utils.merge_queries(ret, facade.managers.FileDownloadManager(), auth_token, ['name', 'title', 'type', 'description', 'file_size', 'file_url'], 'task')
+
 # vim:tabstop=4 shiftwidth=4 expandtab
