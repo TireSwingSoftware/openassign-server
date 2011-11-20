@@ -574,8 +574,8 @@ def setup(machine):
         },
         'UserOrgRole' : {
             'c' : True,
-            'r' : ['owner', 'organization', 'organization_name', 'role', 'role_name', 'parent', 'children'],
-            'u' : ['owner', 'organization', 'role', 'parent'],
+            'r' : ['owner', 'organization', 'organization_name', 'role', 'role_name', 'parent', 'children', 'persistent', 'title'],
+            'u' : ['owner', 'organization', 'role', 'parent', 'persistent', 'title'],
             'd' : True,
         },
         'Venue' : {

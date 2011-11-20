@@ -109,7 +109,7 @@ class OrganizationManager(ObjectManager):
 
     @service_method
     def admin_org_user_view(self, auth_token, org):
-        ret = facade.managers.UserOrgRoleManager().get_filtered(auth_token, {'exact' : {'organization' : org}}, ['role', 'owner'])
+        ret = facade.managers.UserOrgRoleManager().get_filtered(auth_token, {'exact' : {'organization' : org}}, ['role', 'owner', 'persistent', 'title'])
 
         ret = Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['first_name', 'last_name', 'email'], 'owner')
 

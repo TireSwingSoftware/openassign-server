@@ -84,9 +84,6 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('pr_services', ['UserOrgRole'])
 
-        # Adding unique constraint on 'UserOrgRole', fields ['owner', 'organization', 'role']
-        db.create_unique('pr_services_userorgrole', ['owner_id', 'organization_id', 'role_id'])
-
         # Adding model 'OrgEmailDomain'
         db.create_table('pr_services_orgemaildomain', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -1700,9 +1697,6 @@ class Migration(SchemaMigration):
         # Removing unique constraint on 'OrgEmailDomain', fields ['email_domain', 'organization', 'role']
         db.delete_unique('pr_services_orgemaildomain', ['email_domain', 'organization_id', 'role_id'])
 
-        # Removing unique constraint on 'UserOrgRole', fields ['owner', 'organization', 'role']
-        db.delete_unique('pr_services_userorgrole', ['owner_id', 'organization_id', 'role_id'])
-
         # Removing unique constraint on 'Organization', fields ['name', 'parent']
         db.delete_unique('pr_services_organization', ['name', 'parent_id'])
 
@@ -3196,7 +3190,7 @@ class Migration(SchemaMigration):
             'url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True'})
         },
         'pr_services.userorgrole': {
-            'Meta': {'unique_together': "(('owner', 'organization', 'role'),)", 'object_name': 'UserOrgRole'},
+            'Meta': {'object_name': 'UserOrgRole'},
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),

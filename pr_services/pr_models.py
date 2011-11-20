@@ -604,9 +604,6 @@ class UserOrgRole(OwnedPRModel):
             self.role = OrgRole.objects.get(default=True)
         super(UserOrgRole, self).save(*args, **kwargs)
 
-    class Meta:
-        unique_together = ('owner', 'organization', 'role')
-
     def delete(self):
         # Prevent deleting persistent slots when a user is
         # disassociated with the slot object.

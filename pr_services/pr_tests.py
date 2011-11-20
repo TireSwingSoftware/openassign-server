@@ -2684,10 +2684,6 @@ class TestUserManager(TestCase):
         self.assertEqual(result.keys(), ['id'])
         result = self.user_org_role_manager.get_filtered(user2_at, {})
         self.assertEqual(len(result), 0)
-        # try to create a duplicate role
-        self.assertRaises(facade.models.ModelDataValidationError,
-            self.user_manager.update, self.admin_token, user.id,
-            {'roles' : {'add' : [{'id' : role.id, 'organization' : org}]}})
         # now let's delete the UserOrgRole
         todel = self.user_org_role_manager.get_filtered(self.admin_token, {})
         self.user_org_role_manager.delete(self.admin_token, todel[0]['id'])
@@ -3687,5 +3683,14 @@ class TestOrgSlots(TestCase):
         result = self._get_user_roles(self.user2)
         self.assertEqual(result[0], self.slot2.role.id)
 
+        some_org = self.organization_manager.create(self.admin_token,
+                "Foo-Bar Legal Associates")
+        some_role = self.org_role_manager.create(self.admin_token,
+                "Paper Pusher")
+        self.user_org_role_manager.create(self.admin_token, some_org.id, some_role.id, {'persistent':True})
+        self.user_org_role_manager.create(self.admin_token, some_org.id, some_role.id, {'persistent':True})
+        self.user_org_role_manager.create(self.admin_token, some_org.id, some_role.id, {'owner':self.user1.id})
+
+        self.assertEquals(len(self._get_user_roles(self.user1)), 1)
 
 # vim:tabstop=4 shiftwidth=4 expandtab
