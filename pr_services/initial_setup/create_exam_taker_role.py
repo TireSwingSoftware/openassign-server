@@ -19,7 +19,7 @@ def setup(machine):
         'Exam' : {
             'c' : False,
             'r' : ['author', 'create_timestamp', 'prerequisite_tasks', 'name',
-                   'description'],
+                   'title', 'description'],
             'u' : [],
             'd' : False,
         },
