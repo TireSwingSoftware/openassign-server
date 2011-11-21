@@ -28,9 +28,9 @@ class UserOrgRoleManager(ObjectManager):
         })
         self.setters.update({
             'owner' : 'set_foreign_key',
-            'organization' : 'set_forbidden', # placeholder
-            'role' : 'set_forbidden', # placeholder
-            'title': 'set_forbidden',
+            'organization' : 'set_forbidden',
+            'role' : 'set_foreign_key',
+            'title': 'set_general',
             'persistent': 'set_general',
             'parent' : 'set_foreign_key',
         })
