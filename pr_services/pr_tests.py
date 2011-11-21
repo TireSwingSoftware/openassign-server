@@ -3678,6 +3678,7 @@ class TestOrgSlots(TestCase):
 
     def test_create(self):
         result = self._get_user_roles(self.user1)
+        self.assertEquals(len(result), 1)
         self.assertEqual(result[0], self.slot1.role.id)
 
         result = self._get_user_roles(self.user2)
@@ -3687,10 +3688,13 @@ class TestOrgSlots(TestCase):
                 "Foo-Bar Legal Associates")
         some_role = self.org_role_manager.create(self.admin_token,
                 "Paper Pusher")
-        self.user_org_role_manager.create(self.admin_token, some_org.id, some_role.id, {'persistent':True})
+        slot1 = self.user_org_role_manager.create(self.admin_token, some_org.id, some_role.id, {'persistent':True})
         self.user_org_role_manager.create(self.admin_token, some_org.id, some_role.id, {'persistent':True})
         self.user_org_role_manager.create(self.admin_token, some_org.id, some_role.id, {'owner':self.user1.id})
 
-        self.assertEquals(len(self._get_user_roles(self.user1)), 1)
+        self.assertEquals(len(self._get_user_roles(self.user1)), 2)
+        slot1reload = facade.models.UserOrgRole.objects.get(id=slot1.id)
+        self.assertEquals(slot1.persistent, True)
+        self.assertEquals(slot1.persistent, slot1reload.persistent)
 
 # vim:tabstop=4 shiftwidth=4 expandtab

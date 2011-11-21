@@ -56,6 +56,7 @@ class UserOrgRoleManager(ObjectManager):
             role = self._find_by_id(role, facade.models.OrgRole))
 
         facade.subsystems.Setter(auth_token, self, user_org_role, optional_attributes)
+        user_org_role.save()
 
         self.authorizer.check_create_permissions(auth_token, user_org_role)
         return user_org_role
