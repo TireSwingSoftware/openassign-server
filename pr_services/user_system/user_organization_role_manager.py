@@ -4,6 +4,7 @@ UserOrgRole manager class
 
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
+from pr_services.utils import Utils
 import facade
 
 class UserOrgRoleManager(ObjectManager):
@@ -50,13 +51,25 @@ class UserOrgRoleManager(ObjectManager):
         if optional_attributes is None:
             optional_attributes = {}
 
-        user_org_role = self.my_django_model.objects.create(\
-            organization = self._find_by_id(organization, facade.models.Organization),\
+        user_org_role = self.my_django_model.objects.create(
+            organization = self._find_by_id(organization, facade.models.Organization),
             role = self._find_by_id(role, facade.models.OrgRole))
 
         facade.subsystems.Setter(auth_token, self, user_org_role, optional_attributes)
 
         self.authorizer.check_create_permissions(auth_token, user_org_role)
         return user_org_role
+
+    @service_method
+    def user_org_role_detail_view(self, auth_token, filters=None, fields=None):
+        """
+        Ignores the "fields" argument.
+        """
+        filters = filters or {}
+        ret = self.get_filtered(auth_token, filters, ['role', 'owner', 'persistent', 'title'])
+
+        ret = Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['first_name', 'last_name', 'email'], 'owner')
+
+        return Utils.merge_queries(ret, facade.managers.OrgRoleManager(), auth_token, ['name'], 'role')
 
 # vim:tabstop=4 shiftwidth=4 expandtab

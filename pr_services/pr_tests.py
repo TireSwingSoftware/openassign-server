@@ -1982,7 +1982,7 @@ class TestOrganizationManager(TestCase):
                 self.assertEquals(org['parent'], org1.id)
 
         # make sure we can read the users
-        ret = self.organization_manager.admin_org_user_view(self.admin_token, org1.id)
+        ret = self.user_org_role_manager.user_org_role_detail_view(self.admin_token, {'exact' : {'organization' : org1.id}})
 
         self.assertEquals(len(ret), 1)
         user = ret[0]

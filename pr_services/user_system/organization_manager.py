@@ -107,12 +107,4 @@ class OrganizationManager(ObjectManager):
         
         return Utils.merge_queries(ret, facade.managers.UserOrgRoleManager(), auth_token, ['role_name', 'role', 'owner'], 'user_org_roles')
 
-    @service_method
-    def admin_org_user_view(self, auth_token, org):
-        ret = facade.managers.UserOrgRoleManager().get_filtered(auth_token, {'exact' : {'organization' : org}}, ['role', 'owner', 'persistent', 'title'])
-
-        ret = Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['first_name', 'last_name', 'email'], 'owner')
-
-        return Utils.merge_queries(ret, facade.managers.OrgRoleManager(), auth_token, ['name'], 'role')
-
 # vim:tabstop=4 shiftwidth=4 expandtab
