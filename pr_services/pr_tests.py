@@ -2776,7 +2776,7 @@ class TestUserManager(TestCase):
                 self.assertTrue('organization_name' in user['owned_userorgroles'][0])
                 self.assertEqual(user['owned_userorgroles'][0]['organization_name'], org1.name)
 
-        ret = self.user_manager.admin_users_view(self.admin_token, [jerk.id])
+        ret = self.user_manager.admin_users_view(self.admin_token, {'exact': {'id' :jerk.id}})
         self.assertEquals(len(ret), 1)
         self.assertTrue('groups' in ret[0])
 

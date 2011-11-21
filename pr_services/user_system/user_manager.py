@@ -1069,8 +1069,11 @@ class UserManager(ObjectManager):
             storage.UserPhotoStorage(), auth_token, user_id)
 
     @service_method
-    def admin_users_view(self, auth_token, pks=None):
-        filters = {} if pks == None else {'member' : {'id' : pks}}
+    def admin_users_view(self, auth_token, filters=None, fields=None):
+        """
+        ignores fields
+        """
+        filters = filters or {}
         ret = self.get_filtered(auth_token, filters, ['alleged_organization', 'default_username_and_domain', 'email', 'first_name', 'last_name', 'title', 'phone', 'status', 'groups', 'owned_userorgroles'])
 
         ret = Utils.merge_queries(ret, facade.managers.UserOrgRoleManager(), auth_token, ['role', 'role_name', 'organization', 'organization_name'], 'owned_userorgroles')
