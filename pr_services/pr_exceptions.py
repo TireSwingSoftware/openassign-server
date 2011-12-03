@@ -15,7 +15,7 @@ class PrException(Exception):
     """
 
     #: error code
-    error_code = 1 
+    error_code = 1
     #: error message
     error_msg = u'unknown error'
     #: dictionary of details for the error
@@ -83,10 +83,10 @@ class FieldNameNotFoundException(PrException):
 class OperationNotPermittedException(PrException):
     """
     operation not permitted
-    
+
     This should be thrown for things like trying
     to set fields that are not settable.
-    
+
     The permission denied exception is for operations
     that could be allowed, given a user with
     enough privileges.
@@ -188,7 +188,7 @@ class RangeTakesTwoArgsException(PrException):
 class InternalErrorException(PrException):
     """
     internal error
-    
+
     The system has reached an unacceptable state outside of its design
     parameters if this exception is raised -- it's like an assertion error.
     It can be initialized with a textual description of the condition.
@@ -223,7 +223,7 @@ class InvalidFilterOperatorException(PrException):
 class UploadUserMismatchException(PrException):
     """
     upload user mismatch
-    
+
     This exception is raised when one user uploads a CSV file, and another user
     tries to call the import_manager to import that file.
     """
@@ -582,7 +582,7 @@ class InvalidSessionEvaluationCodeException(PrException):
     error_msg = "Session evaluation code is not valid"
 
 class UnsupportedScormVersionException(PrException):
-    """ 
+    """
     The SCORM archive being examined is for an unsupported version of SCORM.
     """
 
@@ -593,7 +593,7 @@ class UnsupportedScormVersionException(PrException):
         self.error_msg += " (%s). Please use SCORM v1.2." % unsupported_version
 
 class ArchiveMissingFileException(PrException):
-    """ 
+    """
     The SCORM archive being examined does not contain all of the files in its manifest.
     """
 
@@ -633,7 +633,7 @@ class ImportException(PrException):
                           in the import file.
         """
         self.details = { 'messages' : messages } if messages else {}
-        
+
 class InvalidFilterException(PrException):
     """
     An invalid filter structure was passed to the object
@@ -663,10 +663,10 @@ class InvalidInputException(PrException):
         self.details = { 'messages' : messages } if messages else {}
 
 class PasswordPolicyViolation(PrException):
-    
+
     error_code = 126
     error_msg = u"password policy violation"
-    
+
     def __init__(self, messages=None):
         self.details = { 'messages' : messages } if messages else {}
 
@@ -683,7 +683,7 @@ class DuplicateAssignmentException(PrException):
             self.new_assignment = new_assignment
 
 class NotLoggedInException(PrException):
-    
+
     error_code = 128
     error_msg = u"not logged in"
 
