@@ -966,7 +966,7 @@ class Authorizer(object):
 
         if not isinstance(actee, facade.models.ProductLine):
             raise exceptions.InvalidActeeTypeException()
-            
+
         if auth_token.user_id in actee.managers.values_list('id', flat = True):
             return True
         else:
