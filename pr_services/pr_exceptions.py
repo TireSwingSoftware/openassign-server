@@ -52,11 +52,13 @@ class PrException(Exception):
         """
         return self.details
 
-    def __unicode__(self):
+    def __str__(self):
         s = u'error %d: %s' % (self.error_code, self.error_msg)
         if len(self.details) != 0:
             s += u', details=[%s]' % (self.details)
         return s
+
+    __unicode__ = __str__
 
 class NotImplementedException(PrException):
     """
