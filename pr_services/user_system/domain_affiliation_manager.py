@@ -10,32 +10,30 @@ class DomainAffiliationManager(ObjectManager):
     """
     Manage domain affiliations in the Power Reg system
     """
-
+    GETTERS = {
+        'default': 'get_general',
+        'domain': 'get_foreign_key',
+        'may_log_me_in': 'get_general',
+        'user': 'get_foreign_key',
+        'username': 'get_general',
+    }
+    SETTERS = {
+        'default': 'set_general',
+        'domain': 'set_foreign_key',
+        'may_log_me_in': 'set_general',
+        'user': 'set_foreign_key',
+        'username': 'set_general',
+    }
     def __init__(self):
         """ constructor """
-
         ObjectManager.__init__(self)
-        self.getters.update({
-            'default' : 'get_general',
-            'domain' : 'get_foreign_key',
-            'may_log_me_in' : 'get_general',
-            'user' : 'get_foreign_key',
-            'username' : 'get_general',
-        })
-        self.setters.update({
-            'default' : 'set_general',
-            'domain' : 'set_foreign_key',
-            'may_log_me_in' : 'set_general',
-            'user' : 'set_foreign_key',
-            'username' : 'set_general',
-        })
         self.my_django_model = facade.models.DomainAffiliation
 
     @service_method
     def create(self, auth_token, user, domain, username, optional_attributes = None):
         """
         Create a new DomainAffiliation
-        
+
         @param user
         @param optional_attributes  Optional dict which only supports one value indexed as 'authentication_ip'
 

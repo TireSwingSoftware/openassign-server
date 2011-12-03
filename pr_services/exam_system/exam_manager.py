@@ -27,20 +27,20 @@ class ExamManager(TaskManager):
      * *title* -- Title of the exam.
     """
 
+    GETTERS = {
+        'name': 'get_general',
+        'passing_score': 'get_general',
+        'question_pools': 'get_many_to_one',
+    }
+    SETTERS = {
+        'name': 'set_general',
+        'passing_score': 'set_general',
+        'question_pools': 'set_many',
+    }
     def __init__(self):
         """constructor"""
 
         super(ExamManager, self).__init__()
-        self.getters.update({
-            'name': 'get_general',
-            'passing_score': 'get_general',
-            'question_pools': 'get_many_to_one',
-        })
-        self.setters.update({
-            'name': 'set_general',
-            'passing_score': 'set_general',
-            'question_pools': 'set_many',
-        })
         self.my_django_model = facade.models.Exam
 
     @service_method

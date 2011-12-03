@@ -6,21 +6,20 @@ class ForumPostAttachmentManager(ObjectManager):
     """
     Manage Attachments in the Power Reg Forum system
     """
-
+    GETTERS = {
+        'description': 'get_general',
+        'name': 'get_general',
+        'post': 'get_foreign_key',
+    }
+    SETTERS = {
+        'description': 'set_general',
+        'name': 'set_general',
+        'post': 'set_foreign_key',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'description' : 'get_general',
-            'name' : 'get_general',
-            'post' : 'get_foreign_key',
-        })
-        self.setters.update({
-            'description' : 'set_general',
-            'name' : 'set_general',
-            'post' : 'set_foreign_key',
-        })
         self.my_django_model = facade.models.ForumPostAttachment
         self.setter = facade.subsystems.Setter
 

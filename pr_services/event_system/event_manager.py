@@ -13,52 +13,52 @@ class EventManager(ObjectManager):
     Manage Events in the Power Reg system
     """
 
+    GETTERS = {
+        'description': 'get_general',
+        'end': 'get_time',
+        'event_template': 'get_foreign_key',
+        'external_reference': 'get_general',
+        'facebook_message': 'get_general',
+        'lag_time': 'get_general',
+        'lead_time': 'get_general',
+        'name': 'get_general',
+        'notify_cfgs': 'get_many_to_one',
+        'organization': 'get_foreign_key',
+        'owner': 'get_foreign_key',
+        'product_line': 'get_foreign_key',
+        'region': 'get_foreign_key',
+        'sessions': 'get_many_to_one',
+        'start': 'get_time',
+        'status': 'get_status_from_event',
+        'title': 'get_general',
+        'twitter_message': 'get_general',
+        'url': 'get_general',
+        'venue': 'get_foreign_key',
+    }
+    SETTERS = {
+        'description': 'set_general',
+        'end': 'set_time',
+        'event_template': 'set_foreign_key',
+        'external_reference': 'set_general',
+        'facebook_message': 'set_general',
+        'lag_time': 'set_general',
+        'lead_time': 'set_general',
+        'name': 'set_general',
+        'notify_cfgs': 'set_many',
+        'organization': 'set_foreign_key',
+        'owner': 'set_foreign_key',
+        'product_line': 'set_foreign_key',
+        'region': 'set_foreign_key',
+        'start': 'set_time',
+        'title': 'set_general',
+        'twitter_message': 'set_general',
+        'url': 'set_general',
+        'venue': 'set_foreign_key',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.setters.update({
-            'name' : 'set_general',
-            'region' : 'set_foreign_key',
-            'event_template' : 'set_foreign_key',
-            'title' : 'set_general',
-            'description' : 'set_general',
-            'organization' : 'set_foreign_key',
-            'owner' : 'set_foreign_key',
-            'lag_time' : 'set_general',
-            'lead_time' : 'set_general',
-            'start' : 'set_time',
-            'end' : 'set_time',
-            'venue' : 'set_foreign_key',
-            'product_line' : 'set_foreign_key',
-            'notify_cfgs' : 'set_many',
-            'external_reference' : 'set_general',
-            'url' : 'set_general',
-            'facebook_message' : 'set_general',
-            'twitter_message' : 'set_general',
-        })
-        self.getters.update({
-            'event_template' : 'get_foreign_key',
-            'organization' : 'get_foreign_key',
-            'name' : 'get_general',
-            'region' : 'get_foreign_key',
-            'title' : 'get_general',
-            'description' : 'get_general',
-            'owner' : 'get_foreign_key',
-            'lag_time' : 'get_general',
-            'lead_time' : 'get_general',
-            'start' : 'get_time',
-            'end' : 'get_time',
-            'sessions' : 'get_many_to_one',
-            'notify_cfgs' : 'get_many_to_one',
-            'venue' : 'get_foreign_key',
-            'product_line' : 'get_foreign_key',
-            'external_reference' : 'get_general',
-            'status' : 'get_status_from_event',
-            'url' : 'get_general',
-            'facebook_message' : 'get_general',
-            'twitter_message' : 'get_general',
-        })
         self.my_django_model = facade.models.Event
 
     @service_method

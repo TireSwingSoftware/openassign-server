@@ -6,21 +6,20 @@ class CustomActionManager(ObjectManager):
     """
     Manage CustomAction
     """
-
+    GETTERS = {
+        'description': 'get_general',
+        'function_name': 'get_general',
+        'name': 'get_general',
+    }
+    SETTERS = {
+        'description': 'set_general',
+        'function_name': 'set_general',
+        'name': 'set_general',
+    }
     def __init__(self):
         """constructor"""
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'name' : 'get_general',
-            'description' : 'get_general',
-            'function_name' : 'get_general',
-        })
-        self.setters.update({
-            'name' : 'set_general',
-            'description' : 'set_general',
-            'function_name' : 'set_general',
-        })
         self.my_django_model = facade.models.CustomAction
         self.setter = facade.subsystems.Setter
 

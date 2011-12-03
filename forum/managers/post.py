@@ -6,20 +6,19 @@ class ForumPostManager(ObjectManager):
     """
     Manage Posts in the Power Reg system
     """
-
+    GETTERS = {
+        'attachments': 'get_many_to_many',
+        'body': 'get_general',
+        'topic': 'get_foreign_key',
+    }
+    SETTERS = {
+        'body': 'set_general',
+        'topic': 'set_foreign_key',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'topic' : 'get_foreign_key',
-            'body' : 'get_general',
-            'attachments' : 'get_many_to_many',
-        })
-        self.setters.update({
-            'topic' : 'set_foreign_key',
-            'body' : 'set_general',
-        })
         self.my_django_model = facade.models.ForumPost
         self.setter = facade.subsystems.Setter
 

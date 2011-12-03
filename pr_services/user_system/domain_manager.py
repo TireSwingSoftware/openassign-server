@@ -11,28 +11,26 @@ class DomainManager(ObjectManager):
     """
     Manage domains in the Power Reg system
     """
-
+    GETTERS = {
+        'authentication_ip' : 'get_general',
+        'name' : 'get_general',
+        'users' : 'get_many_to_one',
+    }
+    SETTERS = {
+        'authentication_ip' : 'set_general',
+        'authentication_password_hash' : 'set_forbidden', # placeholder
+        'name' : 'set_general',
+    }
     def __init__(self):
         """ constructor """
-
         ObjectManager.__init__(self)
-        self.getters.update({
-            'authentication_ip' : 'get_general',
-            'name' : 'get_general',
-            'users' : 'get_many_to_one',
-        })
-        self.setters.update({
-            'authentication_ip' : 'set_general',
-            'authentication_password_hash' : 'set_forbidden', # placeholder
-            'name' : 'set_general',
-        })
         self.my_django_model = facade.models.Domain
 
     @service_method
     def create(self, auth_token, name, optional_attributes = None):
         """
         Create a new Domain
-        
+
         @param name                 name of the Domain
         @param optional_attributes  Optional dict which only supports one value indexed as 'authentication_ip'
 

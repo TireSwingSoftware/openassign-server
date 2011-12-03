@@ -6,22 +6,21 @@ class ForumManager(ObjectManager):
     """
     Manage Forums in the Power Reg system
     """
-
+    GETTERS = {
+        'category' : 'get_many_to_many',
+        'description' : 'get_general',
+        'name' : 'get_general',
+        'topics' : 'get_many_to_many',
+    }
+    SETTERS = {
+        'category' : 'set_many',
+        'description' : 'set_general',
+        'name' : 'set_general',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'category' : 'get_many_to_many',
-            'description' : 'get_general',
-            'name' : 'get_general',
-            'topics' : 'get_many_to_many',
-        })
-        self.setters.update({
-            'category' : 'set_many',
-            'description' : 'set_general',
-            'name' : 'set_general',
-        })
         self.my_django_model = facade.models.Forum
         self.setter = facade.subsystems.Setter
 

@@ -10,21 +10,20 @@ class RegionManager(ObjectManager):
     """
     Manage Regions in the Power Reg system
     """
-
+    SETTERS = {
+        'events': 'set_many',
+        'name': 'set_general',
+        'venues': 'set_many',
+    }
+    GETTERS = {
+        'events': 'get_many_to_one',
+        'name': 'get_general',
+        'venues': 'get_many_to_one',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.setters.update({
-            'name' : 'set_general',
-            'events' : 'set_many',
-            'venues' : 'set_many',
-        })
-        self.getters.update({
-            'name' : 'get_general',
-            'events' : 'get_many_to_one',
-            'venues' : 'get_many_to_one',
-        })
         self.my_django_model = facade.models.Region
 
     @service_method

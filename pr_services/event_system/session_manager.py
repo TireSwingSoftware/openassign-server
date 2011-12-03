@@ -27,56 +27,54 @@ class SessionManager(ObjectManager):
     SessionUserRoleRequirement.
 
     """
-
+    GETTERS = {
+        'audience': 'get_general',
+        'confirmed': 'get_general',
+        'default_price': 'get_general',
+        'description': 'get_general',
+        'end': 'get_time',
+        'evaluation': 'get_foreign_key',
+        'event': 'get_foreign_key',
+        'fullname': 'get_general',
+        'lead_time': 'get_general',
+        'modality': 'get_general',
+        'paypal_url': 'get_paypal_url_from_session',
+        'room': 'get_foreign_key',
+        'session_resource_type_requirements': 'get_many_to_one',
+        'session_template': 'get_foreign_key',
+        'session_user_role_requirements': 'get_many_to_one',
+        'session_user_roles': 'get_many_to_many',
+        'shortname': 'get_general',
+        'start': 'get_time',
+        'status': 'get_general',
+        'title': 'get_general',
+        'url': 'get_general',
+    }
+    SETTERS = {
+        'audience': 'set_general',
+        'confirmed': 'set_general',
+        'default_price': 'set_general',
+        'description': 'set_general',
+        'end': 'set_time',
+        'event': 'set_foreign_key',
+        'fullname': 'set_general',
+        'lead_time': 'set_general',
+        'modality': 'set_general',
+        'room': 'set_foreign_key',
+        'session_resource_type_requirements': 'set_many',
+        'session_template': 'set_foreign_key',
+        'session_user_role_requirements': 'set_many',
+        'session_user_roles': 'set_many',
+        'shortname': 'set_general',
+        'start': 'set_time',
+        'status': 'set_general',
+        'title': 'set_general',
+        'url': 'set_general',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update( {
-            'audience' : 'get_general',
-            'confirmed' : 'get_general',
-            'session_template' : 'get_foreign_key',
-            'default_price' : 'get_general',
-            'end' : 'get_time',
-            'evaluation' : 'get_foreign_key',
-            'fullname' : 'get_general',
-            'lead_time' : 'get_general',
-            'modality' : 'get_general',
-            'paypal_url' : 'get_paypal_url_from_session',
-            'shortname' : 'get_general',
-            'start' : 'get_time',
-            'status' : 'get_general',
-            'title' : 'get_general',
-            'url' : 'get_general',
-            'description' : 'get_general',
-            'room' : 'get_foreign_key',
-            'event' : 'get_foreign_key',
-            'session_user_roles' : 'get_many_to_many',
-            'session_user_role_requirements' : 'get_many_to_one',
-            'session_resource_type_requirements' : 'get_many_to_one',
-        } )
-        #: Dictionary of attribute names and the functions used to set them
-        self.setters.update({
-            'audience' : 'set_general',
-            'confirmed' : 'set_general',
-            'session_template' : 'set_foreign_key',
-            'default_price' : 'set_general',
-            'end' : 'set_time',
-            'fullname' : 'set_general',
-            'lead_time' : 'set_general',
-            'modality' : 'set_general',
-            'shortname' : 'set_general',
-            'start' : 'set_time',
-            'status' : 'set_general',
-            'title' : 'set_general',
-            'url' : 'set_general',
-            'description' : 'set_general',
-            'room' : 'set_foreign_key',
-            'event' : 'set_foreign_key',
-            'session_user_roles' : 'set_many',
-            'session_user_role_requirements' : 'set_many',
-            'session_resource_type_requirements' : 'set_many',
-        })
         self.my_django_model = facade.models.Session
         self.session_user_role_requirement_manager = facade.managers.SessionUserRoleRequirementManager()
         self.session_resource_type_requirement_manager = facade.managers.SessionResourceTypeRequirementManager()

@@ -16,32 +16,33 @@ class CredentialTypeManager(ObjectManager):
     description   description of the credential_type
     </pre>
     """
+    GETTERS = {
+        'description': 'get_general',
+        'min_required_tasks': 'get_general',
+        'name': 'get_general',
+        'prerequisite_credential_types': 'get_many_to_many',
+        'required_achievements': 'get_many_to_many',
+    }
+
+    SETTERS = {
+        'description': 'set_general',
+        'min_required_tasks': 'set_general',
+        'name': 'set_general',
+        'prerequisite_credential_types': 'set_many',
+        'required_achievements': 'set_many',
+    }
 
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'description' : 'get_general',
-            'name' : 'get_general',
-            'prerequisite_credential_types' : 'get_many_to_many',
-            'required_achievements' : 'get_many_to_many',
-            'min_required_tasks' : 'get_general',
-        })
-        self.setters.update({
-            'description' : 'set_general',
-            'name' : 'set_general',
-            'prerequisite_credential_types' : 'set_many',
-            'required_achievements' : 'set_many',
-            'min_required_tasks' : 'set_general',
-        })
         self.my_django_model = facade.models.CredentialType
 
     @service_method
     def create(self, auth_token, name, description):
         """
         Create a new credential_type
-        
+
         @param name                name of the credential_type
         @param description         description of the credential_type
         @return                    a reference to the newly created credential_type

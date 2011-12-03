@@ -21,21 +21,21 @@ class FormPageManager(ObjectManager):
      * *form_widgets* -- FormWidget objects that belong to this photo
 
     """
+    GETTERS = {
+        'exam': 'get_foreign_key',
+        'form_widgets': 'get_many_to_one',
+        'number': 'get_general',
+        'photo': 'get_photo_url',
+    }
+    SETTERS = {
+        'exam': 'set_foreign_key',
+        'form_widgets': 'set_many',
+        'number': 'set_general',
+    }
     def __init__(self):
         """Constructor."""
 
         super(FormPageManager, self).__init__()
-        self.getters.update({
-            'exam' : 'get_foreign_key',
-            'form_widgets' : 'get_many_to_one',
-            'number' : 'get_general',
-            'photo' : 'get_photo_url',
-        })
-        self.setters.update({
-            'exam' : 'set_foreign_key',
-            'form_widgets' : 'set_many',
-            'number' : 'set_general',
-        })
         self.my_django_model = facade.models.FormPage
 
     @service_method

@@ -6,24 +6,23 @@ class ForumTopicManager(ObjectManager):
     """
     Manage Topics in the Power Reg system
     """
-
+    GETTERS = {
+        'closed': 'get_general',
+        'forum': 'get_foreign_key',
+        'name': 'get_general',
+        'posts': 'get_many_to_many',
+        'sticky': 'get_general',
+    }
+    SETTERS = {
+        'closed': 'set_general',
+        'forum': 'set_foreign_key',
+        'name': 'set_general',
+        'sticky': 'set_general',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'closed' : 'get_general',
-            'forum' : 'get_foreign_key',
-            'name' : 'get_general',
-            'posts' : 'get_many_to_many',
-            'sticky' : 'get_general',
-        })
-        self.setters.update({
-            'closed' : 'set_general',
-            'forum' : 'set_foreign_key',
-            'name' : 'set_general',
-            'sticky' : 'set_general',
-        })
         self.my_django_model = facade.models.ForumTopic
         self.setter = facade.subsystems.Setter
 

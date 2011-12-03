@@ -12,24 +12,22 @@ class RoomManager(ObjectManager):
 
     This class manages physical addresses.
     """
-
+    GETTERS = {
+        'capacity': 'get_general',
+        'name': 'get_general',
+        'venue': 'get_foreign_key',
+        'venue_address': 'get_general',
+        'venue_name': 'get_general',
+    }
+    SETTERS = {
+        'capacity': 'set_general',
+        'name': 'set_general',
+        'venue': 'set_foreign_key',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        #: Dictionary of attribute names and the functions used to get them
-        self.getters.update({
-            'name' : 'get_general',
-            'capacity' : 'get_general',
-            'venue' : 'get_foreign_key',
-            'venue_name' : 'get_general',
-            'venue_address' : 'get_general',
-        })
-        self.setters.update({
-            'venue' : 'set_foreign_key',
-            'name' : 'set_general',
-            'capacity' : 'set_general',
-        })
         self.my_django_model = facade.models.Room
 
     @service_method

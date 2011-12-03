@@ -11,33 +11,33 @@ class ProductManager(ObjectManager):
     Manage Products in the Power Reg system
     """
 
+    GETTERS = {
+        'cost': 'get_general',
+        'custom_actions': 'get_many_to_many',
+        'description': 'get_general',
+        'display_order': 'get_general',
+        'inventory': 'get_inventory_from_product',
+        'name': 'get_general',
+        'price': 'get_general',
+        'sku': 'get_general',
+        'starting_quantity': 'get_general',
+        'training_units': 'get_general',
+    }
+    SETTERS = {
+        'cost': 'set_general',
+        'custom_actions': 'set_many',
+        'description': 'set_general',
+        'display_order': 'set_general',
+        'name': 'set_general',
+        'price': 'set_general',
+        'sku': 'set_general',
+        'starting_quantity': 'set_general',
+        'training_units': 'set_general',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'custom_actions' : 'get_many_to_many',
-            'description' : 'get_general',
-            'display_order' : 'get_general',
-            'inventory' : 'get_inventory_from_product',
-            'cost' : 'get_general',
-            'name' : 'get_general',
-            'price' : 'get_general',
-            'sku' : 'get_general',
-            'starting_quantity' : 'get_general',
-            'training_units' : 'get_general',
-        })
-        self.setters.update({
-            'description' : 'set_general',
-            'display_order' : 'set_general',
-            'cost' : 'set_general',
-            'name' : 'set_general',
-            'price' : 'set_general',
-            'sku' : 'set_general',
-            'starting_quantity' : 'set_general',
-            'training_units' : 'set_general',
-            'custom_actions' : 'set_many',
-        })
         self.my_django_model = facade.models.Product
 
     @service_method
@@ -45,7 +45,7 @@ class ProductManager(ObjectManager):
             optional_attributes=None):
         """
         Create a new Product
-        
+
         @param sku                              SKU, up to 32 characters
         @param name                             name of the Product, up to 127 characters
         @param description                      description, text field
@@ -72,10 +72,10 @@ class ProductManager(ObjectManager):
     def get_discounted_price(self, auth_token, product, promo_code):
         """
         Get the best discount currently available for a Product given a promo_code
-        
+
         @param product    Foreign key for a Product
         @param promo_code Promotional code, not case sensitive
-        
+
         @return           Discounted price, if any
         """
 

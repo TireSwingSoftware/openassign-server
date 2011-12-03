@@ -36,58 +36,57 @@ class QuestionManager(ObjectManager):
      * *user* -- User who is being evaluated (for ratings).
      * *widget* -- Widget used to display this question.
     """
-
+    GETTERS = {
+        'answers': 'get_many_to_one',
+        'help_text': 'get_general',
+        'label': 'get_general',
+        'max_answers': 'get_general',
+        'min_answers': 'get_general',
+        'max_length': 'get_general',
+        'min_length': 'get_general',
+        'max_value': 'get_general',
+        'min_value': 'get_general',
+        'name': 'get_general',
+        'order': 'get_general',
+        'question_pool': 'get_foreign_key',
+        'question_type': 'get_general',
+        'rejoinder': 'get_general',
+        'required': 'get_general',
+        'responses': 'get_many_to_one',
+        'text_regex': 'get_general',
+        'text_response': 'get_general',
+        'text_response_label': 'get_general',
+        'user': 'get_foreign_key',
+        'widget': 'get_general',
+    }
+    SETTERS = {
+        'answers': 'set_many',
+        'answers': 'set_many',
+        'help_text': 'set_general',
+        'label': 'set_general',
+        'max_answers': 'set_general',
+        'min_answers': 'set_general',
+        'max_length': 'set_general',
+        'min_length': 'set_general',
+        'max_value': 'set_general',
+        'min_value': 'set_general',
+        'name': 'set_general',
+        'order': 'set_general',
+        'question_pool': 'set_foreign_key',
+        'question_type': 'set_general',
+        'rejoinder': 'set_general',
+        'required': 'set_general',
+        'responses': 'set_many',
+        'text_regex': 'set_general',
+        'text_response': 'set_general',
+        'text_response_label': 'set_general',
+        'user': 'set_foreign_key',
+        'widget': 'set_general',
+    }
     def __init__(self):
         """Constructor."""
 
         super(QuestionManager, self).__init__()
-        self.getters.update({
-            'answers': 'get_many_to_one',
-            'help_text': 'get_general',
-            'label': 'get_general',
-            'max_answers': 'get_general',
-            'min_answers': 'get_general',
-            'max_length': 'get_general',
-            'min_length': 'get_general',
-            'max_value': 'get_general',
-            'min_value': 'get_general',
-            'name': 'get_general',
-            'order': 'get_general',
-            'question_pool': 'get_foreign_key',
-            'question_type': 'get_general',
-            'rejoinder': 'get_general',
-            'required': 'get_general',
-            'responses': 'get_many_to_one',
-            'text_regex': 'get_general',
-            'text_response': 'get_general',
-            'text_response_label': 'get_general',
-            'user': 'get_foreign_key',
-            'widget': 'get_general',
-        })
-        self.setters.update({
-            'answers': 'set_many',
-            'answers': 'set_many',
-            'help_text': 'set_general',
-            'label': 'set_general',
-            'max_answers': 'set_general',
-            'min_answers': 'set_general',
-            'max_length': 'set_general',
-            'min_length': 'set_general',
-            'max_value': 'set_general',
-            'min_value': 'set_general',
-            'name': 'set_general',
-            'order': 'set_general',
-            'question_pool': 'set_foreign_key',
-            'question_type': 'set_general',
-            'rejoinder': 'set_general',
-            'required': 'set_general',
-            'responses': 'set_many',
-            'text_regex': 'set_general',
-            'text_response': 'set_general',
-            'text_response_label': 'set_general',
-            'user': 'set_foreign_key',
-            'widget': 'set_general',
-        })
         self.my_django_model = facade.models.Question
 
     @service_method
@@ -95,7 +94,7 @@ class QuestionManager(ObjectManager):
                optional_parameters=None):
         """
         Create a new question.
-        
+
         :param auth_token:          The authentication token of the acting user
         :type auth_token:           pr_services.models.AuthToken
         :param question_pool_id:    primary key of question pool containing this question.
@@ -142,7 +141,7 @@ class QuestionManager(ObjectManager):
 
         if optional_parameters is None:
             optional_parameters = {}
-            
+
         question_pool = self._find_by_id(question_pool_id, facade.models.QuestionPool)
 
         q = self.my_django_model(question_pool=question_pool,

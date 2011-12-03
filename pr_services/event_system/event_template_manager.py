@@ -11,41 +11,40 @@ class EventTemplateManager(ObjectManager):
     """
     Manage EventTemplates in the Power Reg system
     """
-
+    SETTERS = {
+        'description': 'set_general',
+        'external_reference': 'set_general',
+        'facebook_message': 'set_general',
+        'lag_time': 'set_general',
+        'lead_time': 'set_general',
+        'name_prefix': 'set_general',
+        'notify_cfgs': 'set_many',
+        'organization': 'set_foreign_key',
+        'product_line': 'set_foreign_key',
+        'title': 'set_general',
+        'twitter_message': 'set_general',
+        'url': 'set_general',
+    }
+    GETTERS = {
+        'description': 'get_general',
+        'events': 'get_many_to_one',
+        'external_reference': 'get_general',
+        'facebook_message': 'get_general',
+        'lag_time': 'get_general',
+        'lead_time': 'get_general',
+        'name_prefix': 'get_general',
+        'notify_cfgs': 'get_many_to_one',
+        'organization': 'get_foreign_key',
+        'product_line': 'get_foreign_key',
+        'session_templates': 'get_many_to_one',
+        'title': 'get_general',
+        'twitter_message': 'get_general',
+        'url': 'get_general',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.setters.update({
-            'description' : 'set_general',
-            'external_reference' : 'set_general',
-            'facebook_message' : 'set_general',
-            'lag_time' : 'set_general',
-            'lead_time' : 'set_general',
-            'name_prefix' : 'set_general',
-            'notify_cfgs' : 'set_many',
-            'organization' : 'set_foreign_key',
-            'product_line' : 'set_foreign_key',
-            'title' : 'set_general',
-            'twitter_message' : 'set_general',
-            'url' : 'set_general',
-        })
-        self.getters.update({
-            'description' : 'get_general',
-            'external_reference' : 'get_general',
-            'facebook_message' : 'get_general',
-            'lag_time' : 'get_general',
-            'lead_time' : 'get_general',
-            'name_prefix' : 'get_general',
-            'notify_cfgs' : 'get_many_to_one',
-            'organization' : 'get_foreign_key',
-            'product_line' : 'get_foreign_key',
-            'session_templates' : 'get_many_to_one',
-            'title' : 'get_general',
-            'twitter_message' : 'get_general',
-            'url' : 'get_general',
-            'events' : 'get_many_to_one',
-        })
         self.my_django_model = facade.models.EventTemplate
 
     @service_method

@@ -13,22 +13,19 @@ class NoteManager(ObjectManager):
     Notes are created here and then associated with
     objects by modifying their 'notes' attributes.
     """
-
+    GETTERS = {
+        'text': 'get_general',
+        # We don't allow Notes about Notes, but it would be a
+        # lot funnier if we did
+        'notes': None,
+    }
+    SETTERS = {
+        'text': 'set_general',
+        'notes': None,
+    }
     def __init__(self):
         """ constructor """
         ObjectManager.__init__(self)
-        self.getters.update({
-            'text' : 'get_general',
-        })
-        self.setters.update({
-            'text' : 'set_general',
-        })
-        # We don't allow Notes about Notes, but it would be a lot funnier if we did
-        if self.getters.has_key('notes'):
-            del self.getters['notes']
-        if self.getters.has_key('notes'):
-            del self.setters['notes']
-        
         self.my_django_model = facade.models.Note
 
     @service_method
@@ -36,7 +33,7 @@ class NoteManager(ObjectManager):
         """
         Create a new Note.  After creating a note, be sure to associate it with
         the object(s) it pertains to.
-        
+
         @param auth_token   The authentication token of the acting user
         @type auth_token    unicode
         @param text         The Note text

@@ -12,36 +12,36 @@ class UserOrgRoleManager(ObjectManager):
     Manage user roles within organizations in the Power Reg system
     """
 
+    GETTERS = {
+        'children': 'get_many_to_one',
+        'organization': 'get_foreign_key',
+        'organization_name': 'get_general',
+        'owner': 'get_foreign_key',
+        'parent': 'get_foreign_key',
+        'persistent': 'get_general',
+        'role': 'get_foreign_key',
+        'role_name': 'get_general',
+        'title': 'get_general',
+    }
+    SETTERS = {
+        'organization': 'set_forbidden',
+        'owner': 'set_foreign_key',
+        'parent': 'set_foreign_key',
+        'persistent': 'set_general',
+        'role': 'set_foreign_key',
+        'title': 'set_general',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'owner' : 'get_foreign_key',
-            'organization' : 'get_foreign_key',
-            'organization_name' : 'get_general',
-            'role' : 'get_foreign_key',
-            'role_name' : 'get_general',
-            'title': 'get_general',
-            'persistent': 'get_general',
-            'parent' : 'get_foreign_key',
-            'children' : 'get_many_to_one',
-        })
-        self.setters.update({
-            'owner' : 'set_foreign_key',
-            'organization' : 'set_forbidden',
-            'role' : 'set_foreign_key',
-            'title': 'set_general',
-            'persistent': 'set_general',
-            'parent' : 'set_foreign_key',
-        })
         self.my_django_model = facade.models.UserOrgRole
 
     @service_method
     def create(self, auth_token, organization, role, optional_attributes=None):
         """
         Create a new UserOrgRole
-        
+
         :param organization:        PK for the organization
         :param role:                PK for the OrgRole
         :param optional_attributes: dict of optional attributes including 'title',
