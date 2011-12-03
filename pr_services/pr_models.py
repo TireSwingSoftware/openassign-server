@@ -1964,7 +1964,7 @@ class Room(OwnedPRModel):
 
         return validation_errors
 
-    
+
 class SessionResourceTracker(models.Manager):
     def get_sessions_using_resource(self, resource_id, activeOnly=False):
         """
@@ -1976,7 +1976,7 @@ class SessionResourceTracker(models.Manager):
 
         @return               queryset iterator of all matching Sessions
         """
-        
+
         # if activeOnly=True, apply a filter that returns only Sessions whose status is active
         # find all resource-type requirements that use this resource (use existing Resource.session_resource_type_requirements)
         resource_instance = facade.models.Resource.objects.get(pk=resource_id)
@@ -1993,7 +1993,7 @@ class SessionResourceTracker(models.Manager):
                 status='active'
             )
         return related_sessions
-    
+
 class Session(OwnedPRModel):
     """
      - template (1 Session to 0..1 SessionTemplate)
