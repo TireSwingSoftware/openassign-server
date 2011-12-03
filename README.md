@@ -33,19 +33,19 @@ The package commands are listed below for common deployments.
 
 #### Debian
 
-    $ apt-get install git swig sqlite3 memcached lib{ssl,mysqlclient,pq,curl4-openssl}-dev python{,2.6-dev,-{ldap,setuptools}}
+    apt-get install git swig sqlite3 memcached lib{ssl,mysqlclient,pq,curl4-openssl}-dev python{,2.6-dev,-{ldap,setuptools}}
 
 
 #### Ubuntu
 
-    $ apt-get install git swig sqlite3 memcached lib{ssl,mysqlclient,pq}-dev python{,2.7-dev} python-{ldap,setuptools}
+    apt-get install git swig sqlite3 memcached lib{ssl,mysqlclient,pq,curl4-openssl}-dev python{,2.7-dev} python-{ldap,setuptools}
 
 
 ### Getting the Source Code
 
-    $ git clone https://github.com/TireSwingSoftware/openassign-server.git
-    $ git checkout dev
-    $ cd openassign-server
+    git clone https://github.com/TireSwingSoftware/openassign-server.git
+    cd openassign-server
+    git checkout dev
 
 ### Creating a virtual environment **\*Optional\***
 
@@ -53,23 +53,23 @@ If you wish to keep the python packages for openassign-server separate from
 the rest of the system (to prevent versioning issues) you may wish to
 create a virtualenv.
 
-    $ easy_install virtualenv
-    $ virtualenv /path/to/env
-    $ cd !$
-    $ source bin/activate
+    sudo easy_install virtualenv
+    virtualenv /path/to/env
+    cd !$
+    source bin/activate
 
 
 ### Installing python package requirements
 
 If you created a virtual environment, be sure to specify the path for pip.
 
-    $ easy_install pip
-    $ pip -E /path/to/env install -r requirements.txt
+    easy_install pip
+    pip -E /path/to/env install -r requirements.txt
 
 Otherwise
 
-    $ easy_install pip
-    $ pip -r requirements.txt
+    easy_install pip
+    pip -r requirements.txt
 
 
 ### Initial Configuration
@@ -99,8 +99,8 @@ with each option.
 
 Run the following commands to perform the database initialization.
 
-    $ ./manage.py resetdb
-    $ ./manage.py setup
+    ./manage.py resetdb
+    ./manage.py setup
 
 
 ## Running the test suite
