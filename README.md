@@ -33,12 +33,12 @@ The package commands are listed below for common deployments.
 
 #### Debian
 
-    apt-get install git swig sqlite3 memcached lib{ssl,mysqlclient,pq,curl4-openssl}-dev python{,2.6-dev,-{ldap,setuptools}}
+    apt-get install git swig sqlite3 memcached lib{ssl,mysqlclient,pq,curl4-openssl}-dev python{,-dev,-{ldap,setuptools}}
 
 
 #### Ubuntu
 
-    apt-get install git swig sqlite3 memcached lib{ssl,mysqlclient,pq,curl4-openssl}-dev python{,2.7-dev} python-{ldap,setuptools}
+    sudo apt-get install git swig sqlite3 memcached lib{ssl,mysqlclient,pq,curl4-openssl}-dev python{,-dev,-{ldap,setuptools}}
 
 
 ### Getting the Source Code
