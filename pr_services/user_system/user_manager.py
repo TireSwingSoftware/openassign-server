@@ -14,9 +14,10 @@ import time
 import uuid
 import urllib2
 
-import ldap
-
 from django.conf import settings
+
+if getattr(settings, 'LDAP_AUTHENTICATION', False):
+    import ldap
 
 from pr_services import exceptions
 from pr_services import pr_time
@@ -116,11 +117,14 @@ class UserManager(ObjectManager):
         self.blame_manager = facade.managers.BlameManager()
         self.my_django_model = facade.models.User
         self.user_model_name = self.my_django_model().__class__.__name__
-        if hasattr(settings, 'LDAP_SCHEMA'):
-            self.ldap_user_model_name = settings.LDAP_SCHEMA[self.user_model_name]['ldap_object_class']
-            if hasattr(settings, 'LDAP_CACERT_FILE') and settings.LDAP_CACERT_FILE:
-                ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, settings.LDAP_CACERT_FILE)
-            self.ldap_connection = ldap.initialize(settings.LDAP_URL)
+        if getattr(settings, 'LDAP_AUTHENTICATION', False):
+            schema = getattr(settings, 'LDAP_SCHEMA', None)
+            if schema:
+                self.ldap_user_model_name = schema[self.user_model_name]['ldap_object_class']
+                cert = getattr(settings, 'LDAP_CACERT_FILE', None)
+                if cert:
+                    ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, settings.LDAP_CACERT_FILE)
+                self.ldap_connection = ldap.initialize(settings.LDAP_URL)
         self.photo_storage_engine = storage.UserPhotoStorage()
 
     @service_method
