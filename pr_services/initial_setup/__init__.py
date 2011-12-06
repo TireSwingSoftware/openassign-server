@@ -48,6 +48,7 @@ class InitialSetupMachine(object):
               'create_file_downloader_role',
               'create_exam_taker_role',
               'create_precor_default_group',
+              'create_session_participant_role',
             ],
         }
 
