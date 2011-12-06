@@ -11,29 +11,29 @@ class SessionTemplateResourceTypeRequirementManager(ObjectManager):
     Manage SessionTemplateResourceTypeRequirements in the Power Reg system
     """
 
+    GETTERS = {
+        'max': 'get_general',
+        'min': 'get_general',
+        'resource_type': 'get_foreign_key',
+        'session_template': 'get_foreign_key',
+    }
+    SETTERS = {
+        'max': 'set_general',
+        'min': 'set_general',
+        'resource_type': 'set_foreign_key',
+        'session_template': 'set_foreign_key',
+    }
     def __init__(self):
         """ constructor """
- 
+
         ObjectManager.__init__(self)
-        self.getters.update({
-            'session_template' : 'get_foreign_key',
-            'max' : 'get_general',
-            'min' : 'get_general',
-            'resource_type' : 'get_foreign_key',
-        })
-        self.setters.update({
-            'session_template' : 'set_foreign_key',
-            'max' : 'set_general',
-            'min' : 'set_general',
-            'resource_type' : 'set_foreign_key',
-        })
         self.my_django_model = facade.models.SessionTemplateResourceTypeReq
 
     @service_method
     def create(self, auth_token, session_template_id, resource_type_id, min, max):
         """
         Create a new SessionTemplateResourceTypeRequirement
-        
+
         @param session_template_id  Foreign key for an session_template
         @param resource_type_id     Foreign key for an resource_type
         @param min                  Minimum number required

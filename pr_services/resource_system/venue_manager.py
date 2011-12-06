@@ -10,43 +10,41 @@ class VenueManager(ObjectManager):
     """
     Manage Venues in the Power Reg system
     """
-
+    GETTERS = {
+        'address': 'get_address',
+        'contact': 'get_general',
+        'events': 'get_many_to_one',
+        'hours_of_operation': 'get_general',
+        'name': 'get_general',
+        'owner': 'get_foreign_key',
+        'phone': 'get_general',
+        'region': 'get_foreign_key',
+        'rooms': 'get_many_to_one',
+    }
+    SETTERS = {
+        'address': 'set_address',
+        'contact': 'set_general',
+        'events': 'set_many',
+        'hours_of_operation': 'set_general',
+        'name': 'set_general',
+        'owner': 'set_foreign_key',
+        'phone': 'set_general',
+        'region': 'set_foreign_key',
+        'rooms': 'set_many',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        #: Dictionary of attribute names and the functions used to get them
-        self.getters.update({
-            'address' : 'get_address',
-            'contact' : 'get_general',
-            'events' : 'get_many_to_one',
-            'hours_of_operation' : 'get_general',
-            'name' : 'get_general',
-            'owner' : 'get_foreign_key',
-            'phone' : 'get_general',
-            'region' : 'get_foreign_key',
-            'rooms' : 'get_many_to_one',
-        })
-        self.setters.update({
-            'address' : 'set_address',
-            'contact' : 'set_general',
-            'events' : 'set_many',
-            'hours_of_operation' : 'set_general',
-            'name' : 'set_general',
-            'owner' : 'set_foreign_key',
-            'phone' : 'set_general',
-            'region' : 'set_foreign_key',
-            'rooms' : 'set_many',
-        })
         self.my_django_model = facade.models.Venue
 
     @service_method
     def create(self, auth_token, name, phone, region, optional_attributes=None):
         """
         Common method for Venue creation
-        
+
         Makes sure that the old address does not get orphaned.
-        
+
         @param auth_token           The actor's authentication token
         @param name                 Name for the Venue
         @param phone                Phone number

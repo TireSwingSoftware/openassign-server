@@ -11,27 +11,27 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
     Manage SessionUserRoleRequirements in the Power Reg system
     """
 
+    GETTERS = {
+        'credential_types': 'get_many_to_many',
+        'ignore_room_capacity': 'get_general',
+        'max': 'get_general',
+        'min': 'get_general',
+        'role_name': 'get_general',
+        'session': 'get_foreign_key',
+        'session_user_role': 'get_foreign_key',
+    }
+    SETTERS = {
+        'credential_types': 'set_many',
+        'ignore_room_capacity': 'set_general',
+        'max': 'set_general',
+        'min': 'set_general',
+        'session': 'set_foreign_key',
+        'session_user_role': 'set_foreign_key',
+    }
     def __init__(self):
         """ constructor """
 
         super(SessionUserRoleRequirementManager, self).__init__()
-        self.getters.update({
-            'credential_types' : 'get_many_to_many',
-            'session' : 'get_foreign_key',
-            'session_user_role' : 'get_foreign_key',
-            'max' : 'get_general',
-            'min' : 'get_general',
-            'ignore_room_capacity' : 'get_general',
-            'role_name' : 'get_general',
-        })
-        self.setters.update({
-            'credential_types' : 'set_many',
-            'session' : 'set_foreign_key',
-            'session_user_role' : 'set_foreign_key',
-            'max' : 'set_general',
-            'min' : 'set_general',
-            'ignore_room_capacity' : 'set_general',
-        })
         self.my_django_model = facade.models.SessionUserRoleRequirement
 
     @service_method

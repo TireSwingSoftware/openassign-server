@@ -38,49 +38,48 @@ class PaymentManager(ObjectManager):
       refunds               List of structs with values for 'amount' and 'date'
     </pre>
     """
-
+    GETTERS = {
+        'amount': 'get_general',
+        'card_type': 'get_general',
+        'city': 'get_general',
+        'country': 'get_general',
+        'date': 'get_date_from_blame',
+        'exp_date': 'get_general',
+        'first_name': 'get_general',
+        'invoice_number': 'get_general',
+        'last_name': 'get_general',
+        'purchase_order': 'get_foreign_key',
+        'refunds': 'get_refunds_from_payment',
+        'result_message': 'get_general',
+        'sales_tax': 'get_general',
+        'state': 'get_general',
+        'transaction_id': 'get_general',
+        'zip': 'get_general',
+    }
+    #: don't allow anything to be set, since a Payment is immutable
+    #: after its creation
+    SETTERS = {
+        'amount': 'set_forbidden',
+        'card_type': 'set_forbidden',
+        'city': 'set_forbidden',
+        'country': 'set_forbidden',
+        'date': 'set_forbidden',
+        'exp_date': 'set_forbidden',
+        'first_name': 'set_forbidden',
+        'invoice_number': 'set_forbidden',
+        'last_name': 'set_forbidden',
+        'purchase_order': 'set_forbidden',
+        'refunds': 'set_forbidden',
+        'result_message': 'set_forbidden',
+        'sales_tax': 'set_forbidden',
+        'state': 'set_forbidden',
+        'transaction_id': 'set_forbidden',
+        'zip': 'set_forbidden',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'refunds' : 'get_refunds_from_payment',
-            'card_type' : 'get_general',
-            'exp_date' : 'get_general',
-            'amount' : 'get_general',
-            'first_name' : 'get_general',
-            'last_name' : 'get_general',
-            'city' : 'get_general',
-            'state' : 'get_general',
-            'zip' : 'get_general',
-            'country' : 'get_general',
-            'sales_tax' : 'get_general',
-            'transaction_id' : 'get_general',
-            'invoice_number' : 'get_general',
-            'result_message' : 'get_general',
-            'purchase_order' : 'get_foreign_key',
-            'date' : 'get_date_from_blame',
-        })
-        #: don't allow anything to be set, since a Payment is immutable
-        #: after its creation
-        self.setters.update({
-            'refunds' : 'set_forbidden',
-            'card_type' : 'set_forbidden',
-            'exp_date' : 'set_forbidden',
-            'amount' : 'set_forbidden',
-            'first_name' : 'set_forbidden',
-            'last_name' : 'set_forbidden',
-            'city' : 'set_forbidden',
-            'state' : 'set_forbidden',
-            'zip' : 'set_forbidden',
-            'country' : 'set_forbidden',
-            'sales_tax' : 'set_forbidden',
-            'transaction_id' : 'set_forbidden',
-            'invoice_number' : 'set_forbidden',
-            'result_message' : 'set_forbidden',
-            'purchase_order' : 'set_forbidden',
-            'date' : 'set_forbidden',
-        })
         self.my_django_model = facade.models.Payment
         #: a list of methods that should be called before the
         #: processing of a Payment.  These methods should all

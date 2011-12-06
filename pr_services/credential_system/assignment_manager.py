@@ -20,37 +20,39 @@ class AssignmentManager(ObjectManager):
     Manage Assignments in the Power Reg system
     """
 
+    GETTERS = {
+        'assignment_attempts': 'get_many_to_one',
+        'authority': 'get_general',
+        'date_completed': 'get_time',
+        'date_started': 'get_time',
+        'due_date': 'get_time',
+        'effective_date_assigned': 'get_time',
+        'prerequisites_met': 'get_general',
+        'serial_number': 'get_general',
+        'status': 'get_general',
+        'status_change_log': 'get_general',
+        'task': 'get_foreign_key',
+        'task_content_type': 'get_general',
+        'user': 'get_foreign_key',
+    }
+
+    SETTERS = {
+        'assignment_attempts': 'set_many',
+        'authority': 'set_general',
+        'date_completed': 'set_time',
+        'date_started': 'set_time',
+        'due_date': 'set_time',
+        'effective_date_assigned': 'set_time',
+        'serial_number': 'set_general',
+        'status': 'set_general',
+        'task': 'set_foreign_key',
+        'user': 'set_foreign_key',
+    }
+
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'user' : 'get_foreign_key',
-            'status' : 'get_general',
-            'status_change_log' : 'get_general',
-            'date_completed' : 'get_time',
-            'date_started' : 'get_time',
-            'due_date' : 'get_time',
-            'effective_date_assigned' : 'get_time',
-            'task' : 'get_foreign_key',
-            'task_content_type' : 'get_general',
-            'authority' : 'get_general',
-            'serial_number' : 'get_general',
-            'prerequisites_met' : 'get_general',
-            'assignment_attempts': 'get_many_to_one',
-        })
-        self.setters.update({
-            'user' : 'set_foreign_key',
-            'status' : 'set_general',
-            'date_completed' : 'set_time',
-            'date_started' : 'set_time',
-            'due_date' : 'set_time',
-            'effective_date_assigned' : 'set_time',
-            'task' : 'set_foreign_key',
-            'authority' : 'set_general',
-            'serial_number' : 'set_general',
-            'assignment_attempts': 'set_many',
-        })
         self.my_django_model = facade.models.Assignment
 
     @service_method
@@ -90,7 +92,7 @@ class AssignmentManager(ObjectManager):
                 new_assignments = self.my_django_model.objects.filter(user__id=user, blame=self.blame)
                 if len(new_assignments) == 1:
                     new_assignments[0].delete()
-                
+
         self.blame = None
         return ret
 
@@ -118,7 +120,7 @@ class AssignmentManager(ObjectManager):
             optional_parameters = {}
 
         blame = self._get_blame(auth_token)
-        
+
         task_object = self._find_by_id(task, facade.models.Task).downcast_completely()
         if user is None and isinstance(auth_token, facade.models.AuthToken):
             user_object = auth_token.user
@@ -159,7 +161,7 @@ class AssignmentManager(ObjectManager):
         # right now >= due date + late notice interval
         # due date + late notice interval <= right now
         # due date <= right now - late notice interval
-        
+
         right_now = datetime.datetime.utcnow()
         for late_assignment in facade.models.Assignment.objects.filter(
                 status='late', sent_late_notice=False,
@@ -170,10 +172,10 @@ class AssignmentManager(ObjectManager):
                          recipient=late_assignment.user)
             late_assignment.sent_late_notice = True
             late_assignment.save()
-    
+
     def send_reminders(self):
         right_now = datetime.datetime.utcnow()
-        
+
         # right now >= due date - reminder interval  ==>
         # due date - reminder interval <= right now ==>
         # due date <= right now + reminder interval
@@ -183,24 +185,24 @@ class AssignmentManager(ObjectManager):
                 status='completed').filter(
                 sent_pre_reminder=False).filter(
                 due_date__lte=right_now + datetime.timedelta(seconds=settings.DEFAULT_ASSIGNMENT_PRE_REMINDER_INTERVAL)):
-                
+
                 send_message(message_type='assignment-pre-reminder',
                              context={'assignment': unfinished_assignment},
                              recipient=unfinished_assignment.user)
                 unfinished_assignment.sent_pre_reminder = True
                 unfinished_assignment.save()
-        
+
         for unfinished_assignment in self.my_django_model.objects.exclude(
             status='completed').filter(
             sent_reminder=False).filter(
             due_date__lte=right_now + datetime.timedelta(seconds=settings.DEFAULT_ASSIGNMENT_REMINDER_INTERVAL)):
-            
+
             send_message(message_type='assignment-reminder',
                          context={'assignment': unfinished_assignment},
                          recipient=unfinished_assignment.user)
             unfinished_assignment.sent_reminder = True
             unfinished_assignment.save()
-            
+
     def send_confirmations(self):
         end_of_today = (datetime.datetime.utcnow() + datetime.timedelta(days=1)).replace(hour=0, minute=0,
             second=0, microsecond=0)
@@ -216,7 +218,7 @@ class AssignmentManager(ObjectManager):
     def mark_late_assignments(self):
         end_of_today = (datetime.datetime.utcnow() + datetime.timedelta(days=1)).replace(hour=0, minute=0,
             second=0, microsecond=0)
-        
+
         for late_assignment in facade.models.Assignment.objects.filter(
                 due_date__lt=end_of_today).exclude(
                     status__in=['completed', 'late']):

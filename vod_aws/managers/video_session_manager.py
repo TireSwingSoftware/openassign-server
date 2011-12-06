@@ -13,22 +13,21 @@ class VideoSessionManager(AssignmentAttemptManager):
     """
     Manage VideoSessions in the Power Reg system
     """
-
+    GETTERS = {
+        'assignment': 'get_foreign_key',
+        'date_completed': 'get_time',
+        'date_started': 'get_time',
+        'user': 'get_foreign_key',
+        'video': 'get_foreign_key',
+    }
+    SETTERS = {
+        'date_completed': 'set_time',
+        'date_started': 'set_time',
+    }
     def __init__(self):
         """ constructor """
 
         super(VideoSessionManager, self).__init__()
-        self.getters.update({
-            'assignment' : 'get_foreign_key',
-            'date_completed' : 'get_time',
-            'date_started' : 'get_time',
-            'user' : 'get_foreign_key',
-            'video' : 'get_foreign_key',
-        })
-        self.setters.update({
-            'date_completed' : 'set_time',
-            'date_started' : 'set_time',
-        })
         self.my_django_model = facade.models.VideoSession
 
     @service_method

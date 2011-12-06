@@ -26,37 +26,36 @@ class AnswerManager(ObjectManager):
      * *text_response* -- When True and this answer is selected, allow an additional text response.
      * *value* -- The actual value for this answer instead of the label.
     """
-
+    GETTERS = {
+        'correct': 'get_general',
+        'end_exam': 'get_general',
+        'end_question_pool': 'get_general',
+        'label': 'get_general',
+        'name': 'get_general',
+        'next_question_pool': 'get_foreign_key',
+        'order': 'get_general',
+        'question': 'get_foreign_key',
+        'responses': 'get_many_to_many',
+        'text_response': 'get_general',
+        'value': 'get_general',
+    }
+    SETTERS = {
+        'correct': 'set_general',
+        'end_exam': 'set_general',
+        'end_question_pool': 'set_general',
+        'label': 'set_general',
+        'name': 'set_general',
+        'next_question_pool': 'set_foreign_key',
+        'order': 'set_general',
+        'question': 'set_foreign_key',
+        'responses': 'set_many',
+        'text_response': 'set_general',
+        'value': 'set_general',
+    }
     def __init__(self):
         """Constructor."""
 
         super(AnswerManager, self).__init__()
-        self.getters.update({
-            'correct': 'get_general',
-            'end_exam': 'get_general',
-            'end_question_pool': 'get_general',
-            'label': 'get_general',
-            'name': 'get_general',
-            'next_question_pool': 'get_foreign_key',
-            'order': 'get_general',
-            'question': 'get_foreign_key',
-            'responses': 'get_many_to_many',
-            'text_response': 'get_general',
-            'value': 'get_general',
-        })
-        self.setters.update({
-            'correct': 'set_general',
-            'end_exam': 'set_general',
-            'end_question_pool': 'set_general',
-            'label': 'set_general',
-            'name': 'set_general',
-            'next_question_pool': 'set_foreign_key',
-            'order': 'set_general',
-            'question': 'set_foreign_key',
-            'responses': 'set_many',
-            'text_response': 'set_general',
-            'value': 'set_general',
-        })
         self.my_django_model = facade.models.Answer
 
     @service_method

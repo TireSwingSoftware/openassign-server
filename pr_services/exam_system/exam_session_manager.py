@@ -28,19 +28,19 @@ class ExamSessionManager(AssignmentAttemptManager):
      * *user* -- Foreign Key for the user taking the exam.
     """
 
+    GETTERS = {
+        'exam': 'get_foreign_key',
+        'number_correct': 'get_general',
+        'passed': 'get_general',
+        'passing_score': 'get_general',
+        'response_questions': 'get_many_to_many',
+        'score': 'get_decimal',
+        'user': 'get_foreign_key',
+    }
     def __init__(self):
         """Constructor."""
 
         super(ExamSessionManager, self).__init__()
-        self.getters.update({
-            'exam': 'get_foreign_key',
-            'passed': 'get_general',
-            'response_questions': 'get_many_to_many',
-            'score': 'get_decimal',
-            'passing_score': 'get_general',
-            'number_correct': 'get_general',
-            'user': 'get_foreign_key',
-        })
         self.my_django_model = facade.models.ExamSession
         self.post_exam_session_hooks = []
 

@@ -46,7 +46,7 @@ class Getter(object):
         if 'id' not in requested_fields:
             requested_fields.append('id')
         for field in requested_fields:
-            if field not in object_manager.getters:
+            if field not in object_manager.GETTERS:
                 raise exceptions.FieldNameNotFoundException(field)
         self.authorizer = facade.subsystems.Authorizer()
         self.cache = {}
@@ -54,15 +54,15 @@ class Getter(object):
         self.getters = {}
         for f in requested_fields:
             try:
-                self.getters.update( { f : getattr(self, self.object_manager.getters[f]) } )
+                self.getters.update( { f : getattr(self, self.object_manager.GETTERS[f]) } )
             except AttributeError:
-                raise exceptions.GetterNotFoundException(self.object_manager.getters[f])
+                raise exceptions.GetterNotFoundException(self.object_manager.GETTERS[f])
 
         # If we are fetching any foreign key relationships, we can speed things up tremendously
         # by declaring them to django ahead of time in the select_related() call.
         foreign_keys = []
         for field_name in self.getters.keys():
-            if self.object_manager.getters[field_name] in ['get_foreign_key', 'get_one_to_one']:
+            if self.object_manager.GETTERS[field_name] in ['get_foreign_key', 'get_one_to_one']:
                 foreign_keys.append(field_name)
         if foreign_keys:
             self.django_query_set = self.django_query_set.select_related(*foreign_keys)
@@ -461,18 +461,18 @@ class Setter(object):
         self.setter_dict = setter_dict
         self.setters = {}
         for field in setter_dict:
-            if field not in object_manager.setters:
+            if field not in object_manager.SETTERS:
                 raise exceptions.FieldNameNotFoundException(field)
         self.authorizer = facade.subsystems.Authorizer()
         self.auth_token = auth_token
         self.authorizer.check_update_permissions(auth_token, django_object, setter_dict)
         for field in setter_dict:
             try:
-                self.setters[field] = getattr(self, self.object_manager.setters[field])
+                self.setters[field] = getattr(self, self.object_manager.SETTERS[field])
             except KeyError:
                 raise exceptions.FieldNameNotFoundException(field)
             except AttributeError:
-                raise exceptions.SetterNotFoundException(self.object_manager.setters[field])
+                raise exceptions.SetterNotFoundException(self.object_manager.SETTERS[field])
 
         self.process()
 

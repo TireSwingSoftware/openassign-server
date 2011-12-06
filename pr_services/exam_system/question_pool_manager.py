@@ -20,36 +20,35 @@ class QuestionPoolManager(ObjectManager):
      * *questions* -- List of foreign keys for question objects.
      * *title* -- Title of this section of the exam.
     """
-
+    GETTERS = {
+        'exam': 'get_foreign_key',
+        'name': 'get_general',
+        'number_to_answer' : 'get_general',
+        'order': 'get_general',
+        'questions': 'get_many_to_one',
+        'randomize_questions' : 'get_general',
+        'title': 'get_general',
+    }
+    SETTERS = {
+        'exam': 'set_foreign_key',
+        'name': 'set_general',
+        'number_to_answer' : 'set_general',
+        'order': 'set_general',
+        'questions': 'set_many',
+        'randomize_questions' : 'set_general',
+        'title': 'set_general',
+    }
     def __init__(self):
         """Constructor."""
 
         super(QuestionPoolManager, self).__init__()
-        self.getters.update({
-            'exam': 'get_foreign_key',
-            'name': 'get_general',
-            'order': 'get_general',
-            'questions': 'get_many_to_one',
-            'number_to_answer' : 'get_general',
-            'randomize_questions' : 'get_general',
-            'title': 'get_general',
-        })
-        self.setters.update({
-            'exam': 'set_foreign_key',
-            'name': 'set_general',
-            'order': 'set_general',
-            'questions': 'set_many',
-            'number_to_answer' : 'set_general',
-            'randomize_questions' : 'set_general',
-            'title': 'set_general',
-        })
         self.my_django_model = facade.models.QuestionPool
 
     @service_method
     def create(self, auth_token, exam_id, title, optional_parameters=None):
         """
         Create a new question pool.
-        
+
         :param auth_token:          The authentication token of the acting user
         :type auth_token:           pr_services.models.AuthToken
         :param exam_id:             Reference to the exam containing this

@@ -12,20 +12,20 @@ class TaskBundleManager(ObjectManager):
     Manage Task Bundles in the Power Reg system
     """
 
+    GETTERS = {
+        'name': 'get_general',
+        'description': 'get_general',
+        'tasks': 'get_tasks_from_task_bundle',
+    }
+    SETTERS = {
+        'name': 'set_general',
+        'description': 'set_general',
+        'tasks': 'set_tasks_for_task_bundle',
+    }
     def __init__(self):
         """ constructor """
 
         super(TaskBundleManager, self).__init__()
-        self.getters.update({
-            'name' : 'get_general',
-            'description' : 'get_general',
-            'tasks' : 'get_tasks_from_task_bundle',
-        })
-        self.setters.update({
-            'name' : 'set_general',
-            'description' : 'set_general',
-            'tasks' : 'set_tasks_for_task_bundle',
-        })
         self.my_django_model = facade.models.TaskBundle
 
     @service_method

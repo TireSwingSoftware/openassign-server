@@ -10,18 +10,16 @@ class TaskFeeManager(facade.managers.ProductManager):
     Manage TaskFees in the Power Reg system
     """
 
+    GETTERS = {
+        'task': 'get_foreign_key',
+    }
+    SETTERS = {
+        'task': 'set_foreign_key',
+    }
     def __init__(self):
         """ constructor """
 
         super(TaskFeeManager, self).__init__()
-        #: Dictionary of attribute names and the functions used to get them
-        self.getters.update({
-            'task' : 'get_foreign_key',
-        })
-        #: Dictionary of attribute names and the functions used to set them
-        self.setters.update({
-            'task' : 'set_foreign_key',
-        })
         self.my_django_model = facade.models.TaskFee
 
     @service_method
@@ -31,7 +29,7 @@ class TaskFeeManager(facade.managers.ProductManager):
         Create a new TaskFee
 
         You should probably define 'starting_quantity' in optional_attributes
-        
+
         @param sku              SKU, up to 32 characters
         @param name             name of the Product, up to 127 characters
         @param description      description, text field

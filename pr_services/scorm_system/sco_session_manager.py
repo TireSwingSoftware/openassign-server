@@ -10,21 +10,18 @@ class ScoSessionManager(AssignmentAttemptManager):
     """
     Manage ScoSessions in the Power Reg system.
     """
-
+    GETTERS = {
+        'cmi_core_lesson_location': 'get_general',
+        'cmi_core_lesson_status': 'get_general',
+        'cmi_core_score_max': 'get_general',
+        'cmi_core_score_min': 'get_general',
+        'sco': 'get_foreign_key',
+        'shared_object': 'get_general',
+    }
     def __init__(self):
         """ constructor """
 
         super(ScoSessionManager, self).__init__()
-        self.getters.update({
-            'cmi_core_lesson_location' : 'get_general',
-            'cmi_core_lesson_status' : 'get_general',
-            'cmi_core_score_max' : 'get_general',
-            'cmi_core_score_min' : 'get_general',
-            'shared_object' : 'get_general',
-            'sco' : 'get_foreign_key',
-        })
-        self.setters.update({
-        })
         self.my_django_model = facade.models.ScoSession
 
     @service_method

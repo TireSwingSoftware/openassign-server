@@ -22,22 +22,22 @@ import zipfile
 class ScoManager(TaskManager):
     """Manage Scos in the Power Reg system."""
 
+    GETTERS = {
+        'completion_requirement': 'get_general',
+        'course': 'get_foreign_key',
+        'data': 'get_general',
+        'url': 'get_general',
+    }
+    SETTERS = {
+        'completion_requirement': 'set_general',
+        'course': 'set_foreign_key',
+        'data': 'set_general',
+        'url': 'set_general',
+    }
     def __init__(self):
         """ constructor """
 
         TaskManager.__init__(self)
-        self.getters.update({
-            'completion_requirement' : 'get_general',
-            'course' : 'get_foreign_key',
-            'data' : 'get_general',
-            'url' : 'get_general',
-        })
-        self.setters.update({
-            'completion_requirement' : 'set_general',
-            'course' : 'set_foreign_key',
-            'data' : 'set_general',
-            'url' : 'set_general',
-        })
         self.my_django_model = facade.models.Sco
 
     @service_method

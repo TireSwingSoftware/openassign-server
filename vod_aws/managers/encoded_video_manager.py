@@ -12,20 +12,19 @@ class EncodedVideoManager(ObjectManager):
     """
     Manage EncodedVideos in the Power Reg system
     """
-
+    GETTERS = {
+        'bitrate': 'get_general',
+        'http_url': 'get_general',
+        'url': 'get_general',
+        'video': 'get_foreign_key',
+    }
+    SETTERS = {
+        'bitrate': 'set_general',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'bitrate' : 'get_general',
-            'http_url' : 'get_general',
-            'url' : 'get_general',
-            'video' : 'get_foreign_key',
-        })
-        self.setters.update({
-            'bitrate' : 'set_general',
-        })
         self.my_django_model = facade.models.EncodedVideo
 
     @service_method

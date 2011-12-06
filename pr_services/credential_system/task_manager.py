@@ -13,43 +13,43 @@ class TaskManager(ObjectManager):
     Manage Tasks in the Power Reg system
     """
 
+    GETTERS = {
+        'achievements': 'get_many_to_many',
+        'description': 'get_general',
+        'min': 'get_general',
+        'max': 'get_general',
+        'name': 'get_general',
+        'prerequisite_tasks': 'get_many_to_many',
+        'prevent_duplicate_assignments': 'get_general',
+        'remaining_capacity': 'get_general',
+        'title': 'get_general',
+        'type': 'get_final_type',
+        'users': 'get_many_to_many',
+        'version_id': 'get_general',
+        'version_label': 'get_general',
+        'version_comment': 'get_general',
+        'yielded_tasks': 'get_many_to_many',
+    }
+    SETTERS = {
+        'achievements': 'set_many',
+        'description': 'set_general',
+        'min': 'set_general',
+        'max': 'set_general',
+        'name': 'set_general',
+        'prerequisite_tasks': 'set_many',
+        'prevent_duplicate_assignments': 'set_general',
+        'remaining_capacity': 'set_general',
+        'title': 'set_general',
+        'users': 'set_many',
+        'version_id': 'set_general',
+        'version_label': 'set_general',
+        'version_comment': 'set_general',
+        'yielded_tasks': 'set_many',
+    }
     def __init__(self):
         """ constructor """
 
         super(TaskManager, self).__init__()
-        self.getters.update({
-            'achievements' : 'get_many_to_many',
-            'description' : 'get_general',
-            'min' : 'get_general',
-            'max' : 'get_general',
-            'name' : 'get_general',
-            'prerequisite_tasks' : 'get_many_to_many',
-            'prevent_duplicate_assignments' : 'get_general',
-            'remaining_capacity' : 'get_general',
-            'title': 'get_general',
-            'type' : 'get_final_type',
-            'users' : 'get_many_to_many',
-            'version_id' : 'get_general',
-            'version_label' : 'get_general',
-            'version_comment' : 'get_general',
-            'yielded_tasks' : 'get_many_to_many',
-        })
-        self.setters.update({
-            'achievements' : 'set_many',
-            'description' : 'set_general',
-            'min' : 'set_general',
-            'max' : 'set_general',
-            'name' : 'set_general',
-            'prerequisite_tasks' : 'set_many',
-            'prevent_duplicate_assignments' : 'set_general',
-            'remaining_capacity' : 'set_general',
-            'title': 'set_general',
-            'users' : 'set_many',
-            'version_id' : 'set_general',
-            'version_label' : 'set_general',
-            'version_comment' : 'set_general',
-            'yielded_tasks' : 'set_many',
-        })
         self.my_django_model = facade.models.Task
 
     @service_method
@@ -59,7 +59,7 @@ class TaskManager(ObjectManager):
 
         Creating a task using the TaskManager is not allowed.  Please use one of the
         TaskManager's subclasses to create your Task!
-        
+
         :param name: name of the task
         :type name: string
         :param description: description of the task

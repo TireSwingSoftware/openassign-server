@@ -18,30 +18,29 @@ class ProductOfferManager(ObjectManager):
       seller        Foreign Key for the user selling the product
     </pre>
     """
-
+    GETTERS = {
+        'description': 'get_general',
+        'price': 'get_general',
+        'product': 'get_foreign_key',
+        'seller': 'get_foreign_key',
+    }
+    SETTERS = {
+        'description': 'set_general',
+        'price': 'set_general',
+        'product': 'set_foreign_key',
+        'seller': 'set_foreign_key',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'description' : 'get_general',
-            'price' : 'get_general',
-            'product' : 'get_foreign_key',
-            'seller' : 'get_foreign_key',
-        })
-        self.setters.update({
-            'description' : 'set_general',
-            'price' : 'set_general',
-            'product' : 'set_foreign_key',
-            'seller' : 'set_foreign_key',
-        })
         self.my_django_model = facade.models.ProductOffer
 
     @service_method
     def create(self, auth_token, product, seller, price, description):
         """
         Create a new ProductOffer
-        
+
         @param product        Foreign Key for a product
         @param seller         Foreign Key for the user who is a seller
         @param price          Price in cents
@@ -60,10 +59,10 @@ class ProductOfferManager(ObjectManager):
     def get_discounted_price(self, auth_token, product_offer, promo_code):
         """
         Get the best discount currently available for a ProductOffer given a promo_code
-        
+
         @param product_offer  Foreign key for a ProductOffer
         @param promo_code     Promotional code, not case sensitive
-        
+
         @return               Discounted price, if any
         """
 

@@ -10,34 +10,30 @@ class TrainingUnitTransactionManager(ObjectManager):
     """
     Manage TrainingUnitTransactions in the Power Reg system
     """
-
+    GETTERS = {
+        'purchase_order': 'get_foreign_key',
+        'training_unit_account': 'get_foreign_key',
+        'training_unit_authorizations': 'get_many_to_many',
+        'value': 'get_general',
+    }
+    SETTERS = {
+        'purchase_order': 'set_foreign_key',
+        'training_unit_account': 'set_foreign_key',
+        'training_unit_authorizations': 'set_many',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-
-        self.getters.update({
-            'training_unit_authorizations' : 'get_many_to_many',
-            'training_unit_account' : 'get_foreign_key',
-            'purchase_order' : 'get_foreign_key',
-            'value' : 'get_general',
-        })
-
-        #: Dictionary of attribute names and the functions used to set them
-        self.setters.update({
-            'training_unit_account' : 'set_foreign_key',
-            'purchase_order' : 'set_foreign_key',
-            'training_unit_authorizations' : 'set_many',
-        })  
         self.my_django_model = facade.models.TrainingUnitTransaction
 
     @service_method
     def create(self, auth_token, training_unit_account, value, purchase_order,
         optional_parameters=None):
-        
+
         """
         Create a new TrainingUnitTransaction
-        
+
         @param training_unit_account      Foreign Key for a training unit account
         @param value                      Value in cents
         @param purchase_order             Foreign Key for a purchase order

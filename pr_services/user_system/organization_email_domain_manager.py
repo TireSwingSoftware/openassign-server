@@ -11,23 +11,21 @@ class OrgEmailDomainManager(ObjectManager):
     Manage mappings between email domain and automatic organization and role
     assignment.
     """
-
+    GETTERS = {
+        'email_domain': 'get_general',
+        'organization': 'get_foreign_key',
+        'role': 'get_foreign_key',
+        'effective_role': 'get_foreign_key',
+        'effective_role_name': 'get_general',
+    }
+    SETTERS = {
+        'email_domain': 'set_general',
+        'organization': 'set_foreign_key',
+        'role': 'set_foreign_key',
+    }
     def __init__(self):
         """ constructor """
-
         ObjectManager.__init__(self)
-        self.getters.update({
-            'email_domain' : 'get_general',
-            'organization' : 'get_foreign_key',
-            'role' : 'get_foreign_key',
-            'effective_role' : 'get_foreign_key',
-            'effective_role_name' : 'get_general',
-        })
-        self.setters.update({
-            'email_domain' : 'set_general',
-            'organization' : 'set_foreign_key',
-            'role' : 'set_foreign_key',
-        })
         self.my_django_model = facade.models.OrgEmailDomain
 
     @service_method

@@ -3471,12 +3471,12 @@ class TestManagerGetterSetters(TestCase):
             manager = getattr(facade.managers, manager_name)()
             if not isinstance(manager, ObjectManager):
                 continue
-            for attr, getter in manager.getters.iteritems():
+            for attr, getter in manager.GETTERS.iteritems():
                 if not hasattr(Getter, getter):
                     self.fail(
                         'Unknown getter %s for attribute %s of manager %s' % (
                             getter, attr, manager_name))
-            for attr, setter in manager.setters.iteritems():
+            for attr, setter in manager.SETTERS.iteritems():
                 if not hasattr(Setter, setter):
                     self.fail(
                         'Unknown setter %s for attribute %s of manager %s' % (
@@ -3499,8 +3499,8 @@ class TestACLCRUD(TestCase):
             model = manager.my_django_model._meta.object_name
             app = manager.my_django_model._meta.app_label
             crud = {
-                'r' : set(manager.getters.keys()),
-                'u' : set(manager.setters.keys()),
+                'r' : set(manager.GETTERS.keys()),
+                'u' : set(manager.SETTERS.keys()),
             }
             self.valid_crud[model] = crud
             self.valid_crud['%s.%s' % (app, model)] = crud

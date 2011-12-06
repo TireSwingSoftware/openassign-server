@@ -15,6 +15,36 @@ import pr_time
 import tagging.models
 from pr_services.rpc.service import service_method
 
+class ObjectManagerMetaclass(type):
+    """
+    Metaclass for ObjectManager subclasses to merge getters/setters
+    from base classes.
+    """
+    def __new__(cls, name, bases, attrs):
+        setters, getters = {}, {}
+        for base in bases:
+            if hasattr(base, 'SETTERS'):
+                setters.update(base.SETTERS)
+            if hasattr(base, 'GETTERS'):
+                getters.update(base.GETTERS)
+
+        if 'SETTERS' in attrs:
+            setters.update(attrs['SETTERS'])
+        if 'GETTERS' in attrs:
+            getters.update(attrs['GETTERS'])
+
+        # allow subclasses to remove accessors
+        def filter_removed(d):
+            for k, v in d.items():
+                if not v: del d[k]
+
+        filter_removed(setters)
+        filter_removed(getters)
+
+        attrs.update(GETTERS=getters, SETTERS=setters)
+        return type.__new__(cls, name, bases, attrs)
+
+
 class ObjectManager(object):
     """Manage Power Reg persistent objects.
 
@@ -22,16 +52,24 @@ class ObjectManager(object):
     Power Reg 2 system.
 
     """
+    __metaclass__ = ObjectManagerMetaclass
+
+    #: Dictionary of attribute names and the names of functions used to set them
+    SETTERS = {
+        'notes': 'set_many'
+    }
+
+    #: Dictionary of attribute names and the names of functions used to get them
+    GETTERS = {
+        'id': 'get_general',
+        'notes': 'get_many_to_many',
+        'content_type': 'get_content_type',
+        'create_timestamp': 'get_time',
+        'save_timestamp': 'get_time'
+    }
+
     def __init__(self):
         """ constructor """
-        #: Dictionary of attribute names and the names of functions used to set them
-        self.setters = {'notes' : 'set_many'}
-        #: Dictionary of attribute names and the names of functions used to get them
-        self.getters = {'id' : 'get_general',
-            'notes' : 'get_many_to_many',
-            'content_type' : 'get_content_type',
-            'create_timestamp' : 'get_time',
-            'save_timestamp' : 'get_time'}
         #: Sometimes we do nested iterations, such as going through a list of users, and
         #: for each one, figuring out which groups they belong to.  It's helpful to
         #: cache the relationship data here so don't have to fetch it again for each user.

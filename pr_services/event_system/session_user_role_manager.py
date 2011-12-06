@@ -11,18 +11,18 @@ class SessionUserRoleManager(ObjectManager):
     Manage SessionUserRoles in the Power Reg system
     """
 
+    GETTERS = {
+        'name': 'get_general',
+        'session_user_role_requirements': 'get_many_to_one',
+    }
+    SETTERS = {
+        'name': 'set_general',
+        'session_user_role_requirements': 'set_many',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'session_user_role_requirements' : 'get_many_to_one',
-            'name' : 'get_general',
-        })
-        self.setters.update({
-            'session_user_role_requirements' : 'set_many',
-            'name' : 'set_general',
-        })
         self.my_django_model = facade.models.SessionUserRole
 
     @service_method
@@ -32,7 +32,7 @@ class SessionUserRoleManager(ObjectManager):
 
         Optional parameters include:
           url     URL for a website
-        
+
         @param name                   Name for this session user role
         @param optional_parameters    Dictionary of optional parameter names and values
         """

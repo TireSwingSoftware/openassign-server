@@ -6,17 +6,16 @@ class ConditionTestCollectionManager(ObjectManager):
     """
     Manage ConditionTestCollections
     """
-    
+    GETTERS = {
+        'condition_tests': 'get_many_to_many',
+        'name': 'get_general',
+    }
+    SETTERS = {
+        'name': 'set_general',
+    }
     def __init__(self):
-        
+
         ObjectManager.__init__(self)
-        self.getters.update({
-            'name' : 'get_general',
-            'condition_tests' : 'get_many_to_many',
-        })
-        self.setters.update({
-            'name' : 'set_general',
-        })
         self.my_django_model = facade.models.ConditionTestCollection
 
     @service_method

@@ -7,7 +7,7 @@ from pr_services.rpc.service import service_method
 import facade
 
 class ProductDiscountManager(ObjectManager):
-    """ 
+    """
     Manage ProductDiscounts. Only one of product and product_offer should be defined.
 
     <pre>
@@ -18,40 +18,39 @@ class ProductDiscountManager(ObjectManager):
       promo_code            String, up to 15 characters, case insensitive
     </pre>
     """
-
+    GETTERS = {
+        'condition_test_collection': 'get_many_to_many',
+        'cumulative': 'get_general',
+        'currency': 'get_general',
+        'name': 'get_general',
+        'percentage': 'get_general',
+        'product_offers': 'get_many_to_many',
+        'products': 'get_many_to_many',
+        'promo_code': 'get_general',
+        'training_units': 'get_general',
+    }
+    SETTERS = {
+        'condition_test_collection': 'set_many',
+        'cumulative': 'set_general',
+        'currency': 'set_general',
+        'name': 'set_general',
+        'percentage': 'set_general',
+        'product_offers': 'set_many',
+        'products': 'set_many',
+        'promo_code': 'set_general',
+        'training_units': 'set_general',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'condition_test_collection' : 'get_many_to_many',
-            'cumulative' : 'get_general',
-            'currency' : 'get_general',
-            'name' : 'get_general',
-            'percentage' : 'get_general',
-            'products' : 'get_many_to_many',
-            'product_offers' : 'get_many_to_many',
-            'promo_code' : 'get_general',
-            'training_units' : 'get_general',
-        })
-        self.setters.update({
-            'condition_test_collection' : 'set_many',
-            'cumulative' : 'set_general',
-            'currency' : 'set_general',
-            'name' : 'set_general',
-            'percentage' : 'set_general',
-            'products' : 'set_many',
-            'product_offers' : 'set_many',
-            'promo_code' : 'set_general',
-            'training_units' : 'set_general',
-        })
         self.my_django_model = facade.models.ProductDiscount
 
     @service_method
     def create(self, auth_token, name, currency, training_units, percentage, cumulative, products, product_offers, promo_code=None, condition_test_collection=None):
         """
         Create a new ProductDiscount for each product and product_offer listed
-        
+
         @param name                         up to 63 characters
         @param currency                     straight currencty value to deduct, in cents
         @param training_units               straight training_units value to deduct
