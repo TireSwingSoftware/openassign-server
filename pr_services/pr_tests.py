@@ -189,25 +189,25 @@ class TestAuthorizer(TestCase):
             acl = admin_role.acls.all()[0]
             return acl, cPickle.loads(str(acl.acl))
         acl, acl_dict = get_admin_acl()
-        self.assertTrue('annual_beer_consumption' not in acl_dict['User']['r'])
-        self.assertTrue('Beer' not in acl_dict.keys())
+        self.assertNotIn('annual_beer_consumption', acl_dict['User']['r'])
+        self.assertNotIn('Beer', acl_dict)
         acl_updates = {
                         'User' : {
-                            'r' : ['annual_beer_consumption'],
+                            'r' : set(('annual_beer_consumption',)),
                         },
                         'Beer' : {
                             'c' : True,
-                            'r' : ['name', 'brewery', 'style', 'IBU',],
-                            'u' : [],
+                            'r' : set(('name', 'brewery', 'style', 'IBU',)),
+                            'u' : set(),
                             'd' : False,
                         }
         }
         acl.merge_updates(acl_updates)
         acl, acl_dict = get_admin_acl()
-        self.assertTrue('annual_beer_consumption' in acl_dict['User']['r'])
-        self.assertTrue('first_name' in acl_dict['User']['r'])
-        self.assertTrue('Beer' in acl_dict.keys())
-        self.assertTrue('IBU' in acl_dict['Beer']['r'])
+        self.assertIn('annual_beer_consumption', acl_dict['User']['r'])
+        self.assertIn('first_name', acl_dict['User']['r'])
+        self.assertIn('Beer', acl_dict)
+        self.assertIn('IBU', acl_dict['Beer']['r'])
         self.assertEquals(len(acl_dict['Beer']['u']), 0)
         self.assertTrue(acl_dict['Beer']['c'])
 

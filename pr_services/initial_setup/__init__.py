@@ -71,14 +71,12 @@ class InitialSetupMachine(object):
         """
         for model_name, crud in acl.iteritems():
             readable = crud.get('r', None)
-            if not readable:
-                continue
-            elif isinstance(readable, collections.MutableSet):
+            if isinstance(readable, collections.MutableSet):
                 readable.update(default_read_fields)
-            elif isinstance(readable, collections.MutableSequence):
-                #XXX: this should eventually go away
-                readable.extend(filter(lambda f: f not in readable,
-                    default_read_fields))
+            else:
+                raise TypeError("expecting a set of attributes for '%s' crud" %
+                        model_name)
+
 
     def add_acl_to_role(self, name, methods, crud, arbitrary_perms=None):
         """

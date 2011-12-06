@@ -1404,8 +1404,8 @@ class ACL(OwnedPRModel):
     #: acl = {
     #:   'User' : {
     #:       'c' : True,
-    #:       'r' : ['username', 'first_name', 'last_name'],
-    #:       'u' : [],
+    #:       'r' : set(('username', 'first_name', 'last_name')),
+    #:       'u' : set(),
     #:       'd' : False,
     #:   },
     #: }
@@ -1432,12 +1432,12 @@ class ACL(OwnedPRModel):
 
         {
             'User' : {
-                'r' : ['annual_beer_consumption'],
+                'r' : set(('annual_beer_consumption',)),
             },
             'Beer' : {
                 'c' : True,
-                'r' : ['name', 'brewery', 'style', 'IBU',]
-                'u' : [],
+                'r' : set(('name', 'brewery', 'style', 'IBU',))
+                'u' : set(),
                 'd' : False,
             }
         }
@@ -1452,21 +1452,22 @@ class ACL(OwnedPRModel):
         """
         acl_dict = cPickle.loads(str(self.acl))
 
-        for model_acl in acl_updates:
-            model_dict = acl_updates[model_acl]
-            if model_acl in acl_dict:
+        for model_name, model_dict in acl_updates.iteritems():
+            if model_name in acl_dict:
+                crud = acl_dict[model_name]
                 if 'c' in model_dict:
-                    acl_dict[model_acl]['c'] = model_dict['c']
+                    crud['c'] = model_dict['c']
                 if 'r' in model_dict:
-                    acl_dict[model_acl]['r'].extend(model_dict['r'])
+                    crud['r'].update(model_dict['r'])
                 if 'u' in model_dict:
-                    acl_dict[model_acl]['u'].extend(model_dict['u'])
+                    crud['u'].update(model_dict['u'])
                 if 'd' in model_dict:
-                    acl_dict[model_acl]['d'] = model_dict['d']
+                    crud['d'] = model_dict['d']
+            elif any(x not in model_dict for x in 'crud'):
+                raise exceptions.InvalidInputException('new ACL for mode\
+ %s must have all four CRUD components' % model_name)
             else:
-                if acl_updates[model_acl].keys() != ['c','r','u','d']:
-                    raise exceptions.InvalidInputException('new ACL for model %s must have all four CRUD components' % (model_acl))
-                acl_dict[model_acl] = model_dict
+                acl_dict[model_name] = model_dict
 
         self.acl = cPickle.dumps(acl_dict)
         self.save()
