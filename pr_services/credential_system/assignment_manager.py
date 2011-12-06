@@ -271,4 +271,29 @@ class AssignmentManager(ObjectManager):
 
         return Utils.merge_queries(ret, facade.managers.ExamManager(), auth_token, ['name', 'title', 'type', 'description'], 'task')
 
+    @service_method
+    def session_assignments_for_user(self, auth_token, filters=None, fields=None):
+        # apply our filters even if the passed filters is empty
+        if not filters:
+            filters = {'exact' : {'user' : auth_token.user_id}}
+        # apply our fields even if the passed fields is empty
+        if not fields:
+            fields = ['user', 'status', 'task']
+        query_set = self.my_django_model.objects.filter(task__final_type__name='session user role requirement', user__id=auth_token.user_id)
+        ret = facade.subsystems.Getter(auth_token, self, query_set, fields).results
+
+        ret = Utils.merge_queries(ret, facade.managers.SessionUserRoleRequirementManager(), auth_token, ['name', 'title', 'type', 'description', 'session'], 'task')
+
+        # merge in session details
+        session_ids = [assignment['task']['session'] for assignment in ret]
+        session_query = facade.models.Session.objects.filter(id__in=session_ids)
+        sessions = facade.subsystems.Getter(auth_token, facade.managers.SessionManager(), session_query, ['start', 'end']).results
+        session_dict = {}
+        for session in sessions:
+            session_dict[session['id']] = session
+        for assignment in ret:
+            assignment['task']['session'] = session_dict[assignment['task']['session']]
+
+        return ret
+
 # vim:tabstop=4 shiftwidth=4 expandtab

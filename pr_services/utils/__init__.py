@@ -60,7 +60,7 @@ class Utils(object):
         :param q2_manager:          instance of a poweru manager
         :type q2_manager:           ObjectManager
         :param auth_token:          auth token
-        :type auth_token:           string
+        :type auth_token:           AuthToken
         :param q2_requested_fields: list of field names you want for the secondary object
         :type q2_requested_fields:  list
         :param glue_field_name:     the name of the field in the q1 result set that should be

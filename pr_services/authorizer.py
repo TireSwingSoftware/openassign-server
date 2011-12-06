@@ -745,6 +745,17 @@ class Authorizer(object):
     #
     #################################################################################
 
+    def actor_assigned_to_session(self, auth_token, actee):
+        """
+        Returns True iff the actor has an assignment for this session
+        """
+        if not isinstance(actee, facade.models.Session):
+            raise exceptions.InvalidActeeTypeException()
+        if actee.session_user_role_requirements.filter(assignments__user=auth_token.user).exists():
+            return True
+
+        return False
+
     def actor_owns_session(self, auth_token, actee):
         """
         Returns True if the actor owns the event associated with this session.
