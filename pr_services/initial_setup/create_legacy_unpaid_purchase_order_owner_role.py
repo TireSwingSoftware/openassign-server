@@ -9,11 +9,11 @@ def setup(machine):
     crud = {
         'PurchaseOrder' : {
             'c' : False,
-            'r' : ['training_units_purchased', 'training_units_price',
-                      'products', 'product_offers', 'product_discounts', 'expiration',
-                      'organization', 'is_paid', 'payments'],
-            'u' : ['training_units_purchased', 'training_units_price', 'expiration',
-                    'user'],
+            'r' : set(('training_units_purchased', 'training_units_price',
+                       'products', 'product_offers', 'product_discounts',
+                       'expiration', 'organization', 'is_paid', 'payments')),
+            'u' : set(('training_units_purchased', 'training_units_price',
+                       'expiration', 'user')),
             'd' : False,
         },
     }

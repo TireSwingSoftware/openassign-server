@@ -8,8 +8,8 @@ def setup(machine):
     crud = {
         'Group' : {
             'c' : False,
-            'r' : ['managers', 'name', 'users'],
-            'u' : ['managers', 'name', 'users'],
+            'r' : set(('managers', 'name', 'users')),
+            'u' : set(('managers', 'name', 'users')),
             'd' : False,
         },
     }

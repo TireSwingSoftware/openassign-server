@@ -18,14 +18,14 @@ def setup(machine):
     crud = {
         'Category' : {
             'c' : False,
-            'r' : ['name', 'locked'],
-            'u' : [],
+            'r' : set(('name', 'locked')),
+            'u' : set(),
             'd' : False,
         },
         'Video' : {
             'c' : True,
-            'r' : [],
-            'u' : [],
+            'r' : set(),
+            'u' : set(),
             'd' : False,
         },
     }

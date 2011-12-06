@@ -11,8 +11,8 @@ def setup(machine):
     if 'test_services' in settings.INSTALLED_APPS:
         crud['NotASubclassOfPRModel'] = {
             'c': True,
-            'r': [],
-            'u': [],
+            'r': set(),
+            'u': set(),
             'd': False,
         }
     machine.add_acl_to_role('Guest', methods, crud, arb_perm_list)

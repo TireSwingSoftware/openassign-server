@@ -18,7 +18,7 @@ def setup(machine):
     crud = {
         'User' : {
             'c' : True,
-            'r' : ['credentials',
+            'r' : set(('credentials',
                    'session_user_role_requirements', 'product_lines_managed',
                    'product_lines_instructor_manager_for', 'product_lines_instructor_for',
                    'groups', 'photo_url', 'url', 'username', 'domains',
@@ -26,14 +26,14 @@ def setup(machine):
                    'full_name',
                    'phone', 'phone2', 'phone3', 'email', 'email2',
                    'status', 'color_code', 'biography',
-                   'shipping_address', 'billing_address',],
-            'u' : ['credentials',
+                   'shipping_address', 'billing_address',)),
+            'u' : set(('credentials',
                    'groups', 'photo_url',
                    'url',
                    'title', 'first_name', 'middle_name', 'last_name', 'name_suffix',
                    'phone', 'phone2', 'phone3', 'email', 'email2',
                    'status', 'color_code', 'biography', 'shipping_address',
-                   'billing_address',],
+                   'billing_address',)),
             'd' : True,
         },
     }

@@ -11,23 +11,24 @@ def setup(machine):
     crud = {
         'Assignment' : {
             'c' : True,
-            'r' : ['task', 'task_content_type', 'user', 'date_started',
-                   'date_completed', 'due_date', 'prerequisites_met',
-                   'effective_date_assigned', 'status', 'assignment_attempts'],
-            'u' : [],
+            'r' : set(('task', 'task_content_type', 'user', 'date_started',
+                       'date_completed', 'due_date', 'prerequisites_met',
+                       'effective_date_assigned', 'status',
+                       'assignment_attempts')),
+            'u' : set(),
             'd' : False,
         },
         'Session' : {
             'c' : False,
-            'r' : ['end', 'event', 'room', 'start', 'status'],
-            'u' : [],
+            'r' : set(('end', 'event', 'room', 'start', 'status')),
+            'u' : set(),
             'd' : False,
         },
         'SessionUserRoleRequirement' : {
             'c' : False,
-            'r' : ['author', 'create_timestamp', 'prerequisite_tasks', 'name',
-                   'session', 'title', 'type', 'description'],
-            'u' : [],
+            'r' : set(('author', 'create_timestamp', 'prerequisite_tasks',
+                       'name', 'session', 'title', 'type', 'description')),
+            'u' : set(),
             'd' : False,
         },
     }

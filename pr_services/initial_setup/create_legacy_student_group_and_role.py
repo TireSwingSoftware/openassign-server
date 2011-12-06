@@ -11,17 +11,17 @@ def setup(machine):
     crud_1 = {
         'Sco' : {
             'c' : False,
-            'r' : ['course', 'description', 'name',
+            'r' : set(('course', 'description', 'name',
                    'prerequisite_tasks', 'type',
-                   'version_id', 'version_label',],
-            'u' : [],
+                   'version_id', 'version_label')),
+            'u' : set(),
             'd' : False,
         },
         'Task' : {
             'c' : False,
-            'r' : ['description', 'name', 'prerequisite_tasks',
-                   'type', 'version_id', 'version_label',],
-            'u' : [],
+            'r' : set(('description', 'name', 'prerequisite_tasks',
+                   'type', 'version_id', 'version_label')),
+            'u' : set(),
             'd' : False,
         },
     }
@@ -33,8 +33,8 @@ def setup(machine):
     crud_2 = {
         'Sco' : {
             'c' : False,
-            'r' : ['url'],
-            'u' : [],
+            'r' : set(('url', )),
+            'u' : set(),
             'd' : False,
         },
     }

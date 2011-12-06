@@ -3,12 +3,16 @@ initial setup for the power reg 2 application
 """
 
 import cPickle
+import collections
+
 import facade
 
 # the default fields that everyone should be able to read for any
 # model they have access to
-default_read_fields = ['id', 'content_type', 'create_timestamp',
-    'save_timestamp']
+default_read_fields = frozenset(('id',
+                                 'content_type',
+                                 'create_timestamp',
+                                 'save_timestamp'))
 
 class InitialSetupMachine(object):
     def __init__(self):
@@ -56,25 +60,30 @@ class InitialSetupMachine(object):
         self.user_manager = facade.managers.UserManager()
         self.import_manager = facade.managers.ImportManager()
 
-    def add_default_read_fields_to_acl(self, acl):
+    @classmethod
+    def add_default_read_fields_to_acl(cls, acl):
         """
         Add the default read fields to the list of readable attributes for every
         model listed in an ACL.
-        
+
         :param acl: dictionary representation of the ACL
         :type acl: dict
         """
-        
-        for model_name in acl:
-            if acl[model_name].has_key('r'):
-                for field in default_read_fields:
-                    if field not in acl[model_name]['r']:
-                        acl[model_name]['r'].append(field)
+        for model_name, crud in acl.iteritems():
+            readable = crud.get('r', None)
+            if not readable:
+                continue
+            elif isinstance(readable, collections.MutableSet):
+                readable.update(default_read_fields)
+            elif isinstance(readable, collections.MutableSequence):
+                #XXX: this should eventually go away
+                readable.extend(filter(lambda f: f not in readable,
+                    default_read_fields))
 
     def add_acl_to_role(self, name, methods, crud, arbitrary_perms=None):
         """
         Create model objects to represent an ACL for an authorizer role.
-        
+
         :param name: Name of the role to work with (created if necessary).
         :type name: str
         :param methods: A list of dictionaries, each containing the name of an ACCheckMethod and a dict of params to pass to it.
@@ -85,7 +94,7 @@ class InitialSetupMachine(object):
         :type arbitrary_perms: list
         """
         role, created = facade.models.Role.objects.get_or_create(name=name)
-        self.add_default_read_fields_to_acl(crud)
+        InitialSetupMachine.add_default_read_fields_to_acl(crud)
         crud = cPickle.dumps(crud)
         if arbitrary_perms is not None:
             arbitrary_perms = cPickle.dumps(arbitrary_perms)
