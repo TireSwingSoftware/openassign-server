@@ -10,19 +10,21 @@ class AssignmentAttemptManager(ObjectManager):
     Manage AssignmentAttempts in the Power Reg system
     """
 
+    GETTERS = {
+        'assignment': 'get_foreign_key',
+        'date_completed': 'get_time',
+        'date_started': 'get_time',
+    }
+
+    SETTERS = {
+        'date_completed': 'set_time',
+        'date_started': 'set_time',
+    }
+
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'assignment' : 'get_foreign_key',
-            'date_completed' : 'get_time',
-            'date_started' : 'get_time',
-        })
-        self.setters.update({
-            'date_completed' : 'set_time',
-            'date_started' : 'set_time',
-        })
         self.my_django_model = facade.models.AssignmentAttempt
         self.subclass_manager_map = {
             'exam' : {'manager' : 'ExamSessionManager',

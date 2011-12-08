@@ -4,9 +4,6 @@ Exceptions for Power Reg exam system.
 
 __docformat__ = "restructuredtext en"
 
-# Django
-from django.conf import settings
-
 # PowerReg
 from pr_services.pr_exceptions import PrException
 

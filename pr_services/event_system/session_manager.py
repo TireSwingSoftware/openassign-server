@@ -3,10 +3,6 @@ Session manager class
 """
 
 from datetime import datetime, timedelta
-from django.core.mail import EmailMessage
-from django.db import IntegrityError
-from django.template import Template, Context
-from django.template.loader import get_template
 from pr_services import pr_time
 from pr_services import exceptions
 from pr_services.object_manager import ObjectManager
@@ -29,95 +25,109 @@ class SessionManager(ObjectManager):
     a SessionUserRoleRequirement primary key. All you really need to know is
     that each association of a Session with a SessionUserRole yields a
     SessionUserRoleRequirement.
-    
-    """
 
+    """
+    GETTERS = {
+        'audience': 'get_general',
+        'confirmed': 'get_general',
+        'default_price': 'get_general',
+        'description': 'get_general',
+        'end': 'get_time',
+        'evaluation': 'get_foreign_key',
+        'event': 'get_foreign_key',
+        'fullname': 'get_general',
+        'lead_time': 'get_general',
+        'modality': 'get_general',
+        'paypal_url': 'get_paypal_url_from_session',
+        'room': 'get_foreign_key',
+        'session_resource_type_requirements': 'get_many_to_one',
+        'session_template': 'get_foreign_key',
+        'session_user_role_requirements': 'get_many_to_one',
+        'session_user_roles': 'get_many_to_many',
+        'shortname': 'get_general',
+        'start': 'get_time',
+        'status': 'get_general',
+        'title': 'get_general',
+        'url': 'get_general',
+    }
+    SETTERS = {
+        'audience': 'set_general',
+        'confirmed': 'set_general',
+        'default_price': 'set_general',
+        'description': 'set_general',
+        'end': 'set_time',
+        'event': 'set_foreign_key',
+        'fullname': 'set_general',
+        'lead_time': 'set_general',
+        'modality': 'set_general',
+        'room': 'set_foreign_key',
+        'session_resource_type_requirements': 'set_many',
+        'session_template': 'set_foreign_key',
+        'session_user_role_requirements': 'set_many',
+        'session_user_roles': 'set_many',
+        'shortname': 'set_general',
+        'start': 'set_time',
+        'status': 'set_general',
+        'title': 'set_general',
+        'url': 'set_general',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update( {
-            'audience' : 'get_general',
-            'confirmed' : 'get_general',
-            'session_template' : 'get_foreign_key',
-            'default_price' : 'get_general',
-            'end' : 'get_time',
-            'evaluation' : 'get_foreign_key',
-            'modality' : 'get_general',
-            'name' : 'get_general',
-            'paypal_url' : 'get_paypal_url_from_session',
-            'start' : 'get_time',
-            'status' : 'get_general',
-            'title' : 'get_general',
-            'url' : 'get_general',
-            'description' : 'get_general',
-            'room' : 'get_foreign_key',
-            'event' : 'get_foreign_key',
-            'session_user_roles' : 'get_many_to_many',
-            'session_user_role_requirements' : 'get_many_to_one',
-        } )
-        #: Dictionary of attribute names and the functions used to set them
-        self.setters.update({
-            'audience' : 'set_general',
-            'confirmed' : 'set_general',
-            'session_template' : 'set_foreign_key',
-            'default_price' : 'set_general',
-            'end' : 'set_time',
-            'modality' : 'set_general',
-            'name' : 'set_general',
-            'start' : 'set_time',
-            'status' : 'set_general',
-            'title' : 'set_general',
-            'url' : 'set_general',
-            'description' : 'set_general',
-            'room' : 'set_foreign_key',
-            'event' : 'set_foreign_key',
-            'session_user_roles' : 'set_many',
-            'session_user_role_requirements' : 'set_many',
-        })
         self.my_django_model = facade.models.Session
         self.session_user_role_requirement_manager = facade.managers.SessionUserRoleRequirementManager()
+        self.session_resource_type_requirement_manager = facade.managers.SessionResourceTypeRequirementManager()
         self.logger = logging.getLogger('pr_services.SessionManager')
 
     @service_method
     def create(self, auth_token, start, end, status, confirmed, default_price,
-            event, optional_attributes=None):
+            event, shortname, fullname, optional_attributes=None):
         """
         Create a new Session
 
-        @param start                  Start time as ISO8601 string
+        @param start                Start time as ISO8601 string
         @type start string
-        @param end                    End time as ISO8601 string
+        @param end                  End time as ISO8601 string
         @type end string
-        @param status                 String: one of 'active', 'pending', 'canceled', 'completed'
-        @param confirmed              is this Session confirmed?
+        @param status               String: one of 'active', 'pending', 'canceled', 'completed'
+        @param confirmed            is this Session confirmed?
         @type confirmed bool
-        @param default_price          Default Price in cents
-        @param event                  Foreign Key for an event
-        @param optional_attributes    Optional attribute values indexed by name
-        @return                       Instance of Session
-                                      dict with new primary key indexed as 'id'
+        @param default_price        Default Price in cents
+        @param event                Foreign Key for an event
+        @param shortname            human-readable short name
+        @type shortname string
+        @param fullname             human-readable long name
+        @type fullname string
+        @param optional_attributes  Optional attribute values indexed by name
+        @return                     Instance of Session
+                                    dict with new primary key indexed as 'id'
         """
 
         if optional_attributes is None:
             optional_attributes = {}
 
         new_session = self._create(auth_token, start, end, status, confirmed, default_price,
-                event, optional_attributes)
+                event, shortname, fullname, optional_attributes)
         self.authorizer.check_create_permissions(auth_token, new_session)
         return new_session
 
     def _create(self, auth_token, start, end, status, confirmed, default_price,
-            event, optional_attributes=None):
+            event, shortname, fullname, optional_attributes=None):
         """
         Create a new Session
-        
-        @param start          Start time, ISO8601 string
-        @param end            End time, ISO8601 string
-        @param status         String: one of 'active', 'pending', 'canceled', 'completed'
-        @param confirmed      Boolean: is this Session confirmed?
-        @param default_price  Default price for the Session in US cents
-        @return               Instance of Session
+
+        @param start                Start time, ISO8601 string
+        @param end                  End time, ISO8601 string
+        @param status               String: one of 'active', 'pending', 'canceled', 'completed'
+        @param confirmed            Boolean: is this Session confirmed?
+        @param default_price        Default price for the Session in US cents
+        @param event                Foreign Key for an event
+        @param shortname            human-readable short name
+        @type shortname string
+        @param fullname             human-readable long name
+        @type fullname string
+        @return                     Instance of Session
         """
 
         if optional_attributes is None:
@@ -125,32 +135,30 @@ class SessionManager(ObjectManager):
 
         actor = auth_token.user
         b = facade.managers.BlameManager().create(auth_token)
+        start = pr_time.iso8601_to_datetime(start)
         end = pr_time.iso8601_to_datetime(end)
-        name = str(end.year)+str(end.month)+str(end.day)
-        new_session = self.my_django_model(start = pr_time.iso8601_to_datetime(start), end=end, name=name,
+        new_session = self.my_django_model(start=start, end=end,
                 status=status, confirmed=confirmed, default_price=default_price,
-                blame=b)
-        if 'session_template' in optional_attributes:
-            the_session_template = self._find_by_id(optional_attributes['session_template'], facade.models.SessionTemplate)
-            if the_session_template.shortname:
-                new_session.name = the_session_template.shortname + name
-            if the_session_template.description is not None:
-                new_session.description = the_session_template.description
-            if (the_session_template.price is not None) and (new_session.default_price is None):
-                new_session.default_price = the_session_template.price
-            if (the_session_template.modality is not None) and (new_session.modality is None):
-                new_session.modality = the_session_template.modality
+                shortname=shortname, fullname=fullname, blame=b)
         new_session.event = self._find_by_id(event, facade.models.Event)
         new_session.save()
         if 'session_template' in optional_attributes:
+            the_session_template = self._find_by_id(optional_attributes['session_template'], facade.models.SessionTemplate)
+
             if (the_session_template.session_template_user_role_requirements.all().count() != 0):
                 # We need to create a session_user_role_requirement for each of these and associate it with this session
                 for session_template_user_role_requirement in the_session_template.session_template_user_role_requirements.all():
-                    new_session_user_role_requirement = self.session_user_role_requirement_manager.create(auth_token, new_session.id,
+                    self.session_user_role_requirement_manager.create(auth_token, new_session.id,
                         session_template_user_role_requirement.session_user_role.id, session_template_user_role_requirement.min, session_template_user_role_requirement.max, False)
+
+            if (the_session_template.session_template_resource_type_requirements.all().count() != 0):
+                # We need to create a session_feature_type_requirement for each of these and associate it with this session
+                for session_template_resource_type_requirement in the_session_template.session_template_resource_type_requirements.all():
+                    self.session_resource_type_requirement_manager.create(auth_token, new_session.id,
+                        session_template_resource_type_requirement.resource_type.id, session_template_resource_type_requirement.min, session_template_resource_type_requirement.max)
+
             new_session.session_template = the_session_template
             del optional_attributes['session_template']
-        new_session.name = new_session.name+new_session.mangle_id(new_session.id)
         new_session.save()
         if optional_attributes:
             facade.subsystems.Setter(auth_token, self, new_session, optional_attributes)
@@ -161,7 +169,7 @@ class SessionManager(ObjectManager):
     def get_sessions_by_user_role(self, auth_token, user_id, session_user_role_id):
         """
         Get Sessions by user and SessionUserRole
-        
+
         @param user_id                user primary key
         @param session_user_role_id   SessionUserRole primary key
         @return                       array of Session primary keys
@@ -184,7 +192,7 @@ class SessionManager(ObjectManager):
     def get_user_filtered(self, auth_token, user_id, filters):
         """
         Get Sessions filtered by various limits, including a particular user.
-        
+
         @param user_id    Primary key for a user
         @param filters    A struct of structs indexed by filter name. Each
                           filter's struct should contain values indexed by
@@ -216,7 +224,7 @@ class SessionManager(ObjectManager):
                 timedelta(seconds=session.event.lead_time)
             if current_time >= expiration_time and session.status == 'active':
                 res.append(session)
-                
+
         return res
 
     def _process_session_reminders(self):
@@ -326,7 +334,7 @@ class SessionManager(ObjectManager):
         """
         if filters is None:
             filters = {}
-        ret = self.get_filtered(auth_token, filters, ['start', 'end', 'status', 'confirmed', 'event', 'name', 'room', 'title', 'url', 'description', 'session_user_role_requirements'])
+        ret = self.get_filtered(auth_token, filters, ['start', 'end', 'status', 'confirmed', 'event', 'fullname', 'room', 'shortname', 'title', 'url', 'description', 'session_user_role_requirements'])
 
         ret = Utils.merge_queries(ret, facade.managers.RoomManager(), auth_token, ['name', 'venue_name', 'venue_address'], 'room')
 

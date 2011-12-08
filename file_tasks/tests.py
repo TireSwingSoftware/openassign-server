@@ -1,8 +1,12 @@
+# Many of these tests will fail unless your settings have
+# CELERY_ALWAYS_EAGER == True
+
+
 # Python
+from __future__ import with_statement
 import os
 
 # Django
-from django.test import TestCase
 from django.core.urlresolvers import reverse
 
 # PowerReg
@@ -112,6 +116,21 @@ class TestFileDownload(TestCase):
         self.assertEqual(facade.models.FileDownload.objects.filter(deleted=False).count(), 0)
         # Silently return if the file has already been marked deleted.
         self.file_download_manager.delete(self.admin_token, file_download.id)
+
+    def test_file_download_assignments_for_user(self):
+        file_download = self._upload_file()
+        self.assignment_manager.create(self.admin_token, file_download.id, self.user1.id)
+        ret = self.assignment_manager.file_download_assignments_for_user(self.auth_token)
+        self.assertEquals(len(ret), 1)
+        assignment = ret[0]
+        self.assertEquals(assignment['user'], self.user1.id)
+        self.assertEquals(assignment['status'], 'assigned')
+        self.assertTrue('task' in assignment)
+        task = assignment['task']
+        self.assertTrue('file_size' in task)
+        self.assertTrue('file_url' in task)
+        self.assertTrue('name' in task)
+        self.assertTrue('description' in task)
 
     def test_download_file_as_user(self):
         file_download = self._upload_file()

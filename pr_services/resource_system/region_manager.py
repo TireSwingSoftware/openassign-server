@@ -2,7 +2,6 @@
 Region manager class
 """
 
-from pr_services import exceptions
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
@@ -11,28 +10,27 @@ class RegionManager(ObjectManager):
     """
     Manage Regions in the Power Reg system
     """
-
+    SETTERS = {
+        'events': 'set_many',
+        'name': 'set_general',
+        'venues': 'set_many',
+    }
+    GETTERS = {
+        'events': 'get_many_to_one',
+        'name': 'get_general',
+        'venues': 'get_many_to_one',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.setters.update({
-            'name' : 'set_general',
-            'events' : 'set_many',
-            'venues' : 'set_many',
-        })
-        self.getters.update({
-            'name' : 'get_general',
-            'events' : 'get_many_to_one',
-            'venues' : 'get_many_to_one',
-        })
         self.my_django_model = facade.models.Region
 
     @service_method
     def create(self, auth_token, name, optional_attributes=None):
         """
         Create a new Region
-        
+
         @param name                name of the Region
         @return                    a reference to the newly created Region
         """

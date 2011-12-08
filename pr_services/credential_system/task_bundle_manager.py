@@ -3,7 +3,6 @@ TaskBundleManager class
 """
 __docformat__ = "restructuredtext en"
 
-from pr_services import exceptions
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
@@ -13,20 +12,20 @@ class TaskBundleManager(ObjectManager):
     Manage Task Bundles in the Power Reg system
     """
 
+    GETTERS = {
+        'name': 'get_general',
+        'description': 'get_general',
+        'tasks': 'get_tasks_from_task_bundle',
+    }
+    SETTERS = {
+        'name': 'set_general',
+        'description': 'set_general',
+        'tasks': 'set_tasks_for_task_bundle',
+    }
     def __init__(self):
         """ constructor """
 
         super(TaskBundleManager, self).__init__()
-        self.getters.update({
-            'name' : 'get_general',
-            'description' : 'get_general',
-            'tasks' : 'get_tasks_from_task_bundle',
-        })
-        self.setters.update({
-            'name' : 'set_general',
-            'description' : 'set_general',
-            'tasks' : 'set_tasks_for_task_bundle',
-        })
         self.my_django_model = facade.models.TaskBundle
 
     @service_method
@@ -45,7 +44,7 @@ class TaskBundleManager(ObjectManager):
 
         :returns: a reference to the newly created task bundle
         """
-        
+
         task_bundle = self.my_django_model.objects.create(name=name,
             description=description)
 
@@ -58,7 +57,7 @@ class TaskBundleManager(ObjectManager):
             tbta.save()
 
         self.authorizer.check_create_permissions(auth_token, task_bundle)
-        
+
         return task_bundle
 
 # vim:tabstop=4 shiftwidth=4 expandtab

@@ -2,7 +2,6 @@
 TrainingUnitAuthorization manager class
 """
 
-from datetime import datetime
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
@@ -12,32 +11,32 @@ class TrainingUnitAuthorizationManager(ObjectManager):
     Manage TrainingUnitAuthorizations in the Power Reg system
     """
 
+    GETTERS = {
+        'end': 'get_time',
+        'max_value': 'get_general',
+        'start': 'get_time',
+        'training_unit_account': 'get_foreign_key',
+        'used_value': 'get_used_value_from_training_unit_authorization',
+        'user': 'get_foreign_key',
+    }
+    SETTERS = {
+        'end': 'set_time',
+        'max_value': 'set_general',
+        'start': 'set_time',
+        'training_unit_account': 'set_foreign_key',
+        'user': 'set_foreign_key',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'user' : 'get_foreign_key',
-            'training_unit_account' : 'get_foreign_key',
-            'start' : 'get_time',
-            'end' : 'get_time',
-            'used_value' : 'get_used_value_from_training_unit_authorization',
-            'max_value' : 'get_general',
-        })
-        self.setters.update({
-            'user' : 'set_foreign_key',
-            'training_unit_account' : 'set_foreign_key',
-            'start' : 'set_time',
-            'end' : 'set_time',
-            'max_value' : 'set_general',
-        })
         self.my_django_model = facade.models.TrainingUnitAuthorization
 
     @service_method
     def create(self, auth_token, training_unit_account, user, start, end, max_value):
         """
         Create a new TrainingUnitAuthorization
-        
+
         @param training_unit_account    Foreign Key for a training unit account
         @param user                     Foreign Key for a user
         @param start                    Start time as ISO8601 string

@@ -1,6 +1,5 @@
 ## amf_svc.py
 
-from pr_services import exceptions
 from pr_services.rpc.service import ServiceManagers
 from pyamf.remoting.gateway.django import DjangoGateway
 import facade

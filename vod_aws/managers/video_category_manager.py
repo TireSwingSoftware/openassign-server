@@ -10,21 +10,22 @@ from pr_services.rpc.service import service_method
 from pr_services.utils import Utils
 
 class VideoCategoryManager(ObjectManager):
-    """Manage VideoCategories in the Power Reg system"""
-
+    """
+    Manage VideoCategories in the Power Reg system.
+    """
+    GETTERS = {
+        'category': 'get_foreign_key',
+        'category_name': 'get_general',
+        'status': 'get_general',
+        'video': 'get_foreign_key',
+    }
+    SETTERS = {
+        'status': 'set_general',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'status' : 'get_general',
-            'category_name' : 'get_general',
-            'category' : 'get_foreign_key',
-            'video' : 'get_foreign_key',
-        })
-        self.setters.update({
-            'status' : 'set_general',
-        })
         self.my_django_model = facade.models.VideoCategory
 
 

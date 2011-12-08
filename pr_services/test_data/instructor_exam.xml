@@ -2,29 +2,29 @@
 
 <exam xmlns="http://americanri.com/2009/poweru/exam/1.0"
       id="instructor_exam"
-      title="Constant Contact Final Exam"
+      title="XYZ Final Exam"
       passing_score = "90">
 
-    <question_pool title="Getting to Know Constant Contact">
+    <question_pool title="Getting to Know XYZ">
 
         <question type="choice">
-            <rejoinder>No, that is incorrect. The correct answer is 'Learning Center.' You can find product tutorials and guides in the Learning Center area of the Constant Contact website. See Module 1: Getting to Know Constant Contact for more information.</rejoinder>
-            <label>Where on the Constant Contact website can product tutorials and guides be found?</label>
+            <rejoinder>No, that is incorrect. The correct answer is 'Learning Center.' You can find product tutorials and guides in the Learning Center area of the XYZ website. See Module 1: Getting to Know XYZ for more information.</rejoinder>
+            <label>Where on the XYZ website can product tutorials and guides be found?</label>
             <answer><label>Local Educator Support Page</label></answer>
             <answer><label>User Community</label></answer>
-            <answer><label>Constant Contact University</label></answer>
+            <answer><label>XYZ University</label></answer>
             <answer correct="true"><label>Learning Center</label></answer>
         </question>
 
         <question type="bool" widget="RadioSelect">
-            <rejoinder>No, that is incorrect. The correct answer is False. Customer can find Information on email marketing seminars in their area in the 'Local Seminars' section of the website. See Module 1: Getting to Know Constant Contact for more information.</rejoinder>
+            <rejoinder>No, that is incorrect. The correct answer is False. Customer can find Information on email marketing seminars in their area in the 'Local Seminars' section of the website. See Module 1: Getting to Know XYZ for more information.</rejoinder>
             <label>True or False? A customer can find Information on email marketing seminars in their area in the 'Email coaching and support' section of the website.</label>
             <answer value="true"><label>True</label></answer>
             <answer value="false" correct = "1"><label>False</label></answer>
         </question>
 
         <question type="choice" widget="CheckboxSelectMultiple" max_answers="none">
-            <rejoinder>No, that is incorrect. The correct answers are 'Industry-specific forums', Location-specific 'neighborhoods', and 'Idea exchange forums'. Discussion board sub-categories include industry-specific forums, location-specific 'neighborhoods,' and idea exchange forums. See Module 1: Getting to Know Constant Contact for more information.</rejoinder>
+            <rejoinder>No, that is incorrect. The correct answers are 'Industry-specific forums', Location-specific 'neighborhoods', and 'Idea exchange forums'. Discussion board sub-categories include industry-specific forums, location-specific 'neighborhoods,' and idea exchange forums. See Module 1: Getting to Know XYZ for more information.</rejoinder>
             <label>ConnectUp! Community discussion board sub-categories include (check all that apply):</label>
             <answer correct="true"><label>Industry-specific forums</label></answer>
             <answer correct="true"><label>Location-specific neighborhoods</label></answer>
@@ -38,7 +38,7 @@
 
         <question type="bool" widget="RadioSelect">
             <rejoinder>No, that is incorrect. The correct answer is False. See Module 2: Your Role as a Trained Presenter for more information.</rejoinder>
-            <label>True or False? To earn your trained presenter designation, you must be a Constant Contact customer in good standing.</label>
+            <label>True or False? To earn your trained presenter designation, you must be a XYZ customer in good standing.</label>
             <answer value="false"><label>True</label></answer>
             <answer value="true" correct="true"><label>False</label></answer>
         </question>
@@ -51,8 +51,8 @@
         </question>
 
         <question type="bool" widget="RadioSelect">
-            <rejoinder>No, that is incorrect. The correct answer is True. Trained presenter services are provided as independent contractors, not as employees of Constant Contact Inc. See Module 2: Your Role as a Trained Presenter for more information.</rejoinder>
-            <label>True or False? Trained presenters are not considered employees of Constant Contact.</label>
+            <rejoinder>No, that is incorrect. The correct answer is True. Trained presenter services are provided as independent contractors, not as employees of XYZ Inc. See Module 2: Your Role as a Trained Presenter for more information.</rejoinder>
+            <label>True or False? Trained presenters are not considered employees of XYZ.</label>
             <answer value="true" correct="true"><label>True</label></answer>
             <answer value="false"><label>False</label></answer>
         </question>
@@ -138,7 +138,7 @@
     
         <question type="choice" widget="CheckboxSelectMultiple" max_answers="none">
             <rejoinder>No, that is incorrect. The correct answers are 'Newsletters', 'Promotions, invitations, and surveys', and 'Announcements'. The three email formats that can help you meet your marketing goals are newsletters; promotions, invitations, and surveys; and announcements. See Module 5: Creating Valuable Email Content for more information.</rejoinder>
-            <label>Which three email formats does Constant Contact recommend you use to help meet your marketing goals? (Check all that apply.)</label>
+            <label>Which three email formats does XYZ recommend you use to help meet your marketing goals? (Check all that apply.)</label>
             <answer correct="true"><label>Newsletters</label></answer>
             <answer><label>Daily Digests</label></answer>
             <answer correct="true"><label>Promotions, invitations, and surveys</label></answer>
@@ -150,8 +150,8 @@
     <question_pool title="Getting Emails Delivered and Read">
 
         <question type="choice" widget="RadioSelect">
-            <rejoinder>No, that is incorrect. The correct answer is 'It can determine whether your email content is likely to be filtered or blocked before you send it.'. Constant Contact's anti-spam check can determine whether your email content is likely to be filtered or blocked before you send it. See Module 6: Getting Email Delivered and Read for more information.</rejoinder>
-            <label>What is the benefit of Constant Contact's anti-spam check?</label>
+            <rejoinder>No, that is incorrect. The correct answer is 'It can determine whether your email content is likely to be filtered or blocked before you send it.'. XYZ's anti-spam check can determine whether your email content is likely to be filtered or blocked before you send it. See Module 6: Getting Email Delivered and Read for more information.</rejoinder>
+            <label>What is the benefit of XYZ's anti-spam check?</label>
             <answer><label>It can help you decide if your audience will consider your message 'valuable'.</label></answer>
             <answer><label>It prevents spam from clogging your inbox.</label></answer>
             <answer correct="true"><label>It can determine whether your email content is likely to be filtered or blocked before you send it.</label></answer>

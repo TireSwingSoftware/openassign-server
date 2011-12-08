@@ -7,36 +7,42 @@ from __future__ import with_statement
 
 import cPickle
 import cStringIO
-from datetime import datetime, date, timedelta
 import hashlib
 import inspect
+import operator
 import os
-import sys
 import time
 import urllib2
-import django.test.client
-from django.utils import simplejson as json
-import django.utils.dateformat
-from celery import conf
 
-from cookiecache import CookieCache
+import django.test.client
+import django.utils.dateformat
+import django.utils.unittest
+
+from celery import conf
+from datetime import datetime, date, timedelta
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
+from django.utils import simplejson as json
+from django.utils.unittest import skipIf, skipUnless
+
+import pr_models
+
+from cookiecache import CookieCache
 from initial_setup import InitialSetupMachine, default_read_fields
 from pr_services import exceptions
 from pr_services import pr_time
-from pr_services.utils import UnicodeCsvWriter
-from pr_services.rpc.service import service_method, wrap_service_method, RpcService, create_rpc_service
-from pr_services.object_manager import ObjectManager
 from pr_services.gettersetter import Getter, Setter
+from pr_services.object_manager import ObjectManager
+from pr_services.rpc.service import service_method, wrap_service_method, RpcService, create_rpc_service
+from pr_services.utils import UnicodeCsvWriter
 
 import facade
 
 # make stdout and stderr use UTF-8 encoding so that printing out
 # UTF-8 data while debugging doesn't choke
 
-class TestCase(django.test.TestCase):
+class TestCase(django.test.TestCase, django.utils.unittest.TestCase):
     """Super-class used to do basic setup for almost all power reg test cases.
 
     This is useful for getting authentication taken care of without duplicating
@@ -212,10 +218,29 @@ class TestAuthToken(TestCase):
         self.assertEquals(da.auth_tokens.all()[0].id, self.admin_token.id)
         new_admin_token = facade.models.AuthToken.objects.get(session_id=self.user_manager.login('admin', 'admin')['auth_token'])
         self.assertEquals(len(da.auth_tokens.all()), 2)
-        
+
         admin_users_auth_tokens = da.auth_tokens.values_list('session_id', flat=True)
         self.assertTrue(self.admin_token.session_id in admin_users_auth_tokens)
         self.assertTrue(new_admin_token.session_id in admin_users_auth_tokens)
+
+    def test_caching(self):
+        user1 = self.user_manager.create(self.admin_token, 'cached_user', 'letmein',
+            'Mr.', 'Primo', 'Uomo', '555.555.5555', 'user1@acme-u.com', 'active')
+        auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('cached_user',
+            'letmein')['auth_token'])
+        ret = facade.models.AuthToken.objects.get(session_id=auth_token.session_id)
+        self.assertEquals(auth_token.id, ret.id)
+        self.assertEquals(auth_token.session_id, ret.session_id)
+        # by now it should be cached, so let's try again
+        ret = facade.models.AuthToken.objects.get(session_id=auth_token.session_id)
+        self.assertEquals(auth_token.id, ret.id)
+        self.assertEquals(auth_token.session_id, ret.session_id)
+        # relogin is a special case, since it changes the session_id (which is
+        # used to generate the cache key). Thus, we need to confirm that the old
+        # token under its old cache key gets purged from the cache.
+        old_session_id = auth_token.session_id
+        new_session_id = self.user_manager.relogin(auth_token)['auth_token']
+        self.assertRaises(facade.models.AuthToken.DoesNotExist, facade.models.AuthToken.objects.get, session_id=old_session_id)
 
 class TestBackendInfo(TestCase):
     def test_backend_info(self):
@@ -238,7 +263,7 @@ class TestCookiecache(TestCase):
     def setUp(self):
         TestCase.setUp(self)
 
-        test_user = self.user_manager.create(self.admin_token, 'test_user', 'password', 'Mr.', 'Memcache', 'Test', '', 'memcache@tester.email', 'active')
+        self.user_manager.create(self.admin_token, 'test_user', 'password', 'Mr.', 'Memcache', 'Test', '', 'memcache@tester.email', 'active')
         self.auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('test_user', 'password')['auth_token'])
 
     def test_all(self):
@@ -270,7 +295,7 @@ class TestCookiecache(TestCase):
 
         # Clean up
         mc.delete()
-    
+
     def test_cookiecache_view(self):
         facade.models.CachedCookie.objects.create(key='foo', value='line 1\r\nline 2\r\n')
         response = self.client.get('/cookiecache/foo/')
@@ -325,23 +350,22 @@ class TestAssignment(TestCase):
 
     # make sure status changes from 'pending' to 'assigned' when minimum enrollment numbers are met
     def test_session_status_change(self):
-        one_day = timedelta(days = 1)
         learner1 = self.user_manager.create(self.admin_token, 'learner_1', 'password', '', '', '', '', '', 'active')
         learner2 = self.user_manager.create(self.admin_token, 'learner_2', 'password', '', '', '', '', '', 'active')
         learner3 = self.user_manager.create(self.admin_token, 'learner_3', 'password', '', '', '', '', '', 'active')
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         session1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'pending', True, 10000, self.e1.id)
+            (self.right_now+self.one_day).isoformat(), 'pending', True, 10000, self.e1.id, 'Short Name 1', 'Long Name 1')
         student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
         role_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(session1.id), str(student_role.id), 2, 3, None, {'prevent_duplicate_assignments' : True})
 
         session = self.session_manager.get_filtered(self.admin_token, {'exact': {'id': session1.id}}, ['status'])
         self.assertEquals(session[0]['status'], 'pending')
-        assignments = self.assignment_manager.bulk_create(self.admin_token, role_req1.id, [learner1.id])
+        self.assignment_manager.bulk_create(self.admin_token, role_req1.id, [learner1.id])
         session = self.session_manager.get_filtered(self.admin_token, {'exact': {'id': session1.id}}, ['status'])
         self.assertEquals(session[0]['status'], 'pending')
-        assignments = self.assignment_manager.bulk_create(self.admin_token, role_req1.id, [learner2.id, learner3.id])
+        self.assignment_manager.bulk_create(self.admin_token, role_req1.id, [learner2.id, learner3.id])
         session = self.session_manager.get_filtered(self.admin_token, {'exact': {'id': session1.id}}, ['status'])
         self.assertEquals(session[0]['status'], 'active')
 
@@ -362,10 +386,8 @@ class TestAssignment(TestCase):
         self.assertRaises(exceptions.PermissionDeniedException, self.exam_session_manager.create, l1_token, assignment1)
         # but this one should work
         self.exam_session_manager.create(l1_token, assignment2)
-        
+
     def test_assign_sessions(self):
-        right_now = datetime.utcnow().replace(microsecond = 0, tzinfo = pr_time.UTC())
-        one_day = timedelta(days = 1)
         learner1 = self.user_manager.create(self.admin_token, 'learner_1', 'password', '', '', '', '', '', 'active')
         learner2 = self.user_manager.create(self.admin_token, 'learner_2', 'password', '', '', '', '', '', 'active')
         learner3 = self.user_manager.create(self.admin_token, 'learner_3', 'password', '', '', '', '', '', 'active')
@@ -378,12 +400,12 @@ class TestAssignment(TestCase):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         session1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id)
+            (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id, 'Short Name 1', 'Full Name 1')
         student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
         role_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(session1.id), str(student_role.id), 1, 3, None, {'prevent_duplicate_assignments' : True})
         # This overlaps intentionally to test room capacity limits below
         session2 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id)
+            (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id, 'Short Name 1', 'Full Name 1')
         role_req2 = self.session_user_role_requirement_manager.create(self.admin_token, str(session2.id), str(student_role.id), 1, 3)
         tf1 = self.task_fee_manager.create(self.admin_token, 'TF001', 'slick deal', 'a really great deal', 200, 0, role_req1.id, {'starting_quantity' : 10})
         assignments = self.assignment_manager.bulk_create(self.admin_token, role_req1.id, [learner1.id, learner2.id, learner3.id])
@@ -498,7 +520,7 @@ class TestCredentialManager(TestCase):
         self.credential_type_manager.update(self.admin_token, credential_type.id,
             {'required_achievements': [achievement.id]})
         exam = self.exam_manager.create(self.admin_token, 'EE Exam', '', {'achievements' : [achievement.id]})
-        
+
         # Create a student
         student, student_at = self.create_student()
 
@@ -525,7 +547,7 @@ class TestCredentialManager(TestCase):
         self.credential_type_manager.update(self.admin_token, credential_type.id,
             {'required_achievements': [achievement.id]})
         exam = self.exam_manager.create(self.admin_token, 'EE Exam', '', {'achievements' : [achievement.id]})
-        
+
         # Create a student with a pending credential.
         student, student_at = self.create_student()
         credential = self.credential_manager.create(self.admin_token, student.id,
@@ -649,37 +671,37 @@ class TestCredentialTypeManager(TestCase):
 
 class TestCsvExport(TestCase):
     """ Tests the export_csv view. """
-    
+
     def test_not_post_request(self):
         c = django.test.client.Client()
         response = c.get('/export_csv/')
         self.assertEquals(response.status_code, 400) # bad request
-    
+
     def test_data_not_in_post(self):
         c = django.test.client.Client()
         response = c.post('/export_csv/',
             data={'foodata': json.dumps([['a', 'b'], ['c', 'd']])})
-        self.assertEquals(response.status_code, 400) # bad request 
-    
+        self.assertEquals(response.status_code, 400) # bad request
+
     def test_data_in_wrong_format(self):
         c = django.test.client.Client()
         response = c.post('/export_csv/',
             data={'data': json.dumps(['a', 'b'])})
-        self.assertEquals(response.status_code, 400) # bad request 
+        self.assertEquals(response.status_code, 400) # bad request
         response = c.post('/export_csv/',
             data={'data': json.dumps({'a': 'b'})})
-        self.assertEquals(response.status_code, 400) # bad request 
+        self.assertEquals(response.status_code, 400) # bad request
         response = c.post('/export_csv/',
             data={'data': json.dumps([{'a': 'b'}])})
-        self.assertEquals(response.status_code, 400) # bad request 
-    
+        self.assertEquals(response.status_code, 400) # bad request
+
     def test_json_unicode(self):
         """ make sure we can handle UTF-8 encoded Unicode with our json tools """
         unicode_string = u"東西"
         encoded_and_decoded_string = json.loads(json.dumps(unicode_string))
         self.assertEquals(encoded_and_decoded_string, unicode_string)
         self.failUnless(isinstance(encoded_and_decoded_string, unicode))
-        
+
     def test_valid_data(self):
         c = django.test.client.Client()
         the_data = [
@@ -694,7 +716,7 @@ class TestCsvExport(TestCase):
             writer.writerow(row)
         response = c.post('/export_csv/', data={'data': json.dumps(the_data)})
         self.assertEquals(csv_output.getvalue(), response.content)
-        
+
         # Also, check that we're using the custom "sanecsv" dialect that quotes
         # EVERYTHING, which makes importing less error-prone. This is a little
         # crappy, but I'm not sure how to do it better.
@@ -797,7 +819,7 @@ class TestGroupManager(TestCase):
         self.assertTrue(lay_it_down.id in groups[0]['users'])
         self.assertTrue(sweep_it_up.id in groups[0]['users'])
         self.assertEquals(len(groups[0]['users']), 2)
-        
+
     def test_create(self):
         ret = self.group_manager.create(self.admin_token, 'some name')
         self.assertEquals(ret.name, 'some name')
@@ -820,8 +842,8 @@ class TestGroupManager(TestCase):
         self.assertEquals(q_group.name, 'a longer name')
 
     def test_get_filtered(self):
-        g1 = self.group_manager.create(self.admin_token, 'a name')
-        g2 = self.group_manager.create(self.admin_token, 'another')
+        self.group_manager.create(self.admin_token, 'a name')
+        self.group_manager.create(self.admin_token, 'another')
         ret = self.group_manager.get_filtered(self.admin_token, {}, ['id', 'name'])
         self.assertEquals(type(ret), list)
         # we have two additional groups from the setUp() method
@@ -836,7 +858,7 @@ class TestGroupManager(TestCase):
 
     def test_delete(self):
         g1 = self.group_manager.create(self.admin_token, 'name')
-        g2 = self.group_manager.create(self.admin_token, 'another')
+        self.group_manager.create(self.admin_token, 'another')
         ret = self.group_manager.get_filtered(self.admin_token, {}, ['id'])
         self.assertEquals(type(ret), list)
         # we have an additional group from the setUp() method
@@ -902,14 +924,14 @@ class TestModels(TestCase):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day*3).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         session1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now + self.one_day).isoformat(), 'active', True, 10000, self.e1.id)
+            (self.right_now + self.one_day).isoformat(), 'active', True, 10000, self.e1.id, 'Short Name 1', 'Full Name 1')
         student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
         role_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(session1.id), str(student_role.id), 1, 3, False)
         session2 = self.session_manager.create(self.admin_token, (self.right_now+self.one_day*2).isoformat(),
-            (self.right_now+self.one_day*3).isoformat(), 'active', True, 10000, self.e1.id)
+            (self.right_now+self.one_day*3).isoformat(), 'active', True, 10000, self.e1.id, 'Short Name 1', 'Full Name 1')
         role_req2 = self.session_user_role_requirement_manager.create(self.admin_token, str(session2.id), str(student_role.id), 1, 3, False)
-        session1.room = self.room1        
-        session2.room = self.room1        
+        session1.room = self.room1
+        session2.room = self.room1
         session1.save()
         session2.save()
 
@@ -929,7 +951,7 @@ class TestModels(TestCase):
 
         ret = self.room1.get_surrs_by_time((self.right_now-self.one_day).replace(tzinfo=None), (self.right_now).replace(tzinfo=None))
         self.assertEquals(ret.count(), 0)
-    
+
     def test_user_full_name_derived_field(self):
         homer_simpson = self.user_manager.create(self.admin_token, 'homer.simpson', 'password',
             'Mr.', 'Homer', 'Simpson', '', '', 'active')
@@ -1011,7 +1033,7 @@ class TestProductManager(TestCase):
 
     def test_use_promo_code_discount(self):
         po1 = self.purchase_order_manager.create(self.admin_token, {'promo_code' : 'cheap'})
-        pc1 = self.product_claim_manager.create(self.admin_token, self.p1.id, po1.id, 2)
+        self.product_claim_manager.create(self.admin_token, self.p1.id, po1.id, 2)
         ret = self.purchase_order_manager.get_filtered(self.admin_token, {'exact' : {'id' : po1.id}}, ['id', 'total_price'])
         self.assertEquals(len(ret), 1)
         self.assertEquals(ret[0]['id'], po1.id)
@@ -1024,7 +1046,7 @@ class TestProductManager(TestCase):
         ctc2 = self.condition_test_collection_manager.create(self.admin_token, 'test CTC 2')
         self.condition_test_manager.create(self.admin_token, 10, ctc1.id, True, {'groups' : {'add':[self.group1.id]}})
         self.condition_test_manager.create(self.admin_token, 10, ctc2.id, True, {'groups' : {'add':[self.group2.id]}})
-        
+
         product1 = self.product_manager.create(self.admin_token, 'BCD', 'Product 1', 'Product 1', 500, 200)
         product2 = self.product_manager.create(self.admin_token, 'CDE', 'Product 2', 'Product 2', 500, 200)
         self.product_discount_manager.create(self.admin_token, 'Discount 1', None, None, 20, True, [product1.id], [], None, ctc1.id)
@@ -1032,7 +1054,7 @@ class TestProductManager(TestCase):
 
         po1 = self.purchase_order_manager.create(self.admin_token)
         self.product_claim_manager.create(self.admin_token, product1.id, po1.id, 2)
-        
+
         po2 = self.purchase_order_manager.create(self.admin_token)
         self.product_claim_manager.create(self.admin_token, product2.id, po2.id, 2)
 
@@ -1077,11 +1099,11 @@ class TestPurchaseOrderManager(TestCase):
         self.prod2 = self.product_manager.create(self.admin_token, 'XYZ456', 'Sand Paper', 'Sandy Paper that polishes Flies', 795, 895)
         self.prod_offer1 = self.product_offer_manager.create(self.admin_token, self.prod1.id, self.user1.id, 1195,
             'This is an amazing set of fly-trapping paper!!!!!!')
-    
+
     def test_retrieve_receipt(self):
         po1 = self.purchase_order_manager.create(self.auth_token, {'user' : self.user1.id})
         self.product_claim_manager.create(self.auth_token, self.prod1.id, po1.id, 7)
-        
+
         ret = self.purchase_order_manager.retrieve_receipt(self.admin_token, po1.id)
         self.failUnless(ret.has_key('subject') and ret['subject'])
         self.failUnless(ret.has_key('body') and ret['body'])
@@ -1117,7 +1139,7 @@ class TestRoleManager(TestCase):
         self.assertEquals(len(ret), 2)
         self.assertEquals(type(ret[0]), dict)
         self.assertEquals(type(ret[1]), dict)
-        self.failUnless(type(ret[1]['id']) in [int, long])        
+        self.failUnless(type(ret[1]['id']) in [int, long])
         self.failUnless(ret[1]['name'] == 'role2' or ret[0]['name'] == 'role2')
         ret = self.role_manager.get_filtered(self.admin_token, {'member' : {'id' : [role1.id, role2.id]}}, ['id'])
         # we asked for the 'id' value, make sure it's correct
@@ -1136,7 +1158,7 @@ class TestRoleManager(TestCase):
         self.role_manager.delete(self.admin_token, role1.id)
         ret = self.role_manager.get_filtered(self.admin_token, {'member' : {'id' : [role1.id, role2.id]}}, ['id'])
         self.assertEquals(len(ret), 1)
-        
+
 class TestRoomManager(TestCase):
     def test_name_uniqueness(self):
         self.room_manager.create(self.admin_token, 'Hemingway',
@@ -1190,7 +1212,7 @@ class TestRpcService(TestCase):
             @service_method
             def delete(self, pk):
                 """Delete the thing with primary key pk."""
-    
+
             def do_secret(self, secret_code):
                 """Method that should not be exposed as a service."""
                 return secret_code
@@ -1270,6 +1292,54 @@ class TestEventTemplateManager(TestCase):
         self.assertTrue(e[0]['id'] in et[0]['events'])
         self.assertEquals(e[0]['name'], '%s%d' % (event_template.name_prefix, event.id))
 
+
+class TestEventManager(TestCase):
+    def setUp(self):
+        TestCase.setUp(self)
+        self.test_utils = TestUtils()
+
+    def test_create_with_sessions(self):
+        sessions = [
+            {
+                'start' : self.right_now.isoformat(),
+                'end' : (self.right_now + self.one_day).isoformat(),
+                'status' : 'pending',
+                'confirmed' : False,
+                'default_price' : 0,
+                'shortname' : 'Session 1',
+                'fullname' : 'The very first Session!',
+                'optional_attributes' : {'lead_time' : 60*60*24*3, 'url' : 'http://openassign.org'},
+            },
+            {
+                'start' : self.right_now.isoformat(),
+                'end' : (self.right_now + self.one_day).isoformat(),
+                'status' : 'pending',
+                'confirmed' : False,
+                'default_price' : 0,
+                'shortname' : 'Session 2',
+                'fullname' : 'The second Session!',
+                'optional_attributes' : {'lead_time' : 60*60*24*3, 'url' : 'http://openassign.org'},
+            }
+        ]
+
+        e1 = self.event_manager.create(self.admin_token, 'Event 1',
+            'First Event of My Unit Test', 'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
+            self.organization1.id, {'venue' : self.venue1.id, 'sessions' : sessions})
+
+        # verify results
+        event = facade.models.Event.objects.get(id=e1.pk)
+        sessions = event.sessions.all()
+        self.assertEquals(len(sessions), 2)
+        self.assertEquals(event.title, 'First Event of My Unit Test')
+        self.assertEquals(event.description, 'Event 1')
+
+        for session in sessions:
+            self.assertEquals(session.status, 'pending')
+            self.assertTrue(session.shortname.startswith('Session'))
+            self.assertEquals(session.url, 'http://openassign.org')
+            self.assertEquals(session.lead_time, 60*60*24*3)
+
+
 class TestSessionManager(TestCase):
     def setUp(self):
         TestCase.setUp(self)
@@ -1279,9 +1349,9 @@ class TestSessionManager(TestCase):
         e1 = self.event_manager.create(self.admin_token, 'Event 1',
             'First Event of My Unit Test', 'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
             self.organization1.id, {'venue' : self.venue1.id})
-        session1 = self.session_manager.create(self.admin_token,
+        self.session_manager.create(self.admin_token,
             self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e1.id, {'room':self.room1.id})
+            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e1.id, 'Short Name 1', 'Full Name 1', {'room':self.room1.id})
         ret = self.session_manager.detailed_surr_view(self.admin_token)
         self.assertEquals(len(ret), 1)
         fetched_session = ret[0]
@@ -1311,9 +1381,9 @@ class TestSessionManager(TestCase):
         e2 = self.event_manager.create(self.admin_token, 'Event 2',
             'Second Event of My Unit Test', 'Event 2', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
             self.organization1.id, {'venue' : self.venue1.id})
-        session2 = self.session_manager.create(self.admin_token,
+        self.session_manager.create(self.admin_token,
             self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e2.id)
+            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e2.id, 'short name 1', 'long name 1')
         ret = self.session_manager.detailed_surr_view(self.admin_token)
 
     def test_view_without_room(self):
@@ -1321,10 +1391,10 @@ class TestSessionManager(TestCase):
         e2 = self.event_manager.create(self.admin_token, 'Event 2',
             'Second Event of My Unit Test', 'Event 2', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
             self.organization1.id, {'venue' : self.venue1.id})
-        session2 = self.session_manager.create(self.admin_token,
+        self.session_manager.create(self.admin_token,
             self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e2.id)
-        ret = self.session_manager.detailed_surr_view(self.admin_token)
+            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e2.id, 'short name 1', 'long name 1')
+        self.session_manager.detailed_surr_view(self.admin_token)
 
     def test_create(self):
         e1 = self.event_manager.create(self.admin_token, 'Event 1',
@@ -1332,7 +1402,7 @@ class TestSessionManager(TestCase):
             self.organization1.id, {'venue' : self.venue1.id})
         session1 = self.session_manager.create(self.admin_token,
             self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e1.id)
+            (self.right_now+self.one_day).isoformat(), 'active', False, 10000, e1.id, 'short name 1', 'long name 1')
         self.assertEquals(session1.status, 'active')
 
         # Make sure we get a valid paypal url
@@ -1351,28 +1421,28 @@ class TestSessionManager(TestCase):
             'First Event of My Unit Test', 'Event 1',
             self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1.id,
             {'venue' : self.venue1.id})
-        # session start not <= session end        
+        # session start not <= session end
         self.assertRaises(facade.models.ModelDataValidationError,
             self.session_manager.create, self.admin_token,
             '1994-11-05T18:15:30+00:00', '1994-11-05T16:15:30Z', 'active',
-            False, 10000, e1.id)
+            False, 10000, e1.id, 'short name 1', 'long name 1')
         # session start not >= event start
         self.assertRaises(facade.models.ModelDataValidationError,
             self.session_manager.create, self.admin_token,
             '1994-11-04T13:15:30+00:00', '1994-11-05T16:15:30Z', 'active',
-            False, 10000, e1.id)
+            False, 10000, e1.id, 'short name 1', 'long name 1')
         # session end not <= event end
         self.assertRaises(facade.models.ModelDataValidationError,
             self.session_manager.create, self.admin_token,
             '1994-11-05T13:15:30+00:00', '1994-11-06T16:15:30Z', 'active',
-            False, 10000, e1.id)
+            False, 10000, e1.id, 'short name 1', 'long name 1')
 
     def test_create_perm_denied(self):
         e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1',
             self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         self.assertRaises(exceptions.PermissionDeniedException, self.session_manager.create,
             self.auth_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id)
+            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id, 'short name 1', 'long name 1')
 
     def test_create_by_pl(self):
         prod = self.product_line_manager.create(self.admin_token, 'Earn your MBA overnight!')
@@ -1389,8 +1459,8 @@ class TestSessionManager(TestCase):
         e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1',
             'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1.id,
             {'venue' : self.venue1.id})
-        pl_evt = self.session_manager.create(pu_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id,
+        self.session_manager.create(pu_token, self.right_now.isoformat(),
+            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id, 'short name 1', 'long name 1',
             {'session_template' : str(crs.id)})
         # session associated with a session_template in a different product line, should fail
         prod_2 = self.product_line_manager.create(self.admin_token, 'pottery')
@@ -1399,22 +1469,22 @@ class TestSessionManager(TestCase):
             'ILT', {'product_line' : prod_2.id})
         self.assertRaises(exceptions.PermissionDeniedException, self.session_manager.create,
             pu_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
-            'active', False, 100, e1.id, {'session_template' : str(crs_2.id)})
+            'active', False, 100, e1.id, 'short name 1', 'long name 1', {'session_template' : str(crs_2.id)})
         # session not associated with a session_template, should fail
         self.assertRaises(exceptions.PermissionDeniedException, self.session_manager.create,
             pu_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
-            'active', False, 100, e1.id)
+            'active', False, 100, e1.id, 'short name 1', 'long name 1')
 
     def test_update(self):
         e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1',
             'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1.id,
             {'venue' : self.venue1.id})
         session_1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id)
-        self.session_manager.update(self.admin_token, session_1.id, {'name' : 'an even longer name',
+            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id, 'short name 1', 'long name 1')
+        self.session_manager.update(self.admin_token, session_1.id, {'fullname' : 'an even longer name',
             'start' : self.right_now.isoformat(), 'confirmed' : True})
         session = facade.models.Session.objects.get(id=session_1.id)
-        self.assertEquals(session.name, 'an even longer name')
+        self.assertEquals(session.fullname, 'an even longer name')
         self.assertEquals(session.confirmed, True)
 
     def test_update_denied(self):
@@ -1422,10 +1492,11 @@ class TestSessionManager(TestCase):
             'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1.id,
             {'venue' : self.venue1.id})
         session_1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id)
+            (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id, 'short name 1', 'long name 1')
+        # fails because start date is in the past.
         self.assertRaises(exceptions.PermissionDeniedException,
             self.session_manager.update, self.auth_token, session_1.id,
-            {'name' : 'an even longer name',
+            {'fullname' : 'an even longer name',
             'start':'1994-11-04T13:15:30+00:00'})
 
     def test_update_by_pl(self):
@@ -1445,7 +1516,7 @@ class TestSessionManager(TestCase):
             self.organization1.id, {'venue' : self.venue1.id})
         pl_evt = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(),
-            'active', False, 100, e1.id, {'modality' : 'ILT', 'session_template' : str(crs.id)})
+            'active', False, 100, e1.id, 'short name 1', 'long name 1', {'modality' : 'ILT', 'session_template' : str(crs.id)})
         self.session_manager.update(pu_token, str(pl_evt.id), {'default_price':250})
         # refresh the persistent object manually, since it doesn't get
         # invalidated or refreshed automatically (see ticket #160 in trac)
@@ -1461,7 +1532,7 @@ class TestSessionManager(TestCase):
             self.organization1.id, {'venue' : self.venue1.id})
         evt_2 = self.session_manager.create(self.admin_token,
             self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', False,
-            100, e2.id, {'session_template' : str(crs_2.id)})
+            100, e2.id, 'short name 1', 'long name 1', {'session_template' : str(crs_2.id)})
         self.assertRaises(exceptions.PermissionDeniedException, self.session_manager.update,
             pu_token, str(evt_2.id), {'default_price':250})
         # session not associated with a session_template, should fail
@@ -1470,29 +1541,29 @@ class TestSessionManager(TestCase):
             {'venue' : self.venue1.id})
         evt_3 = self.session_manager.create(self.admin_token,
             self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', False, 100,
-            e3.id)
+            e3.id, 'short name 1', 'long name 1')
         self.assertRaises(exceptions.PermissionDeniedException, self.session_manager.update, pu_token,
-            str(evt_3.id), {'default_price':500}) 
+            str(evt_3.id), {'default_price':500})
 
     def test_get_filtered(self):
         e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1',
             'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1.id,
             {'venue' : self.venue1.id})
-        s1 = self.session_manager.create(self.admin_token,
+        self.session_manager.create(self.admin_token,
             self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', False, 100,
-            e1.id)
+            e1.id, 'short name 1', 'long name 1')
         e2 = self.event_manager.create(self.admin_token, 'Event 2', 'Event 2', 'Event 2',
             (self.right_now+self.one_day*2).isoformat(), (self.right_now+self.one_day*3).isoformat(), self.organization1.id,
             {'venue' : self.venue1.id})
         s2 = self.session_manager.create(self.admin_token, (self.right_now+self.one_day*2).isoformat(),
-            (self.right_now+self.one_day*3).isoformat(), 'active', False, 100, e2.id)
+            (self.right_now+self.one_day*3).isoformat(), 'active', False, 100, e2.id, 'short name 1', 'long name 1')
         ret = self.session_manager.get_filtered(self.admin_token,
             {'range' : {'start' : ((self.right_now+self.one_day).isoformat(), (self.right_now+self.one_day*2).isoformat())}},
-            ['id', 'name'])
+            ['id', 'shortname'])
         self.assertEquals(len(ret), 1)
         self.assertEquals(str(ret[0]['id']), str(s2.id))
-        self.assertEquals(ret[0]['name'], s2.name)
-    
+        self.assertEquals(ret[0]['shortname'], s2.shortname)
+
     def test_get_filtered_case_insensitive(self):
         # Create events
         e1 = self.event_manager.create(self.admin_token, 'EVT', 'Event 1 Title',
@@ -1528,11 +1599,11 @@ class TestSessionManager(TestCase):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         session_1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', False, 100,
-            self.e1.id)
+            self.e1.id, 'short name 1', 'long name 1')
         self.e2 = self.event_manager.create(self.admin_token, 'Event 2', 'Event 2', 'Event 2', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
-        session_2 = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
-                      'active', False, 100, self.e2.id)
+        self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
+                      'active', False, 100, self.e2.id, 'short name 1', 'long name 1')
         ret = self.session_manager.get_filtered(self.admin_token, {}, ['id'])
         self.assertEquals(type(ret), list)
         self.assertEquals(len(ret), 2)
@@ -1545,11 +1616,11 @@ class TestSessionManager(TestCase):
         tu.setup_test_sessions()
         sessions = self.session_manager._get_sessions_needing_reminders()
         self.assertEquals(len(sessions), 2)
-        session2 = facade.models.Session.objects.get(name=tu.s2.name)
-        session3 = facade.models.Session.objects.get(name=tu.s3.name)
+        session2 = facade.models.Session.objects.get(pk=tu.s2.id)
+        session3 = facade.models.Session.objects.get(pk=tu.s3.id)
         self.failUnless(session2 in sessions)
         self.failUnless(session3 in sessions)
-        
+
     def test_enrollment_auth_by_venue(self):
         # Create a proctor role with a user
         proctor_group = self.group_manager.create(self.admin_token, 'Proctors')
@@ -1564,7 +1635,7 @@ class TestSessionManager(TestCase):
         proctor_role = facade.models.Role.objects.create(name='Proctor')
         proctor_acl = facade.models.ACL.objects.create(acl = cPickle.dumps(acl), role=proctor_role)
         group_test_method = facade.models.ACCheckMethod.objects.get(name = 'actor_member_of_group')
-        proctor_group_test = facade.models.ACMethodCall.objects.create(acl=proctor_acl, ac_check_method = group_test_method,
+        facade.models.ACMethodCall.objects.create(acl=proctor_acl, ac_check_method = group_test_method,
             ac_check_parameters = cPickle.dumps({'group_id' : proctor_group.id}))
 
         assignment_venue_matches_actor_preferred_venue = facade.models.ACCheckMethod.objects.get(
@@ -1582,10 +1653,10 @@ class TestSessionManager(TestCase):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         evt1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id)
+            (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id, 'short name 1', 'long name 1')
         student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
         role_req = self.session_user_role_requirement_manager.create(self.admin_token, str(evt1.id), str(student_role.id), 1, 3, False)
-        enroll_ret = self.assignment_manager.bulk_create(self.admin_token, str(role_req.id), [learner1.id])
+        self.assignment_manager.bulk_create(self.admin_token, str(role_req.id), [learner1.id])
         assignment_ret = self.assignment_manager.bulk_create(self.admin_token, role_req.id, [learner1.id])
 
         # Try defining the venue by way of the session's room, and make sure this still works
@@ -1596,49 +1667,13 @@ class TestSessionManager(TestCase):
 
         # Try to change status
         self.assignment_manager.update(proctor_token, assignment_ret[learner1.id]['id'], {'status' : 'completed'})
-        
+
         # Remove the venue from the proctor's preferred_venues, and make sure the update fails
         self.user_manager.update(self.admin_token, proctor.id, {'preferred_venues' : {'remove' : [self.venue1.id]}})
-        ret = self.user_manager.get_filtered(self.admin_token, {'exact' : {'id' : learner1.id}}, ['id', 'session_user_role_requirements'])
+        self.user_manager.get_filtered(self.admin_token, {'exact' : {'id' : learner1.id}}, ['id', 'session_user_role_requirements'])
         self.assertRaises(exceptions.PermissionDeniedException, self.assignment_manager.update, proctor_token, assignment_ret[learner1.id]['id'], {'status' : 'canceled'})
 
-    def test_session_inherits_session_template(self):
-        the_session_template = self.session_template_manager.create(self.admin_token, 'XYZ', 'Ex, Why, Zeee!', '1.0', 'Alphabet nonsense', 100, 1,
-            True, 'Generic')
-        student_role_id = self.session_user_role_manager.get_filtered(self.admin_token, {'exact' : {'name' : 'Student'}})[0]['id']
-        the_session_template_user_role_requirement = self.session_template_user_role_requirement_manager.create(self.admin_token,
-            the_session_template.id, student_role_id, 1, 25)
-        
-        start_date = date.today() + timedelta(weeks=3)
-        start_date_str = start_date.isoformat()
-        end_date = start_date + timedelta(days=2)
-        end_date_str = end_date.isoformat()
-        
-        the_event = self.event_manager.create(self.admin_token, 'The Event Event!', 'Whoo!', 'Wraw!', start_date_str, end_date_str,
-            self.organization1.id, {'venue' : self.venue1.id})
-        
-        the_session = self.session_manager.create(self.admin_token, start_date_str, end_date_str, 'active', True, None, the_event.id,
-            {'session_template' : the_session_template.id})
-        self.assertEquals(the_session.name[0:3], 'XYZ')
-        self.assertEquals(the_session.description, 'Alphabet nonsense')
-        self.assertEquals(the_session.default_price, 100)
-        self.assertEquals(the_session.modality, 'Generic')
-        
-        ret = self.session_user_role_requirement_manager.get_filtered(self.admin_token, {'exact' : {'session' : the_session.id}},
-            ['session_user_role', 'min', 'max'])
-        self.assertEquals(len(ret), 1)
-        self.assertEquals(ret[0]['session_user_role'], student_role_id)
-        self.assertEquals(ret[0]['min'], 1)
-        self.assertEquals(ret[0]['max'], 25)
-        
-        # specify modality, description, and default_price (200)
-        the_session = self.session_manager.create(self.admin_token, start_date_str, end_date_str, 'active', True, 200, the_event.id,
-            {'modality' : 'ILT', 'session_template' : the_session_template.id, 'description' : 'Alphabet soup'})
-        self.assertEquals(the_session.name[0:3], 'XYZ')
-        self.assertEquals(the_session.description, 'Alphabet soup')
-        self.assertEquals(the_session.default_price, 200)
-        self.assertEquals(the_session.modality, 'ILT')
-        
+
 class TestSessionTemplateManager(TestCase):
     def test_create(self):
         prod = self.product_line_manager.create(self.admin_token, 'Earn your MBA overnight!')
@@ -1662,7 +1697,7 @@ class TestSessionTemplateManager(TestCase):
 
     def test_update_by_pl(self):
         prod = self.product_line_manager.create(self.admin_token, 'Earn your MBA overnight!')
-        prod_2 = self.product_line_manager.create(self.admin_token, 'Medical Basket Weaving')
+        self.product_line_manager.create(self.admin_token, 'Medical Basket Weaving')
         self.pl_user = self.user_manager.create(self.admin_token, 'pl_session_template_creator', 'password',
             '', 'pl', 'session_template creator', '', '', 'active')
         self.product_line_manager.update(self.admin_token, prod.id, {'managers' : [self.pl_user.id]})
@@ -1687,9 +1722,9 @@ class TestSessionTemplateManager(TestCase):
         self.assertEquals(type(ret[0]), dict)
         self.assertEquals(type(ret[1]), dict)
         self.failUnless(type(ret[1]['id']) in [int, long])
-        
+
         for session_template in ret:
-            if session_template['id'] == session_template_1.id:        
+            if session_template['id'] == session_template_1.id:
                 self.assertEquals(session_template['fullname'], 'longer name')
                 self.assertEquals(session_template['active'], True)
                 self.assertEquals(session_template['price'], 1595)
@@ -1697,8 +1732,8 @@ class TestSessionTemplateManager(TestCase):
                 self.assertEquals(session_template['fullname'], 'another longer name')
                 self.assertEquals(session_template['active'], False)
             else:
-                raise Exception('unexexpected primary key [' + session_template['id'] + ']')        
-        
+                raise Exception('unexexpected primary key [' + session_template['id'] + ']')
+
     def test_delete(self):
         c1 = self.session_template_manager.create(self.admin_token, 'name', 'longer name', '2.0', 'This is a description', 1595, 600000, True)
         self.session_template_manager.create(self.admin_token, 'another name', 'another longer name', '2.1', 'This is a description', 1595, 600000, True)
@@ -1754,7 +1789,7 @@ class TestSessionTemplateUserRoleRequirementManager(TestCase):
 class TestSessionUserRoleManager(TestCase):
     def test_update(self):
         session_user_role = self.session_user_role_manager.create(self.admin_token, 'Sweep Upper')
-        self.assertRaises(exceptions.PermissionDeniedException, self.session_user_role_manager.update, self.auth_token, session_user_role.id, 
+        self.assertRaises(exceptions.PermissionDeniedException, self.session_user_role_manager.update, self.auth_token, session_user_role.id,
             {'name' : 'Sweep It Upper'})
         self.session_user_role_manager.update(self.admin_token, session_user_role.id, {'name' : 'Sweep It Upper'})
         session_user_roles = self.session_user_role_manager.get_filtered(self.admin_token, {'exact' : {'id' : session_user_role.id}}, ['id', 'name'])
@@ -1768,7 +1803,7 @@ class TestSessionUserRoleRequirementManager(TestCase):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         self.session = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now + self.one_day).isoformat(), 'active', False, 100, self.e1.id)
+            (self.right_now + self.one_day).isoformat(), 'active', False, 100, self.e1.id, 'short name 1', 'long name 1')
 
     def test_creation(self):
         surr = self.session_user_role_requirement_manager.create(self.admin_token, self.session.id, self.instructor_role.id, 1,
@@ -1781,7 +1816,7 @@ class TestSessionUserRoleRequirementManager(TestCase):
     def test_view(self):
         surr1 = self.session_user_role_requirement_manager.create(self.admin_token, self.session.id, self.instructor_role.id, 1,
             2, [])
-        surr2 = self.session_user_role_requirement_manager.create(self.admin_token, self.session.id, self.student_role.id, 1,
+        self.session_user_role_requirement_manager.create(self.admin_token, self.session.id, self.student_role.id, 1,
             2, [])
         ret = self.session_user_role_requirement_manager.surr_view(self.admin_token)
         self.assertEquals(type(ret), list)
@@ -1806,7 +1841,7 @@ class TestDomainManagement(TestCase):
         # user cannot associate someone else with another domain
         self.assertRaises(exceptions.PermissionDeniedException, self.domain_affiliation_manager.create, student1_at, student2.id,
             testing_domain.id, 'student2')
-        
+
 
 class TestTrainingUnitAccountManager(TestCase):
     def setUp(self):
@@ -1880,7 +1915,7 @@ class TestTrainingVoucherManager(TestCase):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         self.s1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now + self.one_day).isoformat(), 'active',
-            True, 100, self.e1.id)
+            True, 100, self.e1.id, 'short name 1', 'long name 1')
         self.eur1 = self.session_user_role_manager.create(self.admin_token, 'Fancy Job')
         self.eurr1 = self.session_user_role_requirement_manager.create(self.admin_token, self.s1.id, self.eur1.id, 10, 20)
         self.po1 = self.purchase_order_manager.create(self.admin_token)
@@ -1916,15 +1951,15 @@ class TestOrganizationManager(TestCase):
         self.assertRaises(facade.models.ModelDataValidationError, self.organization_manager.create, self.admin_token, 'Org 1')
 
         org2 = self.organization_manager.create(self.admin_token, 'Org 2', {'parent' : org1.id})
-        org3 = self.organization_manager.create(self.admin_token, 'Sales Department', {'parent' : org1.id})
+        self.organization_manager.create(self.admin_token, 'Sales Department', {'parent' : org1.id})
         self.assertRaises(facade.models.ModelDataValidationError, self.organization_manager.create, self.admin_token, 'Sales Department', {'parent' : org1.id})
-        org4 = self.organization_manager.create(self.admin_token, 'Sales Department', {'parent' : org2.id})
+        self.organization_manager.create(self.admin_token, 'Sales Department', {'parent' : org2.id})
 
     def test_admin_org_views(self):
         org1 = self.organization_manager.create(self.admin_token, 'Org 1')
         org2 = self.organization_manager.create(self.admin_token, 'Org 2', {'parent' : org1.id})
         org3 = self.organization_manager.create(self.admin_token, 'Sales Department', {'parent' : org1.id})
-        org4 = self.organization_manager.create(self.admin_token, 'Sales Department', {'parent' : org2.id})
+        self.organization_manager.create(self.admin_token, 'Sales Department', {'parent' : org2.id})
 
         orgrole1 = self.org_role_manager.create(self.admin_token, 'Org Role 1')
 
@@ -1944,7 +1979,7 @@ class TestOrganizationManager(TestCase):
                 self.assertEquals(org['parent'], org1.id)
 
         # make sure we can read the users
-        ret = self.organization_manager.admin_org_user_view(self.admin_token, org1.id)
+        ret = self.user_org_role_manager.user_org_role_detail_view(self.admin_token, {'exact' : {'organization' : org1.id}})
 
         self.assertEquals(len(ret), 1)
         user = ret[0]
@@ -2015,8 +2050,8 @@ class TestOrganizationManager(TestCase):
         }
 
         org = self.organization_manager.create(self.admin_token, 'Testing Organization', org_dict)
-            
-        photo_file_name = os.path.join(os.path.dirname(__file__), 'test_data/biglebowski.jpg')
+
+        photo_file_name = os.path.join(os.path.dirname(__file__), 'test_data/testimage.png')
         settings.FILE_UPLOAD_MAX_MEMORY_SIZE = os.path.getsize(photo_file_name) * 2
 
         the_org = self.organization_manager.get_filtered(self.admin_token, {'exact' : {'id' : org.id}}, ['photo_url'])[0]
@@ -2098,15 +2133,20 @@ class TestUploadManager(TestCase):
         self.assertEquals(the_user['photo_url'][-4:], '.png')
 
     def test_upload_user_photo(self):
-        photo_file_name = os.path.join(os.path.dirname(__file__), 'test_data/biglebowski.jpg')
+        photo_file_name = os.path.join(os.path.dirname(__file__), 'test_data/testimage.png')
         settings.FILE_UPLOAD_MAX_MEMORY_SIZE = os.path.getsize(photo_file_name) * 2
         self._upload_user_photo(photo_file_name)
 
     def test_upload_large_user_photo(self):
         # Test with a photo larger than the max memory size for file uploads
-        photo_file_name = os.path.join(os.path.dirname(__file__), 'test_data/biglebowski.jpg')
+        photo_file_name = os.path.join(os.path.dirname(__file__), 'test_data/testimage.png')
         settings.FILE_UPLOAD_MAX_MEMORY_SIZE = os.path.getsize(photo_file_name) / 2
         self._upload_user_photo(photo_file_name)
+
+    def test_upload_corrupt_image(self):
+        image_file = os.path.join(os.path.dirname(__file__), 'test_data/corrupt.jpg')
+        settings.FILE_UPLOAD_MAX_MEMORY_SIZE = os.path.getsize(image_file) * 2
+        self.assertRaises(facade.models.ModelDataValidationError, self._upload_user_photo, image_file)
 
 class TestUserManager(TestCase):
     def test_addresses(self):
@@ -2198,7 +2238,7 @@ class TestUserManager(TestCase):
         s.update('initial_password'+da.password_salt)
         self.assertEquals(da.password_hash, s.hexdigest())
         optionalEmailUser = self.user_manager.create(self.admin_token, 'ringo', 'myBrain', 'Mr.', 'Ringo', 'Starr',
-                           '123.456.7890', 'ringo@starr.com', 'active', 
+                           '123.456.7890', 'ringo@starr.com', 'active',
                            {'email2' : 'ringo2@starr.com'})
         self.assertEquals(optionalEmailUser.email2, 'ringo2@starr.com')
         optionalPhoneUser = self.user_manager.create(self.admin_token, 'ringop', 'myBrainp', 'Mr.', 'Ringo', 'Starr',
@@ -2221,9 +2261,9 @@ class TestUserManager(TestCase):
         # the email domain.
         organization = facade.models.Organization.objects.all()[0]
         default_org_role = facade.models.OrgRole.objects.get(default=True)
-        org_email_domain = self.org_email_domain_manager.create(self.admin_token, 'poweru.net', organization.id)
+        self.org_email_domain_manager.create(self.admin_token, 'poweru.net', organization.id)
         org_role = facade.models.OrgRole.objects.get(name='Administrator')
-        org_email_domain = self.org_email_domain_manager.create(self.admin_token, 'americanri.com', organization.id, org_role.id)
+        self.org_email_domain_manager.create(self.admin_token, 'americanri.com', organization.id, org_role.id)
         settings.USER_EMAIL_CONFIRMATION = True
         settings.USER_CONFIRMATION_AUTO_LOGIN = True
         settings.ASSIGN_ORG_ROLES_FROM_EMAIL = True
@@ -2264,7 +2304,7 @@ class TestUserManager(TestCase):
         settings.USER_CONFIRMATION_DAYS = 7
         org = self.organization_manager.create(self.admin_token,
             'Bar Corporation')
-        org_email_domain = self.org_email_domain_manager.create(
+        self.org_email_domain_manager.create(
             self.admin_token, 'bar.org', org.id)
         u = self.user_manager.create('', 'user1234', 'initial_password', 'Mr.',
                                      'first_name', 'last_name', '555.555.5555',
@@ -2358,9 +2398,9 @@ class TestUserManager(TestCase):
         self.assertEquals(da.user, user)
 
     def test_get_filtered(self):
-        u1 = self.user_manager.create(self.admin_token, 'aeinstein', 'emc2', 'Dr.', 'Albert', 'Einstein',
+        self.user_manager.create(self.admin_token, 'aeinstein', 'emc2', 'Dr.', 'Albert', 'Einstein',
             '555.555.5555', 'aeinstein@idonthaveemailbecauseitsnotinventedyet.com', 'active')
-        u2 = self.user_manager.create(self.admin_token, 'smyers', 'a', 'Mr.', 'Sean', 'Meyers',
+        self.user_manager.create(self.admin_token, 'smyers', 'a', 'Mr.', 'Sean', 'Meyers',
             '122.22.22222', 'smeyer@h.com', 'active')
         ret = self.user_manager.get_filtered(self.admin_token, {}, ['id', 'first_name'])
         self.assertEquals(type(ret), list)
@@ -2380,7 +2420,7 @@ class TestUserManager(TestCase):
         # We used to use the sha library.  Now we use hashlib.  This unit test is an attempt to test what happens when a user migrates
         # from one environment to the other.  The password has below was generated using the following commented code, which is being kept as an example:
         #
-        # import sha 
+        # import sha
         # s = sha.new()
         # s.update('initial_password')
         # new_user.password_hash = s.hexdigest()
@@ -2423,7 +2463,7 @@ class TestUserManager(TestCase):
         e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1',
             self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         boring_session = self.session_manager.create(self.admin_token,
-            self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', True, 23456, e1.id,
+            self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), 'active', True, 23456, e1.id, 'short name 1', 'long name 1',
             {'session_template' : boring_session_template.id})
         instructor_role = self.session_user_role_manager.get_filtered(self.admin_token,
             {'exact' : {'name' :'Instructor'}}, ['id'])[0]
@@ -2571,7 +2611,7 @@ class TestUserManager(TestCase):
         self.user_manager.update(self.admin_token, self.user1.id, {'first_name' : 'thisisaterriblefirst_name'})
         new_first_name = self.user_manager.get_filtered(self.admin_token, {'exact' : {'id' : self.user1.id}}, ['first_name'])[0]['first_name']
         self.assertEquals(new_first_name, 'thisisaterriblefirst_name')
-    
+
     def test_user_org_roles(self):
         role = self.org_role_manager.create(self.admin_token, 'arole')
         role2 = self.org_role_manager.create(self.admin_token, 'anotherrole')
@@ -2641,10 +2681,6 @@ class TestUserManager(TestCase):
         self.assertEqual(result.keys(), ['id'])
         result = self.user_org_role_manager.get_filtered(user2_at, {})
         self.assertEqual(len(result), 0)
-        # try to create a duplicate role
-        self.assertRaises(facade.models.ModelDataValidationError,
-            self.user_manager.update, self.admin_token, user.id,
-            {'roles' : {'add' : [{'id' : role.id, 'organization' : org}]}})
         # now let's delete the UserOrgRole
         todel = self.user_org_role_manager.get_filtered(self.admin_token, {})
         self.user_org_role_manager.delete(self.admin_token, todel[0]['id'])
@@ -2737,10 +2773,11 @@ class TestUserManager(TestCase):
                 self.assertTrue('organization_name' in user['owned_userorgroles'][0])
                 self.assertEqual(user['owned_userorgroles'][0]['organization_name'], org1.name)
 
-        ret = self.user_manager.admin_users_view(self.admin_token, [jerk.id])
+        ret = self.user_manager.admin_users_view(self.admin_token, {'exact': {'id' :jerk.id}})
         self.assertEquals(len(ret), 1)
         self.assertTrue('groups' in ret[0])
-    
+
+    @skipUnless(settings.LDAP_AUTHENTICATION, "ldap authentication disabled")
     def test_ldap_login(self):
         self.group_manager.create(self.admin_token, 'library').id
         self.group_manager.create(self.admin_token, 'student').id
@@ -2750,10 +2787,10 @@ class TestUserManager(TestCase):
         self.group_manager.create(self.admin_token, 'training').id
         self.group_manager.create(self.admin_token, 'instructional').id
         self.group_manager.create(self.admin_token, 'enrollment').id
-        
+
         library_group_id = self.group_manager.get_filtered(self.admin_token,
             {'exact' : {'name' : 'library'}})[0]['id']
-        
+
         exception_raised = False
         try:
             self.user_manager.login('rpbarlow', 'rpbarlow', 'LDAP')
@@ -2763,7 +2800,7 @@ class TestUserManager(TestCase):
             raise
         if not exception_raised:
             self.fail('AuthenticationFailureException not raised!')
-            
+
         # Wrong password
         exception_raised = False
         try:
@@ -2774,14 +2811,14 @@ class TestUserManager(TestCase):
             raise
         if not exception_raised:
             self.fail('AuthenticationFailureException not raised!')
-        
+
         ret = self.user_manager.login('UVOD_LIBRARY_G', 'test', 'LDAP')
         facade.models.AuthToken.objects.get(session_id=ret['auth_token'])
         # Log in again, to simulate a user who is returning to our system after being created from the first login call
         facade.models.AuthToken.objects.get(
             session_id=self.user_manager.login('UVOD_LIBRARY_G', 'test', 'LDAP')['auth_token'])
-        
-        
+
+
         # Wrong password
         exception_raised = False
         try:
@@ -2791,12 +2828,12 @@ class TestUserManager(TestCase):
         except Exception:
             raise
         self.assertTrue(exception_raised)
-        
-        # Log in again, to simulate a user who is returning to our system after a failed login 
+
+        # Log in again, to simulate a user who is returning to our system after a failed login
         ret = self.user_manager.login('UVOD_LIBRARY_G', 'test', 'LDAP')
         uvod_library_g_id = ret['id']
         uvod_library_g_at = facade.models.AuthToken.objects.get(session_id=ret['auth_token'])
-        
+
         ret = self.user_manager.get_filtered(uvod_library_g_at, {'exact' : {'id' : uvod_library_g_id}},
             ['first_name', 'last_name', 'groups', 'email'])
         self.assertEquals(ret[0]['first_name'], 'user')
@@ -2804,19 +2841,19 @@ class TestUserManager(TestCase):
         self.assertEquals(ret[0]['email'], 'uvod_library_g@mcg.edu')
         self.assertEquals(len(ret[0]['groups']), 1)
         self.assertTrue(library_group_id in ret[0]['groups'])
-        
+
         # What happens when a person logs in and doesn't have any groups specified?
         ret = self.user_manager.login('unogroups', 'test', 'LDAP')
         unogroups_id = ret['id']
         ldap_at = facade.models.AuthToken.objects.get(session_id=ret['auth_token'])
-        
+
         ret = self.user_manager.get_filtered(ldap_at, {'exact' : {'id' : unogroups_id}},
             ['first_name', 'last_name', 'groups', 'email'])[0]
         self.assertEquals(ret['first_name'], 'user')
         self.assertEquals(ret['last_name'], 'nogroups')
         self.assertEquals(ret['email'], 'unogroups@mcg.edu')
         self.assertEquals(len(ret['groups']), 0)
-        
+
         # What happens if the user logs in and has groups that aren't in powerreg?
         ret = self.user_manager.login('ufakegroup', 'test', 'LDAP')
         ufakegroup_id = ret['id']
@@ -2839,7 +2876,7 @@ class TestUserManager(TestCase):
         self.user_manager.create('', 'randomuserpending', 'initial_password',
             'Mr.', 'First', 'Last', '555.555.1212', 'random@example.net',
             'pending')
-        
+
     def test_reset_password(self):
         self.user_manager.update(self.admin_token, self.user1.id, {
             'email2' : 'another@valid.email.com',
@@ -2868,9 +2905,9 @@ class TestUserManager(TestCase):
     def test_send_password(self):
         org = self.organization_manager.create(self.admin_token,
             'Example Corporation')
-        org_email_domain = self.org_email_domain_manager.create(
+        self.org_email_domain_manager.create(
             self.admin_token, 'example.com', org.id)
-        user = self.user_manager.create(self.admin_token, 'mailme', 'mypasswd',
+        self.user_manager.create(self.admin_token, 'mailme', 'mypasswd',
             'Mr.', 'Mailme', 'Mypassword', '555.555.5555', 'fake@example.com',
             'active', {'send_password' : True})
         self.assertEqual(len(mail.outbox), 1)
@@ -2894,7 +2931,7 @@ class TestUserModel(TestCase):
         soon_to_be_deleted_user.delete()
         self.assertEquals(facade.models.User.objects.all().count(), number_of_initial_users)
         self.assertEquals(facade.models.Blame.objects.all().count(), number_of_initial_blames)
-    
+
     def test_default_username_and_domain(self):
         ret = self.user_manager.get_filtered(self.admin_token, {'exact': {'id': self.admin_user.id}},
             ['default_username_and_domain'])
@@ -2942,72 +2979,72 @@ class TestVenueManager(TestCase):
         self.assertTrue(room1.id in res[0]['rooms'])
         self.assertTrue(room2.id in res[0]['rooms'])
         self.assertEquals(res[0]['id'], venue.id)
-        
+
 class TestCharFieldTruncation(TestCase):
     """
     re #2194 make sure that CharFields are silently truncated
     """
-    
+
     def test_charfield_truncation(self):
         r = facade.models.Region.objects.create(name='1'*255 + '2')
         self.assertEquals(r.name, '1'*255)
-        
+
 class TestObjectManager(TestCase):
     def setUp(self):
         super(TestObjectManager, self).setUp()
         self.tu = TestUtils()
-     
+
     def test_query_on_related_objects(self):
         self.failUnless(facade.models.ProductLine.objects.count() > 0)
         self.failUnless(facade.models.Organization.objects.count() > 0)
         organization = facade.models.Organization.objects.all()[0]
-        
+
         suitable_venues = facade.models.Venue.objects.filter(address__isnull=False).exclude(address__postal_code__isnull=True).exclude(address__postal_code='')
         self.failUnless(len(suitable_venues) > 0)
         venue = suitable_venues[0]
-        
+
         now = datetime.utcnow()
         event_start = now.replace(microsecond=0, second=0, minute=0, hour=0)
         event_end = (now + timedelta(days=5)).replace(microsecond=0, second=0, minute=0, hour=0)
-        
+
         e1 = self.event_manager.create(self.admin_token, 'Evt', 'Event Title', 'an event',
             event_start.isoformat() + 'Z', event_end.isoformat()  + 'Z',
             organization.id, {'venue': venue.id})
         s1_start = event_start
         s1_end = event_start + timedelta(hours=1)
-        s1 = self.session_manager.create(self.admin_token, s1_start.isoformat() + 'Z',
-            s1_end.isoformat() + 'Z', 'active', True, 0, e1.id)
+        self.session_manager.create(self.admin_token, s1_start.isoformat() + 'Z',
+            s1_end.isoformat() + 'Z', 'active', True, 0, e1.id, 'short name 1', 'long name 1')
         s2_start = s1_end + timedelta(hours=1)
         s2_end = s2_start + timedelta(hours=1)
-        s2 = self.session_manager.create(self.admin_token, s2_start.isoformat() + 'Z',
-            s2_end.isoformat() + 'Z', 'active', True, 0, e1.id)
-        
+        self.session_manager.create(self.admin_token, s2_start.isoformat() + 'Z',
+            s2_end.isoformat() + 'Z', 'active', True, 0, e1.id, 'short name 1', 'long name 1')
+
         direct_query = facade.models.Event.objects.filter(
             venue__address__postal_code__exact=venue.address.postal_code)
-        
+
         ret = self.event_manager.get_filtered(self.admin_token,
             {'exact': {'venue__address__postal_code': venue.address.postal_code}}, ['id'])
-        
+
         self.failUnless(len(ret) == len(direct_query))
         found_e1_in_ret = False
         for result in ret:
             if result['id'] == e1.id:
                 found_e1_in_ret = True
         self.failUnless(found_e1_in_ret)
-        
+
         e2 = self.event_manager.create(self.admin_token, 'Evt', 'Event Title 2', 'another event',
             event_start.isoformat() + 'Z', event_end.isoformat()  + 'Z',
             organization.id, {'venue': venue.id})
         s3_start = event_end - timedelta(hours=10)
         s3_end = s3_start + timedelta(hours=1)
-        
-        s3 = self.session_manager.create(self.admin_token, s3_start.isoformat() + 'Z',
-            s3_end.isoformat() + 'Z', 'active', True, 0, e2.id)
-        
+
+        self.session_manager.create(self.admin_token, s3_start.isoformat() + 'Z',
+            s3_end.isoformat() + 'Z', 'active', True, 0, e2.id, 'short name 1', 'full name 1')
+
         direct_query = facade.models.Event.objects.filter(sessions__start__exact=s3_start)
         self.assertEquals(len(direct_query), 1)
         self.assertEquals(direct_query[0].id, e2.id)
-        
+
         ret = self.event_manager.get_filtered(self.admin_token, {'exact':
             {'sessions__start': s3_start.isoformat(' ')}}, ['id'])
         self.assertEquals(len(ret), 1)
@@ -3142,12 +3179,12 @@ class TestScormServer(TestCase):
             {'exact': {'id': assignment.id}}, ['status', 'date_completed'])
         self.assertEqual(ret[0]['status'], 'completed')
         self.assertNotEqual(ret[0]['date_completed'], None)
-        
+
 class TestPrUtils(TestCase):
     """
     Test the pr_services.utils.Utils class.
     """
-    
+
     def test_get_auth_token_object(self):
         at = self.utils.get_auth_token_object(self.admin_token.session_id)
         self.assertEquals(at.session_id, self.admin_token.session_id)
@@ -3244,7 +3281,7 @@ class TestCurriculumManagement(TestCase):
         for user in users:
             self.assertEquals(len(user['completed_curriculum_enrollments']), 1)
             self.assertEquals(len(user['incomplete_curriculum_enrollments']), 0)
-        
+
 
 class TestUtilsManager(TestCase):
     def setUp(self):
@@ -3252,24 +3289,31 @@ class TestUtilsManager(TestCase):
         self.utils_manager = facade.managers.UtilsManager()
 
     def test_get_choices(self):
+        get_choices = self.utils_manager.get_choices
+
         # check the invalid model name case
         self.assertRaises(exceptions.FieldNameNotFoundException,
-            self.utils_manager.get_choices,
-                'not_a_model', 'aspect_ratio')
-        # check the invalid field name case
+            get_choices, 'not_a_model', 'aspect_ratio')
+
         self.assertRaises(exceptions.FieldNameNotFoundException,
-            self.utils_manager.get_choices,
-                'Video', 'not_a_field')
+            get_choices, 'Assignment', 'not_a_field')
+
         # check that we gen an empty list for a field that has no choices
-        list = self.utils_manager.get_choices('Video', 'live')
-        self.assertEquals(len(list), 0)
+        choices = get_choices('Assignment', 'date_started')
+        self.assertEquals(len(choices), 0)
+
         # check a couple of fields with choices
-        list = self.utils_manager.get_choices('Video', 'aspect_ratio')
-        self.assertEquals(len(list), 2)
-        self.assertEquals(list[0], '4:3')
-        self.assertEquals(list[1], '16:9')
-        list = self.utils_manager.get_choices('Question', 'widget')
-        self.assertEquals(len(list), 25)
+        def django_choices(s):
+            choice = operator.itemgetter(0)
+            return map(choice, s)
+
+        expected = django_choices(pr_models.Assignment.STATUS_CHOICES)
+        test = get_choices('Assignment', 'status')
+        self.assertEqual(test, expected)
+
+        expected = django_choices(pr_models.Domain.PASSWORD_HASH_TYPE_CHOICES)
+        test = get_choices('Domain', 'password_hash_type')
+        self.assertEquals(test, expected)
 
 
 ################################################################################################################################################
@@ -3318,9 +3362,9 @@ class TestUtils(object):
         now = datetime.utcnow()
         now = now.replace(microsecond=0, tzinfo=pr_time.UTC()) # we don't want microseconds in our ISO time strings
         # and we need a timezone specified to make valid ISO 8601 format timestamps
-    
+
         # notifications have not been sent for any of these sessions
-    
+
         # session 1 happened 5 hours ago and has a lead time of 1 day
         s1_begin = now + timedelta(days=5)
         s1_end = s1_begin + timedelta(hours=2)
@@ -3328,11 +3372,11 @@ class TestUtils(object):
         s1_confirmed = True
         s1_price = 10000
         s1_modality = 'ILT'
-        e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', s1_begin.isoformat(), s1_end.isoformat(), 
+        e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', s1_begin.isoformat(), s1_end.isoformat(),
             self.organization2.id, {'venue' : self.venue2.id, 'lead_time' : 86400})
         s1 = self.session_manager.create(self.admin_token, s1_begin.isoformat(), s1_end.isoformat(), s1_status,
-            s1_confirmed, s1_price, e1.id, {'modality' : s1_modality})
-    
+            s1_confirmed, s1_price, e1.id, 'short name 1', 'long name 1', {'modality' : s1_modality})
+
         # session 2 will occur in 1 day and has a lead time of 2 days
         s2_begin = now + timedelta(days=1)
         s2_end = s2_begin + timedelta(hours=3)
@@ -3343,8 +3387,8 @@ class TestUtils(object):
         e2 = self.event_manager.create(self.admin_token, 'Event 2', 'Event 2', 'Event 2', s2_begin.isoformat(), s2_end.isoformat(),
             self.organization2.id, {'venue' : self.venue2.id, 'lead_time' : 172800})
         self.s2 = self.session_manager.create(self.admin_token, s2_begin.isoformat(), s2_end.isoformat(), s2_status,
-            s2_confirmed, s2_price, e2.id, {'modality' : s2_modality})
-    
+            s2_confirmed, s2_price, e2.id, 'short name 1', 'long name 1', {'modality' : s2_modality})
+
         # session 3 will occur in 3 days and has a lead time of 3 days
         s3_begin = now + timedelta(days=3)
         s3_end = s3_begin + timedelta(hours=3)
@@ -3355,8 +3399,8 @@ class TestUtils(object):
         e3 = self.event_manager.create(self.admin_token, 'Event 3', 'Event 3', 'Event 3', s3_begin.isoformat(), s3_end.isoformat(),
             self.organization2.id, {'venue' : self.venue2.id, 'lead_time' : 259200})
         self.s3 = self.session_manager.create(self.admin_token, s3_begin.isoformat(), s3_end.isoformat(), s3_status,
-            s3_confirmed, s3_price, e3.id, {'modality' : s3_modality})
-    
+            s3_confirmed, s3_price, e3.id, 'short name 1', 'long name 1', {'modality' : s3_modality})
+
         # session 4 will occur in 10 days and has a lead time of 7 days
         s4_begin = now + timedelta(days=10)
         s4_end = s4_begin + timedelta(hours=3)
@@ -3367,12 +3411,12 @@ class TestUtils(object):
         e4 = self.event_manager.create(self.admin_token, 'Event 4', 'Event 4', 'Event 4', s4_begin.isoformat(), s4_end.isoformat(),
             self.organization2.id, {'venue' : self.venue2.id, 'lead_time' : 604800})
         s4 = self.session_manager.create(self.admin_token, s4_begin.isoformat(), s4_end.isoformat(), s4_status,
-            s4_confirmed, s4_price, e4.id, {'modality' : s4_modality})
-    
+            s4_confirmed, s4_price, e4.id, 'short name 1', 'long name 1', {'modality' : s4_modality})
+
         # we need session user roles before we can assign users
         instructor_role = facade.models.SessionUserRole.objects.get(name__exact='Instructor')
         student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
-    
+
         # we need session user role requirements for each session before we can assign users
         instructor_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(s1.id), str(instructor_role.id), 1, 2)
         learner_req1 = self.session_user_role_requirement_manager.create(self.admin_token, str(s1.id), str(student_role.id), 1, 30)
@@ -3382,7 +3426,7 @@ class TestUtils(object):
         learner_req3 = self.session_user_role_requirement_manager.create(self.admin_token, str(self.s3.id), str(student_role.id), 1, 30)
         instructor_req4 = self.session_user_role_requirement_manager.create(self.admin_token, str(s4.id), str(instructor_role.id), 1, 2)
         learner_req4 = self.session_user_role_requirement_manager.create(self.admin_token, str(s4.id), str(student_role.id), 1, 30)
-    
+
         # we need some users to be assigned in the various sessions
         instructor1 = self.user_manager.create(self.admin_token, 'instructor_1', 'password', 'Mr.', 'David', 'Smith', '', 'david@example.smith.us', 'active')
         instructor2 = self.user_manager.create(self.admin_token, 'instructor_2', 'password', 'Mr.', 'Sally', 'Snodgrass', '', 'sally@example.com', 'active')
@@ -3390,7 +3434,7 @@ class TestUtils(object):
         learner2 = self.user_manager.create(self.admin_token, 'learner_2', 'password', 'Mr.', 'Jon', 'Haskell', '', 'jhaskell@fake.acme.com', 'active')
         learner3 = self.user_manager.create(self.admin_token, 'learner_3', 'password', '', 'Eleanor', 'Jones', '', 'eleaner_jones@example.foo.bar.info', 'active')
         learner4 = self.user_manager.create(self.admin_token, 'learner_4', 'password', '', 'Luella', 'Ball', '', 'luella_ball@example.foo.bar.info', 'active')
-    
+
         # group the users by enrollment
         s1_instructors = [str(instructor1.id)]
         s1_learners = [str(learner1.id), str(learner2.id), str(learner3.id), str(learner4.id)]
@@ -3400,7 +3444,7 @@ class TestUtils(object):
         s3_learners = [str(learner4.id)]
         s4_instructors = [str(instructor1.id)]
         s4_learners = [str(learner1.id), str(learner2.id), str(learner4.id)]
-    
+
         # assign the users
         self.assignment_manager.bulk_create(self.admin_token, instructor_req1.id, s1_instructors)
         self.assignment_manager.bulk_create(self.admin_token, learner_req1.id, s1_learners)
@@ -3410,7 +3454,7 @@ class TestUtils(object):
         self.assignment_manager.bulk_create(self.admin_token, learner_req3.id, s3_learners)
         self.assignment_manager.bulk_create(self.admin_token, instructor_req4.id, s4_instructors)
         self.assignment_manager.bulk_create(self.admin_token, learner_req4.id, s4_learners)
-        
+
 class TestAdminPasswordSetup(django.test.TestCase):
     def test_admin_password_setup(self):
         InitialSetupMachine().initial_setup(default_admin_password='Oog5faga')
@@ -3427,12 +3471,12 @@ class TestManagerGetterSetters(TestCase):
             manager = getattr(facade.managers, manager_name)()
             if not isinstance(manager, ObjectManager):
                 continue
-            for attr, getter in manager.getters.iteritems():
+            for attr, getter in manager.GETTERS.iteritems():
                 if not hasattr(Getter, getter):
                     self.fail(
                         'Unknown getter %s for attribute %s of manager %s' % (
                             getter, attr, manager_name))
-            for attr, setter in manager.setters.iteritems():
+            for attr, setter in manager.SETTERS.iteritems():
                 if not hasattr(Setter, setter):
                     self.fail(
                         'Unknown setter %s for attribute %s of manager %s' % (
@@ -3455,8 +3499,8 @@ class TestACLCRUD(TestCase):
             model = manager.my_django_model._meta.object_name
             app = manager.my_django_model._meta.app_label
             crud = {
-                'r' : set(manager.getters.keys()),
-                'u' : set(manager.setters.keys()),
+                'r' : set(manager.GETTERS.keys()),
+                'u' : set(manager.SETTERS.keys()),
             }
             self.valid_crud[model] = crud
             self.valid_crud['%s.%s' % (app, model)] = crud
@@ -3512,5 +3556,142 @@ class TestEmailGeneration(TestCase):
         mess = mail.outbox[1]
         self.assertTrue('CRITICAL Message Logged' in mess.subject)
         self.assertTrue('this is a critical test' in mess.body)
+
+
+class TestOrgSlots(TestCase):
+    """
+    Test cases for organization slots.
+
+    Organization slots are UserOrgRole objects which persist
+    regardless of whether or not a user is associated with the `UserOrgRole`.
+
+    Reference Issue #17
+
+    """
+    def setUp(self):
+        super(TestOrgSlots, self).setUp()
+
+        UserOrgRole = facade.models.UserOrgRole
+        create_org = self.organization_manager.create
+        create_role = self.org_role_manager.create
+
+        # create some slots
+        self.slot1 = UserOrgRole.objects.create(
+                organization=create_org(self.admin_token, 'foo org'),
+                role=create_role(self.admin_token, 'foo role'),
+                title='slot1', persistent=True)
+
+        self.slot2 = UserOrgRole.objects.create(
+                organization=create_org(self.admin_token, 'bar org'),
+                role=create_role(self.admin_token, 'bar role'),
+                title='slot2', persistent=True)
+
+        self.user1, self.user1_token = self.create_student()
+        self.user2, self.user2_token = self.create_student()
+
+        self.user_org_role_manager.update(self.admin_token, self.slot1.id,
+                {'owner': self.user1.id})
+        self.user_org_role_manager.update(self.admin_token, self.slot2.id,
+                {'owner': self.user2.id})
+
+    def _get_user_roles(self, user):
+        return self.user_manager.get_filtered(self.admin_token,
+            {'exact': {'id': user.id}}, ['roles'])[0]['roles']
+
+    def _clear_user_roles(self, user):
+        self.user_manager.update(self.admin_token, user.id,
+                {'roles': {'remove': self._get_user_roles(user)}})
+
+    def test_free_slot(self):
+        """
+        Test that roles marked "persistent" remain after having been
+        disassociated with a user.
+
+        """
+        UserOrgRole = facade.models.UserOrgRole
+
+        # add one role which is not persistent
+        some_org = self.organization_manager.create(self.admin_token,
+                "Foo-Bar Legal Associates")
+        some_role = self.org_role_manager.create(self.admin_token,
+                "Paper Pusher")
+        self.user_manager.update(self.admin_token, self.user1.id,
+                {'roles': {'add': [
+                    {'id': some_role.id,
+                     'organization': some_org.id
+                    }]}})
+
+        # check that roles are set up as we expect
+        user1_roles = self._get_user_roles(self.user1)
+        self.assertEquals(len(user1_roles), 2)
+        user2_roles = self._get_user_roles(self.user2)
+        self.assertEquals(len(user2_roles), 1)
+
+        # clear roles for user1 and user2
+        self._clear_user_roles(self.user1)
+        self._clear_user_roles(self.user2)
+
+        # check that roles were cleared
+        user1_roles = self._get_user_roles(self.user1)
+        self.assertEquals(len(user1_roles), 0)
+        user2_roles = self._get_user_roles(self.user2)
+        self.assertEquals(len(user2_roles), 0)
+
+        # compare remaining UserOrgRole object's with the slots we made earlier
+        self.assertEquals(len(UserOrgRole.objects.all()), 2)
+        self.assertEquals(UserOrgRole.objects.get(id=self.slot1.id), self.slot1)
+        self.assertEquals(UserOrgRole.objects.get(id=self.slot2.id), self.slot2)
+
+        # check that slots are not associated with users
+        self.assertEquals(self.slot1.owner, None)
+        self.assertEquals(self.slot2.owner, None)
+
+    def test_delete(self):
+        """
+        Ensure that UserOrgRoles which have persistent=True can
+        be explicitly deleted if necessary
+
+        """
+        UserOrgRole = facade.models.UserOrgRole
+        delete = self.user_org_role_manager.delete
+
+        # check that we made 2 role objects
+        self.assertEquals(len(UserOrgRole.objects.all()), 2)
+
+        # clear all users' roles
+        self._clear_user_roles(self.user1)
+        self._clear_user_roles(self.user2)
+
+        # check that roles are not owned
+        self.assertEquals(self.slot1.owner, None)
+        self.assertEquals(self.slot2.owner, None)
+
+        # explicitly delete both slots
+        delete(self.admin_token, self.slot1.id)
+        delete(self.admin_token, self.slot2.id)
+
+        # check that slots were deleted
+        self.assertEquals(len(UserOrgRole.objects.all()), 0)
+
+    def test_create(self):
+        result = self._get_user_roles(self.user1)
+        self.assertEquals(len(result), 1)
+        self.assertEqual(result[0], self.slot1.role.id)
+
+        result = self._get_user_roles(self.user2)
+        self.assertEqual(result[0], self.slot2.role.id)
+
+        some_org = self.organization_manager.create(self.admin_token,
+                "Foo-Bar Legal Associates")
+        some_role = self.org_role_manager.create(self.admin_token,
+                "Paper Pusher")
+        slot1 = self.user_org_role_manager.create(self.admin_token, some_org.id, some_role.id, {'persistent':True})
+        self.user_org_role_manager.create(self.admin_token, some_org.id, some_role.id, {'persistent':True})
+        self.user_org_role_manager.create(self.admin_token, some_org.id, some_role.id, {'owner':self.user1.id})
+
+        self.assertEquals(len(self._get_user_roles(self.user1)), 2)
+        slot1reload = facade.models.UserOrgRole.objects.get(id=slot1.id)
+        self.assertEquals(slot1.persistent, True)
+        self.assertEquals(slot1.persistent, slot1reload.persistent)
 
 # vim:tabstop=4 shiftwidth=4 expandtab

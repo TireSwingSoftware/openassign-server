@@ -11,32 +11,31 @@ class ProductClaimManager(ObjectManager):
     """
     Manage ProductClaims in the Power Reg system
     """
-
+    GETTERS = {
+        'assignments': 'get_many_to_one',
+        'discounts': 'get_many_to_many',
+        'price_paid': 'get_general',
+        'product': 'get_foreign_key',
+        'purchase_order': 'get_foreign_key',
+        'quantity': 'get_general',
+        'training_units_paid': 'get_general',
+    }
+    SETTERS = {
+        'product': 'set_foreign_key',
+        'purchase_order': 'set_foreign_key',
+        'quantity': 'set_general',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'product' : 'get_foreign_key',
-            'purchase_order' : 'get_foreign_key',
-            'quantity' : 'get_general',
-            'price_paid' : 'get_general',
-            'training_units_paid' : 'get_general',
-            'discounts' : 'get_many_to_many',
-            'assignments' : 'get_many_to_one',
-        })
-        self.setters.update({
-            'product' : 'set_foreign_key',
-            'purchase_order' : 'set_foreign_key',
-            'quantity' : 'set_general',
-        })
         self.my_django_model = facade.models.ProductClaim
 
     @service_method
     def create(self, auth_token, product, purchase_order, quantity):
         """
         Create a new Product
-        
+
         @param product          PK of the product
         @param purchase_order   PK of the purchase_order
         @param quantity         Positive Integer
@@ -63,7 +62,7 @@ class ProductClaimManager(ObjectManager):
             if pc.quantity != value_map['quantity']:
                 blame = facade.managers.BlameManager().create(auth_token)
                 facade.models.ProductTransaction.objects.create(product=pc.product, change=(value_map['quantity'] - pc.quantity), blame=blame)
-                
+
         pc = ObjectManager.update(auth_token, id, value_map)
         pc.set_prices()
         return pc

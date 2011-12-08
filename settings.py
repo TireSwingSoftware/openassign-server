@@ -68,8 +68,13 @@ MIDDLEWARE_CLASSES = (
 # A cache backend that shares data across processes is required for the upload
 # progress bar to work.  In this case, create a file-based cache in the system
 # temp directory.
-CACHE_BACKEND = 'file://%s' % os.path.join(tempfile.gettempdir(), \
-    'upload-progress-cache' + str(hash(os.path.abspath(__file__))))
+CACHES = {
+    'default' : {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION' : os.path.join(tempfile.gettempdir(), \
+            'upload-progress-cache' + str(hash(os.path.abspath(__file__))))
+    }
+}
 
 FILE_UPLOAD_HANDLERS = ('pr_services.utils.upload.UploadProgressCachedHandler',) + \
     global_settings.FILE_UPLOAD_HANDLERS
@@ -276,7 +281,7 @@ if len(logging.getLogger().handlers) == 0:
 # Add additional error logging to admins using the pr_messaging app.
 from pr_messaging.logger import MessagingHandler
 # Only executes this part once when settings is imported as 'settings'.
-if '.' not in __name__:
+if '.' not in __name__ and ADMINS:
     handler = MessagingHandler(level=logging.ERROR, message_type='log-message',
                                recipients=ADMINS)
     logging.getLogger().addHandler(handler)

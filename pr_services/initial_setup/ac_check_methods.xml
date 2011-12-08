@@ -77,4 +77,5 @@
     <method name="actor_is_member_of_actee_related_category_authorized_groups" title="Actor is a member of an actee-related Category's authorized groups" description="Returns true iff the actor is a member of an authorized group on a category that's in an approved relationship to the actee" />
     <method name="actor_is_member_of_any_organization" title="Actor is member of any Organization" description="Returns true iff the actor is a member of any Organization" />
     <method name="actor_owns_assignment_for_task" title="Actor owns Assignment for Task" description="Returns True iff actor owns an assignment for the given task" />
+    <method name="actor_assigned_to_session" title="Actor is assigned to the session" description="Returns True iff the actor has an assignment for this session" />
 </methods>

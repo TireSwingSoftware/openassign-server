@@ -11,19 +11,18 @@ class CourseManager(ObjectManager):
     """
     Manage Courses in the Power Reg system.
     """
-
+    GETTERS = {
+        'name': 'get_general',
+        'scos': 'get_many_to_one',
+    }
+    SETTERS = {
+        'name': 'get_general',
+        'scos': 'set_many',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'name' : 'get_general',
-            'scos' : 'get_many_to_one',
-        })
-        self.setters.update({
-            'name' : 'get_general',
-            'scos' : 'set_many',
-        })
         self.my_django_model = facade.models.Course
 
     @service_method

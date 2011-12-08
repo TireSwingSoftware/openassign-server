@@ -21,20 +21,19 @@ class ResponseManager(ObjectManager):
      * *value* -- Value of the response, depending on the question type.
      * *valid* -- Whether this response is valid, None if we haven't checked yet.
     """
-
+    GETTERS = {
+        'answers': 'get_many_to_many',
+        'correct': 'get_general',
+        'exam_session': 'get_foreign_key',
+        'question': 'get_foreign_key',
+        'text': 'get_general',
+        'valid': 'get_general',
+        'value': 'get_general',
+    }
     def __init__(self):
         """Constructor."""
 
         super(ResponseManager, self).__init__()
-        self.getters.update({
-            'answers': 'get_many_to_many',
-            'correct': 'get_general',
-            'exam_session': 'get_foreign_key',
-            'question': 'get_foreign_key',
-            'text': 'get_general',
-            'valid': 'get_general',
-            'value': 'get_general',
-        })
         self.my_django_model = facade.models.Response
 
 # vim:tabstop=4 shiftwidth=4 expandtab

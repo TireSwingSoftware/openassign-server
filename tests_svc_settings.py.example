@@ -1,10 +1,15 @@
 # Settings for tests_svc.py
+#
+# Note: Requires a running web server.
 
 # Which service to test against, 'amf', 'soap', or 'xmlrpc'
 SVC_TEST = 'amf'
-# Define the port and URL at which we wish to run our test server
+
+# Define the hostname and port for the remote server to test against.
+# The defaults are OK if using ./manage.py runserver 127.0.0.1:12345
 SVC_TEST_HOST = 'localhost'
 SVC_TEST_PORT = 12345
+
 SVC_TEST_PATH = ''
 SVC_TEST_URL = 'http://%s:%d/%s%s/' % (SVC_TEST_HOST,  SVC_TEST_PORT, SVC_TEST_PATH, SVC_TEST )
 

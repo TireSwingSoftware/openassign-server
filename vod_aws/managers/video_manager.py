@@ -36,54 +36,55 @@ class VideoUploadForm(forms.Form):
 
 
 class VideoManager(TaskManager):
-    """Manage Videos in the Power Reg system"""
-
+    """
+    Manage Videos in the Power Reg system.
+    """
+    GETTERS = {
+        'approved_categories': 'get_general',
+        'aspect_ratio': 'get_general',
+        'author': 'get_general',
+        'categories': 'get_many_to_many',
+        'category_relationships': 'get_many_to_one',
+        'create_timestamp': 'get_time',
+        'deleted': 'get_general',
+        'description': 'get_general',
+        'encoded_videos': 'get_many_to_one',
+        'is_ready': 'get_general',
+        'keywords': 'get_general',
+        'length': 'get_general',
+        'live': 'get_general',
+        'name': 'get_general',
+        'num_views': 'get_general',
+        'owner': 'get_foreign_key',
+        'photo_url': 'get_general',
+        'prerequisite_tasks': 'get_many_to_many',
+        'public': 'get_general',
+        'src_file_size': 'get_general',
+        'status': 'get_general',
+        'tags': 'get_tags',
+        'users_who_watched': 'get_general',
+    }
+    SETTERS = {
+        'aspect_ratio': 'set_general',
+        'author': 'set_general',
+        'categories': 'set_many',
+        'description': 'set_general',
+        'encoded_videos': 'set_many',
+        'keywords': 'set_general',
+        'length': 'set_general',
+        'live': 'set_general',
+        'name': 'set_general',
+        'owner': 'set_foreign_key',
+        'photo_url': 'set_forbidden', # placeholder
+        'prerequisite_tasks': 'set_many',
+        'public': 'set_general',
+        'status': 'set_general',
+        'tags': 'set_tags',
+    }
     def __init__(self):
         """ constructor """
 
         TaskManager.__init__(self)
-        self.getters.update({
-            'approved_categories' : 'get_general',
-            'aspect_ratio' : 'get_general',
-            'author' : 'get_general',
-            'categories' : 'get_many_to_many',
-            'category_relationships' : 'get_many_to_one',
-            'create_timestamp' : 'get_time',
-            'deleted' : 'get_general',
-            'description' : 'get_general',
-            'encoded_videos' : 'get_many_to_one',
-            'is_ready' : 'get_general',
-            'keywords' : 'get_general',
-            'length' : 'get_general',
-            'live' : 'get_general',
-            'name' : 'get_general',
-            'num_views' : 'get_general',
-            'owner' : 'get_foreign_key',
-            'photo_url' : 'get_general',
-            'prerequisite_tasks' : 'get_many_to_many',
-            'public' : 'get_general',
-            'src_file_size' : 'get_general',
-            'status' : 'get_general',
-            'tags': 'get_tags',
-            'users_who_watched' : 'get_general',
-        })
-        self.setters.update({
-            'aspect_ratio' : 'set_general',
-            'author' : 'set_general',
-            'categories' : 'set_many',
-            'description' : 'set_general',
-            'encoded_videos' : 'set_many',
-            'keywords' : 'set_general',
-            'length' : 'set_general',
-            'live' : 'set_general',
-            'name' : 'set_general',
-            'owner' : 'set_foreign_key',
-            'photo_url' : 'set_forbidden', # placeholder
-            'prerequisite_tasks' : 'set_many',
-            'public' : 'set_general',
-            'status' : 'set_general',
-            'tags' : 'set_tags',
-        })
         self.my_django_model = facade.models.Video
 
     @service_method
@@ -146,7 +147,7 @@ class VideoManager(TaskManager):
         videos = Utils.merge_queries(videos, facade.managers.VideoCategoryManager(), auth_token,
             ['category_name', 'category', 'status'], 'category_relationships')
 
-        return Utils.merge_queries(videos, facade.managers.EncodedVideoManager(), auth_token, 
+        return Utils.merge_queries(videos, facade.managers.EncodedVideoManager(), auth_token,
             ['bitrate', 'http_url', 'url'], 'encoded_videos')
 
     @service_method
@@ -159,13 +160,13 @@ class VideoManager(TaskManager):
         videos = Utils.merge_queries(videos, facade.managers.CategoryManager(), auth_token,
             ['name'], 'approved_categories')
 
-        return Utils.merge_queries(videos, facade.managers.EncodedVideoManager(), auth_token, 
+        return Utils.merge_queries(videos, facade.managers.EncodedVideoManager(), auth_token,
             ['bitrate', 'url'], 'encoded_videos')
-                
+
     @service_method
     def get_num_views_by_date(self, auth_token, filter=None, requested_attributes=None,
         start_date=None, end_date=None):
-        
+
         """
         This method returns a list of dicts of Videos, as would typically be returned by
         a call to get_filtered(), but also adds an attribute 'num_views'.  This attribute

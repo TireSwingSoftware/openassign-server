@@ -11,29 +11,29 @@ class CurriculumTaskAssociationManager(ObjectManager):
     Manage curriculum_task_associations in the Power Reg system
     """
 
+    GETTERS = {
+        'continue_automatically': 'get_general',
+        'curriculum': 'get_foreign_key',
+        'days_before_start': 'get_general',
+        'days_to_complete': 'get_general',
+        'presentation_order': 'get_general',
+        'task': 'get_foreign_key',
+        'task_bundle': 'get_foreign_key',
+        'task_name': 'get_general',
+    }
+    SETTERS = {
+        'continue_automatically': 'set_general',
+        'curriculum': 'set_foreign_key',
+        'days_before_start': 'set_general',
+        'days_to_complete': 'set_general',
+        'presentation_order': 'set_general',
+        'task': 'set_foreign_key',
+        'task_bundle': 'set_foreign_key',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'continue_automatically' : 'get_general',
-            'curriculum' : 'get_foreign_key',
-            'days_before_start' : 'get_general',
-            'days_to_complete' : 'get_general',
-            'presentation_order' : 'get_general',
-            'task' : 'get_foreign_key',
-            'task_bundle' : 'get_foreign_key',
-            'task_name' : 'get_general',
-        })
-        self.setters.update({
-            'continue_automatically' : 'set_general',
-            'curriculum' : 'set_foreign_key',
-            'days_before_start' : 'set_general',
-            'days_to_complete' : 'set_general',
-            'presentation_order' : 'set_general',
-            'task' : 'set_foreign_key',
-            'task_bundle' : 'set_foreign_key',
-        })
         self.my_django_model = facade.models.CurriculumTaskAssociation
 
     @service_method
@@ -47,7 +47,7 @@ class CurriculumTaskAssociationManager(ObjectManager):
     def create(self, auth_token, curriculum, task, optional_attributes = None):
         """
         Create a new curriculum_task_association.
-        
+
         :param  curriculum:         FK for a curriculum
         :param  task:               FK for a task
         :param  optional_attributes:dict of optional attributes including

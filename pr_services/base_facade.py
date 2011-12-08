@@ -1,6 +1,6 @@
 # Exposes models managers and subsystems in a way extendable by plugins and
 # variants
-from utils import LazyImporter, LazyImportObjectProxy
+from utils import LazyImporter
 
 __all__ = ['managers', 'subsystems', 'models']
 

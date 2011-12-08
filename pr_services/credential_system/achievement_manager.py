@@ -11,31 +11,31 @@ class AchievementManager(ObjectManager):
     Manage achievements in the Power Reg system
     """
 
+    GETTERS = {
+        'component_achievements': 'get_many_to_many',
+        'description': 'get_general',
+        'name': 'get_general',
+        'users': 'get_many_to_many',
+        'yielded_achievements': 'get_many_to_many',
+    }
+    SETTERS = {
+        'component_achievements': 'set_many',
+        'description': 'set_general',
+        'name': 'set_general',
+        'users': 'set_many',
+        'yielded_achievements': 'set_many',
+    }
+
     def __init__(self):
         """ constructor """
-
         ObjectManager.__init__(self)
-        self.getters.update({
-            'component_achievements' : 'get_many_to_many',
-            'description' : 'get_general',
-            'name' : 'get_general',
-            'users' : 'get_many_to_many',
-            'yielded_achievements' : 'get_many_to_many',
-        })
-        self.setters.update({
-            'component_achievements' : 'set_many',
-            'description' : 'set_general',
-            'name' : 'set_general',
-            'users' : 'set_many',
-            'yielded_achievements' : 'set_many',
-        })
         self.my_django_model = facade.models.Achievement
 
     @service_method
     def create(self, auth_token, name, description, component_achievements=None):
         """
         Create a new achievement
-        
+
         @param name                     human-readable name
         @param description              human-readable description
         @param component_achievements   optional list of achievement PKs.  If

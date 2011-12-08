@@ -23,28 +23,28 @@ class FormWidgetManager(ObjectManager):
      * *y* -- y coordinate for the widget
     """
 
+    GETTERS = {
+        'answer': 'get_foreign_key',
+        'form_page': 'get_foreign_key',
+        'question': 'get_foreign_key',
+        'height': 'get_general',
+        'width': 'get_general',
+        'x': 'get_general',
+        'y': 'get_general',
+    }
+    SETTERS = {
+        'answer': 'set_foreign_key',
+        'form_page': 'set_foreign_key',
+        'question': 'set_foreign_key',
+        'height': 'set_general',
+        'width': 'set_general',
+        'x': 'set_general',
+        'y': 'set_general',
+    }
     def __init__(self):
         """Constructor."""
 
         super(FormWidgetManager, self).__init__()
-        self.getters.update({
-            'answer' : 'get_foreign_key',
-            'form_page' : 'get_foreign_key',
-            'question' : 'get_foreign_key',
-            'height' : 'get_general',
-            'width' : 'get_general',
-            'x' : 'get_general',
-            'y' : 'get_general',
-        })
-        self.setters.update({
-            'answer' : 'set_foreign_key',
-            'form_page' : 'set_foreign_key',
-            'question' : 'set_foreign_key',
-            'height' : 'set_general',
-            'width' : 'set_general',
-            'x' : 'set_general',
-            'y' : 'set_general',
-        })
         self.my_django_model = facade.models.FormWidget
 
     @service_method

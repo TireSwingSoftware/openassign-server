@@ -6,13 +6,11 @@ __docformat__ = "restructuredtext en"
 
 # Python
 from datetime import datetime
-from decimal import Decimal, ROUND_UP
 
 # PowerReg
 from pr_services import exceptions
 from pr_services import pr_time
 from pr_services.credential_system.assignment_attempt_manager import AssignmentAttemptManager
-from pr_services.models import queryset_empty
 from pr_services.rpc.service import service_method
 import facade
 
@@ -30,19 +28,19 @@ class ExamSessionManager(AssignmentAttemptManager):
      * *user* -- Foreign Key for the user taking the exam.
     """
 
+    GETTERS = {
+        'exam': 'get_foreign_key',
+        'number_correct': 'get_general',
+        'passed': 'get_general',
+        'passing_score': 'get_general',
+        'response_questions': 'get_many_to_many',
+        'score': 'get_decimal',
+        'user': 'get_foreign_key',
+    }
     def __init__(self):
         """Constructor."""
 
         super(ExamSessionManager, self).__init__()
-        self.getters.update({
-            'exam': 'get_foreign_key',
-            'passed': 'get_general',
-            'response_questions': 'get_many_to_many',
-            'score': 'get_decimal',
-            'passing_score': 'get_general',
-            'number_correct': 'get_general',
-            'user': 'get_foreign_key',
-        })
         self.my_django_model = facade.models.ExamSession
         self.post_exam_session_hooks = []
 
@@ -148,7 +146,7 @@ class ExamSessionManager(AssignmentAttemptManager):
         if resume and isinstance(auth_token, facade.models.AuthToken):
             exam_sessions = facade.models.ExamSession.objects.filter(assignment__id=assignment_object.id,
                 date_completed__isnull=True).order_by('-date_started')
-            if not queryset_empty(exam_sessions):
+            if exam_sessions:
                 return self.resume(auth_token, exam_sessions[0].id, fetch_all)
         exam_session = self._create(auth_token, assignment_object, fetch_all)
         return exam_session
@@ -419,7 +417,7 @@ class ExamSessionManager(AssignmentAttemptManager):
     def _finish(self, auth_token, exam_session):
         """
         Complete the exam session, or return more questions if available.
-        
+
         :param auth_token:      The authentication token of the acting user
         :type auth_token:       facade.models.AuthToken
         :param exam_session:    Reference to the exam session.

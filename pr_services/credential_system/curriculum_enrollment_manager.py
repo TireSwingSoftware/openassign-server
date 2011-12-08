@@ -12,33 +12,34 @@ class CurriculumEnrollmentManager(ObjectManager):
     """
     Manage curriculum_enrollments in the Power Reg system
     """
+    GETTERS = {
+        'assignments': 'get_many_to_one',
+        'curriculum': 'get_foreign_key',
+        'curriculum_name': 'get_general',
+        'end': 'get_time',
+        'start': 'get_time',
+        'user_completion_statuses': 'get_general',
+        'users': 'get_many_to_many',
+    }
+
+    SETTERS = {
+        'curriculum': 'set_foreign_key',
+        'users': 'set_many',
+        'start': 'set_time',
+        'end': 'set_time',
+    }
 
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'assignments' : 'get_many_to_one',
-            'curriculum' : 'get_foreign_key',
-            'curriculum_name' : 'get_general',
-            'users' : 'get_many_to_many',
-            'start' : 'get_time',
-            'end' : 'get_time',
-            'user_completion_statuses' : 'get_general',
-        })
-        self.setters.update({
-            'curriculum' : 'set_foreign_key',
-            'users' : 'set_many',
-            'start' : 'set_time',
-            'end' : 'set_time',
-        })
         self.my_django_model = facade.models.CurriculumEnrollment
 
     @service_method
     def create(self, auth_token, curriculum, start, end, users=None):
         """
         Create a new curriculum_enrollment.
-        
+
         :param  curriculum:     FK for a curriculum
         :param  start:          start date in ISO8601 format
         :param  end:            end date in ISO8601 format
@@ -64,6 +65,6 @@ class CurriculumEnrollmentManager(ObjectManager):
         filters = {} if pks == None else {'member' : {'id' : pks}}
         ret = self.get_filtered(auth_token, filters, ['curriculum_name', 'start', 'end', 'users'])
 
-        return Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['first_name', 'last_name', 'email'], 'users') 
+        return Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['first_name', 'last_name', 'email'], 'users')
 
 # vim:tabstop=4 shiftwidth=4 expandtab

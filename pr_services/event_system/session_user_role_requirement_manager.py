@@ -2,8 +2,6 @@
 SessionUserRoleRequirement manager class
 """
 
-from datetime import datetime
-from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 from pr_services.utils import Utils
 import facade
@@ -12,37 +10,37 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
     """
     Manage SessionUserRoleRequirements in the Power Reg system
     """
-    
+
+    GETTERS = {
+        'credential_types': 'get_many_to_many',
+        'ignore_room_capacity': 'get_general',
+        'max': 'get_general',
+        'min': 'get_general',
+        'role_name': 'get_general',
+        'session': 'get_foreign_key',
+        'session_user_role': 'get_foreign_key',
+    }
+    SETTERS = {
+        'credential_types': 'set_many',
+        'ignore_room_capacity': 'set_general',
+        'max': 'set_general',
+        'min': 'set_general',
+        'session': 'set_foreign_key',
+        'session_user_role': 'set_foreign_key',
+    }
     def __init__(self):
         """ constructor """
 
         super(SessionUserRoleRequirementManager, self).__init__()
-        self.getters.update({
-            'credential_types' : 'get_many_to_many',
-            'session' : 'get_foreign_key',
-            'session_user_role' : 'get_foreign_key',
-            'max' : 'get_general',
-            'min' : 'get_general',
-            'ignore_room_capacity' : 'get_general',
-            'role_name' : 'get_general',
-        })
-        self.setters.update({
-            'credential_types' : 'set_many',
-            'session' : 'set_foreign_key',
-            'session_user_role' : 'set_foreign_key',
-            'max' : 'set_general',
-            'min' : 'set_general',
-            'ignore_room_capacity' : 'set_general',
-        })
         self.my_django_model = facade.models.SessionUserRoleRequirement
 
     @service_method
     def create(self, auth_token, session_id, session_user_role_id, min, max,
         credential_type_ids=None, optional_attributes=None):
-        
+
         """
         Create a new SessionUserRoleRequirement
-        
+
         @param session_id               Primary key for an session
         @param session_user_role_id     Primary key for an session_user_role
         @param min                      Minimum number required

@@ -10,32 +10,31 @@ class SessionTemplateUserRoleRequirementManager(ObjectManager):
     """
     Manage SessionTemplateUserRoleRequirements in the Power Reg system
     """
-
+    GETTERS = {
+        'max': 'get_general',
+        'min': 'get_general',
+        'session_template': 'get_foreign_key',
+        'session_user_role': 'get_foreign_key',
+    }
+    SETTERS = {
+        'max': 'set_general',
+        'min': 'set_general',
+        'session_template': 'set_foreign_key',
+        'session_user_role': 'set_foreign_key',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'session_template' : 'get_foreign_key',
-            'session_user_role' : 'get_foreign_key',
-            'max' : 'get_general',
-            'min' : 'get_general',
-        })
-        self.setters.update({
-            'session_template' : 'set_foreign_key',
-            'session_user_role' : 'set_foreign_key',
-            'max' : 'set_general',
-            'min' : 'set_general',
-        })
         self.my_django_model = facade.models.SessionTemplateUserRoleReq
 
     @service_method
     def create(self, auth_token, session_template_id, session_user_role_id, min, max,
         credential_type_ids=None):
-        
+
         """
         Create a new SessionTemplateUserRoleRequirement
-        
+
         @param session_template_id  Primary key for an session_template
         @param session_user_role_id Primary key for a session_user_role
         @param min                  Minimum number required

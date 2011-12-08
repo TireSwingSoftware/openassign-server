@@ -6,17 +6,21 @@ model.
 """
 
 from __future__ import with_statement
-import copy
+
 import cPickle
-from datetime import datetime, timedelta
+import copy
+import logging
 import threading
-from django.core.exceptions import ObjectDoesNotExist
+
+from datetime import datetime
+
 from authorizer_decorators import *
+from django.core.exceptions import ObjectDoesNotExist
+from utils import Utils
+
 import exceptions
 import facade
 import pr_models
-import logging
-from utils import Utils
 
 class Authorizer(object):
     # Store a single instance of an Authorizer object, so we can manage the ACL cache effectively
@@ -51,7 +55,7 @@ class Authorizer(object):
     def _load_acls(cls):
         """
         Load the ACLs from the database and stick them in the persistent_cache
-        for all instances (in this interpreter anyway) to share. 
+        for all instances (in this interpreter anyway) to share.
         """
         with cls.persistent_cache_lock:
             cls.persistent_cache = {}
@@ -88,7 +92,7 @@ class Authorizer(object):
         This method checks the arbitrary permission list to see
         if the user has the requested access.  If they do not, it
         raises an exception.  If they do, it returns silently.
-        
+
         @param requested_permission    A string of the permission
                 that should be checked for.  If it is not granted
                 by one of the ACLs that the user is determined to
@@ -107,7 +111,7 @@ class Authorizer(object):
         """
         This method checks whether or not the actor has the create permissions
         being requested, and raises an exception if they do not.
-        
+
         @param actee  The object being created (you will need to instantiate it
                 before calling this method)
         """
@@ -118,7 +122,7 @@ class Authorizer(object):
         # For each of the ACLs, we need to run their ACCheckMethods, and if they
         # all pass for that ACL, we add the ACL's permissions to actors_acls
         for acl in acls_to_check:
-            # If all the checks have passed, we need to grant permissions to the user from the ACL 
+            # If all the checks have passed, we need to grant permissions to the user from the ACL
             acl_checks_passed = self._acl_checks_pass(auth_token, actee, acl)
             self.logger.commit()
             if acl_checks_passed:
@@ -134,7 +138,7 @@ class Authorizer(object):
                     return
         if not permission_granted:
             raise exceptions.PermissionDeniedException()
-        
+
     def check_read_permissions(self, auth_token, actee, requested_attributes):
         """
         This method checks permissions on a user when we know what fields
@@ -143,7 +147,7 @@ class Authorizer(object):
         they are requesting.  If you just want to know what fields they have
         access to you should use the get_authorized_attributes method and
         not this method.
-        
+
         @param actee                The object being acted upon
         @param requested_attributes The list of fields that the user is attempting to read
         """
@@ -163,7 +167,7 @@ class Authorizer(object):
         they are requesting.  If you just want to know what fields they have
         access to you should use the get_authorized_attributes method and
         not this method.
-        
+
         @param actee                The object being acted upon
         @param update_parameters    The dictionary of fields that the user is attempting to update and the values they are trying to update them to
         """
@@ -179,7 +183,7 @@ class Authorizer(object):
         """
         This method checks whether or not the actor has the delete permissions
         being requested, and raises an exception if they do not.
-        
+
         @param actee  The object the actor wishes to delete
         """
         actee_type = actee._meta.object_name # We need to use introspection to get the type of the actee
@@ -190,7 +194,7 @@ class Authorizer(object):
         # for that ACL, we add the ACL's permissions to actors_acls
         for acl in acls_to_check:
             # If all the checks have passed, we need to grant permissions to the user from the
-            # ACL 
+            # ACL
             if self._acl_checks_pass(auth_token, actee, acl):
                 permission_granted = acl['acl'][actee_type]['d']
                 if permission_granted:
@@ -200,10 +204,10 @@ class Authorizer(object):
 
     def get_authorized_attributes(self, auth_token, actee, requested_fields, access_type,
         update_dict=None):
-        
+
         """
         This method returns a list of fields for which the actor has read permissions for on the actee.
-        
+
         @param actee            The object being acted upon
         @param requested_fields A list of the fields that the user would like to read
         @type requested_fields  list of string
@@ -216,11 +220,11 @@ class Authorizer(object):
         @return                 A list of fields that the user is authorized to access.  This
                                 method can also raise a PermissionDeniedException.
         """
-        
+
         if update_dict is None:
             update_dict = {}
         # We need to use introspection to get the type of the actee
-        actee_type = actee._meta.object_name 
+        actee_type = actee._meta.object_name
         namespace = actee._meta.app_label
         acls_to_check = self._get_relevant_acls_for_attributes(actee_type, namespace, requested_fields,
             access_type)
@@ -228,21 +232,21 @@ class Authorizer(object):
         # For each of the ACLs, we need to run their ac_check_methods, and if they all pass for
         # that ACL, we add the ACLs attributes to actors_acls
         for potential_acl_dict in acls_to_check:
-            # If all the checks have passed, we need to grant permissions to the user from the ACL 
+            # If all the checks have passed, we need to grant permissions to the user from the ACL
             checks_pass = self._acl_checks_pass(auth_token, actee, potential_acl_dict, update_dict)
             self.logger.commit()
             if checks_pass:
                 attributes_granted = potential_acl_dict['acl'][actee_type][access_type]
                 all_requested_fields_granted = True
                 # If the user has requested fields, we can perform some optimizations
-                if len(requested_fields) != 0: 
+                if len(requested_fields) != 0:
                     for requested_field in requested_fields:
                         # If the requested field has been granted, add it to authorized_attributes
                         if requested_field in attributes_granted:
                             authorized_attributes.append(requested_field)
                         # If the field hasn't been granted now, and not in the past, then not all
                         # fields have been granted and we need to keep checking
-                        elif requested_field not in authorized_attributes: 
+                        elif requested_field not in authorized_attributes:
                             all_requested_fields_granted = False
                     # If all the requested fields are granted then we can stop checking and save
                     # the world now
@@ -278,7 +282,7 @@ class Authorizer(object):
         This method returns a list of relevant system ACLs to be used
         in our authorization check.  ACLs that do not deal with the requested
         access for the object type will not be returned to save time.
-        
+
         @param actee_type       The type of the object that the actor is attempting
                                 to act upon
         @param namespace        generally the name of the application from which the model comes.
@@ -322,7 +326,7 @@ class Authorizer(object):
         This method determines which ACLs we might possibly consider when
         testing for arbitrary permissions.  It will return a list of the relevant
         ACLs.
-        
+
         @param requested_permission   A string of the requested arbitrary permission
         @return                       A list of ACLs that should be used to check whether
                 access is allowed or not
@@ -341,7 +345,7 @@ class Authorizer(object):
         """
         This method performs the tests found in the ACL and returns True
         only if the result of all the tests ANDed together is True
-        
+
         @param actee        The object that the acting user is acting upon
         @param acl_dict     The ACL that we are running checks using, to determine
                             whether the user is acting under the ACL or not
@@ -359,7 +363,7 @@ class Authorizer(object):
             cache_key = ''
         else:
             cache_key = auth_token.session_id
-        
+
         if update_dict is None:
             update_dict = {}
 
@@ -393,7 +397,7 @@ class Authorizer(object):
                     # The user isn't trying to update anything, let's decrement the number of checks that need to pass
                     num_checks_need_to_pass -= 1
                     continue
-            # If any method fails, we return False since we require them to all pass (AND operation) 
+            # If any method fails, we return False since we require them to all pass (AND operation)
             try:
                 # If the test does not refer to the actee in any way, we
                 # can cache its result to use later.
@@ -457,7 +461,7 @@ class Authorizer(object):
         try:
             if actee.owner is None:
                 return True
-            elif auth_token.user.id == actee.owner.id:
+            elif auth_token.user_id == actee.owner.id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -474,7 +478,7 @@ class Authorizer(object):
         """
         Returns True if the address object is either the user's
         shipping or billing address, False otherwise.
-        
+
         @param actee  The address object in question
         """
 
@@ -514,7 +518,7 @@ class Authorizer(object):
         if not isinstance(actee, facade.models.Assignment):
             raise exceptions.InvalidActeeTypeException()
         try:
-            if auth_token.user.id == actee.user.id:
+            if auth_token.user_id == actee.user.id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -562,7 +566,7 @@ class Authorizer(object):
 
         @param actee      Instance of Assignment
         """
-        
+
         if not isinstance(actee, facade.models.Assignment):
             raise exceptions.InvalidActeeTypeException()
 
@@ -642,7 +646,7 @@ class Authorizer(object):
         if not isinstance(actee, facade.models.Credential):
             raise exceptions.InvalidActeeTypeException()
         try:
-            if auth_token.user.id == actee.user.id:
+            if auth_token.user_id == actee.user.id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -659,14 +663,14 @@ class Authorizer(object):
         """
         Returns True if the DomainAffiliation's 'user' attribute
         references the actor
-        
+
         @param actee  The DomainAffiliation object in question
         """
 
         if not isinstance(actee, facade.models.DomainAffiliation):
             raise exceptions.InvalidActeeTypeException()
 
-        return bool(auth_token.user.id == actee.user.id)
+        return bool(auth_token.user_id == actee.user.id)
 
     #################################################################################
     #
@@ -682,14 +686,14 @@ class Authorizer(object):
             raise exceptions.InvalidActeeTypeException()
 
         try:
-            if auth_token.user.id == actee.owner.id:
+            if auth_token.user_id == actee.owner.id:
                 return True
         except ObjectDoesNotExist:
             pass
         except AttributeError:
             pass
         return False
-    
+
 
     #################################################################################
     #
@@ -702,7 +706,7 @@ class Authorizer(object):
         or ratings.  That allows us to use the same ACL to allow creation of
         an ExamSession and allow reading results.  Returns True if the
         ExamSession has been finished, else False.
-        
+
         @param actee      Instance of ExamSession
         """
         # This test allows us to know if this ExamSession is new or not by virtue of it being populated.
@@ -721,7 +725,7 @@ class Authorizer(object):
         """
         Returns true if the refund does not put the total amount of
         refunds for a particular payment over the value of the payment.
-        
+
         @param actee      Instance of refund
         """
 
@@ -740,6 +744,17 @@ class Authorizer(object):
     # Methods for which actee is a session
     #
     #################################################################################
+
+    def actor_assigned_to_session(self, auth_token, actee):
+        """
+        Returns True iff the actor has an assignment for this session
+        """
+        if not isinstance(actee, facade.models.Session):
+            raise exceptions.InvalidActeeTypeException()
+        if actee.session_user_role_requirements.filter(assignments__user=auth_token.user).exists():
+            return True
+
+        return False
 
     def actor_owns_session(self, auth_token, actee):
         """
@@ -761,14 +776,14 @@ class Authorizer(object):
     def actor_is_product_line_manager_of_session(self, auth_token, actee):
         """
         Returns true if the actor is a product line manager for the given session.
-        
+
         @param actee      Instance of session
         """
         if not isinstance(actee, facade.models.Session):
             raise exceptions.InvalidActeeTypeException()
-            
+
         try:
-            if auth_token.user.id in actee.product_line.managers.values_list('id', flat=True):
+            if auth_token.user_id in actee.product_line.managers.values_list('id', flat=True):
                 return True
         except ObjectDoesNotExist:
             pass
@@ -777,7 +792,7 @@ class Authorizer(object):
 
         # Now see if this session's session_template has the actor as a PLM
         try:
-            if auth_token.user.id in actee.session_template.product_line.managers.values_list('id', flat = True):
+            if auth_token.user_id in actee.session_template.product_line.managers.values_list('id', flat = True):
                 return True
         except ObjectDoesNotExist:
             pass
@@ -794,14 +809,14 @@ class Authorizer(object):
     def actor_is_product_line_manager_of_session_template(self, auth_token, actee):
         """
         Returns true if the actor is a product line manager for the given session_template
-        
+
         @param actee      Instance of session_template
         """
 
         if not isinstance(actee, facade.models.SessionTemplate):
             raise exceptions.InvalidActeeTypeException()
         try:
-            if auth_token.user.id in actee.product_line.managers.values_list('id',
+            if auth_token.user_id in actee.product_line.managers.values_list('id',
                     flat = True):
                 return True
         except ObjectDoesNotExist:
@@ -838,7 +853,7 @@ class Authorizer(object):
         Returns True if the session associated with the session_user_role_requirement is owned
         by the actor
         """
-        
+
         if not isinstance(actee, facade.models.SessionUserRoleRequirement):
             raise exceptions.InvalidActeeTypeException()
 
@@ -861,52 +876,52 @@ class Authorizer(object):
     def actor_is_group_manager(self, auth_token, actee):
         """
         Returns True if the actor is the manager of the group.
-        
+
         @param actee  Instance of a group
         """
 
         if not isinstance(actee, facade.models.Group):
             raise exceptions.InvalidActeeTypeException()
         try:
-            if auth_token.user.id in actee.managers.values_list('id', flat=True):
+            if auth_token.user_id in actee.managers.values_list('id', flat=True):
                 return True
         except ObjectDoesNotExist:
             pass
         except AttributeError:
             pass
         return False
-    
+
     def actor_is_in_actee_which_is_a_group(self, auth_token, actee):
         """Returns true if the actee is a group and the actor is a member thereof."""
 
         if not isinstance(actee, facade.models.Group):
             raise exceptions.InvalidActeeTypeException()
         try:
-            if auth_token.user.id in actee.users.values_list('id', flat=True):
+            if actee.users.filter(id=auth_token.user_id).exists():
                 return True
         except ObjectDoesNotExist:
             pass
         except AttributeError:
             pass
         return False
-        
+
 
     #################################################################################
     #
-    # Methods for which actee is an organization 
+    # Methods for which actee is an organization
     #
     #################################################################################
-    
+
     def actor_is_in_actee_which_is_an_organization(self, auth_token, actee):
         """
         Returns True if the actee is an Organization and the actor belongs to that
         organization.
         """
-        
+
         if not isinstance(actee, facade.models.Organization):
             raise exceptions.InvalidActeeTypeException()
         if not isinstance(auth_token, facade.models.AuthToken):
-            return False 
+            return False
         if actee.id in (x.id for x in auth_token.user.organizations):
             return True
         return False
@@ -920,15 +935,15 @@ class Authorizer(object):
     def actor_owns_payment(self, auth_token, actee):
         """
         Returns true if the actor owns the payment.
-        
+
         @param actee      Instance of a purchase_order
         """
 
         if not isinstance(actee, facade.models.Payment):
             raise exceptions.InvalidActeeTypeException()
-            
+
         try:
-            if auth_token.user.id == actee.purchase_order.user.id:
+            if auth_token.user_id == actee.purchase_order.user_id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -945,14 +960,14 @@ class Authorizer(object):
     def actor_is_product_line_manager_of_product_line(self, auth_token, actee):
         """
         Returns true if the actor is a product line manager for the given product line.
-        
+
         @param actee      Instance of product_line
         """
 
         if not isinstance(actee, facade.models.ProductLine):
             raise exceptions.InvalidActeeTypeException()
             
-        if auth_token.user.id in actee.managers.values_list('id', flat = True):
+        if auth_token.user_id in actee.managers.values_list('id', flat = True):
             return True
         else:
             return False
@@ -966,7 +981,7 @@ class Authorizer(object):
     def purchase_order_has_payments(self, auth_token, actee):
         """
         Returns true if the purchase order being accessed has at least one payment.
-        
+
         @param actee      Instance of a purchase_order
         """
 
@@ -978,7 +993,7 @@ class Authorizer(object):
     def purchase_order_has_no_payments(self, auth_token, actee):
         """
         Returns true if the purchase order being accessed has no payments.
-        
+
         @param actee      Instance of a purchase_order
         """
 
@@ -990,15 +1005,15 @@ class Authorizer(object):
     def actor_owns_purchase_order(self, auth_token, actee):
         """
         Returns true if the actor owns the purchase order being accessed.
-        
+
         @param actee      Instance of a purchase_order
         """
 
         if not isinstance(actee, facade.models.PurchaseOrder):
             raise exceptions.InvalidActeeTypeException()
-            
+
         try:
-            if auth_token.user.id == actee.user.id:
+            if auth_token.user_id == actee.user_id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -1053,7 +1068,7 @@ class Authorizer(object):
         if not isinstance(actee, facade.models.Task):
             raise exceptions.InvalidActeeTypeException()
         if facade.models.Assignment.objects.filter(\
-            task__id=actee.id, user__id=auth_token.user.id).count():
+            task__id=actee.id, user__id=auth_token.user_id).count():
             return True
         else:
             return False
@@ -1067,15 +1082,15 @@ class Authorizer(object):
     def actor_owns_training_unit_authorization(self, auth_token, actee):
         """
         Returns true if the actor owns the purchase order being accessed.
-        
+
         @param actee      Instance of a purchase_order
         """
 
         if not isinstance(actee, facade.models.TrainingUnitAuthorization):
             raise exceptions.InvalidActeeTypeException()
-            
+
         try:
-            if auth_token.user.id == actee.user.id:
+            if auth_token.user_id == actee.user_id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -1088,15 +1103,15 @@ class Authorizer(object):
     # Methods for which actee is a User
     #
     #################################################################################
-    
+
     def actee_is_in_group_and_domain(self, auth_token, actee, group_id, domain_id):
         """
         If the actee is in the group, the method returns True iff they are also of the domain.
         If they are not in the group, it will return False.
-        
+
         This is useful for making sure that participants who register themselves are
         in a particular domain, such as 'constantcontact.com' for the Constant Contact variant.
-        
+
         Note that returning False instead of True if the user is not a part of
         the specified group is a different behavior from what the Constant
         Contact variant does!
@@ -1106,16 +1121,16 @@ class Authorizer(object):
         @param group_id The primary key of the group that the actee must be a member of
         @param domain_id the primary key of the domain
         """
-        
+
         if not isinstance(actee, facade.models.User):
             raise exceptions.InvalidActeeTypeException()
-        
+
         if group_id in actee.groups.all().values_list('id', flat=True):
             if actee.domain_affiliations.filter(domain__id=domain_id).count() == 0:
                 return False # The user is in the group, but not the domain
             else:
                 return True # The user is in the group and the domain, so let's allow
-            
+
         return False
 
     @uses_update_dict
@@ -1168,7 +1183,7 @@ class Authorizer(object):
         actee is in the session_user_role actee_sur.  Returns False otherwise.
 
         This method is only for use when the actee is a user.
-        
+
         @param actee      A user object that we are evaluation authorization for
         @param actor_sur_id  The primary key of the session_user_role with which the
                 actor should be enrolled in the session
@@ -1183,7 +1198,7 @@ class Authorizer(object):
             session_user_role_requirements__session_user_role__id=actee_sur_id
             ).values_list('id', flat=True))
         actor_sessions = set(facade.models.Session.objects.filter(
-            session_user_role_requirements__assignments__user__id=auth_token.user.id,
+            session_user_role_requirements__assignments__user__id=auth_token.user_id,
             session_user_role_requirements__session_user_role__id=actor_sur_id
             ).values_list('id', flat = True))
         # The union of the two sets will be the set of sessions that they
@@ -1196,13 +1211,13 @@ class Authorizer(object):
         """
         Returns True if the actor is a valid authenticated user in
         the system who is acting upon themselves.
-        
+
         @param actee  A user object that we wish to compare the actor to
         """
 
         if not isinstance(actee, facade.models.User):
             raise exceptions.InvalidActeeTypeException()
-        if auth_token.user.id == actee.id:
+        if auth_token.user_id == actee.id:
             return True
         return False
 
@@ -1210,7 +1225,7 @@ class Authorizer(object):
         """
         Returns True if the actor is the instructor manager for a product
         line in which the actee is an instructor.
-        
+
         @param actee      A user object that we are evaluation authorization for
         """
 
@@ -1221,7 +1236,7 @@ class Authorizer(object):
                 instructors__id__exact=actee.id).values_list('id', flat=True))
         actor_product_lines_im_for = set(
             facade.models.ProductLine.objects.filter(
-                instructor_managers__id__exact=auth_token.user.id
+                instructor_managers__id__exact=auth_token.user_id
             ).values_list('id', flat = True))
         if actor_product_lines_im_for & actee_product_lines_instructor_in:
             return True
@@ -1231,7 +1246,7 @@ class Authorizer(object):
         """
         Returns True if the actor is the product line manager for a
         product line in which the actee is an instructor.
-        
+
         @param actee      A user object that we are evaluation authorization for
         """
 
@@ -1242,7 +1257,7 @@ class Authorizer(object):
                 instructors__id__exact=actee.id).values_list('id', flat=True))
         actor_product_lines_plm_for = set(
             facade.models.ProductLine.objects.filter(
-                managers__id__exact=auth_token.user.id
+                managers__id__exact=auth_token.user_id
             ).values_list('id', flat=True))
         if actor_product_lines_plm_for & actee_product_lines_instructor_in:
             return True
@@ -1262,7 +1277,7 @@ class Authorizer(object):
         if not isinstance(actee, facade.models.Venue):
             raise exceptions.InvalidActeeTypeException()
         try:
-            if auth_token.user.id == actee.blame.user.id:
+            if auth_token.user_id == actee.blame.user.id:
                 return True
         except ObjectDoesNotExist:
             pass
@@ -1275,13 +1290,13 @@ class Authorizer(object):
     # Methods for which actee is None
     #
     #################################################################################
-    
+
     @does_not_use_actee
     def actor_is_authenticated(self, auth_token, actee=None):
         """
         Returns True if the actor is an authenticated user in our system.
-        
-        @param actee  Not used by this method, and defaults to None 
+
+        @param actee  Not used by this method, and defaults to None
         """
 
         if self.actor_is_guest(auth_token, actee):
@@ -1293,8 +1308,8 @@ class Authorizer(object):
     def actor_is_guest(self, auth_token, actee=None):
         """
         Returns True if the actor is a guest.
-        
-        @param actee  Not used by this method, and defaults to None 
+
+        @param actee  Not used by this method, and defaults to None
         """
         # Determine whether the actor is a guest or not, by testing to
         # see whether they are an authenticated user or not
@@ -1306,13 +1321,12 @@ class Authorizer(object):
     def actor_member_of_group(self, auth_token, actee, group_id):
         """
         Returns True if the actor is a member of the specified group, False otherwise.
-        
+
         @param actee      Not used by this method, but must be passed anyway as
                 per authorization system requirements
         @param group_id   The primary key of the group we wish to test membership in
         """
-        group_object = Utils.find_by_id(group_id, facade.models.Group)
-        if group_object.users.filter(id=auth_token.user.id).exists():
+        if facade.models.Group.objects.filter(id=group_id, users__id=auth_token.user_id).exists():
             return True
         return False
 
@@ -1351,7 +1365,7 @@ class Authorizer(object):
         This complicatedly name method exists to be a bit generically useful.  It will examine actee,
         ensuring that it is of type actee_model_name.  It will then ensure that attribute_name's value is
         equal to attribute_value.
-        
+
         ** Note: This depends on the model class's (or at least its parent class) being in facade.models. **
 
         @param auth_token       The authentication token of the acting user.  Guests are allowed, and so this method does not use the auth_token
@@ -1384,7 +1398,7 @@ class Authorizer(object):
         ensuring that it is of type actee_model_name.  It will then follow a foreign key relationship,
         actee.foreign_object_attribute_name, and ensure that that attribute's value is equal to
         foreign_object_attribute_value.
-         
+
         ** Note: This depends on the model class's (or at least its parent class) being in facade.models. **
 
         @param auth_token                       The authentication token of the acting user.  Guests are allowed, and so this method does not use the auth_token

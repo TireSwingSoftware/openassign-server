@@ -10,27 +10,28 @@ from pr_services.rpc.service import service_method
 from pr_services.utils import Utils
 
 class CategoryManager(ObjectManager):
-    """Manage Categories in the Power Reg system"""
-
+    """
+    Manage Categories in the Power Reg system.
+    """
+    GETTERS = {
+        'approved_videos': 'get_general',
+        'authorized_groups': 'get_many_to_many',
+        'locked': 'get_general',
+        'managers': 'get_many_to_many',
+        'name': 'get_general',
+        'videos': 'get_many_to_many',
+    }
+    SETTERS = {
+        'authorized_groups': 'set_many',
+        'locked': 'set_general',
+        'managers': 'set_many',
+        'name': 'set_general',
+        'videos': 'set_many',
+    }
     def __init__(self):
         """ constructor """
 
         ObjectManager.__init__(self)
-        self.getters.update({
-            'approved_videos' : 'get_general',
-            'authorized_groups' : 'get_many_to_many',
-            'managers' : 'get_many_to_many',
-            'name' : 'get_general',
-            'locked' : 'get_general',
-            'videos' : 'get_many_to_many',
-        })
-        self.setters.update({
-            'authorized_groups' : 'set_many',
-            'managers' : 'set_many',
-            'name' : 'set_general',
-            'locked' : 'set_general',
-            'videos' : 'set_many',
-        })
         self.my_django_model = facade.models.Category
 
     @service_method
@@ -55,7 +56,7 @@ class CategoryManager(ObjectManager):
         categories = Utils.merge_queries(categories, facade.managers.GroupManager(), auth_token,
             ['name'], 'authorized_groups')
 
-        return Utils.merge_queries(categories, facade.managers.UserManager(), auth_token, 
+        return Utils.merge_queries(categories, facade.managers.UserManager(), auth_token,
             ['last_name', 'first_name', 'email'], 'managers')
 
 
