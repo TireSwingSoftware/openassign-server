@@ -296,4 +296,17 @@ class AssignmentManager(ObjectManager):
 
         return ret
 
+    @service_method
+    def exam_assignments_detail_view(self, auth_token, filters=None, fields=None):
+        if not filters:
+            filters = {}
+        # apply our fields even if the passed fields is empty
+        if not fields:
+            fields = ['user', 'status', 'task']
+        ret = self.get_filtered(auth_token, filters, fields)
+
+        ret = Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['first_name', 'last_name'], 'user')
+
+        return Utils.merge_queries(ret, facade.managers.ExamManager(), auth_token, ['name', 'title', 'type', 'description', 'passing_score'], 'task')
+
 # vim:tabstop=4 shiftwidth=4 expandtab
