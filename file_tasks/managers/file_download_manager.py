@@ -77,6 +77,21 @@ class FileDownloadManager(TaskManager):
             return reverse('file_tasks:upload_file_for_download')
 
     @service_method
+    def get_download_url_for_assignment(self, auth_token, assignment_id):
+        """
+        Return the URL where the user can download the file mark the given
+        Assignment as completed.
+
+        :param auth_token:      The authentication token of the acting user.
+        :type auth_token:       facade.models.AuthToken
+        :param assignment_id:   The primary key of the FileDownload task.
+        :type assignment_id:    int
+        :return:                URL to the file download.
+        """
+        return reverse('file_tasks:download_file_for_assignment',
+                       args=[auth_token.session_id, assignment_id])
+
+    @service_method
     def delete(self, auth_token, file_download_id):
         """
         Mark a file download as deleted and remove it from storage.

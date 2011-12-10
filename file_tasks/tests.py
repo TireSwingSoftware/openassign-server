@@ -137,42 +137,45 @@ class TestFileDownload(TestCase):
         # Before having an assignment, the user cannot see any file downloads.
         result = self.file_download_manager.get_filtered(self.auth_token, {})
         self.assertFalse(result)
-        # Now register a download attempt, which implicitly creates an
-        # Assignment if needed.
-        result = self.file_download_attempt_manager.register_file_download_attempt(\
-            self.auth_token, file_download.id)
-        self.assertTrue(result['id'])
-        self.assertTrue(result['url'])
-        file_download_attempt_id = result['id']
-        file_download_url = result['url']
-        # Now we can get the file download attempt fields.
-        result = self.file_download_attempt_manager.get_filtered(self.auth_token,
-            {'exact': {'id': file_download_attempt_id}},
-            ['file_download', 'date_started', 'date_completed'])
-        self.assertTrue(result)
-        self.assertTrue(result[0]['file_download'])
-        self.assertTrue(result[0]['date_started'])
-        self.assertFalse(result[0]['date_completed'])
-        file_download_id = result[0]['file_download']
-        # And now the file download task info.  The user should not be able to
-        # access the direct file_url, only the one returned from the file
-        # download attempt.
+        # Now create an Assignment for this FileDownload Task.
+        assignment = self.assignment_manager.create(self.admin_token,
+            file_download.id, self.user1.id)
+        # Now we can retrieve the FileDownload Task info.  The user should not
+        # be able to access the direct file_url.
         result = self.file_download_manager.get_filtered(self.auth_token,
-            {'exact': {'id': file_download_id}},
+            {'exact': {'id': file_download.id}},
             ['name', 'description', 'file_size', 'file_url'])
         self.assertTrue(result)
         self.assertTrue(result[0]['name'])
         self.assertTrue(result[0]['description'])
         self.assertTrue(result[0]['file_size'])
         self.assertFalse('file_url' in result[0])
-        # Now hit the download URL and verify the file download attempt has
-        # been marked as completed.
-        response = self.client.get(file_download_url)
+        # There should be no completed Assignments or FileDownloadAttempts for
+        # the acting user.
+        assignment_qs = facade.models.Assignment.objects.filter(user=self.user1)
+        assignment_qs = assignment_qs.exclude(date_completed=None)
+        self.assertEqual(assignment_qs.count(), 0)
+        self.assertEqual(facade.models.FileDownloadAttempt.objects.count(), 0)
+        # Now obtain the download URL and hit the download view, which should
+        # redirect to the actual file URL.
+        download_url = self.file_download_manager.get_download_url_for_assignment(self.auth_token, assignment.pk)
+        response = self.client.get(download_url)
         self.assertEqual(response.status_code, 302)
-        result = self.file_download_attempt_manager.get_filtered(self.auth_token,
-            {'exact': {'id': file_download_attempt_id}}, ['date_completed'])
-        self.assertTrue(result)
-        self.assertTrue(result[0]['date_completed'])
+        # Verify that the Assignment has now been marked as completed and that
+        # there is one FileDownloadAttempt recorded.
+        assignment_qs = facade.models.Assignment.objects.filter(user=self.user1)
+        assignment_qs = assignment_qs.exclude(date_completed=None)
+        self.assertEqual(assignment_qs.count(), 1)
+        self.assertEqual(facade.models.FileDownloadAttempt.objects.count(), 1)
+        assignment = facade.models.Assignment.objects.get(pk=assignment.pk)
+        date_completed = assignment.date_completed
+        # If we hit the download URL again, the Assignment completion date
+        # should not change, but a new FileDownloadAttempt will be created.
+        response = self.client.get(download_url)
+        self.assertEqual(response.status_code, 302)
+        assignment = facade.models.Assignment.objects.get(pk=assignment.pk)
+        self.assertEqual(assignment.date_completed, date_completed)
+        self.assertEqual(facade.models.FileDownloadAttempt.objects.count(), 2)
 
 class TestFileUpload(TestCase):
     """Test cases for the FileUpload Task."""

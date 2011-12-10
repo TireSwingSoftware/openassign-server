@@ -108,27 +108,34 @@ def upload_file_for_download(request, auth_token=None, pk=None):
                 {'form': form}, status=400)
 
 @handle_pr_exception
-def download_file(request, auth_token, pk):
-    """Track file downloads to complete a FileDownloadAttempt.
+def download_file_for_assignment(request, auth_token, pk):
+    """Track file downloads to complete an Assignment of a FileDownload Task.
 
     :param request:     HttpRequest object from Django
     :type request:      HttpRequest
     :param auth_token:  AuthToken from URL path
     :type auth_token:   string
-    :param pk:          FileDownload PK from URL path
+    :param pk:          Assignment PK from URL path
     :type pk:           int
     """
+    assignment_manager = facade.managers.AssignmentManager()
     file_download_attempt_manager = facade.managers.FileDownloadAttemptManager()
     at = Utils.get_auth_token_object(auth_token)
     at.domain_affiliation.user = at.domain_affiliation.user.downcast_completely()
-    results = file_download_attempt_manager.get_filtered(at, {'exact': {'id': pk}}, ['file_download'])
-    if results and 'file_download' in results[0]:
+    try:
+        results = assignment_manager.get_filtered(at, {'exact': {'id': pk}}, ['id'])
+        assignment = facade.models.Assignment.objects.get(pk=results[0]['id'])
+        file_download_attempt = file_download_attempt_manager.create(at, assignment.id)
+        results = file_download_attempt_manager.get_filtered(at, {'exact': {'id': file_download_attempt.id}}, ['file_download'])
         file_download = facade.models.FileDownload.objects.get(pk=results[0]['file_download'])
-        file_download_attempt = facade.models.FileDownloadAttempt.objects.get(pk=pk)
-        file_download_attempt.date_completed = datetime.datetime.utcnow()
+        if not assignment.date_completed:
+            assignment.mark_completed() # Sets date_completed and saves.
+            file_download_attempt.date_completed = assignment.date_completed
+        else:
+            file_download_attempt.date_completed = datetime.datetime.utcnow()
         file_download_attempt.save()
         return HttpResponseRedirect(file_download.file_url)
-    else:
+    except (IndexError, KeyError):
         raise Http404
 
 @transaction.commit_manually
