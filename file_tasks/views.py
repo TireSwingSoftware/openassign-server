@@ -140,29 +140,42 @@ def download_file_for_assignment(request, auth_token, pk):
 
 @transaction.commit_manually
 @handle_pr_exception
-def upload_file(request, auth_token=None, pk=None):
+def upload_file_for_assignment(request, auth_token=None, pk=None):
     """Handle file uploads to complete a FileUploadAttempt.
 
     :param request:     HttpRequest object from Django
     :type request:      HttpRequest
     :param auth_token:  AuthToken from URL path
     :type auth_token:   string or None
-    :param pk:          FileUpload PK from URL path
+    :param pk:          Assignment PK from URL path
     :type pk:           int or None
     """
+    assignment_manager = facade.managers.AssignmentManager()
     file_upload_attempt_manager = facade.managers.FileUploadAttemptManager()
     if request.method == 'GET':
         transaction.rollback()
+        if auth_token and pk:
+            at = Utils.get_auth_token_object(auth_token)
+            at.domain_affiliation.user = at.domain_affiliation.user.downcast_completely()
+            file_upload_attempt = file_upload_attempt_manager.create(at, pk)
+        else:
+            file_upload_attempt = None
+        form = FileUploadAttemptForm(instance=file_upload_attempt,
+            initial={'auth_token': auth_token, 'assignment_id': pk})
         return upload._render_response(request, 'file_tasks/upload_file.html',
-            {'form': FileUploadAttemptForm(initial={'auth_token': auth_token, 'id': pk})})
+            {'form': form})
     elif request.method == 'POST':
-        form = FileUploadAttemptForm(data=request.POST, files=request.FILES)
+        try:
+            file_upload_attempt = facade.models.FileUploadAttempt.objects.get(pk=request.POST.get('id', None))
+        except facade.models.FileUploadAttempt.DoesNotExist:
+            file_upload_attempt = None
+        form = FileUploadAttemptForm(data=request.POST, files=request.FILES, instance=file_upload_attempt)
         if form.is_valid():
-            pk = pk or form.cleaned_data['id']
             at = Utils.get_auth_token_object(auth_token or form.cleaned_data['auth_token'])
             at.domain_affiliation.user = at.domain_affiliation.user.downcast_completely()
-            file_upload_attempt_dict = file_upload_attempt_manager.register_file_upload_attempt(at, pk)
-            file_upload_attempt = facade.models.FileUploadAttempt.objects.get(pk=file_upload_attempt_dict['id'])
+            assignment_id = pk or form.cleaned_data['assignment_id']
+            if not file_upload_attempt:
+                file_upload_attempt = file_upload_attempt_manager.create(at, assignment_id)
             file_upload_attempt.file_size = form.files['file_data'].size
             file_upload_attempt.save()
             transaction.commit()

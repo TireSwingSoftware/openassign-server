@@ -30,6 +30,15 @@ class FileDownloadForm(FileTaskForm):
 class FileUploadAttemptForm(FileTaskForm):
     """Form for uploading a file to complete a FileUploadAttempt."""
 
+    assignment_id = forms.IntegerField(required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(FileUploadAttemptForm, self).__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['assignment_id'].required = False
+        if self.initial.get('assignment_id', None) or self.instance.pk:
+            self.fields['assignment_id'].widget = forms.HiddenInput()
+
     class Meta:
         model = FileUploadAttempt
         fields = ('file_data',)

@@ -1,3 +1,6 @@
+# Django
+from django.core.urlresolvers import reverse
+
 # PowerReg
 import facade
 from pr_services.credential_system.task_manager import TaskManager
@@ -5,7 +8,7 @@ from pr_services.rpc.service import service_method
 
 class FileUploadManager(TaskManager):
     """
-    Manage FileDownload tasks in the PowerReg system.
+    Manage FileUpload tasks in the PowerReg system.
     """
 
     def __init__(self):
@@ -40,3 +43,26 @@ class FileUploadManager(TaskManager):
             file_upload.save()
         self.authorizer.check_create_permissions(auth_token, file_upload)
         return file_upload
+
+    @service_method
+    def get_upload_url_for_assignment(self, auth_token=None, assignment_id=None):
+        """
+        Return the URL where POST data should be submitted to upload a file.
+        A GET request for this URL will return an HTML form where the file can
+        be submitted, useful if the client needs to display the upload form in
+        a iframe.  Auth_token and assignment id will be used to construct the
+        returned URL.
+
+        :param auth_token:  The authentication token of the acting user.
+        :type auth_token:   facade.models.AuthToken or None
+        :param id:          The primary key of the Assignment instance.
+        :type id:           int or None
+        :return:            URL to the upload form.
+        """
+        if auth_token:
+            args = [auth_token.session_id]
+            if assignment_id:
+                args.append(assignment_id)
+            return reverse('file_tasks:upload_file_for_assignment_form', args=args)
+        else:
+            return reverse('file_tasks:upload_file_for_assignment')

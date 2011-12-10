@@ -118,7 +118,11 @@ class FileUploadAttempt(pr_models.AssignmentAttempt):
         if self.file_data.name:
             self.file_size = self.file_data.size
             if not self.date_completed:
-                self.date_completed = datetime.datetime.utcnow()
+                if not self.assignment.date_completed:
+                    self.assignment.mark_completed()
+                    self.date_completed = self.assignment.date_completed
+                else:
+                    self.date_completed = datetime.datetime.utcnow()
         else:
             self.file_size = None
         super(FileUploadAttempt, self).save(*args, **kwargs)

@@ -294,7 +294,7 @@ def setup(machine):
         'FileUploadAttempt' : {
             'c' : True,
             'r' : ['assignment', 'date_started', 'date_completed', 'file_upload',
-                   'user', 'file_size', 'file_url', 'deleted'],
+                   'user', 'file_name', 'file_size', 'file_url', 'deleted'],
             'u' : ['date_completed'],
             'd' : True,
         },
