@@ -128,7 +128,7 @@ class TestFileDownload(TestCase):
         self.assertTrue('task' in assignment)
         task = assignment['task']
         self.assertTrue('file_size' in task)
-        self.assertTrue('file_url' in task)
+        self.assertFalse('file_url' in task) # User not allowed to see real file_url
         self.assertTrue('name' in task)
         self.assertTrue('description' in task)
 
@@ -137,21 +137,42 @@ class TestFileDownload(TestCase):
         # Before having an assignment, the user cannot see any file downloads.
         result = self.file_download_manager.get_filtered(self.auth_token, {})
         self.assertFalse(result)
-        # Now register a download attempt, which creates an Assignment.
+        # Now register a download attempt, which implicitly creates an
+        # Assignment if needed.
         result = self.file_download_attempt_manager.register_file_download_attempt(\
             self.auth_token, file_download.id)
         self.assertTrue(result['id'])
+        self.assertTrue(result['url'])
+        file_download_attempt_id = result['id']
+        file_download_url = result['url']
         # Now we can get the file download attempt fields.
         result = self.file_download_attempt_manager.get_filtered(self.auth_token,
-            {'exact': {'id': result['id']}}, ['file_download'])
+            {'exact': {'id': file_download_attempt_id}},
+            ['file_download', 'date_started', 'date_completed'])
         self.assertTrue(result)
         self.assertTrue(result[0]['file_download'])
-        # And now the file download task info.
+        self.assertTrue(result[0]['date_started'])
+        self.assertFalse(result[0]['date_completed'])
+        file_download_id = result[0]['file_download']
+        # And now the file download task info.  The user should not be able to
+        # access the direct file_url, only the one returned from the file
+        # download attempt.
         result = self.file_download_manager.get_filtered(self.auth_token,
-            {'exact': {'id': result[0]['file_download']}},
+            {'exact': {'id': file_download_id}},
             ['name', 'description', 'file_size', 'file_url'])
         self.assertTrue(result)
-        self.assertTrue(result[0]['file_url'])
+        self.assertTrue(result[0]['name'])
+        self.assertTrue(result[0]['description'])
+        self.assertTrue(result[0]['file_size'])
+        self.assertFalse('file_url' in result[0])
+        # Now hit the download URL and verify the file download attempt has
+        # been marked as completed.
+        response = self.client.get(file_download_url)
+        self.assertEqual(response.status_code, 302)
+        result = self.file_download_attempt_manager.get_filtered(self.auth_token,
+            {'exact': {'id': file_download_attempt_id}}, ['date_completed'])
+        self.assertTrue(result)
+        self.assertTrue(result[0]['date_completed'])
 
 class TestFileUpload(TestCase):
     """Test cases for the FileUpload Task."""

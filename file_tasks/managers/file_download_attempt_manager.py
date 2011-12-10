@@ -1,6 +1,9 @@
 # Python
 import datetime
 
+# Django
+from django.core.urlresolvers import reverse
+
 # PowerReg
 from pr_services.credential_system.assignment_attempt_manager import AssignmentAttemptManager
 from pr_services import pr_time
@@ -49,7 +52,7 @@ class FileDownloadAttemptManager(AssignmentAttemptManager):
         self.authorizer.check_create_permissions(auth_token, file_download_attempt)
         return {
             'id': file_download_attempt.id,
-            'url': file_download_attempt.file_download.file_url,
+            'url': reverse('file_tasks:download_file', args=[auth_token.session_id, attempt.pk]),
         }
 
     @service_method
@@ -57,13 +60,17 @@ class FileDownloadAttemptManager(AssignmentAttemptManager):
         """
         Create or find an assignment to download the file, then use it to
         create a FileDownloadAttempt object. If a FileDownloadAttempt for this
-        (user, file download) combination was created in the last 12 hours,
-        does nothing.
+        (user, file download) combination was created in the last 12 hours and
+        hasn't been completed, just return it instead.
 
         @param auth_token           The authentication token of the acting user
         @type auth_token            facade.models.AuthToken
         @param file_download_id     FK for a file download
         @type file_download_id      int
+        @return                     A dictionary with two items. 'id' contains
+                                    the primary key of the FileDownloadAttempt
+                                    object. 'url' contains the URL where the
+                                    user can download the associated file.
         """
         # Check that the given ID is for a FileDownload object.
         file_download = facade.models.FileDownload.objects.get(id=file_download_id)
@@ -74,12 +81,15 @@ class FileDownloadAttemptManager(AssignmentAttemptManager):
         else:
             assignment = facade.managers.AssignmentManager().create(auth_token, file_download_id)
         start_cutoff = datetime.datetime.utcnow() - datetime.timedelta(hours=12)
-        attempts = facade.models.AssignmentAttempt.objects.filter(
-            assignment__id=assignment.id,
+        attempts = self.my_django_model.objects.filter(
+            assignment__id=assignment.id, date_completed=None,
             date_started__gt=start_cutoff).order_by('-date_started')
         if len(attempts):
             attempt = attempts[0]
         else:
             attempt = self.my_django_model.objects.create(assignment=assignment)
             self.authorizer.check_create_permissions(auth_token, attempt)
-        return {'id': attempt.id}
+        return {
+            'id': attempt.id,
+            'url': reverse('file_tasks:download_file', args=[auth_token.session_id, attempt.pk]),
+            }

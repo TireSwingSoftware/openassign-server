@@ -16,19 +16,20 @@ class FileUploadAttemptManager(AssignmentAttemptManager):
     Manage FileUploadAttempt objects in the PowerReg system.
     """
 
+    GETTERS = {
+        'user': 'get_foreign_key',
+        'file_upload': 'get_foreign_key',
+        'file_size': 'get_general',
+        'file_name': 'get_general',
+        'file_url': 'get_general',
+        'deleted': 'get_general',
+    }
+    SETTERS = {
+        'deleted': 'set_general',
+    }
+
     def __init__(self):
         super(FileUploadAttemptManager, self).__init__()
-        self.getters.update({
-            'user': 'get_foreign_key',
-            'file_upload': 'get_foreign_key',
-            'file_size': 'get_general',
-            'file_name': 'get_general',
-            'file_url': 'get_general',
-            'deleted': 'get_general',
-        })
-        self.setters.update({
-            'deleted': 'get_general',
-        })
         self.my_django_model = facade.models.FileUploadAttempt
 
     @service_method

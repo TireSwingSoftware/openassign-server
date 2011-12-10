@@ -10,8 +10,6 @@ class FileUploadManager(TaskManager):
 
     def __init__(self):
         super(FileUploadManager, self).__init__()
-        self.getters.update({})
-        self.setters.update({})
         self.my_django_model = facade.models.FileUpload
 
     @service_method

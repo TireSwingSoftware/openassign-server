@@ -1,10 +1,11 @@
 # Python
+import datetime
 import logging
 import traceback
 
 # Django
 from django.db import transaction
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 
 # Decorator
 from decorator import decorator
@@ -105,6 +106,30 @@ def upload_file_for_download(request, auth_token=None, pk=None):
             logging.info(str(form.errors))
             return upload._render_response(request, 'file_tasks/upload_file.html',
                 {'form': form}, status=400)
+
+@handle_pr_exception
+def download_file(request, auth_token, pk):
+    """Track file downloads to complete a FileDownloadAttempt.
+
+    :param request:     HttpRequest object from Django
+    :type request:      HttpRequest
+    :param auth_token:  AuthToken from URL path
+    :type auth_token:   string
+    :param pk:          FileDownload PK from URL path
+    :type pk:           int
+    """
+    file_download_attempt_manager = facade.managers.FileDownloadAttemptManager()
+    at = Utils.get_auth_token_object(auth_token)
+    at.domain_affiliation.user = at.domain_affiliation.user.downcast_completely()
+    results = file_download_attempt_manager.get_filtered(at, {'exact': {'id': pk}}, ['file_download'])
+    if results and 'file_download' in results[0]:
+        file_download = facade.models.FileDownload.objects.get(pk=results[0]['file_download'])
+        file_download_attempt = facade.models.FileDownloadAttempt.objects.get(pk=pk)
+        file_download_attempt.date_completed = datetime.datetime.utcnow()
+        file_download_attempt.save()
+        return HttpResponseRedirect(file_download.file_url)
+    else:
+        raise Http404
 
 @transaction.commit_manually
 @handle_pr_exception

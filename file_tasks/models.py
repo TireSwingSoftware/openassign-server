@@ -76,13 +76,6 @@ class FileDownloadAttempt(pr_models.AssignmentAttempt):
     def user(self):
         return self.assignment.user
 
-    def save(self, *args, **kwargs):
-        if self.pk is None:
-            self.date_completed = datetime.datetime.utcnow()
-            # FIXME: Ideally, we'd like to mark it complete AFTER the user has
-            # completed the file download.
-        super(FileDownloadAttempt, self).save(*args, **kwargs)
-
 class FileUpload(pr_models.Task):
     """User Task that requires uploading a file."""
 
