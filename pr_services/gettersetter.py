@@ -36,9 +36,9 @@ def is_for_derived_attribute(func):
 class Getter(object):
     logger = logging.getLogger('pr_services.getter')
 
-    def __init__(self, auth_token, object_manager, django_query_set, requested_fields=None):
-        if requested_fields is None:
-            requested_fields = list()
+    def __init__(self, auth_token, object_manager, django_query_set,
+            requested_fields=()):
+        requested_fields = list(requested_fields)
         self.django_query_set = django_query_set
         self.object_manager = object_manager
         self.results = []
