@@ -61,7 +61,7 @@ class ManagerAuthTokenWrapper(object):
     Wrap ObjectManager methods to automatically provide a specified auth token
     """
 
-    WRAP_METHODS = ('create', 'batch_create', 'update', 'get_filtered')
+    WRAP_METHODS = ('create', 'batch_create', 'update', 'get_filtered', 'check_exists')
 
     def __init__(self, manager, token_getter):
         assert isinstance(manager, ObjectManager)
@@ -215,6 +215,31 @@ class RoleTestCaseMetaclass(type):
 
 class RoleTestCase(TestCase):
     __metaclass__ = RoleTestCaseMetaclass
+
+    def create_quick_user_role(self, name, acl_dict):
+        create_role = facade.models.Role.objects.create
+        create_acl = facade.models.ACL.objects.create
+        create_uorgrole = facade.models.UserOrgRole.objects.create
+        methods = facade.models.ACCheckMethod.objects
+        ACMethodCall = facade.models.ACMethodCall
+
+        for model, crud in acl_dict.iteritems():
+            crud.setdefault('c', False)
+            crud.setdefault('r', set())
+            crud.setdefault('u', set())
+            crud.setdefault('d', False)
+
+        role = create_role(name=name)
+        acl = create_acl(role=role, acl=cPickle.dumps(acl_dict))
+        method = methods.get(name='actor_is_anybody')
+        method_call = ACMethodCall.objects.create(acl=acl,
+                ac_check_method=method,
+                ac_check_parameters=cPickle.dumps({}))
+
+        method_call.save()
+        # XXX: we may want to think about handling this automatically
+        facade.subsystems.Authorizer()._load_acls()
+        return role, acl
 
 
 ################################################################################################################################################
@@ -3044,7 +3069,25 @@ class TestCharFieldTruncation(TestCase):
         r = facade.models.Region.objects.create(name='1'*255 + '2')
         self.assertEquals(r.name, '1'*255)
 
-class TestObjectManager(TestCase):
+
+class CommonObjectManagerTests:
+    """
+    Reusable tests which depend on a valid auth_token for ObjectManager operations
+
+    Every subclass will run the same test cases which means in order to run
+    tests with a different token, the `auth_token` instance member must be
+    defined in each subclass (or the default is the admin auth token).
+    """
+
+    def test_check_exists(self):
+        """checking field value exists (value is unique)"""
+        check_exists = self.user_manager.check_exists
+        self.assertTrue(check_exists('email', self.user1.email))
+        self.assertTrue(check_exists('email', self.user2.email))
+        self.assertFalse(check_exists('email', 'nonexistent@email.com'))
+
+
+class TestObjectManager(TestCase, CommonObjectManagerTests):
     def setUp(self):
         super(TestObjectManager, self).setUp()
         self.tu = TestUtils()
@@ -3104,6 +3147,42 @@ class TestObjectManager(TestCase):
             {'sessions__start': s3_start.isoformat(' ')}}, ['id'])
         self.assertEquals(len(ret), 1)
         self.assertEquals(ret[0]['id'], e2.id)
+
+
+class TestObjectManagerPermissions(RoleTestCase, CommonObjectManagerTests):
+    """
+    Tests for ObjectManager Permissions
+    """
+
+    CHECK_PERMISSION_DENIED = ('test_check_exists',)
+
+    def setUp(self):
+        super(TestObjectManagerPermissions, self).setUp()
+
+        # run common tests with no auth token, expect permission denied
+        self.auth_token = None
+
+    # supplement common tests with a few specific additional checks
+    @expectPermissionDenied
+    def test_check_exists_with_user_token(self):
+        "checking if value exists"
+        self.auth_token = self.user1_auth_token
+        self.user_manager.check_exists('email', 'foo@bar.com')
+
+    def test_check_exists_with_create_perm_only(self):
+        "checking if value exists with create permission only"
+        self.create_quick_user_role("Foo Role", {'User': {'c': True}})
+        check_exists = self.user_manager.check_exists
+        self.assertTrue(check_exists('email', self.user2.email))
+        self.assertFalse(check_exists('email', 'nonexistent@email.com'))
+
+    def test_check_exists_with_update_perm_only(self):
+        "checking if value exists with update permission only"
+        self.create_quick_user_role("Foo Role", {'User': {'u': set(('email', ))}})
+        check_exists = self.user_manager.check_exists
+        self.assertTrue(check_exists('email', self.user2.email))
+        self.assertFalse(check_exists('email', 'nonexistent@email.com'))
+
 
 class TestTaskBundles(TestCase):
 

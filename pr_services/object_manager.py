@@ -431,5 +431,25 @@ class ObjectManager(object):
         else:
             return self.blame
 
+    @service_method
+    def check_exists(self, auth_token, field_name, value):
+        """
+        Check for the existence of `value` in the model field named
+        `field_name`. Returns True if a value exists (the value is not unique),
+        and False otherwise.
+        """
+
+        params = {field_name: value}
+        try:
+            self.authorizer.check_update_permissions(auth_token,
+                    self.my_django_model, params)
+        except exceptions.PermissionDeniedException:
+            self.authorizer.check_create_permissions(auth_token,
+                    self.my_django_model)
+
+        return self.my_django_model.objects.filter(**params).exists()
+
+
+
 
 # vim:tabstop=5 shiftwidth=4 expandtab
