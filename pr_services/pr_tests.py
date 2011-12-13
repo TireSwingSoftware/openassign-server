@@ -7,10 +7,12 @@ from __future__ import with_statement
 
 import cPickle
 import cStringIO
+import functools
 import hashlib
 import inspect
 import operator
 import os
+import re
 import time
 import urllib2
 
@@ -39,6 +41,36 @@ from pr_services.utils import UnicodeCsvWriter
 
 import facade
 
+class ManagerAuthTokenWrapper(object):
+    """
+    Wrap ObjectManager methods to automatically provide a specified auth token
+    """
+
+    WRAP_METHODS = ('create', 'batch_create', 'update', 'get_filtered')
+
+    def __init__(self, manager, token_getter):
+        assert isinstance(manager, ObjectManager)
+        assert callable(token_getter)
+        self.manager = manager
+        self.token_getter = token_getter
+
+    def _wrapped_method(self, method):
+        @functools.wraps(method)
+        def _wrapper(*args, **kwargs):
+            if args and isinstance(args[0], facade.models.AuthToken):
+                return method(*args, **kwargs)
+            token = kwargs.pop('auth_token', self.token_getter())
+            return method(token, *args, **kwargs)
+
+        return _wrapper
+
+    def __getattr__(self, name):
+        attr = getattr(self.manager, name)
+        if name in self.WRAP_METHODS:
+            return self._wrapped_method(attr)
+        else:
+            return attr
+
 # make stdout and stderr use UTF-8 encoding so that printing out
 # UTF-8 data while debugging doesn't choke
 
@@ -62,6 +94,7 @@ class TestCase(django.test.TestCase, django.utils.unittest.TestCase):
         self.admin_user = self.admin_da.user
         self.admin_token_str=self.user_manager.login('admin', 'admin')['auth_token']
         self.admin_token = facade.subsystems.Utils.get_auth_token_object(self.admin_token_str)
+        self.auth_token = self.admin_token
         self.user1 = self.user_manager.create(self.admin_token, 'username', 'initial_password',
             'Mr.', 'Primo', 'Uomo', '555.555.5555', 'user1@acme-u.com', 'active', {'name_suffix': 'Sr.'})
         self.user1_auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('username',
@@ -118,54 +151,33 @@ class TestCase(django.test.TestCase, django.utils.unittest.TestCase):
         return student, student_at
 
     def setup_managers(self):
-        self.achievement_manager = facade.managers.AchievementManager()
-        self.assignment_attempt_manager = facade.managers.AssignmentAttemptManager()
-        self.assignment_manager = facade.managers.AssignmentManager()
-        self.backend_info = facade.managers.BackendInfo()
-        self.condition_test_collection_manager = facade.managers.ConditionTestCollectionManager()
-        self.condition_test_manager = facade.managers.ConditionTestManager()
-        self.credential_manager = facade.managers.CredentialManager()
-        self.credential_type_manager = facade.managers.CredentialTypeManager()
-        self.curriculum_enrollment_manager = facade.managers.CurriculumEnrollmentManager()
-        self.curriculum_manager = facade.managers.CurriculumManager()
-        self.curriculum_task_association_manager = facade.managers.CurriculumTaskAssociationManager()
-        self.domain_affiliation_manager = facade.managers.DomainAffiliationManager()
-        self.domain_manager = facade.managers.DomainManager()
-        self.event_manager = facade.managers.EventManager()
-        self.event_template_manager = facade.managers.EventTemplateManager()
-        self.exam_manager = facade.managers.ExamManager()
-        self.exam_session_manager = facade.managers.ExamSessionManager()
-        self.group_manager = facade.managers.GroupManager()
-        self.log_manager = facade.managers.LogManager()
-        self.organization_manager = facade.managers.OrganizationManager()
-        self.org_email_domain_manager = facade.managers.OrgEmailDomainManager()
-        self.org_role_manager = facade.managers.OrgRoleManager()
-        self.product_claim_manager = facade.managers.ProductClaimManager()
-        self.product_discount_manager = facade.managers.ProductDiscountManager()
-        self.product_line_manager = facade.managers.ProductLineManager()
-        self.product_manager = facade.managers.ProductManager()
-        self.product_offer_manager = facade.managers.ProductOfferManager()
-        self.purchase_order_manager = facade.managers.PurchaseOrderManager()
-        self.region_manager = facade.managers.RegionManager()
-        self.role_manager = facade.managers.RoleManager()
-        self.room_manager = facade.managers.RoomManager()
-        self.sco_manager = facade.managers.ScoManager()
-        self.sco_session_manager = facade.managers.ScoSessionManager()
-        self.session_manager = facade.managers.SessionManager()
-        self.session_template_manager = facade.managers.SessionTemplateManager()
-        self.session_template_user_role_requirement_manager = facade.managers.SessionTemplateUserRoleRequirementManager()
-        self.session_user_role_manager = facade.managers.SessionUserRoleManager()
-        self.session_user_role_requirement_manager = facade.managers.SessionUserRoleRequirementManager()
-        self.task_bundle_manager = facade.managers.TaskBundleManager()
-        self.task_fee_manager = facade.managers.TaskFeeManager()
-        self.task_manager = facade.managers.TaskManager()
-        self.training_unit_account_manager = facade.managers.TrainingUnitAccountManager()
-        self.training_unit_authorization_manager = facade.managers.TrainingUnitAuthorizationManager()
-        self.training_unit_transaction_manager = facade.managers.TrainingUnitTransactionManager()
-        self.training_voucher_manager = facade.managers.TrainingVoucherManager()
-        self.user_manager = facade.managers.UserManager()
-        self.user_org_role_manager = facade.managers.UserOrgRoleManager()
-        self.venue_manager = facade.managers.VenueManager()
+        """
+        Setup common managers for convenience in subclasses
+
+        The instance members will have the same name as the manager but
+        lowercase and underscored instead of CamelCase. The 'FooBarManager'
+        will be foo_bar_manager.
+
+        An additional 'admin_foo_bar_manager' manager will be provided which
+        wraps the foo_bar manager with an admin token such that all operations
+        are expected to succeed. This can be used to conveniently setup a test
+        context without having to worry about getting the correct token to
+        do so.
+        """
+        get_default_token = lambda: self.auth_token
+        get_admin_token = lambda: self.admin_token
+        nocamel = re.compile('(.)([A-Z])')
+        for manager_name in facade.managers:
+            manager_class = getattr(facade.managers, manager_name)
+            member_name = nocamel.sub(r'\1_\2', manager_name).lower()
+            manager = manager_class()
+            if isinstance(manager, ObjectManager):
+                default_manager = ManagerAuthTokenWrapper(manager, get_default_token)
+                setattr(self, member_name, default_manager)
+                admin_manager = ManagerAuthTokenWrapper(manager, get_admin_token)
+                setattr(self, 'admin_%s' % member_name, admin_manager)
+            else:
+                setattr(self, member_name, manager)
 
 ################################################################################################################################################
 #
@@ -2215,10 +2227,11 @@ class TestUserManager(TestCase):
                             'password4', 'password2', 'LDAP')
 
     def test_create(self):
-        ret = self.user_manager.create('', 'username2', 'initial_password', 'Mr.',
+        ret = self.user_manager.create('username2', 'initial_password', 'Mr.',
             'first_name', 'last_name', '555.555.5555', 'foo@bar.org', 'pending',
             {'name_suffix' : 'Jr.', 'url' : 'http://somejunkyandfakeurlthatshouldnotbreakpowerreg.net/',
-            'alleged_organization': 'Moustache Club of America'})
+            'alleged_organization': 'Moustache Club of America'},
+            auth_token=None)
         new_user = facade.models.User.objects.get(id=ret.id)
         da = facade.models.DomainAffiliation.objects.get(user__id=ret.id, domain__name='local')
         new_user = da.user
@@ -2267,16 +2280,18 @@ class TestUserManager(TestCase):
         settings.USER_EMAIL_CONFIRMATION = True
         settings.USER_CONFIRMATION_AUTO_LOGIN = True
         settings.ASSIGN_ORG_ROLES_FROM_EMAIL = True
-        user = self.user_manager.create('', 'george', 'initial_password', 'Mr.', 'first_name', 'last_name',
-                      '555.555.5555', 'george@poweru.net', 'pending')
+        user = self.user_manager.create('george', 'initial_password', 'Mr.', 'first_name', 'last_name',
+                      '555.555.5555', 'george@poweru.net', 'pending',
+                      auth_token=None)
         at = self.user_manager.confirm_email(user.confirmation_code)
         ret = self.user_manager.get_filtered(at, {'exact' : {'id' : user.id}}, ['organizations'])
         self.assertEquals(len(ret[0]['organizations']), 1)
         user_org_role = facade.models.UserOrgRole.objects.get(owner__id=user.id)
         self.assertEqual(user_org_role.organization, organization)
         self.assertEqual(user_org_role.role, default_org_role)
-        user = self.user_manager.create('', 'arigeorge', 'initial_password', 'Mr.', 'first_name', 'last_name',
-                      '555.555.5555', 'george@americanri.com', 'pending')
+        user = self.user_manager.create('arigeorge', 'initial_password', 'Mr.', 'first_name', 'last_name',
+                      '555.555.5555', 'george@americanri.com', 'pending',
+                      auth_token=None)
         at = self.user_manager.confirm_email(user.confirmation_code)
         ret = self.user_manager.get_filtered(at, {'exact' : {'id' : user.id}}, ['organizations'])
         self.assertEquals(len(ret[0]['organizations']), 1)
@@ -2284,14 +2299,16 @@ class TestUserManager(TestCase):
         self.assertEqual(user_org_role.organization, organization)
         self.assertEqual(user_org_role.role, org_role)
         settings.ASSIGN_ORG_ROLES_FROM_EMAIL = False
-        user = self.user_manager.create('', 'georgia', 'initial_password', 'Mrs.', 'first_name', 'last_name',
-                      '555.555.5555', 'georgia@poweru.net', 'pending')
+        user = self.user_manager.create('georgia', 'initial_password', 'Mrs.', 'first_name', 'last_name',
+                      '555.555.5555', 'georgia@poweru.net', 'pending',
+                      auth_token=None)
         at = self.user_manager.confirm_email(user.confirmation_code)
         ret = self.user_manager.get_filtered(at, {'exact' : {'id' : user.id}}, ['organizations'])
         self.assertEquals(ret[0]['organizations'], [])
         self.assertEqual(facade.models.UserOrgRole.objects.filter(owner__id=user.id).count(), 0)
-        user = self.user_manager.create('', 'arigeorgia', 'initial_password', 'Mrs.', 'first_name', 'last_name',
-                      '555.555.5555', 'georgia@americanri.com', 'pending')
+        user = self.user_manager.create('arigeorgia', 'initial_password', 'Mrs.', 'first_name', 'last_name',
+                      '555.555.5555', 'georgia@americanri.com', 'pending',
+                      auth_token=None)
         at = self.user_manager.confirm_email(user.confirmation_code)
         ret = self.user_manager.get_filtered(at, {'exact' : {'id' : user.id}}, ['organizations'])
         self.assertEquals(ret[0]['organizations'], [])
@@ -2306,9 +2323,9 @@ class TestUserManager(TestCase):
             'Bar Corporation')
         self.org_email_domain_manager.create(
             self.admin_token, 'bar.org', org.id)
-        u = self.user_manager.create('', 'user1234', 'initial_password', 'Mr.',
+        u = self.user_manager.create('user1234', 'initial_password', 'Mr.',
                                      'first_name', 'last_name', '555.555.5555',
-                                     'foo@bar.org', 'pending')
+                                     'foo@bar.org', 'pending', auth_token=None)
         self.assertTrue(u.confirmation_code)
         self.assertEqual(len(mail.outbox), 1)
         mess = mail.outbox[0]
@@ -2330,9 +2347,9 @@ class TestUserManager(TestCase):
         self.user_manager.logout(auth_token)
         self.user_manager.login('user1234', 'initial_password')
         # Test confirm_email view with normal creation and login.
-        u = self.user_manager.create('', 'user0123', 'initial_password', 'Mr.',
+        u = self.user_manager.create('user0123', 'initial_password', 'Mr.',
                                      'first_name', 'last_name', '555.555.5555',
-                                     'foo0@bar.org', 'pending')
+                                     'foo0@bar.org', 'pending', auth_token=None)
         self.assertFalse('authToken' in self.client.cookies)
         url = reverse('confirm_email', args=[u.confirmation_code])
         response = self.client.get(url, follow=False)
@@ -2349,16 +2366,16 @@ class TestUserManager(TestCase):
         self.assertEquals(response.status_code, 400) # bad request
         # Test without the auto-login after confirmation.
         settings.USER_CONFIRMATION_AUTO_LOGIN = False
-        u = self.user_manager.create('', 'user2345', 'initial_password', 'Mr.',
+        u = self.user_manager.create('user2345', 'initial_password', 'Mr.',
                                      'first_name', 'last_name', '555.555.5555',
-                                     'foo2@bar.org', 'pending')
+                                     'foo2@bar.org', 'pending', auth_token=None)
         auth_token = self.user_manager.confirm_email(u.confirmation_code)
         self.assertFalse(auth_token)
         self.user_manager.login('user2345', 'initial_password')
         # Test the view without the auto-login.
-        u = self.user_manager.create('', 'user2354', 'initial_password', 'Mr.',
+        u = self.user_manager.create('user2354', 'initial_password', 'Mr.',
                                      'first_name', 'last_name', '555.555.5555',
-                                     'foo2a@bar.org', 'pending')
+                                     'foo2a@bar.org', 'pending', auth_token=None)
         self.assertFalse('authToken' in self.client.cookies)
         url = reverse('confirm_email', args=[u.confirmation_code])
         response = self.client.get(url, follow=False)
@@ -2368,9 +2385,9 @@ class TestUserManager(TestCase):
         self.user_manager.login('user2354', 'initial_password')
         # Test the confirmation code expiration period.
         settings.USER_CONFIRMATION_DAYS = 0
-        u = self.user_manager.create('', 'user3456', 'initial_password', 'Mr.',
+        u = self.user_manager.create('user3456', 'initial_password', 'Mr.',
                                      'first_name', 'last_name', '555.555.5555',
-                                     'foo3@bar.org', 'pending')
+                                     'foo3@bar.org', 'pending', auth_token=None)
         self.assertRaises(exceptions.UserConfirmationException,
                           self.user_manager.confirm_email, u.confirmation_code)
         self.assertRaises(exceptions.UserConfirmationException,
@@ -2380,9 +2397,9 @@ class TestUserManager(TestCase):
         self.assertEquals(response.status_code, 400) # bad request
         # Test with user email confirmation turned off.
         settings.USER_EMAIL_CONFIRMATION = False
-        u = self.user_manager.create('', 'user4567', 'initial_password', 'Mr.',
+        u = self.user_manager.create('user4567', 'initial_password', 'Mr.',
                                      'first_name', 'last_name', '555.555.5555',
-                                     'foo4@bar.org', 'pending')
+                                     'foo4@bar.org', 'pending', auth_token=None)
         self.assertFalse(u.confirmation_code)
         self.user_manager.login('user4567', 'initial_password')
 
@@ -2870,12 +2887,12 @@ class TestUserManager(TestCase):
         # from the RPC layer rolling back transactions in these unit tests
         for status in ['', 'active', 'inactive', 'qualified', 'suspended', 'training']:
             self.assertRaises(exceptions.PermissionDeniedException,
-                self.user_manager.create, '', 'randomuser'+status,
+                self.user_manager.create, 'randomuser'+status,
                 'initial_password', 'Mr.', 'First', 'Last', '555.555.1212',
-                'random@example.net', status)
-        self.user_manager.create('', 'randomuserpending', 'initial_password',
+                'random@example.net', status, auth_token=None)
+        self.user_manager.create('randomuserpending', 'initial_password',
             'Mr.', 'First', 'Last', '555.555.1212', 'random@example.net',
-            'pending')
+            'pending', auth_token=None)
 
     def test_reset_password(self):
         self.user_manager.update(self.admin_token, self.user1.id, {
