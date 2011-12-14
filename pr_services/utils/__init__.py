@@ -488,6 +488,9 @@ class LazyImporter(object):
         # actual requested instance and return it here.
         return attribute
 
+    def __iter__(self):
+        return iter(self.import_map)
+
 class LazyImportObjectProxy(object):
     """
     This helps us to know whether we've imported the attribute for real yet or
