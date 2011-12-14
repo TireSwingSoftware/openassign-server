@@ -15,6 +15,7 @@ import xml.etree.cElementTree as elementtree
 from pr_services.credential_system.task_manager import TaskManager
 from pr_services.rpc.service import service_method
 import facade
+from pr_services.utils import Utils
 
 class ExamManager(TaskManager):
     """
@@ -291,5 +292,16 @@ class ExamManager(TaskManager):
         print >> out, '<?xml version="1.0" encoding="UTF-8"?>'
         dom.documentElement.writexml(out, '', '    ', '\n')
         return out_raw.getvalue().decode('utf-8')
+
+    @service_method
+    def achievement_detail_view(self, auth_token, filters=None, fields=None):
+        if not filters:
+            filters = {}
+        # apply our fields even if the passed fields is empty
+        if not fields:
+            fields = ['name', 'title', 'description', 'passing_score', 'achievements']
+        ret = self.get_filtered(auth_token, filters, fields)
+
+        return Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name', 'description'], 'achievements')
 
 # vim:tabstop=4 shiftwidth=4 expandtab
