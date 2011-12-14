@@ -18,7 +18,7 @@ for specific operating systems.
 Several components including system libraries and other dependencies
 are required for the python packages that will be installed below.
 
-- Python >=2.5
+- Python >=2.6
 - python-setuptools
 - GIT
 - Swig
