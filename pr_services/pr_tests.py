@@ -64,11 +64,11 @@ class TestCase(django.test.TestCase, django.utils.unittest.TestCase):
         self.admin_token = facade.subsystems.Utils.get_auth_token_object(self.admin_token_str)
         self.user1 = self.user_manager.create(self.admin_token, 'username', 'initial_password',
             'Mr.', 'Primo', 'Uomo', '555.555.5555', 'user1@acme-u.com', 'active', {'name_suffix': 'Sr.'})
-        self.auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('username',
+        self.user1_auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('username',
             'initial_password')['auth_token'])
         self.user2 = self.user_manager.create(self.admin_token, 'otherusername', 'other_initial_password',
             'Mr.', 'Secundo', 'Duomo', '666.666.6666', 'user2@acme-u.com', 'active', {'name_suffix': 'Sr.'})
-        self.auth_token2 = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('otherusername',
+        self.user2_auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('otherusername',
             'other_initial_password')['auth_token'])
         self.region1 = self.region_manager.create(self.admin_token, 'Region 1')
         address_dict = {'label' : '123 Main St', 'locality' : 'Raleigh', 'region' : 'NC', 'postal_code' : '27615', 'country' : 'US'}
@@ -256,7 +256,7 @@ class TestBackendInfo(TestCase):
 
 class TestBlameManager(TestCase):
     def test_create(self):
-        b = facade.managers.BlameManager().create(self.auth_token)
+        b = facade.managers.BlameManager().create(self.user1_auth_token)
         self.assertEquals(b.user, self.user1)
 
 class TestCookiecache(TestCase):
@@ -264,11 +264,11 @@ class TestCookiecache(TestCase):
         TestCase.setUp(self)
 
         self.user_manager.create(self.admin_token, 'test_user', 'password', 'Mr.', 'Memcache', 'Test', '', 'memcache@tester.email', 'active')
-        self.auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('test_user', 'password')['auth_token'])
+        self.user1_auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('test_user', 'password')['auth_token'])
 
     def test_all(self):
         # Fire it up
-        mc = CookieCache(self.auth_token)
+        mc = CookieCache(self.user1_auth_token)
 
         # Make sure no paths are defined yet...
         self.assertEquals(mc.paths, [])
@@ -282,7 +282,7 @@ class TestCookiecache(TestCase):
 
         # Blow away our mc object, the recreate it to make sure the paths got stored properly
         del(mc)
-        mc = CookieCache(self.auth_token)
+        mc = CookieCache(self.user1_auth_token)
         # Check against a sorted list...the uniqueness check may change order
         self.assertEquals(sorted(mc.paths), ['/path1', '/path2'])
 
@@ -630,7 +630,7 @@ class TestCredentialTypeManager(TestCase):
 
     def test_update(self):
         ct_1 = self.credential_type_manager.create(self.admin_token, 'some name', 'A cisco certification')
-        self.assertRaises(exceptions.PermissionDeniedException, self.credential_type_manager.update, self.auth_token, ct_1.id,
+        self.assertRaises(exceptions.PermissionDeniedException, self.credential_type_manager.update, self.user1_auth_token, ct_1.id,
             {'name' : 'a longer name'})
         self.credential_type_manager.update(self.admin_token, ct_1.id, {'name' : 'a longer name'})
         self.credential_type_manager.update(self.admin_token, ct_1.id, {'description' : 'different description'})
@@ -797,7 +797,7 @@ class TestGroupManager(TestCase):
     def test_add_user(self):
         cool_group = self.group_manager.create(self.admin_token, 'cool_group')
         sweep_it_up = self.user_manager.create(self.admin_token, 'sweep_it_up', 'iSweepEveryDay', '', '', '', '', '', 'active')
-        self.assertRaises(exceptions.PermissionDeniedException, self.group_manager.update, self.auth_token, cool_group.id,
+        self.assertRaises(exceptions.PermissionDeniedException, self.group_manager.update, self.user1_auth_token, cool_group.id,
             {'users' : {'add' : [sweep_it_up.id]}})
         self.group_manager.update(self.admin_token, cool_group.id, {'users' : {'add' : [sweep_it_up.id]}})
         # re #2360 - Test that set_many doesn't raise an exception when we try to add the
@@ -812,7 +812,7 @@ class TestGroupManager(TestCase):
         cool_group = self.group_manager.create(self.admin_token, 'cool_group')
         sweep_it_up = self.user_manager.create(self.admin_token, 'sweep_it_up', 'iSweepEveryDay', '', '', '', '', '', 'active')
         lay_it_down = self.user_manager.create(self.admin_token, 'lay_it_down', 'iLayItDown', '', '', '', '', '', 'active')
-        self.assertRaises(exceptions.PermissionDeniedException, self.group_manager.update, self.auth_token, cool_group.id,
+        self.assertRaises(exceptions.PermissionDeniedException, self.group_manager.update, self.user1_auth_token, cool_group.id,
             {'users' : {'add' : [sweep_it_up.id, lay_it_down.id]}})
         self.group_manager.update(self.admin_token, cool_group.id, {'users' : {'add' : [sweep_it_up.id, lay_it_down.id]}})
         groups = self.group_manager.get_filtered(self.admin_token, {'exact' : {'id' : cool_group.id}}, ['id', 'users'])
@@ -832,11 +832,11 @@ class TestGroupManager(TestCase):
         """
 
         self.assertRaises(exceptions.PermissionDeniedException, self.group_manager.create,
-            self.auth_token, 'new group name')
+            self.user1_auth_token, 'new group name')
 
     def test_update(self):
         new_group = self.group_manager.create(self.admin_token, 'some name')
-        self.assertRaises(exceptions.PermissionDeniedException, self.group_manager.update, self.auth_token, new_group.id, {'name' : 'a longer name'})
+        self.assertRaises(exceptions.PermissionDeniedException, self.group_manager.update, self.user1_auth_token, new_group.id, {'name' : 'a longer name'})
         self.group_manager.update(self.admin_token, new_group.id, {'name' : 'a longer name'})
         q_group = facade.models.Group.objects.get(id = new_group.id)
         self.assertEquals(q_group.name, 'a longer name')
@@ -874,7 +874,7 @@ class TestGroupManager(TestCase):
         sweep_it_up = self.user_manager.create(self.admin_token, 'sweep_it_up', 'iSweepEveryDay', '', '', '', '', '', 'active')
         lay_it_down = self.user_manager.create(self.admin_token, 'lay_it_down', 'iLayItDown', '', '', '', '', '', 'active')
         self.group_manager.update(self.admin_token, cool_group.id, {'users' : {'add' : [sweep_it_up.id, lay_it_down.id]}})
-        self.assertRaises(exceptions.PermissionDeniedException, self.group_manager.update, self.auth_token, cool_group.id,
+        self.assertRaises(exceptions.PermissionDeniedException, self.group_manager.update, self.user1_auth_token, cool_group.id,
             {'users' : {'remove' : [sweep_it_up.id, lay_it_down.id]}})
         self.group_manager.update(self.admin_token, cool_group.id, {'users' : {'remove' : [lay_it_down.id]}})
         cool_group_dict = self.group_manager.get_filtered(self.admin_token, {'exact' : {'id' : cool_group.id}}, ['users'])[0]
@@ -1008,7 +1008,7 @@ if 'ecommerce' in settings.INSTALLED_APPS:
             # Total refunds for a payment cannot exceed the payment's value
             self.assertRaises(exceptions.PermissionDeniedException, self.payment_manager.refund, self.admin_token, self.p.id, 6000)
             # A normal user cannot issue a refund
-            self.assertRaises(exceptions.PermissionDeniedException, self.payment_manager.refund, self.auth_token, self.p.id, 50)
+            self.assertRaises(exceptions.PermissionDeniedException, self.payment_manager.refund, self.user1_auth_token, self.p.id, 50)
 
 class TestProductManager(TestCase):
     def setUp(self):
@@ -1101,8 +1101,8 @@ class TestPurchaseOrderManager(TestCase):
             'This is an amazing set of fly-trapping paper!!!!!!')
 
     def test_retrieve_receipt(self):
-        po1 = self.purchase_order_manager.create(self.auth_token, {'user' : self.user1.id})
-        self.product_claim_manager.create(self.auth_token, self.prod1.id, po1.id, 7)
+        po1 = self.purchase_order_manager.create(self.user1_auth_token, {'user' : self.user1.id})
+        self.product_claim_manager.create(self.user1_auth_token, self.prod1.id, po1.id, 7)
 
         ret = self.purchase_order_manager.retrieve_receipt(self.admin_token, po1.id)
         self.failUnless(ret.has_key('subject') and ret['subject'])
@@ -1121,7 +1121,7 @@ class TestRoleManager(TestCase):
         """
 
         self.assertRaises(exceptions.PermissionDeniedException, self.role_manager.create,
-            self.auth_token, 'new role name')
+            self.user1_auth_token, 'new role name')
 
     def test_update(self):
         self.group_manager.create(self.admin_token, 'group1')
@@ -1441,7 +1441,7 @@ class TestSessionManager(TestCase):
         e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1',
             self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         self.assertRaises(exceptions.PermissionDeniedException, self.session_manager.create,
-            self.auth_token, self.right_now.isoformat(),
+            self.user1_auth_token, self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id, 'short name 1', 'long name 1')
 
     def test_create_by_pl(self):
@@ -1495,7 +1495,7 @@ class TestSessionManager(TestCase):
             (self.right_now+self.one_day).isoformat(), 'active', False, 100, e1.id, 'short name 1', 'long name 1')
         # fails because start date is in the past.
         self.assertRaises(exceptions.PermissionDeniedException,
-            self.session_manager.update, self.auth_token, session_1.id,
+            self.session_manager.update, self.user1_auth_token, session_1.id,
             {'fullname' : 'an even longer name',
             'start':'1994-11-04T13:15:30+00:00'})
 
@@ -1740,14 +1740,14 @@ class TestSessionTemplateManager(TestCase):
         ret = self.session_template_manager.get_filtered(self.admin_token, {}, ['id'])
         self.assertEquals(type(ret), list)
         self.assertEquals(len(ret), 2)
-        self.assertRaises(exceptions.PermissionDeniedException, self.session_template_manager.delete, self.auth_token, c1.id)
+        self.assertRaises(exceptions.PermissionDeniedException, self.session_template_manager.delete, self.user1_auth_token, c1.id)
         self.session_template_manager.delete(self.admin_token, c1.id)
         ret = self.session_template_manager.get_filtered(self.admin_token, {'exact' : {'active' : True}}, ['id'])
         self.assertEquals(len(ret), 1)
 
     def test_create_permission_denied(self):
         self.assertRaises(exceptions.PermissionDeniedException,
-            self.session_template_manager.create, self.auth_token, 'short_name', 'longer name', '1.1',
+            self.session_template_manager.create, self.user1_auth_token, 'short_name', 'longer name', '1.1',
             'description', 1595, 600000, True)
 
     def test_create_by_pl(self):
@@ -1789,7 +1789,7 @@ class TestSessionTemplateUserRoleRequirementManager(TestCase):
 class TestSessionUserRoleManager(TestCase):
     def test_update(self):
         session_user_role = self.session_user_role_manager.create(self.admin_token, 'Sweep Upper')
-        self.assertRaises(exceptions.PermissionDeniedException, self.session_user_role_manager.update, self.auth_token, session_user_role.id,
+        self.assertRaises(exceptions.PermissionDeniedException, self.session_user_role_manager.update, self.user1_auth_token, session_user_role.id,
             {'name' : 'Sweep It Upper'})
         self.session_user_role_manager.update(self.admin_token, session_user_role.id, {'name' : 'Sweep It Upper'})
         session_user_roles = self.session_user_role_manager.get_filtered(self.admin_token, {'exact' : {'id' : session_user_role.id}}, ['id', 'name'])
@@ -1902,7 +1902,7 @@ class TestTrainingUnitAccountManager(TestCase):
         self.tuauth4 = self.training_unit_authorization_manager.create(self.admin_token, self.tua1.id, self.user1.id,
             (self.right_now + self.one_day).isoformat(), (self.right_now + 2 * self.one_day).isoformat(), 2000)
 
-        user_auths = self.training_unit_authorization_manager.get_filtered(self.auth_token, {}, ['id', 'used_value', 'user'])
+        user_auths = self.training_unit_authorization_manager.get_filtered(self.user1_auth_token, {}, ['id', 'used_value', 'user'])
         self.assertEquals(len(user_auths), 3)
         ua1 = user_auths[0]
         self.assertEquals('used_value' in ua1, True)
