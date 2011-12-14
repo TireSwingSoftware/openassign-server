@@ -41,6 +41,21 @@ from pr_services.utils import UnicodeCsvWriter
 
 import facade
 
+def expectPermissionDenied(func):
+    """
+    Decorator for test methods expecting PermissionDeniedException
+    """
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        self.assertRaises(exceptions.PermissionDeniedException,
+                func, self, *args, **kwargs)
+
+    wrapper.__doc__ = "check permission denied for %s" % (
+            func.__doc__ or func.__name__)
+
+    return wrapper
+
+
 class ManagerAuthTokenWrapper(object):
     """
     Wrap ObjectManager methods to automatically provide a specified auth token
@@ -178,6 +193,31 @@ class TestCase(django.test.TestCase, django.utils.unittest.TestCase):
                 setattr(self, 'admin_%s' % member_name, admin_manager)
             else:
                 setattr(self, member_name, manager)
+
+
+class RoleTestCaseMetaclass(type):
+    def __new__(cls, name, bases, attrs):
+        check_permission_denied = attrs.get('CHECK_PERMISSION_DENIED', [])
+        for func_name in check_permission_denied:
+            func = None
+            if func_name in attrs:
+                func = attrs[func_name]
+            else:
+                for base in bases:
+                    if hasattr(base, func_name):
+                        func = getattr(base, func_name)
+                        break
+            if not func:
+                raise AttributeError("attribute '%s' not found" % func_name)
+            if not callable(func):
+                raise ValueError("attribute '%s' not callable" % func_name)
+            attrs[func_name] = expectPermissionDenied(func)
+        return type.__new__(cls, name, bases, attrs)
+
+
+class RoleTestCase(TestCase):
+    __metaclass__ = RoleTestCaseMetaclass
+
 
 ################################################################################################################################################
 #
