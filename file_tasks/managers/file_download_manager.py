@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 import facade
 from pr_services.credential_system.task_manager import TaskManager
 from pr_services.rpc.service import service_method
+from pr_services.utils import Utils
 
 class FileDownloadManager(TaskManager):
     """
@@ -107,3 +108,14 @@ class FileDownloadManager(TaskManager):
             file_download.file_data.delete(False)
         file_download.deleted = True
         file_download.save()
+
+    @service_method
+    def achievement_detail_view(self, auth_token, filters=None, fields=None):
+        if not filters:
+            filters = {}
+        # apply our fields even if the passed fields is empty
+        if not fields:
+            fields = ['name', 'title', 'description', 'file_size', 'file_url', 'achievements']
+        ret = self.get_filtered(auth_token, filters, fields)
+
+        return Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name', 'description'], 'achievements')

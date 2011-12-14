@@ -274,8 +274,8 @@ def setup(machine):
         },
         'FileDownload' : {
             'c' : True,
-            'r' : ['name', 'description', 'file_size', 'file_url', 'deleted', 'title'],
-            'u' : ['name', 'description', 'title'],
+            'r' : ['name', 'description', 'file_size', 'file_url', 'deleted', 'title', 'achievements'],
+            'u' : ['name', 'description', 'title', 'achievements'],
             'd' : True,
         },
         'FileDownloadAttempt' : {
