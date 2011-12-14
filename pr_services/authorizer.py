@@ -181,7 +181,7 @@ class Authorizer(object):
         """
         authorized_attributes = self.get_authorized_attributes(auth_token, actee,
             update_parameters.keys(), 'u', update_parameters)
-        for field in update_parameters.keys():
+        for field in update_parameters:
             if field not in authorized_attributes:
                 # We need to use introspection to get the type of the actee
                 actee_type = actee._meta.object_name

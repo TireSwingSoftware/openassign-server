@@ -3633,8 +3633,8 @@ class TestACLCRUD(TestCase):
             model = manager.my_django_model._meta.object_name
             app = manager.my_django_model._meta.app_label
             crud = {
-                'r' : set(manager.GETTERS.keys()),
-                'u' : set(manager.SETTERS.keys()),
+                'r' : set(manager.GETTERS),
+                'u' : set(manager.SETTERS),
             }
             self.valid_crud[model] = crud
             self.valid_crud['%s.%s' % (app, model)] = crud
