@@ -10,17 +10,17 @@ def setup(machine):
     crud = {
         'Assignment' : {
             'c' : True,
-            'r' : ['task', 'task_content_type', 'user', 'date_started',
+            'r' : set(('task', 'task_content_type', 'user', 'date_started',
                    'date_completed', 'due_date', 'prerequisites_met',
-                   'effective_date_assigned', 'status', 'assignment_attempts'],
-            'u' : [],
+                   'effective_date_assigned', 'status', 'assignment_attempts')),
+            'u' : set(()),
             'd' : False,
         },
         'FileUpload' : {
             'c' : False,
-            'r' : ['author', 'create_timestamp', 'prerequisite_tasks', 'name',
-                   'description'],
-            'u' : [],
+            'r' : set(('author', 'create_timestamp', 'prerequisite_tasks', 'name',
+                   'description')),
+            'u' : set(()),
             'd' : False,
         },
     }
