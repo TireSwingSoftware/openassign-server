@@ -199,16 +199,14 @@ class RoleTestCaseMetaclass(type):
     def __new__(cls, name, bases, attrs):
         check_permission_denied = attrs.get('CHECK_PERMISSION_DENIED', [])
         for func_name in check_permission_denied:
-            func = None
-            if func_name in attrs:
-                func = attrs[func_name]
-            else:
+            func = attrs.get(func_name, None)
+            if not func:
                 for base in bases:
                     if hasattr(base, func_name):
                         func = getattr(base, func_name)
                         break
-            if not func:
-                raise AttributeError("attribute '%s' not found" % func_name)
+                if not func:
+                    raise AttributeError("attribute '%s' not found" % func_name)
             if not callable(func):
                 raise ValueError("attribute '%s' not callable" % func_name)
             attrs[func_name] = expectPermissionDenied(func)
