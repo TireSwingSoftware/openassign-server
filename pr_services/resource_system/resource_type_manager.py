@@ -31,17 +31,20 @@ class ResourceTypeManager(ObjectManager):
         self.my_django_model = facade.models.ResourceType
 
     @service_method
-    def create(self, auth_token, name):
+    def create(self, auth_token, name, optional_attributes=None):
         """
         Create a new ResourceType
 
         @param name               name of the ResourceType
         @return                   isntance of ResourceType
         """
-
-        r = self.my_django_model(name=name)
-        r.save()
-        self.authorizer.check_create_permissions(auth_token, r)
-        return r
+        res_type = self.my_django_model(name=name)
+        res_type.save()
+        if optional_attributes:
+            facade.subsystems.Setter(auth_token, self, res_type,
+                    optional_attributes)
+            res_type.save()
+        self.authorizer.check_create_permissions(auth_token, res_type)
+        return res_type
 
 # vim:tabstop=4 shiftwidth=4 expandtab
