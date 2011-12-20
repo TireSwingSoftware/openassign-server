@@ -135,8 +135,10 @@ class SessionManager(ObjectManager):
 
         actor = auth_token.user
         b = facade.managers.BlameManager().create(auth_token)
-        start = pr_time.iso8601_to_datetime(start)
-        end = pr_time.iso8601_to_datetime(end)
+        if not isinstance(start, datetime):
+            start = pr_time.iso8601_to_datetime(start)
+        if not isinstance(end, datetime):
+            end = pr_time.iso8601_to_datetime(end)
         new_session = self.my_django_model(start=start, end=end,
                 status=status, confirmed=confirmed, default_price=default_price,
                 shortname=shortname, fullname=fullname, blame=b)
