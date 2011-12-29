@@ -222,7 +222,7 @@ class TestCase(BaseTestCase):
             {'modality' : 'ILT', 'session_template' : st1_id })
         sess1_id = sess1['value']['id']
         sess2 = self.session_manager.create(self.admin_token, self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), 'active', True, 100, evt1_id, 'short name 1', 'full name 1', 
+            (self.right_now+self.one_day).isoformat(), 'active', True, 100, evt1_id, 'short name 2', 'full name 2', 
             {'modality' : 'ILT', 'session_template' : st2_id })
         sess2_id = sess2['value']['id']
 
@@ -244,6 +244,36 @@ class TestCase(BaseTestCase):
             'sess2_id' : sess2_id,
         }
         
+    def create_venues_and_rooms(self):
+        region1 = self.region_manager.create(self.admin_token, 'Region One')
+        region1_id = region1['value']['id']
+
+        venue1 = self.venue_manager.create(self.admin_token, 'Venue One', '911',
+            region1_id)
+        venue1_id = venue1['value']['id']
+        v1_room1 = self.room_manager.create(self.admin_token, 'The First (v1) Room', venue1_id, 1)
+        v1_room1_id = v1_room1['value']['id']
+        v1_room2 = self.room_manager.create(self.admin_token, 'The Second (v1) Room', venue1_id, 1)
+        v1_room2_id = v1_room2['value']['id']
+
+        venue2 = self.venue_manager.create(self.admin_token, 'Venue Two', '911',
+            region1_id)
+        venue2_id = venue2['value']['id']
+        v2_room1 = self.room_manager.create(self.admin_token, 'The First (v2) Room', venue2_id, 1)
+        v2_room1_id = v2_room1['value']['id']
+        v2_room2 = self.room_manager.create(self.admin_token, 'The Second (v2) Room', venue2_id, 1)
+        v2_room2_id = v2_room2['value']['id']
+
+        # return a dictionary with all IDs to the caller
+        return {
+            'region1_id' : region1_id,
+            'venue1_id' : venue1_id,
+            'v1_room1_id' : v1_room1_id,
+            'v1_room2_id' : v1_room2_id,
+            'venue2_id' : venue2_id,
+            'v2_room1_id' : v2_room1_id,
+            'v2_room2_id' : v2_room2_id,
+        }
 
 ################################################################################################################################################
 #
@@ -805,6 +835,156 @@ class TestRoomManagerSvc(TestCase):
         self.assertEquals(ret['status'], 'OK')
         self.assertEquals(ret['value'][0]['capacity'], 1)
         self.assertEquals(ret['value'][0]['name'], 'The Fear Room!')
+
+    def test_get_available_rooms(self):
+        # set up scheduled events (as elsewhere) 
+        object_ids = self.create_scheduled_sessions_and_resources()
+        # set up regions, venues, and rooms
+        place_ids = self.create_venues_and_rooms()
+
+        # define some useful timestamps
+        now = self.right_now.isoformat()
+        tomorrow = (self.right_now+self.one_day).isoformat()
+        one_moment_ago = (self.right_now - self.one_moment).isoformat()
+        one_hour_from_now = (self.right_now+self.one_hour).isoformat()
+        twelve_hours_from_now = (self.right_now+self.half_day).isoformat()
+        five_days_ago = (self.right_now + timedelta(days = -5)).isoformat()
+        four_days_ago = (self.right_now + timedelta(days = -4)).isoformat()
+        five_days_from_now = (self.right_now + timedelta(days = 5)).isoformat()
+
+        # assign rooms to each scheduled session (but not all?)
+        # NOTE that we need to bump out the timespan for parent event, 
+        # or these times will fail validation.
+        self.event_manager.update(self.admin_token,
+            object_ids['evt1_id'],
+            {'start': now,
+             'end': five_days_from_now})
+        self.session_manager.update(self.admin_token,
+            object_ids['sess1_id'],
+            {'room': place_ids['v1_room1_id'],
+             'start': now,
+             'end': tomorrow})
+        self.session_manager.update(self.admin_token,
+            object_ids['sess2_id'],
+            {'room': place_ids['v1_room2_id'],
+             'start': twelve_hours_from_now,
+             'end': five_days_from_now})
+
+        test_room_ids = [
+            place_ids['v1_room1_id'], 
+            place_ids['v1_room2_id'],
+            place_ids['v2_room1_id'], 
+            place_ids['v2_room2_id']
+        ]
+        # test for two conflicts, specifying all room IDs
+        ret = self.room_manager.get_available_rooms(self.admin_token,
+            now, # start
+            tomorrow, # end
+            test_room_ids)
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals(len(ret['value']), 2)
+        # make sure the busy rooms are NOT in this list
+        self.assertTrue(unicode(place_ids['v1_room1_id']) not in ret['value'])
+        self.assertTrue(unicode(place_ids['v1_room2_id']) not in ret['value'])
+
+        # test for just one conflict, with one room changing hands
+        ret = self.room_manager.get_available_rooms(self.admin_token,
+            now, # start
+            twelve_hours_from_now, # end
+            test_room_ids)
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals(len(ret['value']), 3)
+        # make sure the busy rooms are NOT in this list
+        self.assertTrue(unicode(place_ids['v1_room1_id']) not in ret['value'])
+        self.assertTrue(unicode(place_ids['v1_room2_id']) in ret['value'])
+
+        # test without the conflicting IDs
+        test_room_ids = [
+            place_ids['v2_room1_id'], 
+            place_ids['v2_room2_id']
+        ]
+        ret = self.room_manager.get_available_rooms(self.admin_token,
+            now, #five_days_ago, # start
+            tomorrow, #four_days_ago, # end
+            test_room_ids)
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals(len(ret['value']), 2)
+
+        # test with ONLY the conflicting IDs
+        test_room_ids = [
+            place_ids['v1_room1_id'], 
+            place_ids['v1_room2_id'], 
+        ]
+        ret = self.room_manager.get_available_rooms(self.admin_token,
+            now, # start
+            tomorrow, # end
+            test_room_ids)
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals(len(ret['value']), 0)
+
+class TestVenueManagerSvc(TestCase):
+    def test_get_available_venues(self):
+        # set up scheduled events (as elsewhere) 
+        object_ids = self.create_scheduled_sessions_and_resources()
+        # set up regions, venues, and rooms
+        place_ids = self.create_venues_and_rooms()
+
+        # define some useful timestamps
+        now = self.right_now.isoformat()
+        tomorrow = (self.right_now+self.one_day).isoformat()
+        one_moment_ago = (self.right_now - self.one_moment).isoformat()
+        one_hour_from_now = (self.right_now+self.one_hour).isoformat()
+        twelve_hours_from_now = (self.right_now+self.half_day).isoformat()
+        five_days_ago = (self.right_now + timedelta(days = -5)).isoformat()
+        four_days_ago = (self.right_now + timedelta(days = -4)).isoformat()
+        five_days_from_now = (self.right_now + timedelta(days = 5)).isoformat()
+
+        # assign rooms to some scheduled sessions (but not all)
+        # NOTE that we need to bump out the timespan for parent event, 
+        # or these times will fail validation.
+        self.event_manager.update(self.admin_token,
+            object_ids['evt1_id'],
+            {'start': now,
+             'end': five_days_from_now})
+        self.session_manager.update(self.admin_token,
+            object_ids['sess1_id'],
+            {'room': place_ids['v1_room1_id'],
+             'start': now,
+             'end': tomorrow})
+        self.session_manager.update(self.admin_token,
+            object_ids['sess2_id'],
+            {'room': place_ids['v1_room2_id'],
+             'start': twelve_hours_from_now,
+             'end': five_days_from_now})
+
+        # look for venues with available rooms
+        ret = self.venue_manager.get_available_venues(self.admin_token,
+            now,      # start
+            tomorrow, # end
+            ['id','name'])
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals(len(ret['value']), 1)
+        self.assertEquals(ret['value'][0]['name'], 'Venue Two')
+        # try again, with a completely available timespan (both venues free)
+        ret = self.venue_manager.get_available_venues(self.admin_token,
+            five_days_ago, # start
+            four_days_ago, # end
+            ['id','name'])
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals(len(ret['value']), 2)
+
+        # switch a session to an alternate room (and thus venue)
+        self.session_manager.update(self.admin_token,
+            object_ids['sess2_id'],
+            {'room': place_ids['v2_room1_id']})
+
+        # look for venues with available rooms (both venues have a free room)
+        ret = self.venue_manager.get_available_venues(self.admin_token,
+            now,      # start
+            tomorrow, # end
+            ['id','name'])
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals(len(ret['value']), 2)
 
 class TestScoManagerSvc(TestCase):
     def test_sco_url(self):

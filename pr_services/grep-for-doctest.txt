@@ -1,0 +1,27 @@
+./rpc/decorator.py:    >>> def f(self, x=1, y=2, *args, **kw): pass
+./rpc/decorator.py:    >>> info = getinfo(f)
+./rpc/decorator.py:    >>> info["name"]
+./rpc/decorator.py:    >>> info["argnames"]
+./rpc/decorator.py:    >>> info["defaults"]
+./rpc/decorator.py:    >>> info["signature"]
+Binary file ./rpc/decorator.pyc matches
+./rpc/service.py:    >>> class MyActionObject(object):
+./rpc/service.py:    >>>     '''This docstring is copied to the service class.'''
+./rpc/service.py:    >>>
+./rpc/service.py:    >>>     @service_method
+./rpc/service.py:    >>>     def public(self, x, y=3):
+./rpc/service.py:    >>>         '''This docstring is copied to the service class method.'''
+./rpc/service.py:    >>>         return x + y
+./rpc/service.py:    >>>
+./rpc/service.py:    >>>     def private(self, a, b=2):
+./rpc/service.py:    >>>         '''This method is not available via the service class.'''
+./rpc/service.py:    >>>         return a + b
+./rpc/service.py:    >>>
+./rpc/service.py:    >>> class MyRpcService(RpcService):
+./rpc/service.py:    >>>     action_class = MyActionObject
+./rpc/service.py:    >>>
+./rpc/service.py:    >>>     @wrap_service_method
+./rpc/service.py:    >>>     def other(self, z=3):
+./rpc/service.py:    >>>         '''This method does not rely on the action_object.'''
+./rpc/service.py:    >>>         return z
+Binary file ./rpc/service.pyc matches
