@@ -70,7 +70,7 @@ class VenueManager(ObjectManager):
     @service_method
     def get_available_venues(self, auth_token, start, end, requested_fields=None):
         """
-        Query for venues with avaiable rooms during the specified timespan
+        Query for venues with available rooms during the specified timespan
 
         @param auth_token         The actor's authentication token
         @param start              Start time as ISO8601 string or datetime

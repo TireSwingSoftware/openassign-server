@@ -65,7 +65,7 @@ class RoomManager(ObjectManager):
     @service_method
     def get_available_rooms(self, auth_token, start, end, room_ids):
         """
-        Query rooms available during the specified timespan (optionally from a selected set of room IDs)
+        Query rooms available (from a selected set of room IDs) during the specified timespan
 
         @param auth_token         The actor's authentication token
         @param start              Start time as ISO8601 string or datetime
