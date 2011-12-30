@@ -101,6 +101,7 @@ def upload_file_for_download(request, auth_token=None, pk=None):
                 return upload._render_response_ok(request,
                     msg='File upload successful.')
             else:
+                transaction.commit()
                 return HttpResponse(str(file_download.id) if file_download else None)
         else:
             logging.info(str(form.errors))
