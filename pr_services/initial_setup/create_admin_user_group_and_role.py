@@ -274,8 +274,8 @@ def setup(machine):
                 },
         'FileDownload' : {
                 'c' : True,
-                'r' : set(('name', 'description', 'file_size', 'file_url', 'deleted', 'title',)),
-                'u' : set(('name', 'description', 'title',)),
+                'r' : set(('achievements', 'name', 'description', 'file_size', 'file_url', 'deleted', 'title',)),
+                'u' : set(('achievements', 'name', 'description', 'title',)),
                 'd' : True,
                 },
         'FileDownloadAttempt' : {
@@ -287,8 +287,8 @@ def setup(machine):
                 },
         'FileUpload' : {
                 'c' : True,
-                'r' : set(('name', 'description',)),
-                'u' : set(('name', 'description',)),
+                'r' : set(('achievements', 'name', 'description',)),
+                'u' : set(('achievements', 'name', 'description',)),
                 'd' : True,
                 },
         'FileUploadAttempt' : {
@@ -499,10 +499,10 @@ def setup(machine):
                 },
         'SessionUserRoleRequirement' : {
                 'c' : True,
-                'r' : set(('credential_types', 'max', 'users',
+                'r' : set(('achievements', 'credential_types', 'max', 'users',
                     'remaining_capacity', 'session', 'session_user_role', 'min',
                     'role_name', 'ignore_room_capacity',)),
-                'u' : set(('credential_types', 'max', 'users', 'session',
+                'u' : set(('achievements', 'credential_types', 'max', 'users', 'session',
                     'session_user_role', 'min', 'ignore_room_capacity',)),
                 'd' : True,
                 },
