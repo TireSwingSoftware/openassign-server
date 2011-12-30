@@ -5,6 +5,7 @@ Room manager class
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
+from pr_services import pr_time
 
 class RoomManager(ObjectManager):
     """
@@ -60,5 +61,46 @@ class RoomManager(ObjectManager):
         facade.subsystems.Setter(auth_token, self, r, {'venue' : venue})
         r.save()
         return r
+
+    @service_method
+    def get_available_rooms(self, auth_token, start, end, room_ids):
+        """
+        Query rooms available (from a selected set of room IDs) during the specified timespan
+
+        @param auth_token         The actor's authentication token
+        @param start              Start time as ISO8601 string or datetime
+        @param end                End time as ISO8601 string or datetime
+        @param room_ids           Required list of room IDs to check
+        @return                   a filtered, simple list of available room IDs
+        """
+        test_room_ids = room_ids or [ ]
+
+        # convert time arguments from isoformat string to datetime, if not already
+        if isinstance(start, basestring):
+            start = pr_time.iso8601_to_datetime(start)
+        if isinstance(end, basestring):
+            end = pr_time.iso8601_to_datetime(end)
+        
+        # find any conflicting sessions, remove their room IDs
+        blocked_room_ids = [ ]
+        conflicting_sessions = (
+            facade.models.Session.objects.filter(start__lt=end) &
+            facade.models.Session.objects.filter(end__gt=start)
+        )
+        blocked_room_ids.extend( conflicting_sessions.values_list('room', flat=True) )
+        # remove duplicates from the list of blocked IDs
+        blocked_room_ids = list(set(blocked_room_ids))
+        available_room_ids = [i for i in test_room_ids if i not in blocked_room_ids]
+        # query for available rooms
+        e = facade.models.Room.objects.filter( 
+            id__in = available_room_ids)
+        # iterate over these objects based on visibility of each room's ID
+        avail_ids = []
+        auth = self.authorizer
+        for pr_object in e.iterator():
+            auth.check_read_permissions(auth_token, pr_object, ['id'])
+            avail_ids.append(str(pr_object.id))
+        return avail_ids
+
 
 # vim:tabstop=4 shiftwidth=4 expandtab
