@@ -13,14 +13,22 @@ import logging
 import threading
 
 from datetime import datetime
+from operator import itemgetter
 
-from authorizer_decorators import *
+from authorizer_decorators import (does_not_use_actee,
+        uses_update_dict, allow_guests)
 from django.core.exceptions import ObjectDoesNotExist
-from utils import Utils
 
 import exceptions
 import facade
 import pr_models
+
+_INVALID_ACTEE_TYPE_MSG = 'Invalid Actee Type'
+_ATTR_NOT_UPDATED_MSG = 'Attributes not updated'
+
+# itemgetters are *fast*
+_method_name = itemgetter('method_to_run')
+_check_passed = itemgetter('check_passed')
 
 class Authorizer(object):
     # Store a single instance of an Authorizer object, so we can manage the ACL cache effectively
@@ -101,7 +109,7 @@ class Authorizer(object):
         acls_to_check = self._get_relevant_acls_for_arbitrary_permissions(
             requested_permission)
         for acl in acls_to_check:
-            if self._acl_checks_pass(auth_token, None, acl):
+            if self._check_acl_methods(auth_token, None, acl):
                 arb_perms_granted = acl['arbitrary_perm_list']
                 if requested_permission in arb_perms_granted:
                     return
@@ -123,7 +131,7 @@ class Authorizer(object):
         # all pass for that ACL, we add the ACL's permissions to actors_acls
         for acl in acls_to_check:
             # If all the checks have passed, we need to grant permissions to the user from the ACL
-            acl_checks_passed = self._acl_checks_pass(auth_token, actee, acl)
+            acl_checks_passed = self._check_acl_methods(auth_token, actee, acl)
             self.logger.commit()
             if acl_checks_passed:
                 try:
@@ -195,7 +203,7 @@ class Authorizer(object):
         for acl in acls_to_check:
             # If all the checks have passed, we need to grant permissions to the user from the
             # ACL
-            if self._acl_checks_pass(auth_token, actee, acl):
+            if self._check_acl_methods(auth_token, actee, acl):
                 permission_granted = acl['acl'][actee_type]['d']
                 if permission_granted:
                     return
@@ -233,7 +241,7 @@ class Authorizer(object):
         # that ACL, we add the ACLs attributes to actors_acls
         for potential_acl_dict in acls_to_check:
             # If all the checks have passed, we need to grant permissions to the user from the ACL
-            checks_pass = self._acl_checks_pass(auth_token, actee, potential_acl_dict, update_dict)
+            checks_pass = self._check_acl_methods(auth_token, actee, potential_acl_dict, update_dict)
             self.logger.commit()
             if checks_pass:
                 attributes_granted = potential_acl_dict['acl'][actee_type][access_type]
@@ -341,7 +349,7 @@ class Authorizer(object):
                 relevant_acls.append(potential_acl)
         return relevant_acls
 
-    def _acl_checks_pass(self, auth_token, actee, acl_dict, update_dict=None):
+    def _check_acl_methods(self, auth_token, actee, acl_dict, update_dict=None):
         """
         This method performs the tests found in the ACL and returns True
         only if the result of all the tests ANDed together is True
@@ -357,85 +365,80 @@ class Authorizer(object):
                             under the ACL, or False otherwise
         @rtype bool
         """
-        if not isinstance(auth_token, facade.models.AuthToken):
-            if not (auth_token is None or auth_token == ''):
+        AuthToken = facade.models.AuthToken
+        if not isinstance(auth_token, AuthToken):
+            if auth_token:
                 raise exceptions.NotLoggedInException
             cache_key = ''
         else:
             cache_key = auth_token.session_id
 
-        if update_dict is None:
-            update_dict = {}
+        role_name = acl_dict['acl_object'].role.name
+        is_guest = self.actor_is_guest(auth_token)
+        default_kwargs = {'actee': actee, 'auth_token': auth_token}
+        type_specific_check = isinstance(actee, type)
+        assert not type_specific_check or issubclass(actee, pr_models.PRModel)
 
-        #: the number of membership tests passed so far
-        num_passed_checks = 0
-        #: the number of membership tests that must be passed for
-        #: membership in the given ACL in the context of the given actee
-        num_checks_need_to_pass = len(acl_dict['ac_method_calls'])
-        for ac_method_call_dict in acl_dict['ac_method_calls']:
-            log_entry = [acl_dict['acl_object'].role.name, ac_method_call_dict['method_to_run']]
-            if self.logger:
-                self.logger.add_row(log_entry)
-            # Get the method to be run
-            method_to_run = getattr(self, ac_method_call_dict['method_to_run'])
-            # If the check_method isn't for guests, and the actor is a guest, we should
-            # go ahead and return False
-            if not hasattr(method_to_run, 'allow_guests') and self.actor_is_guest(auth_token):
-                log_entry.append(False)
+        def run_acl_method(method_name, method_dict):
+            """
+            Verify execution context and invoke the acl method.
+            If possible, cache the result.
+            """
+            method = getattr(self, method_name)
+            if not hasattr(method, 'allow_guests') and is_guest:
+                # fast-path: user is guest and guest is not allowed
                 return False
-            # Get the dictionary of parameters to be passed to the check method, and
-            # add the actor and actee to the mix
-            method_parameters = {}
-            if 'parameters' in ac_method_call_dict:
-                method_parameters = ac_method_call_dict['parameters']
-            method_parameters['actee'] = actee
-            method_parameters['auth_token'] = auth_token
-            if hasattr(method_to_run, 'uses_update_dict') and getattr(method_to_run, 'uses_update_dict'):
-                if len(update_dict) != 0:
-                    method_parameters['update_dict'] = update_dict
-                else:
-                    # The user isn't trying to update anything, let's decrement the number of checks that need to pass
-                    num_checks_need_to_pass -= 1
-                    continue
-            # If any method fails, we return False since we require them to all pass (AND operation)
+            uses_update_dict = getattr(method, 'uses_update_dict', False)
+            uses_actee = not getattr(method, 'does_not_use_actee', False)
+            if not update_dict:
+                if uses_update_dict:
+                    # fast-path: method requires updated dict, there is none
+                    return True
+                if uses_actee and type_specific_check:
+                    # method is object specific and we are only checking type
+                    raise exceptions.InvalidActeeTypeException
+            # check the cache first before we build up arguments
+            # which may otherwise never be used
+            method_cache = _check_passed(method_dict) # method_dict['check_passed']
+            if not uses_actee:
+                result = method_cache.get(cache_key, None)
+                if result:
+                    return result
+            # build keyword arguments
+            kwargs = method_dict.get('parameters', {})
+            kwargs.update(default_kwargs) # these are already hashed
+            if uses_update_dict: # update_dict must be True (see above)
+                kwargs.update(update_dict=update_dict)
+            result = method(**kwargs)
+            if not uses_actee:
+                method_cache[cache_key] = result
+            return result
+
+        valid_actee_type = False
+
+        for method_dict in acl_dict['ac_method_calls']:
+            method_name = _method_name(method_dict) # method_dict['method_to_run']
+            log_entry = [role_name, method_name]
             try:
-                # If the test does not refer to the actee in any way, we
-                # can cache its result to use later.
-                if hasattr(method_to_run, 'does_not_use_actee') and method_to_run.does_not_use_actee:
-                    # If we have a cached value for the test, use it.
-                    try:
-                        method_passed = ac_method_call_dict['check_passed'][cache_key]
-                    except KeyError:
-                        # cache miss:
-                        # We don't have a cached value -- compute one and cache it.
-                        method_passed = method_to_run(**method_parameters)
-                        ac_method_call_dict['check_passed'][cache_key] = method_passed
-                else:
-                    # We can't cache the result of this membership test, since it
-                    # relies on the actee.  Run the method.
-                    method_passed = method_to_run(**method_parameters)
-                log_entry.append(method_passed)
-                if method_passed:
-                    num_passed_checks += 1
-                else:
+                result = run_acl_method(method_name, method_dict)
+                valid_actee_type = True
+                log_entry.append(result)
+                if not result:
+                    # short-circuit if method check fails
+                    self.logger.commit()
                     return False
             except exceptions.InvalidActeeTypeException:
-                log_entry.append('Invalid Actee Type')
-                # Ignore membership tests that don't apply to this actee.
-                num_checks_need_to_pass -= 1
-                continue
+                log_entry.append(_INVALID_ACTEE_TYPE_MSG)
             except exceptions.AttributeNotUpdatedException:
-                # Ignore checks that look for an update that isn't happening
-                num_checks_need_to_pass -= 1
-                continue
-        # Return true if
-        #   (a) We don't have only membership tests that are not applicable (due to
-        #       the exceptions.InvalidActeeTypeException's having been thrown).
-        #   (b) We have passed all of the applicable membership tests.
-        # Otherwise, return false.
-        if num_passed_checks > 0 and num_passed_checks == num_checks_need_to_pass:
-            return True
-        return False
+                log_entry.append(_ATTR_NOT_UPDATED_MSG)
+            finally:
+                self.logger.add_row(log_entry)
+
+        # all acl methods passed or raised an exception
+        # check that at least one method returned True with a valid actee type.
+        self.logger.commit()
+        return valid_actee_type
+
 
     #################################################################
     #
