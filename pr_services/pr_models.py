@@ -25,6 +25,7 @@ from django.utils.hashcompat import sha_constructor
 import exceptions
 import facade
 import memcache
+import pr_time
 import storage
 
 from fields import *
@@ -2095,8 +2096,10 @@ class Session(OwnedPRModel):
             add_validation_error(validation_errors, 'start',
                 u'Session start time must come before Session end time')
 
-        event_start = datetime.combine(self.event.start, time(0, 0, 0))
-        event_end = datetime.combine(self.event.end, time(23, 59, 59))
+        event_start = datetime.combine(self.event.start, time(0, 0, 0,
+            tzinfo=self.start.tzinfo))
+        event_end = datetime.combine(self.event.end, time(23, 59, 59,
+            tzinfo=self.end.tzinfo))
         grace_period = timedelta(hours=12)
 
         if not (self.start >= event_start or
