@@ -193,20 +193,30 @@ class SessionManager(ObjectManager):
         return ids
 
     @service_method
-    def get_user_filtered(self, auth_token, user_id, filters):
+    def get_user_filtered(self, auth_token, user_id, filters=None,
+            field_names=None):
         """
-        Get Sessions filtered by various limits, including a particular user.
+        Return sessions for specified `user_id` with additional filters
+        specified in `filters` as a dictionary of filters to be passed to
+        ObjectManager.get_filtered. See ObjectManager.get_filtered for
+        filter definition syntax.
 
         @param user_id    Primary key for a user
         @param filters    A struct of structs indexed by filter name. Each
                           filter's struct should contain values indexed by
                           field names.
         """
+        surr_filter = {'session_user_role_requirements__users__id': user_id}
 
-        if 'exact' not in filters:
-            filters['exact'] = {}
-        filters['exact']['session_user_role_requirements__users__id'] = user_id
-        return self.filter_common(auth_token, filters)
+        if filters is None:
+            filters = {'exact': surr_filter}
+        elif 'exact' not in filters:
+            filters['exact'] = surr_filter
+        else:
+            assert 'session_user_role_requirements__users__id' not in filters['exact']
+            filters['exact'].update(surr_filter)
+
+        return self.get_filtered(auth_token, filters, field_names)
 
     def _get_sessions_needing_reminders(self):
         """
