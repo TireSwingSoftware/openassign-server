@@ -30,7 +30,6 @@ psycopg2==2.4.1
 pycurl==7.19.0
 pyparsing==1.5.6
 python-dateutil==2.0
-python-ldap==2.4.6
 python-memcached==1.48
 recaptcha-client==1.0.6
 simplejson==2.3.0

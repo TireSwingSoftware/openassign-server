@@ -72,6 +72,11 @@ Otherwise
     pip -r requirements.txt
 
 
+If you require LDAP support you will also need to install the LDAP requirements.
+
+    pip -E /path/to/env install -r requirements-ldap.txt
+
+
 ### Initial Configuration
 
 Two files are provided which contain the majority of configuration options
