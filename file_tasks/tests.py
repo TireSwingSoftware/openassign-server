@@ -120,7 +120,7 @@ class TestFileDownload(TestCase):
     def test_file_download_assignments_for_user(self):
         file_download = self._upload_file()
         self.assignment_manager.create(self.admin_token, file_download.id, self.user1.id)
-        ret = self.assignment_manager.file_download_assignments_for_user(self.auth_token)
+        ret = self.assignment_manager.file_download_assignments_for_user(self.user1_auth_token)
         self.assertEquals(len(ret), 1)
         assignment = ret[0]
         self.assertEquals(assignment['user'], self.user1.id)
@@ -135,14 +135,14 @@ class TestFileDownload(TestCase):
     def test_download_file_as_user(self):
         file_download = self._upload_file()
         # Before having an assignment, the user cannot see any file downloads.
-        result = self.file_download_manager.get_filtered(self.auth_token, {})
+        result = self.file_download_manager.get_filtered(self.user1_auth_token, {})
         self.assertFalse(result)
         # Now create an Assignment for this FileDownload Task.
         assignment = self.assignment_manager.create(self.admin_token,
             file_download.id, self.user1.id)
         # Now we can retrieve the FileDownload Task info.  The user should not
         # be able to access the direct file_url.
-        result = self.file_download_manager.get_filtered(self.auth_token,
+        result = self.file_download_manager.get_filtered(self.user1_auth_token,
             {'exact': {'id': file_download.id}},
             ['name', 'description', 'file_size', 'file_url'])
         self.assertTrue(result)
@@ -158,7 +158,7 @@ class TestFileDownload(TestCase):
         self.assertEqual(facade.models.FileDownloadAttempt.objects.count(), 0)
         # Now obtain the download URL and hit the download view, which should
         # redirect to the actual file URL.
-        download_url = self.file_download_manager.get_download_url_for_assignment(self.auth_token, assignment.pk)
+        download_url = self.file_download_manager.get_download_url_for_assignment(self.user1_auth_token, assignment.pk)
         response = self.client.get(download_url)
         self.assertEqual(response.status_code, 302)
         # Verify that the Assignment has now been marked as completed and that
@@ -194,7 +194,7 @@ class TestFileUpload(TestCase):
 
     def _upload_file(self, auth_token=None, assignment_id=None, file_name=None,
                      expected_return_code=None, use_form=False):
-        auth_token = auth_token or self.auth_token
+        auth_token = auth_token or self.user1_auth_token
         file_name = file_name or 'testfile.txt'
         expected_return_code = expected_return_code or 200
         file_path = os.path.join(os.path.dirname(__file__), 'test_data', file_name)
@@ -244,7 +244,7 @@ class TestFileUpload(TestCase):
     def test_file_upload_assignments_for_user(self):
         file_upload = self.test_create_file_upload_as_admin()
         self.assignment_manager.create(self.admin_token, file_upload.id, self.user1.id)
-        ret = self.assignment_manager.file_upload_assignments_for_user(self.auth_token)
+        ret = self.assignment_manager.file_upload_assignments_for_user(self.user1_auth_token)
         self.assertEquals(len(ret), 1)
         assignment = ret[0]
         self.assertEquals(assignment['user'], self.user1.id)
@@ -257,13 +257,13 @@ class TestFileUpload(TestCase):
     def test_upload_file_as_user(self, use_form=False):
         file_upload = self.test_create_file_upload_as_admin()
         # Before having an assignment, the user cannot see any file uploads.
-        result = self.file_upload_manager.get_filtered(self.auth_token, {})
+        result = self.file_upload_manager.get_filtered(self.user1_auth_token, {})
         self.assertFalse(result)
         # Now create an Assignment for this FileUpload Task.
         assignment = self.assignment_manager.create(self.admin_token,
             file_upload.id, self.user1.id)
         # Now we can retrieve the FileUpload Task info.
-        result = self.file_upload_manager.get_filtered(self.auth_token,
+        result = self.file_upload_manager.get_filtered(self.user1_auth_token,
             {'exact': {'id': file_upload.id}}, ['name', 'description'])
         self.assertTrue(result)
         self.assertTrue(result[0]['name'])
@@ -275,7 +275,7 @@ class TestFileUpload(TestCase):
         self.assertEqual(assignment_qs.count(), 0)
         self.assertEqual(facade.models.FileUploadAttempt.objects.count(), 0)
         # Now upload the file.
-        result = self._upload_file(self.auth_token, assignment.id, use_form=use_form)
+        result = self._upload_file(self.user1_auth_token, assignment.id, use_form=use_form)
         self.assertTrue(result)
         # Verify that the Assignment has now been marked as completed and that
         # there is one FileUploadAttempt recorded.
@@ -287,7 +287,7 @@ class TestFileUpload(TestCase):
         date_completed = assignment.date_completed
         # If we hit the upload URL again, the Assignment completion date
         # should not change, but a new FileUploadAttempt will be created.
-        result = self._upload_file(self.auth_token, assignment.id, use_form=use_form)
+        result = self._upload_file(self.user1_auth_token, assignment.id, use_form=use_form)
         self.assertTrue(result)
         assignment = facade.models.Assignment.objects.get(pk=assignment.pk)
         self.assertEqual(assignment.date_completed, date_completed)
@@ -301,7 +301,7 @@ class TestFileUpload(TestCase):
         file_upload = self.test_create_file_upload_as_admin()
         assignment = self.assignment_manager.create(self.admin_token,
             file_upload.id, self.user1.id)
-        file_upload_attempt = self._upload_file(self.auth_token, assignment.id)
+        file_upload_attempt = self._upload_file(self.user1_auth_token, assignment.id)
         result = self.file_upload_attempt_manager.get_filtered(self.admin_token,
             {'exact': {'id': file_upload_attempt.id}},
             ['file_name', 'file_size', 'file_url', 'date_completed'])
