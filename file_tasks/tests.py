@@ -132,6 +132,15 @@ class TestFileDownload(TestCase):
         self.assertTrue('name' in task)
         self.assertTrue('description' in task)
 
+    def test_download_when_file_is_not_ready(self):
+        # this FileDownload does not have an actual file, similar to a case where
+        # the asynchronous processing of an uploaded file hasn't taken place yet.
+        file_download = facade.models.FileDownload.objects.create(name='Test FD')
+        assignment = self.assignment_manager.create(self.admin_token, file_download.id, self.user1.id)
+        download_url = self.file_download_manager.get_download_url_for_assignment(self.user1_auth_token, assignment.pk)
+        response = self.client.get(download_url)
+        self.assertEqual(response.status_code, 404)
+
     def test_download_file_as_user(self):
         file_download = self._upload_file()
         # Before having an assignment, the user cannot see any file downloads.

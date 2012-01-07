@@ -20,7 +20,7 @@ def setup(machine):
         'FileDownload' : {
             'c' : False,
             'r' : set(('author', 'create_timestamp', 'prerequisite_tasks',
-                       'name', 'description', 'file_size', 'file_url')),
+                       'name', 'description', 'file_size')),
             'u' : set(),
             'd' : False,
         },

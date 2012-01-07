@@ -41,6 +41,8 @@ def handle_pr_exception(f, request, *args, **kwargs):
             return upload._render_response_forbidden(request, msg=p.get_error_msg())
         else:
             return upload._render_response_bad_request(request, msg=p.get_error_msg())
+    except Http404:
+        return upload._render_response_not_found(request)
     except:
         stack_trace = traceback.format_exc()
         logging.info(stack_trace)
@@ -129,6 +131,8 @@ def download_file_for_assignment(request, auth_token, pk):
         file_download_attempt = file_download_attempt_manager.create(at, assignment.id)
         results = file_download_attempt_manager.get_filtered(at, {'exact': {'id': file_download_attempt.id}}, ['file_download'])
         file_download = facade.models.FileDownload.objects.get(pk=results[0]['file_download'])
+        if file_download.file_url is None:
+            raise Http404
         if not assignment.date_completed:
             assignment.mark_completed() # Sets date_completed and saves.
             file_download_attempt.date_completed = assignment.date_completed
