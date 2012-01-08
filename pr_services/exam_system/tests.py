@@ -12,6 +12,7 @@ import random
 # PowerReg
 from pr_services import exceptions
 from pr_services import pr_tests
+from pr_services.testlib.common import CommonExamTests
 import facade
 
 _default = object() # dummy object used as default for optional keyword args.
@@ -696,70 +697,7 @@ class TestExamModels(pr_tests.TestCase):
                                         text_response_test_cases)
             self._test_response_options(qt, {}, text_test_cases)
 
-class TestExamManagers(pr_tests.TestCase):
-
-    def setUp(self):
-        super(TestExamManagers, self).setUp()
-        if not hasattr(self, 'exam_manager'):
-            self.exam_manager = facade.managers.ExamManager()
-        if not hasattr(self, 'question_pool_manager'):
-            self.question_pool_manager = facade.managers.QuestionPoolManager()
-        if not hasattr(self, 'question_manager'):
-            self.question_manager = facade.managers.QuestionManager()
-        if not hasattr(self, 'answer_manager'):
-            self.answer_manager = facade.managers.AnswerManager()
-        if not hasattr(self, 'exam_session_manager'):
-            self.exam_session_manager = facade.managers.ExamSessionManager()
-        if not hasattr(self, 'response_manager'):
-            self.response_manager = facade.managers.ResponseManager()
-        if not hasattr(self, 'form_page_manager'):
-            self.form_page_manager = facade.managers.FormPageManager()
-        if not hasattr(self, 'form_widget_manager'):
-            self.form_widget_manager = facade.managers.FormWidgetManager()
-
-    def _create_exam(self, name=None, title=None, opts=None, **kwargs):
-        name = name or kwargs.pop('name')
-        title = title or kwargs.pop('title')
-        opts = opts or {}
-        opts.update(kwargs)
-        return self.exam_manager.create(self.admin_token, name, title, opts)
-
-    def _create_question_pool(self, exam=None, title=None, opts=None, **kwargs):
-        exam = exam or kwargs.pop('exam')
-        exam = getattr(exam, 'pk', exam)
-        title = title or kwargs.pop('title')
-        opts = opts or {}
-        opts.update(kwargs)
-        return self.question_pool_manager.create(self.admin_token, exam, title,
-                                                 opts)
-
-    def _create_question(self, question_pool=None, question_type=None,
-                         label=None, opts=None, **kwargs):
-        question_pool = question_pool or kwargs.pop('question_pool')
-        question_pool = getattr(question_pool, 'pk', question_pool)
-        question_type = question_type or kwargs.pop('question_type')
-        label = label or kwargs.pop('label')
-        opts = opts or {}
-        opts.update(kwargs)
-        return self.question_manager.create(self.admin_token, question_pool,
-                                            question_type, label, opts)
-
-    def _create_answer(self, question=None, label=None, opts=None, **kwargs):
-        question = question or kwargs.pop('question')
-        question = getattr(question, 'pk', question)
-        label = label or kwargs.pop('label', None)
-        opts = opts or {}
-        opts.update(kwargs)
-        return self.answer_manager.create(self.admin_token, question, label,
-                                          opts)
-
-    def test_exam_creation_managers(self):
-        e = self._create_exam('mother_exam', 'The Mother of All Exams',
-                              passing_score=90)
-        qp = self._create_question_pool(e, "Mama's Question Pool")
-        q = self._create_question(qp, 'bool', 'Is mama always right?')
-        a = self._create_answer(q, 'Yes', correct=True)
-        a = self._create_answer(q, 'No')
+class TestExamManagers(pr_tests.TestCase, CommonExamTests):
 
     def _take_exam(self, auth_token, assignment, answer_key, score=_default, passed=_default,
                    resume=False):
@@ -859,37 +797,6 @@ class TestExamManagers(pr_tests.TestCase):
         self.assertTrue('missed_questions' in result)
         self.assertTrue('invalid_questions' in result)
         return exam_session_id
-
-    def test_exam_manager_xml(self):
-        # import a new exam
-        xml_data = codecs.open('pr_services/test_data/complex_exam.xml', 'r',
-                               encoding='utf-8').read()
-        exam = self.exam_manager.create_from_xml(self.admin_token, xml_data)
-        qs = facade.models.Answer.objects.all()
-        qs = qs.filter(question__question_pool__exam=exam)
-        qs = qs.filter(next_question_pool__isnull=False)
-        self.assertTrue(qs.count() > 0)
-        for a in qs:
-            qs2 = facade.models.QuestionPool.objects.all()
-            self.assertEquals(qs2.filter(randomize_questions=True).count(), 1)
-            qs2 = qs2.filter(exam=exam)
-            qs2 = qs2.filter(pk=a.next_question_pool.pk)
-            self.assertEquals(qs2.count(), 1)
-        new_xml_data = self.exam_manager.export_to_xml(self.admin_token, exam.id)
-
-        # Now rename the original exam, import the xml and export again, then
-        # check to see if the XML matches.
-        exam.name = 'renamed_exam'
-        exam.save()
-        new_exam = self.exam_manager.create_from_xml(self.admin_token, new_xml_data)
-        new_xml_data2 = self.exam_manager.export_to_xml(self.admin_token, new_exam.id)
-        self.assertEquals(new_xml_data, new_xml_data2)
-
-        # Try one other exam with correct answers listed.
-        xml_data = codecs.open('pr_services/test_data/instructor_exam.xml', 'r',
-                               encoding='utf-8').read()
-        exam = self.exam_manager.create_from_xml(self.admin_token, xml_data)
-        new_xml_data = self.exam_manager.export_to_xml(self.admin_token, exam.id)
 
     def test_form_managers(self):
         exam = self._create_exam(name='seven', title='Do You Know Your Sevens?',
