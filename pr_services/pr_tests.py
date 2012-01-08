@@ -14,6 +14,8 @@ import os
 import time
 import urllib2
 
+from functools import partial
+
 import django.test.client
 import django.utils.dateformat
 import django.utils.unittest
@@ -38,6 +40,7 @@ from pr_services.utils import UnicodeCsvWriter
 
 from pr_services.testlib import TestCase, RoleTestCase
 from pr_services.testlib.helpers import expectPermissionDenied
+from pr_services.testlib.mixins import ExamTestMixin
 
 import facade
 
@@ -198,7 +201,7 @@ class TestTask(TestCase):
         self.assertEqual(exam3.name, 'my_exam')
 
 
-class TestAssignment(TestCase):
+class TestAssignment(TestCase, ExamTestMixin):
     def test_create_multiple_types(self):
         self.assertEquals(facade.models.Assignment.objects.filter(user=self.user1).count(), 0)
         tasks = []
@@ -339,6 +342,42 @@ class TestAssignment(TestCase):
         assignments = self.assignment_manager.bulk_create(self.admin_token, role_req2.id, [learner8.id])
         self.assertEquals(len(assignments), 1)
         self.assertEquals(assignments[learner8.id]['status'], 'assigned')
+
+
+    def test_exam_assignment_details_view(self):
+        exam = self._create_exam('Some Exam', 'Exam Title', passing_score=70)
+        user = self.user1
+
+        am = self.assignment_manager
+        assignment = am.create(exam.id, user.id)
+        exam_assignments_detail_view = partial(am.exam_assignments_detail_view, self.auth_token)
+
+        view = exam_assignments_detail_view()
+        expected = {
+            'id': assignment.id,
+            'user': {
+                'id': user.id,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+            },
+            'status': u'assigned',
+            'task': {
+                'id': exam.id,
+                'name': exam.name,
+                'title': exam.title,
+                'type': 'pr_services.exam',
+                'description': exam.description,
+                'passing_score': exam.passing_score,
+            }
+        }
+        self.assertEquals(len(view), 1)
+        self.assertDictEqual(view[0], expected)
+        del expected['user']
+        view = exam_assignments_detail_view(fields=['status', 'task'])
+        self.assertEquals(len(view), 1)
+        self.assertDictEqual(view[0], expected)
+        view = exam_assignments_detail_view(filters={'exact': {'id': assignment.id}})
+        self.assertEquals(len(view), 1)
 
 
 class TestAchievementAwardManager(TestCase):
