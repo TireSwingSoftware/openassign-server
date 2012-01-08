@@ -556,6 +556,12 @@ class TestAchievementAwardManager(TestCase):
         self.assertEqual(achievement_award.achievement, achievement)
         self.assertEqual(achievement_award.user, self.user2)
 
+    @expectPermissionDenied
+    def test_user_cannot_award_self(self):
+        achievement = facade.models.Achievement.objects.create(name='Super Star', description='Award for people who are super stars')
+        
+        self.achievement_award_manager.create(self.user1_auth_token, achievement.id, self.user1.id)
+
     def test_owner_can_read_achievement_award(self):
         achievement = facade.models.Achievement.objects.create(name='Super Star', description='Award for people who are super stars')
         achievement_award = facade.models.AchievementAward.objects.create(achievement=achievement, user=self.user1)
