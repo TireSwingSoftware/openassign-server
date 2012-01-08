@@ -495,6 +495,49 @@ class Authorizer(object):
 
     #################################################################################
     #
+    # Methods for which actee is an Achievement
+    #
+    #################################################################################
+
+    def actor_owns_achievement_award_for_achievement(self, auth_token, actee):
+        """
+        Returns True iff the actor is the owner of an AchievementAward for the Achievement
+        """
+
+        if not isinstance(actee, facade.models.Achievement):
+            raise exceptions.InvalidActeeTypeException()
+        try:
+            return actee.achievement_awards.filter(user__id=auth_token.user_id).exists()
+        except ObjectDoesNotExist:
+            pass
+        except AttributeError:
+            pass
+        return False
+
+    #################################################################################
+    #
+    # Methods for which actee is an AchievementAward
+    #
+    #################################################################################
+
+    def actor_owns_achievement_award(self, auth_token, actee):
+        """
+        Returns True iff the actor is the owner of the AchievementAward
+        """
+
+        if not isinstance(actee, facade.models.AchievementAward):
+            raise exceptions.InvalidActeeTypeException()
+        try:
+            if auth_token.user_id == actee.user.id:
+                return True
+        except ObjectDoesNotExist:
+            pass
+        except AttributeError:
+            pass
+        return False
+
+    #################################################################################
+    #
     # Methods for which actee is an Assignment
     #
     #################################################################################

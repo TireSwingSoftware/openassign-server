@@ -61,6 +61,8 @@
     <method name = "surr_is_of_a_particular_sur" title = "session_user_role_requirement is of a particular session_user_role" description = "Returns True iff the session_user_role associate with the actee is the same as the session_user_role specified by the parameter session_user_role."></method>
     <method name = "actor_owns_credential" title = "Actor owns Credential" description = "Returns True iff the actor is the owner of the credential"></method>
     <method name = "actor_has_completed_task_prerequisites" title = "Actor has completed Task prerequisites" description = "Returns True iff the actor has completed all of the prerequisite tasks for the task being queried."></method>
+    <method name = "actor_owns_achievement_award" title = "Actor owns AchievementAward" description = "Returns True iff the actor is the owner of the AchievementAward"></method>
+    <method name = "actor_owns_achievement_award_for_achievement" title = "Actor owns AchievementAward for Achievement" description = "Returns True iff the actor is the owner of an AchievementAward for the Achievement"></method>
     <method name = "actor_owns_assignment" title = "Actor owns Assignment" description = "Returns True iff the actor is the owner of the assignment"></method>
     <method name = "actor_owns_assignment_attempt" title = "Actor owns AssignmentAttempt" description = "Returns True iff the actor is the owner of the assignment attempt"></method>
     <method name = "actor_has_completed_assignment_prerequisites" title = "Actor has completed Assignment prerequisites" description = "Returns True iff the actor has completed all of the prerequisite Tasks for the Assignment being queried."></method>

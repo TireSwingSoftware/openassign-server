@@ -6,6 +6,8 @@ def setup(machine):
     methods = [
         {'name' : 'actor_has_completed_assignment_prerequisites', 'params' : {}},
         {'name' : 'actor_is_acting_upon_themselves', 'params' : {}},
+        {'name' : 'actor_owns_achievement_award', 'params' : {}},
+        {'name' : 'actor_owns_achievement_award_for_achievement', 'params' : {}},
         {'name' : 'actor_owns_address', 'params' : {}},
         {'name' : 'actor_owns_assignment', 'params' : {}},
         {'name' : 'actor_owns_assignment_attempt', 'params' : {}},
@@ -20,6 +22,18 @@ def setup(machine):
         methods.append({'name' : 'assignment_is_not_video', 'params' : {}})
 
     crud = {
+        'Achievement' : {
+            'c' : False,
+            'r' : set(('description', 'name')),
+            'u' : set(),
+            'd' : False,
+        },
+        'AchievementAward' : {
+            'c' : False,
+            'r' : set(('achievement', 'assignment', 'date', 'user')),
+            'u' : set(),
+            'd' : False,
+        },
         'Assignment' : {
             'c' : True,
             'r' : set(('task', 'task_content_type', 'user', 'date_started',

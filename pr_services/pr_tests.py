@@ -556,6 +556,40 @@ class TestAchievementAwardManager(TestCase):
         self.assertEqual(achievement_award.achievement, achievement)
         self.assertEqual(achievement_award.user, self.user2)
 
+    def test_owner_can_read_achievement_award(self):
+        achievement = facade.models.Achievement.objects.create(name='Super Star', description='Award for people who are super stars')
+        achievement_award = facade.models.AchievementAward.objects.create(achievement=achievement, user=self.user1)
+        
+        # try to read the AchievementAward details
+        achievement_award_fields = ['achievement', 'assignment','date', 'user']
+        ret = self.achievement_award_manager.get_filtered(self.user1_auth_token, {'exact' : {'id' : achievement_award.id}}, achievement_award_fields)
+        self.assertEqual(len(ret), 1)
+        # add one for 'id'
+        self.assertEqual(len(ret[0]), len(achievement_award_fields) + 1)
+        self.assertEqual(ret[0]['user'], self.user1.id)
+        self.assertEqual(ret[0]['achievement'], achievement.id)
+
+        # try to read the Achievement details
+        achievement_fields = ['description', 'name']
+        ret = self.achievement_manager.get_filtered(self.user1_auth_token, {'exact' : {'id' : achievement.id}}, achievement_fields)
+        self.assertEqual(len(ret), 1)
+        # add one for 'id'
+        self.assertEqual(len(ret[0]), len(achievement_fields) + 1)
+        self.assertEqual(ret[0]['name'], achievement.name)
+        self.assertEqual(ret[0]['description'], achievement.description)
+
+    def test_nonowner_cannot_read_achievement_award(self):
+        achievement = facade.models.Achievement.objects.create(name='Super Star', description='Award for people who are super stars')
+        achievement_award = facade.models.AchievementAward.objects.create(achievement=achievement, user=self.user1)
+        
+        # try to read the AchievementAward details
+        ret = self.achievement_award_manager.get_filtered(self.user2_auth_token, {'exact' : {'id' : achievement_award.id}}, [])
+        self.assertEqual(len(ret), 0)
+
+        # try to read the Achievement details
+        ret = self.achievement_manager.get_filtered(self.user2_auth_token, {'exact' : {'id' : achievement.id}}, [])
+        self.assertEqual(len(ret), 0)
+
 
 class TestCredentialManager(TestCase):
     def test_create(self):
@@ -3662,8 +3696,8 @@ class TestACLCRUD(TestCase):
             # these through table models don't have managers, but can be
             # manipulated with set_many via an endpoint of the relationship
             'AchievementAward' : {
-                'r' : set(['assignment', 'date'])|set(default_read_fields),
-                'u' : set(['assignment', 'date']),
+                'r' : set(['achievement', 'assignment', 'date', 'user'])|set(default_read_fields),
+                'u' : set(['achievement', 'assignment', 'date', 'user']),
             },
             'CurriculumEnrollmentUserAssociation' : {
                 'r' : set(default_read_fields),
