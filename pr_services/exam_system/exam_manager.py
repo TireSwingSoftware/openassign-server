@@ -92,13 +92,15 @@ class ExamManager(TaskManager):
         :return:            Reference to the newly created exam.
         """
 
+        self.authorizer.check_arbitrary_permissions(auth_token,
+                'import_exam_from_xml')
+
         def add_attribute(element, xml_attribute_name, django_model_instance,
                           attribute_name, attribute_type_func=lambda x: x):
             if element.attrib.has_key(xml_attribute_name):
                 setattr(django_model_instance, attribute_name,
                         attribute_type_func(element.attrib[xml_attribute_name]))
 
-        integer = lambda x: int(x)
         int_or_none = lambda x: None if str(x).lower() == 'none' else int(x)
         boolean = lambda x: True if str(x).lower() in ('true', '1') else False
 
@@ -120,7 +122,7 @@ class ExamManager(TaskManager):
         exam.attrib['pk'] = str(new_exam.pk)
         add_attribute(exam, 'title', new_exam, 'title')
         add_attribute(exam, 'passing_score', new_exam, 'passing_score', int_or_none)
-        add_attribute(exam, 'version_id', new_exam, 'version_id', integer)
+        add_attribute(exam, 'version_id', new_exam, 'version_id', int)
         add_attribute(exam, 'version_label', new_exam, 'version_label')
         add_attribute(exam, 'version_comment', new_exam, 'version_comment')
         new_exam.save()

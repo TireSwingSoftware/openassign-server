@@ -30,9 +30,10 @@ def setup(machine):
     ]
     arb_perm_list = [
         'access_db_settings',
-        'check_usernames',
         'change_password_of_other_users',
+        'check_usernames',
         'exceed_enrollment_capacity',
+        'import_exam_from_xml',
         'logging',
         'read_reports',
         'regenerate_payment_confirmations',

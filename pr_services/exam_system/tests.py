@@ -864,7 +864,7 @@ class TestExamManagers(pr_tests.TestCase):
         # import a new exam
         xml_data = codecs.open('pr_services/test_data/complex_exam.xml', 'r',
                                encoding='utf-8').read()
-        exam = self.exam_manager.create_from_xml(u'', xml_data)
+        exam = self.exam_manager.create_from_xml(self.admin_token, xml_data)
         qs = facade.models.Answer.objects.all()
         qs = qs.filter(question__question_pool__exam=exam)
         qs = qs.filter(next_question_pool__isnull=False)
@@ -881,14 +881,14 @@ class TestExamManagers(pr_tests.TestCase):
         # check to see if the XML matches.
         exam.name = 'renamed_exam'
         exam.save()
-        new_exam = self.exam_manager.create_from_xml(u'', new_xml_data)
+        new_exam = self.exam_manager.create_from_xml(self.admin_token, new_xml_data)
         new_xml_data2 = self.exam_manager.export_to_xml(u'', new_exam.id)
         self.assertEquals(new_xml_data, new_xml_data2)
 
         # Try one other exam with correct answers listed.
         xml_data = codecs.open('pr_services/test_data/instructor_exam.xml', 'r',
                                encoding='utf-8').read()
-        exam = self.exam_manager.create_from_xml(u'', xml_data)
+        exam = self.exam_manager.create_from_xml(self.admin_token, xml_data)
         new_xml_data = self.exam_manager.export_to_xml(u'', exam.id)
 
     def test_form_managers(self):
