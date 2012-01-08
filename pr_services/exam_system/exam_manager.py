@@ -210,6 +210,9 @@ class ExamManager(TaskManager):
         :rtype:             unicode
         """
 
+        self.authorizer.check_arbitrary_permissions(auth_token,
+            'export_exam_to_xml')
+
         exam_obj = self._find_by_id(exam_id, self.my_django_model)
 
         def add_attribute(xml_element, xml_attribute_name, django_object,

@@ -33,6 +33,7 @@ def setup(machine):
         'change_password_of_other_users',
         'check_usernames',
         'exceed_enrollment_capacity',
+        'export_exam_to_xml',
         'import_exam_from_xml',
         'logging',
         'read_reports',
