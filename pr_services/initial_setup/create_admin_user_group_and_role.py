@@ -49,8 +49,8 @@ def setup(machine):
             },
         'AchievementAward' : {
             'c' : True,
-            'r' : set(('assignment', 'date',)),
-            'u' : set(('assignment', 'date',)),
+            'r' : set(('achievement', 'assignment', 'date', 'user')),
+            'u' : set(('achievement', 'assignment', 'date', 'user')),
             'd' : True,
             },
         'Answer' : {

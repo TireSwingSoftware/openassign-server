@@ -27,6 +27,7 @@ subsystems.add_import('Utils', 'pr_services.utils')
 
 managers = ManagersFacade()
 managers.add_import('AchievementManager', 'pr_services.credential_system.achievement_manager')
+managers.add_import('AchievementAwardManager', 'pr_services.credential_system.achievement_award_manager')
 managers.add_import('AnswerManager', 'pr_services.exam_system.answer_manager')
 managers.add_import('AssignmentAttemptManager', 'pr_services.credential_system.assignment_attempt_manager')
 managers.add_import('AssignmentManager', 'pr_services.credential_system.assignment_manager')

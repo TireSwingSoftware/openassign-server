@@ -541,6 +541,22 @@ class TestAssignment(TestCase):
         self.assertEquals(assignments[learner8.id]['status'], 'assigned')
 
 
+class TestAchievementAwardManager(TestCase):
+    def test_CRUD(self):
+        achievement = self.achievement_manager.create(self.admin_token, 'Super Star', 'Award for people who are super stars')
+
+        # create
+        achievement_award = self.achievement_award_manager.create(self.admin_token, achievement.id, self.user1.id)
+        self.assertEqual(achievement_award.achievement, achievement)
+        self.assertEqual(achievement_award.user, self.user1)
+
+        # try to change the user
+        self.achievement_award_manager.update(self.admin_token, achievement_award.id, {'user' : self.user2.id})
+        achievement_award = facade.models.AchievementAward.objects.get(id=achievement_award.id)
+        self.assertEqual(achievement_award.achievement, achievement)
+        self.assertEqual(achievement_award.user, self.user2)
+
+
 class TestCredentialManager(TestCase):
     def test_create(self):
         uid = self.user_manager.create(self.admin_token, 'rbarlow', 'topSecret', 'Mr.', 'Randy', 'Barlow',
