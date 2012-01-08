@@ -132,6 +132,32 @@ class TestFileDownload(TestCase):
         self.assertTrue('name' in task)
         self.assertTrue('description' in task)
 
+    def test_assignment_details(self):
+        create_assignment = self.assignment_manager.create
+        details_view = self.assignment_manager.file_download_assignments_detail_view
+
+        fd = self._upload_file()
+        u = self.user1
+        a = create_assignment(fd.id, u.id)
+        v = details_view(self.admin_token)
+        expected = {
+            'id': a.id,
+            'status': u'assigned',
+            'task': {
+                'id': fd.id,
+                'description': fd.description,
+                'name': fd.name,
+                'title': fd.title
+                },
+            'user': {
+                'id': u.id,
+                'first_name': u.first_name,
+                'last_name': u.last_name,
+                }
+            }
+        self.assertEquals(len(v), 1)
+        self.assertDictEqual(v[0], expected)
+
     def test_download_when_file_is_not_ready(self):
         # this FileDownload does not have an actual file, similar to a case where
         # the asynchronous processing of an uploaded file hasn't taken place yet.
