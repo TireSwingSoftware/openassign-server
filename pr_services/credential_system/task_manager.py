@@ -23,7 +23,7 @@ class TaskManager(ObjectManager):
         'prevent_duplicate_assignments': 'get_general',
         'remaining_capacity': 'get_general',
         'title': 'get_general',
-        'type': 'get_final_type',
+        'type': 'get_content_type',
         'users': 'get_many_to_many',
         'version_id': 'get_general',
         'version_label': 'get_general',
