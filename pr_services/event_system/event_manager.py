@@ -2,9 +2,12 @@
 Event manager class
 """
 
+from datetime import date
+
 from pr_services import pr_time
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
+
 import facade
 import settings
 
@@ -88,15 +91,18 @@ class EventManager(ObjectManager):
         if optional_attributes is None:
             optional_attributes = {}
 
-        start_date = pr_time.iso8601_to_datetime(start).replace(microsecond=0, second=0,
-            minute=0, hour=0)
-        end_date = pr_time.iso8601_to_datetime(end).replace(microsecond=0, second=0,
-            minute=0, hour=0)
-        e = self.my_django_model.objects.create(title=title, description=description,
-                start=start_date,
-                organization = self._find_by_id(organization, facade.models.Organization),
-                end = end_date,
-                owner = auth_token.user)
+        if not isinstance(start, date):
+            start = pr_time.iso8601_to_datetime(start).replace(microsecond=0,
+                    second=0, minute=0, hour=0)
+        if not isinstance(end, date):
+            end = pr_time.iso8601_to_datetime(end).replace(microsecond=0,
+                    second=0, minute=0, hour=0)
+
+        e = self.my_django_model.objects.create(title=title,
+                description=description, start=start, end=end,
+                organization=self._find_by_id(organization, facade.models.Organization),
+                owner=auth_token.user)
+
         e.name = '%s%d' % (name_prefix if name_prefix is not None else '', e.id)
         if 'lag_time' not in optional_attributes:
             optional_attributes['lag_time'] = settings.DEFAULT_EVENT_LAG_TIME
