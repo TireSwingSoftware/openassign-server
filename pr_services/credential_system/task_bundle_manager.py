@@ -6,6 +6,7 @@ __docformat__ = "restructuredtext en"
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
+from pr_services.utils import Utils
 
 class TaskBundleManager(ObjectManager):
     """
@@ -55,5 +56,16 @@ class TaskBundleManager(ObjectManager):
         self.authorizer.check_create_permissions(auth_token, task_bundle)
 
         return task_bundle
+
+    @service_method
+    def task_detail_view(self, auth_token, filters=None, fields=None):
+        if not filters:
+            filters = {}
+        # apply our fields even if the passed fields is empty
+        if not fields:
+            fields = ['name', 'description', 'tasks']
+        ret = self.get_filtered(auth_token, filters, fields)
+
+        return Utils.merge_queries(ret, facade.managers.TaskManager(), auth_token, ['name', 'description', 'title', 'type'], 'tasks')
 
 # vim:tabstop=4 shiftwidth=4 expandtab
