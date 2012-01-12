@@ -15,12 +15,14 @@ class TaskBundleManager(ObjectManager):
     GETTERS = {
         'name': 'get_general',
         'description': 'get_general',
-        'tasks': 'get_tasks_from_task_bundle',
+        'tasks_depr': 'get_tasks_from_task_bundle',
+        'tasks': 'get_many_to_many',
     }
     SETTERS = {
         'name': 'set_general',
         'description': 'set_general',
-        'tasks': 'set_tasks_for_task_bundle',
+        'tasks_depr': 'set_tasks_for_task_bundle',
+        'tasks': 'set_many',
     }
     def __init__(self):
         """ constructor """
@@ -29,7 +31,7 @@ class TaskBundleManager(ObjectManager):
         self.my_django_model = facade.models.TaskBundle
 
     @service_method
-    def create(self, auth_token, name, description, tasks):
+    def create(self, auth_token, name, description, tasks=None):
         """
         Creates a new task bundle
 
@@ -47,14 +49,8 @@ class TaskBundleManager(ObjectManager):
 
         task_bundle = self.my_django_model.objects.create(name=name,
             description=description)
-
-        for task in tasks:
-            tbta = facade.models.TaskBundleTaskAssociation(task_bundle=task_bundle)
-            tbta.task = self._find_by_id(task['id'], facade.models.Task)
-            for attr_name in ['presentation_order', 'continue_automatically']:
-                if attr_name in task:
-                    setattr(tbta, attr_name, task[attr_name])
-            tbta.save()
+        if tasks:
+            facade.subsystems.Setter(auth_token, self, task_bundle, {'tasks' : tasks})
 
         self.authorizer.check_create_permissions(auth_token, task_bundle)
 

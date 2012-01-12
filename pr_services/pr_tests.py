@@ -3094,51 +3094,51 @@ class TestTaskBundles(TestCase):
             'example task bundle', 'this is an example task bundle', [])
         ret = self.task_bundle_manager.get_filtered(self.admin_token,
             {'exact': {'id': task_bundle.id}},
-            ['name', 'description', 'tasks'])
+            ['name', 'description', 'tasks_depr'])
         self.failUnless(isinstance(ret, list))
         self.failUnless(len(ret) == 1)
         self.assertEquals(ret[0]['name'], 'example task bundle')
         self.assertEquals(ret[0]['description'], 'this is an example task bundle')
-        self.assertEquals(ret[0]['tasks'], [])
+        self.assertEquals(ret[0]['tasks_depr'], [])
         # add some associated tasks
         self.task_bundle_manager.update(self.admin_token, task_bundle.id,
-            {'tasks': [{'id': self.exam_1.id, 'presentation_order': 2},
+            {'tasks_depr': [{'id': self.exam_1.id, 'presentation_order': 2},
                        {'id': self.exam_2.id, 'presentation_order': 1, 'continue_automatically': True},
                       ]})
         ret = self.task_bundle_manager.get_filtered(self.admin_token,
-            {'exact': {'id': task_bundle.id}}, ['name', 'description', 'tasks'])
+            {'exact': {'id': task_bundle.id}}, ['name', 'description', 'tasks_depr'])
         self.failUnless(isinstance(ret, list))
         self.failUnless(len(ret) == 1)
-        self.assertEquals(ret[0]['tasks'],
+        self.assertEquals(ret[0]['tasks_depr'],
             [{'id': self.exam_2.id, 'presentation_order': 1, 'content_type': 'pr_services.exam',
               'continue_automatically': True},
              {'id': self.exam_1.id, 'presentation_order': 2, 'content_type': 'pr_services.exam',
               'continue_automatically': False}])
         # now swap the order of the tasks
         self.task_bundle_manager.update(self.admin_token, task_bundle.id,
-            {'tasks': [{'id': self.exam_1.id, 'presentation_order': 1, 'continue_automatically': True},
+            {'tasks_depr': [{'id': self.exam_1.id, 'presentation_order': 1, 'continue_automatically': True},
                        {'id': self.exam_2.id, 'presentation_order': 2, 'continue_automatically': False},
                       ]})
         ret = self.task_bundle_manager.get_filtered(self.admin_token,
-            {'exact': {'id': task_bundle.id}}, ['name', 'description', 'tasks'])
+            {'exact': {'id': task_bundle.id}}, ['name', 'description', 'tasks_depr'])
         self.failUnless(isinstance(ret, list))
         self.failUnless(len(ret) == 1)
-        self.assertEquals(ret[0]['tasks'],
+        self.assertEquals(ret[0]['tasks_depr'],
             [{'id': self.exam_1.id, 'presentation_order': 1, 'content_type': 'pr_services.exam',
                 'continue_automatically': True},
              {'id': self.exam_2.id, 'presentation_order': 2, 'content_type': 'pr_services.exam',
                 'continue_automatically': False}])
         # now update to a different list of tasks
         self.task_bundle_manager.update(self.admin_token, task_bundle.id,
-            {'tasks': [{'id': self.exam_1.id, 'presentation_order': 1, 'continue_automatically': False},
+            {'tasks_depr': [{'id': self.exam_1.id, 'presentation_order': 1, 'continue_automatically': False},
                        {'id': self.exam_2.id, 'presentation_order': 2, 'continue_automatically': True},
                        {'id': self.exam_3.id, 'presentation_order': 3, 'continue_automatically': False},
                       ]})
         ret = self.task_bundle_manager.get_filtered(self.admin_token,
-            {'exact': {'id': task_bundle.id}}, ['name', 'description', 'tasks'])
+            {'exact': {'id': task_bundle.id}}, ['name', 'description', 'tasks_depr'])
         self.failUnless(isinstance(ret, list))
         self.failUnless(len(ret) == 1)
-        self.assertEquals(ret[0]['tasks'],
+        self.assertEquals(ret[0]['tasks_depr'],
             [{'id': self.exam_1.id, 'presentation_order': 1, 'content_type': 'pr_services.exam',
               'continue_automatically': False},
              {'id': self.exam_2.id, 'presentation_order': 2, 'content_type': 'pr_services.exam',
@@ -3246,24 +3246,24 @@ class TestCurriculumManagement(TestCase):
                 {'id' : self.exam_1.id, 'presentation_order' : 10},
                 {'id' : self.exam_2.id, 'presentation_order' : 20},
                 ])
-        tbs = self.task_bundle_manager.get_filtered(self.admin_token, {}, ['id', 'tasks', 'name'])
+        tbs = self.task_bundle_manager.get_filtered(self.admin_token, {}, ['id', 'tasks_depr', 'name'])
         self.assertEquals(len(tbs), 1)
         self.assertEquals(tbs[0]['id'], task_bundle.id)
-        self.assertTrue('tasks' in tbs[0])
-        self.assertEquals(len(tbs[0]['tasks']), 2)
-        self.assertTrue('presentation_order' in tbs[0]['tasks'][0])
-        self.assertTrue('continue_automatically' in tbs[0]['tasks'][0])
+        self.assertTrue('tasks_depr' in tbs[0])
+        self.assertEquals(len(tbs[0]['tasks_depr']), 2)
+        self.assertTrue('presentation_order' in tbs[0]['tasks_depr'][0])
+        self.assertTrue('continue_automatically' in tbs[0]['tasks_depr'][0])
 
         curriculum = self.curriculum_manager.create(self.admin_token, 'Curriculum 1')
         cta_dicts = []
-        for task in tbs[0]['tasks']:
+        for task in tbs[0]['tasks_depr']:
             cta_dicts.append({'curriculum' : curriculum.id, 'task' : task['id'],
                 'optional_attributes' : {
                     'presentation_order' : task['presentation_order'],
                     'task_bundle' : tbs[0]['id'],
                     'continue_automatically' : task['continue_automatically']}})
         ret = self.curriculum_task_association_manager.bulk_create(self.admin_token, cta_dicts)
-        self.assertEquals(len(ret), len(tbs[0]['tasks']))
+        self.assertEquals(len(ret), len(tbs[0]['tasks_depr']))
 
     def test_enroll_users(self):
         # create users, create curriculum, enroll users

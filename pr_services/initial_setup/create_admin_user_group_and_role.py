@@ -520,8 +520,14 @@ def setup(machine):
                 },
         'TaskBundle': {
                 'c': True,
-                'r': set(('name', 'description', 'tasks',)),
-                'u': set(('name', 'description', 'tasks',)),
+                'r': set(('name', 'description', 'tasks', 'tasks_depr',)),
+                'u': set(('name', 'description', 'tasks', 'tasks_depr',)),
+                'd': True,
+                },
+        'TaskBundleTaskAssociation': {
+                'c': True,
+                'r': set(('task', 'task_bundle', 'presentation_order', 'continue_automatically',)),
+                'u': set(('task', 'task_bundle', 'presentation_order', 'continue_automatically',)),
                 'd': True,
                 },
         'TaskFee' : {

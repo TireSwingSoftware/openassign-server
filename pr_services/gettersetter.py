@@ -431,8 +431,8 @@ class Getter(object):
         if not isinstance(result_object, facade.models.TaskBundle):
             raise exceptions.InvalidActeeTypeException()
 
-        if field_name != 'tasks':
-            raise exceptions.InvalidDataException('field_name must be "tasks"')
+        if field_name != 'tasks_depr':
+            raise exceptions.InvalidDataException('field_name must be "tasks_depr"')
 
         associations = facade.models.TaskBundleTaskAssociation.objects.filter(
             task_bundle__id=result_object.id).order_by('presentation_order')
