@@ -5,6 +5,7 @@ credential_type manager class
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 import facade
+from pr_services.utils import Utils
 
 class CredentialTypeManager(ObjectManager):
     """
@@ -53,5 +54,16 @@ class CredentialTypeManager(ObjectManager):
         c.save()
         self.authorizer.check_create_permissions(auth_token, c)
         return c
+
+    @service_method
+    def achievement_detail_view(self, auth_token, filters=None, fields=None):
+        if not filters:
+            filters = {}
+        # apply our fields even if the passed fields is empty
+        if not fields:
+            fields = ['name', 'description', 'required_achievements']
+        ret = self.get_filtered(auth_token, filters, fields)
+
+        return Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name', 'description'], 'required_achievements')
 
 # vim:tabstop=4 shiftwidth=4 expandtab
