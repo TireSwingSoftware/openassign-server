@@ -71,9 +71,13 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
     def surr_view(self, auth_token, filters=None, fields=None):
         if filters is None:
             filters = {}
-        ret = self.get_filtered(auth_token, filters, ['achievements', 'session', 'session_user_role', 'min', 'max', 'credential_types'])
+        ret = self.get_filtered(auth_token, filters, ['achievements', 'session',
+            'session_user_role', 'min', 'max', 'credential_types',
+            'prerequisite_tasks'])
 
         ret = Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name'], 'achievements')
+
+        ret = Utils.merge_queries(ret, facade.managers.TaskManager(), auth_token, ['name', 'description', 'title', 'type'], 'prerequisite_tasks')
 
         return Utils.merge_queries(ret, facade.managers.SessionUserRoleManager(), auth_token, ['name'], 'session_user_role')
 

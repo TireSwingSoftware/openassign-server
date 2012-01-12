@@ -503,9 +503,9 @@ def setup(machine):
                 'c' : True,
                 'r' : set(('achievements', 'credential_types', 'max', 'users',
                     'remaining_capacity', 'session', 'session_user_role', 'min',
-                    'role_name', 'ignore_room_capacity',)),
+                    'prerequisite_tasks', 'role_name', 'ignore_room_capacity',)),
                 'u' : set(('achievements', 'credential_types', 'max', 'users', 'session',
-                    'session_user_role', 'min', 'ignore_room_capacity',)),
+                    'prerequisite_tasks', 'session_user_role', 'min', 'ignore_room_capacity',)),
                 'd' : True,
                 },
         'Task' : {
