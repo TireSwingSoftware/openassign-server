@@ -276,8 +276,8 @@ def setup(machine):
                 },
         'FileDownload' : {
                 'c' : True,
-                'r' : set(('achievements', 'name', 'description', 'file_size', 'file_url', 'deleted', 'title',)),
-                'u' : set(('achievements', 'name', 'description', 'title',)),
+                'r' : set(('achievements', 'name', 'description', 'file_size', 'file_url', 'deleted', 'title', 'prerequisite_tasks')),
+                'u' : set(('achievements', 'name', 'description', 'title', 'prerequisite_tasks')),
                 'd' : True,
                 },
         'FileDownloadAttempt' : {

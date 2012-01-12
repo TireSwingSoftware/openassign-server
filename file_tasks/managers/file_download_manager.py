@@ -115,7 +115,9 @@ class FileDownloadManager(TaskManager):
             filters = {}
         # apply our fields even if the passed fields is empty
         if not fields:
-            fields = ['name', 'title', 'description', 'file_size', 'file_url', 'achievements']
+            fields = ['name', 'title', 'description', 'file_size', 'file_url', 'achievements', 'prerequisite_tasks']
         ret = self.get_filtered(auth_token, filters, fields)
+
+        ret = Utils.merge_queries(ret, facade.managers.TaskManager(), auth_token, ['name', 'description', 'title', 'type'], 'prerequisite_tasks')
 
         return Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name', 'description'], 'achievements')
