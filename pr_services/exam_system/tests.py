@@ -11,13 +11,13 @@ import random
 
 # PowerReg
 from pr_services import exceptions
-from pr_services import pr_tests
+from pr_services.testlib import GeneralTestCase
 from pr_services.testlib.common import CommonExamTests
 import facade
 
 _default = object() # dummy object used as default for optional keyword args.
 
-class TestExamModels(pr_tests.TestCase):
+class TestExamModels(GeneralTestCase):
     """Test behavior of exam system models."""
 
     def _create_any(self, model_class, **kwargs):
@@ -385,7 +385,7 @@ class TestExamModels(pr_tests.TestCase):
             q5.id: {'value': 3}
         }
 
-        student, student_at = self.create_student()
+        student, student_at = self.user1, self.user1_auth_token
         assignment = self.assignment_manager.create(self.admin_token, exam.id, student.id)
         self._take_exam(student_at, assignment.id, answer_key, 100, True)
 
@@ -459,7 +459,7 @@ class TestExamModels(pr_tests.TestCase):
             q4.id: {'value': 'hot pink', 'correct': None},
         }
 
-        student, student_at = self.create_student()
+        student, student_at = self.user1, self.user1_auth_token
         assignment = self.assignment_manager.create(self.admin_token, exam.id, student.id)
         es = self._take_exam(student_at, assignment.id, answer_key)
 
@@ -499,7 +499,7 @@ class TestExamModels(pr_tests.TestCase):
             (correct, {'correct': True}, 100),
         ]
         # Take the exam for each value for each response type.
-        student, student_at = self.create_student()
+        student, student_at = self.user1, self.user1_auth_token
         for rt in response_types:
             for v in rt[0]:
                 ak = {q.id: {response_key: v}}
@@ -697,7 +697,7 @@ class TestExamModels(pr_tests.TestCase):
                                         text_response_test_cases)
             self._test_response_options(qt, {}, text_test_cases)
 
-class TestExamManagers(pr_tests.TestCase, CommonExamTests):
+class TestExamManagers(GeneralTestCase, CommonExamTests):
 
     def _take_exam(self, auth_token, assignment, answer_key, score=_default, passed=_default,
                    resume=False):
@@ -832,7 +832,7 @@ class TestExamManagers(pr_tests.TestCase, CommonExamTests):
         q3 = self._create_question(qp1, 'bool', label='q3')
         q4 = self._create_question(qp1, 'bool', label='q4')
 
-        student, student_at = self.create_student()
+        student, student_at = self.user1, self.user1_auth_token
         assignment = self.assignment_manager.create(self.admin_token, exam.id, student.id)
 
         # make sure the order is correct
@@ -912,7 +912,7 @@ class TestExamManagers(pr_tests.TestCase, CommonExamTests):
         exam = self.exam_manager.get_filtered(self.admin_token, {'exact' : {'id' : exam.id}}, ['question_pools'])[0]
         self.assertEquals(len(exam['question_pools']), 3)
 
-        student, student_at = self.create_student()
+        student, student_at = self.user1, self.user1_auth_token
         assignment = self.assignment_manager.create(self.admin_token, exam['id'], student.id)
 
         # Take the exam with all answers correct.
@@ -992,7 +992,7 @@ class TestExamManagers(pr_tests.TestCase, CommonExamTests):
         q2 = self._create_question(qp1, 'char', label='Spell "7"')
         q2_a1 = self._create_answer(q2, correct=True, value='seven')
 
-        student, student_at = self.create_student()
+        student, student_at = self.user1, self.user1_auth_token
         assignment = self.assignment_manager.create(self.admin_token, exam.id, student.id)
 
         half_correct_answer_key = {
@@ -1054,7 +1054,7 @@ class TestExamManagers(pr_tests.TestCase, CommonExamTests):
             q4.id: {'value': 'jkldfsjkldsfkjllkjdf', 'correct': None},
         }
 
-        student, student_at = self.create_student()
+        student, student_at = self.user1, self.user1_auth_token
         assignment = self.assignment_manager.create(self.admin_token, exam.id, student.id)
         es_id = self._take_exam(student_at, assignment, answer_key, None, None)
 
@@ -1074,7 +1074,7 @@ class TestExamManagers(pr_tests.TestCase, CommonExamTests):
                 for k in ('id', 'question_type', 'widget'):
                     self.assertTrue(k in q)
 
-class TestEvaluations(pr_tests.TestCase):
+class TestEvaluations(GeneralTestCase):
     def test_all(self):
         evaluation = facade.models.Exam.objects.create(name='eval',
             title='Eval')
@@ -1099,7 +1099,7 @@ class TestEvaluations(pr_tests.TestCase):
         session1.save()
 
         # Take the evaluation
-        student, student_at = self.create_student()
+        student, student_at = self.user1, self.user1_auth_token
         assignment = self.assignment_manager.create(self.admin_token, evaluation.id, student.id)
         exam_session1 = self.exam_session_manager.create(student_at,
                                                          assignment.id, False)
