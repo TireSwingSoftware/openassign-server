@@ -14,8 +14,6 @@ import os
 import time
 import urllib2
 
-from functools import partial
-
 import django.test.client
 import django.utils.dateformat
 import django.utils.unittest
@@ -38,9 +36,9 @@ from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method, wrap_service_method, RpcService, create_rpc_service
 from pr_services.utils import UnicodeCsvWriter
 
-from pr_services.testlib import TestCase, RoleTestCase
+from pr_services.testlib import GeneralTestCase, TestCase, RoleTestCase
 from pr_services.testlib.helpers import expectPermissionDenied
-from pr_services.testlib.mixins import ExamTestMixin
+from pr_services.testlib import mixins
 
 import facade
 
@@ -50,9 +48,9 @@ import facade
 #
 ##############################################################################
 
-class TestAuthorizer(TestCase):
+class TestAuthorizer(GeneralTestCase):
     def test_authorizer_caching(self):
-        student_id, student_at = self.create_student()
+        student_id, student_at = self.user1, self.user1_auth_token
         # The admin should be allowed to create a group, but not a student
         the_group = self.group_manager.create(self.admin_token, 'The group!')
         authorizer = facade.subsystems.Authorizer()
@@ -102,10 +100,8 @@ class TestAuthToken(TestCase):
         self.assertTrue(new_admin_token.session_id in admin_users_auth_tokens)
 
     def test_caching(self):
-        user1 = self.user_manager.create(self.admin_token, 'cached_user', 'letmein',
-            'Mr.', 'Primo', 'Uomo', '555.555.5555', 'user1@acme-u.com', 'active')
-        auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('cached_user',
-            'letmein')['auth_token'])
+        user1 = self.user1
+        auth_token = self.user1_auth_token
         ret = facade.models.AuthToken.objects.get(session_id=auth_token.session_id)
         self.assertEquals(auth_token.id, ret.id)
         self.assertEquals(auth_token.session_id, ret.session_id)
@@ -132,14 +128,14 @@ class TestBackendInfo(TestCase):
         rev = self.backend_info.get_revision()
         self.assertTrue(rev)
 
-class TestBlameManager(TestCase):
+class TestBlameManager(GeneralTestCase):
     def test_create(self):
         b = facade.managers.BlameManager().create(self.user1_auth_token)
         self.assertEquals(b.user, self.user1)
 
-class TestCookiecache(TestCase):
+class TestCookiecache(GeneralTestCase):
     def setUp(self):
-        TestCase.setUp(self)
+        super(TestCookiecache, self).setUp()
 
         self.user_manager.create(self.admin_token, 'test_user', 'password', 'Mr.', 'Memcache', 'Test', '', 'memcache@tester.email', 'active')
         self.user1_auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('test_user', 'password')['auth_token'])
@@ -201,7 +197,7 @@ class TestTask(TestCase):
         self.assertEqual(exam3.name, 'my_exam')
 
 
-class TestAssignment(TestCase, ExamTestMixin):
+class TestAssignment(GeneralTestCase, mixins.ExamTestMixin):
     def test_create_multiple_types(self):
         self.assertEquals(facade.models.Assignment.objects.filter(user=self.user1).count(), 0)
         tasks = []
@@ -350,9 +346,8 @@ class TestAssignment(TestCase, ExamTestMixin):
 
         am = self.assignment_manager
         assignment = am.create(exam.id, user.id)
-        exam_assignments_detail_view = partial(am.exam_assignments_detail_view, self.auth_token)
 
-        view = exam_assignments_detail_view()
+        view = am.exam_assignments_detail_view()
         expected = {
             'id': assignment.id,
             'user': {
@@ -373,14 +368,14 @@ class TestAssignment(TestCase, ExamTestMixin):
         self.assertEquals(len(view), 1)
         self.assertDictEqual(view[0], expected)
         del expected['user']
-        view = exam_assignments_detail_view(fields=['status', 'task'])
+        view = am.exam_assignments_detail_view(fields=['status', 'task'])
         self.assertEquals(len(view), 1)
         self.assertDictEqual(view[0], expected)
-        view = exam_assignments_detail_view(filters={'exact': {'id': assignment.id}})
+        view = am.exam_assignments_detail_view(filters={'exact': {'id': assignment.id}})
         self.assertEquals(len(view), 1)
 
 
-class TestAchievementAwardManager(TestCase):
+class TestAchievementAwardManager(GeneralTestCase):
     def test_CRUD(self):
         achievement = self.achievement_manager.create(self.admin_token, 'Super Star', 'Award for people who are super stars')
 
@@ -436,7 +431,7 @@ class TestAchievementAwardManager(TestCase):
         self.assertEqual(len(ret), 0)
 
 
-class TestCredentialManager(TestCase):
+class TestCredentialManager(GeneralTestCase):
     def test_create(self):
         uid = self.user_manager.create(self.admin_token, 'rbarlow', 'topSecret', 'Mr.', 'Randy', 'Barlow',
                             '919-816-2352', 'rbarlow@americanri.com', 'active',
@@ -492,7 +487,7 @@ class TestCredentialManager(TestCase):
         exam = self.exam_manager.create(self.admin_token, 'EE Exam', '', {'achievements' : [achievement.id]})
 
         # Create a student
-        student, student_at = self.create_student()
+        student, student_at = self.user1, self.user1_auth_token
 
         # Create an assignment, and mark it as completed
         assignment = self.assignment_manager.create(self.admin_token, exam.id,
@@ -519,7 +514,7 @@ class TestCredentialManager(TestCase):
         exam = self.exam_manager.create(self.admin_token, 'EE Exam', '', {'achievements' : [achievement.id]})
 
         # Create a student with a pending credential.
-        student, student_at = self.create_student()
+        student, student_at = self.user1, self.user1_auth_token
         credential = self.credential_manager.create(self.admin_token, student.id,
             credential_type.id, {'serial_number': '1234', 'authority': 'NCSU'})
         ret = self.credential_manager.get_filtered(self.admin_token,
@@ -556,7 +551,7 @@ class TestCredentialManager(TestCase):
             {'required_achievements': [achievement1.id, achievement2.id]})
 
         # Create a student with a pending credential.
-        student = self.create_student()[0]
+        student = self.user1
         credential = self.credential_manager.create(self.admin_token, student.id,
             credential_type.id, {'serial_number': '2345', 'authority': 'NCSU'})
         ret = self.credential_manager.get_filtered(self.admin_token,
@@ -592,7 +587,7 @@ class TestCredentialManager(TestCase):
         self.assertEqual(ret[0]['status'], 'granted')
 
 
-class TestCredentialTypeManager(TestCase):
+class TestCredentialTypeManager(GeneralTestCase):
     def test_create(self):
         ret = self.credential_type_manager.create(self.admin_token, 'some name', 'A degree from an accredited university.')
         self.assertEquals(ret.name, 'some name')
@@ -763,7 +758,7 @@ class TestGetters(TestCase):
         self.assertEquals(len(ret), 1)
         self.assertEquals(ret[0]['content_type'], 'pr_services.exam')
 
-class TestGroupManager(TestCase):
+class TestGroupManager(GeneralTestCase):
     def test_add_user(self):
         cool_group = self.group_manager.create(self.admin_token, 'cool_group')
         sweep_it_up = self.user_manager.create(self.admin_token, 'sweep_it_up', 'iSweepEveryDay', '', '', '', '', '', 'active')
@@ -886,10 +881,7 @@ class TestLogging(TestCase):
         self.log_manager.error('', 'this is a guest auth token test')
         self.log_manager.error(None, 'this is a guest auth token test')
 
-class TestModels(TestCase):
-    def setUp(self):
-        TestCase.setUp(self)
-
+class TestModels(GeneralTestCase):
     def test_room_get_surrs_by_time(self):
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day*3).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
@@ -935,9 +927,9 @@ class TestModels(TestCase):
         self.assertEquals(mlk.full_name, 'Dr. Martin Luther King, Jr.')
 
 if 'ecommerce' in settings.INSTALLED_APPS:
-    class TestPaymentManager(TestCase):
+    class TestPaymentManager(GeneralTestCase):
         def setUp(self):
-            TestCase.setUp(self)
+            super(TestPaymentManager, self).setUp()
             self.payment_manager = facade.managers.PaymentManager()
 
             self.po1 = self.purchase_order_manager.create(self.admin_token, {'user' : self.user1.id, 'training_units_purchased' : 100, 'training_units_price' : 5000})
@@ -982,7 +974,7 @@ if 'ecommerce' in settings.INSTALLED_APPS:
 
 class TestProductManager(TestCase):
     def setUp(self):
-        TestCase.setUp(self)
+        super(TestProductManager, self).setUp()
         self.p1 = self.product_manager.create(self.admin_token, 'ABC123', 'Bread Slicer', 'Slices bread', 4995, 2995, {'display_order' : 90})
         self.pd1 = self.product_discount_manager.create(self.admin_token, 'Slick Deal', 85, 0, 0, False, [self.p1.id], [], 'cheap')
         self.group1 = self.group_manager.create(self.admin_token, 'Group 1', {'users' : {'add' : [self.admin_token.user.id]}})
@@ -1062,9 +1054,9 @@ class TestPrTime(TestCase):
         self.assertEquals(ret.second, 30)
         self.assertRaises(exceptions.DatetimeConversionError, pr_time.iso8601_to_datetime, 'not a proper ISO8601 string')
 
-class TestPurchaseOrderManager(TestCase):
+class TestPurchaseOrderManager(GeneralTestCase):
     def setUp(self):
-        TestCase.setUp(self)
+        super(TestPurchaseOrderManager, self).setUp()
         self.prod1 = self.product_manager.create(self.admin_token, 'ACB123', 'Fly Paper', 'Sticky Paper that traps Flies', 995, 1095)
         self.prod2 = self.product_manager.create(self.admin_token, 'XYZ456', 'Sand Paper', 'Sandy Paper that polishes Flies', 795, 895)
         self.prod_offer1 = self.product_offer_manager.create(self.admin_token, self.prod1.id, self.user1.id, 1195,
@@ -1078,7 +1070,7 @@ class TestPurchaseOrderManager(TestCase):
         self.failUnless(ret.has_key('subject') and ret['subject'])
         self.failUnless(ret.has_key('body') and ret['body'])
 
-class TestRoleManager(TestCase):
+class TestRoleManager(GeneralTestCase):
     def test_create(self):
         ret = self.role_manager.create(self.admin_token, 'some role name')
         self.assertEquals(ret.name, 'some role name')
@@ -1129,7 +1121,7 @@ class TestRoleManager(TestCase):
         ret = self.role_manager.get_filtered(self.admin_token, {'member' : {'id' : [role1.id, role2.id]}}, ['id'])
         self.assertEquals(len(ret), 1)
 
-class TestRoomManager(TestCase):
+class TestRoomManager(GeneralTestCase):
     def test_name_uniqueness(self):
         self.room_manager.create(self.admin_token, 'Hemingway',
             self.venue1.id, 100)
@@ -1236,10 +1228,7 @@ class TestRpcService(TestCase):
         self._compare_object_to_service(MySubObject, MySubObjectSvc3)
         self.assertFalse(hasattr(MySubObjectSvc3, 'do_secret'))
 
-class TestEventTemplateManager(TestCase):
-    def setUp(self):
-        TestCase.setUp(self)
-
+class TestEventTemplateManager(GeneralTestCase):
     def test_all(self):
         event_template = self.event_template_manager.create(self.admin_token,
             'EVT', 'Templated Event', 'A super-boring event')
@@ -1263,9 +1252,9 @@ class TestEventTemplateManager(TestCase):
         self.assertEquals(e[0]['name'], '%s%d' % (event_template.name_prefix, event.id))
 
 
-class TestEventManager(TestCase):
+class TestEventManager(GeneralTestCase):
     def setUp(self):
-        TestCase.setUp(self)
+        super(TestEventManager, self).setUp()
         self.test_utils = TestUtils()
 
     def test_create_with_sessions(self):
@@ -1310,9 +1299,9 @@ class TestEventManager(TestCase):
             self.assertEquals(session.lead_time, 60*60*24*3)
 
 
-class TestSessionManager(TestCase):
+class TestSessionManager(GeneralTestCase):
     def setUp(self):
-        TestCase.setUp(self)
+        super(TestSessionManager, self).setUp()
         self.test_utils = TestUtils()
 
     def test_view(self):
@@ -1644,7 +1633,7 @@ class TestSessionManager(TestCase):
         self.assertRaises(exceptions.PermissionDeniedException, self.assignment_manager.update, proctor_token, assignment_ret[learner1.id]['id'], {'status' : 'canceled'})
 
 
-class TestSessionTemplateManager(TestCase):
+class TestSessionTemplateManager(GeneralTestCase):
     def test_create(self):
         prod = self.product_line_manager.create(self.admin_token, 'Earn your MBA overnight!')
         ret = self.session_template_manager.create(self.admin_token, 'name', 'longer name', '2.0', 'This is a description', 1595,
@@ -1715,10 +1704,10 @@ class TestSessionTemplateManager(TestCase):
         ret = self.session_template_manager.get_filtered(self.admin_token, {'exact' : {'active' : True}}, ['id'])
         self.assertEquals(len(ret), 1)
 
+    @expectPermissionDenied
     def test_create_permission_denied(self):
-        self.assertRaises(exceptions.PermissionDeniedException,
-            self.session_template_manager.create, self.user1_auth_token, 'short_name', 'longer name', '1.1',
-            'description', 1595, 600000, True)
+        self.session_template_manager.create('short_name', 'longer name', '1.1',
+                'description', 1595, 600000, True, auth_token=None)
 
     def test_create_by_pl(self):
         prod = self.product_line_manager.create(self.admin_token, 'Earn your MBA overnight!')
@@ -1740,7 +1729,7 @@ class TestSessionTemplateManager(TestCase):
 
 class TestSessionTemplateUserRoleRequirementManager(TestCase):
     def setUp(self):
-        TestCase.setUp(self)
+        super(TestSessionTemplateUserRoleRequirementManager, self).setUp()
         self.pl = self.product_line_manager.create(self.admin_token, 'Earn your MBA overnight!')
         self.new_session_template = self.session_template_manager.create(self.admin_token, 'name', 'longer name', '2.0',
             'This is a description', 1595, 600000, True, 'ILT', {'product_line' : self.pl.id})
@@ -1756,7 +1745,7 @@ class TestSessionTemplateUserRoleRequirementManager(TestCase):
         self.assertEquals(ret[0]['id'], curr.id)
         self.assertEquals(ret[0]['max'], 2)
 
-class TestSessionUserRoleManager(TestCase):
+class TestSessionUserRoleManager(GeneralTestCase):
     def test_update(self):
         session_user_role = self.session_user_role_manager.create(self.admin_token, 'Sweep Upper')
         self.assertRaises(exceptions.PermissionDeniedException, self.session_user_role_manager.update, self.user1_auth_token, session_user_role.id,
@@ -1765,9 +1754,9 @@ class TestSessionUserRoleManager(TestCase):
         session_user_roles = self.session_user_role_manager.get_filtered(self.admin_token, {'exact' : {'id' : session_user_role.id}}, ['id', 'name'])
         self.assertEquals(session_user_roles[0]['name'], 'Sweep It Upper')
 
-class TestSessionUserRoleRequirementManager(TestCase):
+class TestSessionUserRoleRequirementManager(GeneralTestCase):
     def setUp(self):
-        TestCase.setUp(self)
+        super(TestSessionUserRoleRequirementManager, self).setUp()
         self.instructor_role = facade.models.SessionUserRole.objects.get(name__exact='Instructor')
         self.student_role = facade.models.SessionUserRole.objects.get(name__exact='Student')
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
@@ -1797,10 +1786,10 @@ class TestSessionUserRoleRequirementManager(TestCase):
         self.assertEquals(len(ret), 1)
         self.assertEquals(ret[0]['id'], surr1.id)
 
-class TestDomainManagement(TestCase):
+class TestDomainManagement(GeneralTestCase):
     def test_affiliate_with_new_domain(self):
-        student1, student1_at = self.create_student()
-        student2, student2_at = self.create_student()
+        student1, student1_at = self.user1, self.user1_auth_token
+        student2, student2_at = self.user2, self.user2_auth_token
 
         testing_domain = self.domain_manager.create(self.admin_token, 'Testing Domain')
 
@@ -1813,12 +1802,9 @@ class TestDomainManagement(TestCase):
             testing_domain.id, 'student2')
 
 
-class TestTrainingUnitAccountManager(TestCase):
+class TestTrainingUnitAccountManager(GeneralTestCase):
     def setUp(self):
-        TestCase.setUp(self)
-
-        self.right_now = datetime.utcnow().replace(microsecond=0, tzinfo=pr_time.UTC())
-        self.one_day = timedelta(days=1)
+        super(TestTrainingUnitAccountManager, self).setUp()
         self.c1 = self.organization_manager.create(self.admin_token, 'ACME')
         self.po1 = self.purchase_order_manager.create(self.admin_token,
             {'user' : self.user1.id, 'training_units_purchased' : 100, 'training_units_price' : 5000})
@@ -1879,9 +1865,9 @@ class TestTrainingUnitAccountManager(TestCase):
         self.assertEquals(ua1['used_value'] == 4300 or ua1['used_value'] == 0, True)
         self.assertEquals('id' in ua1, True)
 
-class TestTrainingVoucherManager(TestCase):
+class TestTrainingVoucherManager(GeneralTestCase):
     def setUp(self):
-        TestCase.setUp(self)
+        super(TestTrainingVoucherManager, self).setUp()
         self.e1 = self.event_manager.create(self.admin_token, 'Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
         self.s1 = self.session_manager.create(self.admin_token, self.right_now.isoformat(), (self.right_now + self.one_day).isoformat(), 'active',
@@ -2044,7 +2030,9 @@ class TestOrganizationManager(TestCase):
         self.assertEquals(the_org['url'], org_dict['url'])
 
 
-class TestOrgEmailDomainManager(TestCase):
+class TestOrgEmailDomainManager(GeneralTestCase):
+    fixtures = ['precor_orgs', 'precor_org_roles'] + GeneralTestCase.fixtures
+
     def test_crud(self):
         email_domain = 'poweru.net'
         organization = facade.models.Organization.objects.all()[0]
@@ -2081,7 +2069,7 @@ class TestOrgEmailDomainManager(TestCase):
             {'exact': {'id': org_email_domain['id']}}, ['email_domain']), [])
 
 
-class TestUploadManager(TestCase):
+class TestUploadManager(GeneralTestCase):
     def setUp(self):
         super(TestUploadManager, self).setUp()
         self.FILE_UPLOAD_MAX_MEMORY_SIZE = settings.FILE_UPLOAD_MAX_MEMORY_SIZE
@@ -2118,44 +2106,43 @@ class TestUploadManager(TestCase):
         settings.FILE_UPLOAD_MAX_MEMORY_SIZE = os.path.getsize(image_file) * 2
         self.assertRaises(facade.models.ModelDataValidationError, self._upload_user_photo, image_file)
 
-class TestUserManager(TestCase):
+class TestUserManager(GeneralTestCase):
+
+    fixtures = ['precor_orgs', 'precor_org_roles'] + GeneralTestCase.fixtures
+
     def test_addresses(self):
-        the_dude = self.user_manager.create(self.admin_token, 'theDude', 'anotherCaucasianGary', 'Mr.', 'Jeff "The Dude"', 'Lebowski',
-            '601-123-4567', 'obviouslyYoureNotAGolfer@whatsThisBowlingBall.com', 'active')
-        the_dudes_auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('theDude',
-            'anotherCaucasianGary')['auth_token'])
-        self.user_manager.update(the_dudes_auth_token, the_dude.id, {'shipping_address' : {'country' : 'US', 'label' : '4379 Mind If I Do A J Dr.',
-            'region' : 'CA', 'locality' : 'Los Angeles', 'postal_code' : '63485'}})
-        ret = self.user_manager.get_filtered(the_dudes_auth_token, {'exact' : {'id' : the_dude.id}}, ['shipping_address', 'id'])[0]
+        self.auth_token = self.user1_auth_token
+        um = self.user_manager
+        um.update(self.user1.id,
+                {'shipping_address':
+                    {'country': 'US',
+                     'label': '4379 Mind If I Do A J Dr.',
+                     'region': 'CA',
+                     'locality': 'Los Angeles',
+                     'postal_code': '63485'
+                    }})
+        ret = um.get_filtered({'exact': {'id': self.user1.id}},
+                ['shipping_address', 'id'])[0]
         self.assertEquals(ret['shipping_address']['label'], '4379 Mind If I Do A J Dr.')
 
     def test_authenticate_bad_password(self):
-        self.user_manager.create(self.admin_token, 'username2', 'initial_password', 'Mr.', 'first_name', 'last_name',
-                      '555.555.5555', 'foo@bar.org', 'active')
         self.assertRaises(exceptions.AuthenticationFailureException,
-                          self.user_manager.login, 'username2', 'bad_password')
+                          self.user_manager.login, 'user1', 'bad_password')
 
     def test_authenticate_invalid_username(self):
-        self.user_manager.create(self.admin_token, 'username2', 'initial_password', 'Mr.', 'first_name', 'last_name',
-                      '555.555.5555', 'foo@bar.org', 'active')
         # we don't let the client know that the username2 was invalid
         # to mitigate risk of brute-force attacks that guess usernames
         self.assertRaises(exceptions.AuthenticationFailureException,
-                          self.user_manager.login, 'some_other_user',
-                          'password')
+                          self.user_manager.login, 'some_other_user', 'password')
 
     def test_authenticate_successful_authentication(self):
-        self.user_manager.create(self.admin_token, 'username2', 'initial_password', 'Mr.', 'first_name', 'last_name',
-                      '555.555.5555', 'foo@bar.org', 'active')
-        auth_token_str = self.user_manager.login('username2', 'initial_password')['auth_token']
+        auth_token_str = self.user_manager.login('user2', 'password')['auth_token']
         # make sure that a new auth_token structure exists in the db
         auth_token_entry = facade.subsystems.Utils.get_auth_token_object(auth_token_str)
         self.assertEquals(str(auth_token_entry), auth_token_str)
-        self.assertEquals(unicode(auth_token_entry),
-                          u'%s' % (auth_token_str))
-        # now make sure that the user is correctly associated with the auth
-        # token
-        da = facade.models.DomainAffiliation.objects.get(username='username2', domain__name='local')
+        self.assertEquals(unicode(auth_token_entry), u'%s' % (auth_token_str))
+        # now make sure that the user is correctly associated with the auth token
+        da = facade.models.DomainAffiliation.objects.get(username='user2', domain__name='local')
         self.assertEquals(auth_token_entry.user, da.user)
 
     def test_batch_create(self):
@@ -2379,8 +2366,9 @@ class TestUserManager(TestCase):
             '122.22.22222', 'smeyer@h.com', 'active')
         ret = self.user_manager.get_filtered(self.admin_token, {}, ['id', 'first_name'])
         self.assertEquals(type(ret), list)
-        # The setup script creates two users, and then we created two, so there are now four
-        self.assertEquals(len(ret), 5)
+        # The setup script creates five users, and then we created two, so there
+        # are now seven
+        self.assertEquals(len(ret), 7)
         self.assertEquals(type(ret[2]), dict)
         self.assertEquals(type(ret[3]), dict)
         self.failUnless(type(ret[3]['id']) in [int, long])
@@ -2427,9 +2415,9 @@ class TestUserManager(TestCase):
         Ensure that instructors can read some information about students.
         Also, ensure that students cannot read instructors, or other students.
         """
-        instructor, instructor_at = self.create_instructor()
-        student1, student1_at = self.create_student(title='Mr.', first_name='Brett', last_name='Bretterson')
-        student2, student2_at = self.create_student(title='Mr.', first_name='Abe', last_name='Lincoln')
+        student1, student1_at = self.user1, self.user1_auth_token
+        student2, student2_at = self.user2, self.user2_auth_token
+        instructor, instructor_at = self.user3, self.user3_auth_token
         boring_session_template = self.session_template_manager.create(self.admin_token,
             'boringAsItGets', 'Boring As It Gets!', '1',
             'The purpose of this session_template is for the instructor to gain ' +\
@@ -2456,7 +2444,7 @@ class TestUserManager(TestCase):
         student_query = self.user_manager.get_filtered(instructor_at,
             {'exact' : {'id' : student1.id}}, ['id', 'email'])
         self.assertTrue('email' in student_query[0])
-        self.assertEquals(student_query[0]['email'], 'bbretterson@electronsweatshop.com')
+        self.assertEquals(student_query[0]['email'], self.user1.email) #'bbretterson@electronsweatshop.com')
         # Students should not be able to see each other's information, like email address
         student_query = self.user_manager.get_filtered(student2_at,
             {'exact' : {'id' : student1.id}}, ['id', 'email'])
@@ -2469,12 +2457,12 @@ class TestUserManager(TestCase):
         self.assertTrue('email' not in instructor_query)
 
     def test_invalid_field(self):
-        rock_face = self.user_manager.create(self.admin_token, 'rockFace', 'magma', 'Mr.', 'Rock', 'Face', '919-919-1919',
-                'rock@face.com', 'active')
-        self.assertRaises(exceptions.FieldNameNotFoundException, self.user_manager.update, self.admin_token, rock_face.id,
+        self.assertRaises(exceptions.FieldNameNotFoundException,
+                self.user_manager.update, self.user1.id,
                 {'foo' : 'You can\'t set foo, foo!'})
-        self.assertRaises(exceptions.FieldNameNotFoundException, self.user_manager.get_filtered, self.admin_token,
-                {'exact' : {'id' : rock_face.id}}, ['foo'])
+        self.assertRaises(exceptions.FieldNameNotFoundException,
+                self.user_manager.get_filtered, {'exact': {'id': self.user1.id}},
+                ['foo'])
 
     def test_renew_authentication(self):
         reauth_user = self.user_manager.create(self.admin_token, 'reauth_user', 'reauth_password', 'Ms.',
@@ -2508,58 +2496,47 @@ class TestUserManager(TestCase):
             self.user_manager.relogin, auth_token2)
 
     def test_unauthenticate(self):
-        user_obj = self.user_manager.create(self.admin_token, 'username2', 'initial_password', 'Mr.', 'first_name', 'last_name',
-                      '555.555.5555', 'foo@bar.org', 'active')
-        auth_token_str = self.user_manager.login('username2', 'initial_password')['auth_token']
+        auth_token_str = self.user_manager.login('user1', 'password')['auth_token']
         # make sure that a new auth_token structure exists in the db
-        auth_token_entry = facade.subsystems.Utils.get_auth_token_object(auth_token_str)
+        get_auth_token_object = facade.subsystems.Utils.get_auth_token_object
+        auth_token_entry = get_auth_token_object(auth_token_str)
         self.assertEquals(str(auth_token_entry.session_id), auth_token_str)
-        self.assertEquals(unicode(auth_token_entry),
-                          u'%s' % (auth_token_str))
-        # now make sure that the user is correctly associated with the auth
-        # token
-        self.assertEquals(auth_token_entry.user, user_obj)
+        self.assertEquals(unicode(auth_token_entry), u'%s' % (auth_token_str))
+        # now make sure that the user is correctly associated with the auth token
+        self.assertEquals(auth_token_entry.user, self.user1)
         self.user_manager.logout(auth_token_entry)
-        self.assertRaises(exceptions.NotLoggedInException, facade.subsystems.Utils.get_auth_token_object,
-            auth_token_str)
+        self.assertRaises(exceptions.NotLoggedInException,
+                get_auth_token_object, auth_token_str)
 
     def test_modify_self(self):
-        user1 = self.user_manager.create(self.admin_token, 'around', 'you', 'Mr.', 'Lost', 'Enough', '704-123-4567',
-            'lost@enough.com', 'active')
-        user2 = self.user_manager.create(self.admin_token, 'website', 'man', 'Mr.', 'Website', 'Man', '919-123-4567',
-            'website@man.com', 'active')
-        auth_token1 = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('around', 'you')['auth_token'])
-        self.user_manager.change_password(auth_token1, user1.id, 'me', 'you')
-        self.assertRaises(exceptions.PermissionDeniedException, self.user_manager.change_password, auth_token1, user2.id, 'woman')
-        self.user_manager.change_password(self.admin_token, user2.id, 'woman')
+        change_password = self.user_manager.change_password
+        change_password(self.user1_auth_token, self.user1.id, 'me', 'you')
+        self.assertRaises(exceptions.PermissionDeniedException, change_password,
+                self.user1_auth_token, self.user2.id, 'woman')
+        change_password(self.admin_token, self.user2.id, 'woman')
 
     def test_modify_someone_else_without_permission(self):
-        self.user_manager.create(self.admin_token, 'around', 'you', 'Mr.', 'Lost', 'Enough', '704-123-4567',
-            'lost@enough.com', 'active')
-        evil_user = self.user_manager.create(self.admin_token, 'website', 'man', 'Mr.', 'Website', 'Man', '919-123-4567',
-            'website@man.com', 'active')
-        auth_token1 = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('around', 'you')['auth_token'])
-        auth_token2 = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('website', 'man')['auth_token'])
-        self.assertRaises(exceptions.PermissionDeniedException, self.user_manager.update, auth_token1, evil_user.id, {'first_name' : 'Secret Agent'})
-        res = self.user_manager.get_filtered(auth_token2, {'exact' : {'id' : evil_user.id}}, ['id', 'first_name'])
+        self.assertRaises(exceptions.PermissionDeniedException,
+                self.user_manager.update, self.user1_auth_token, self.user3.id,
+                {'first_name': 'Secret Agent'})
+        res = self.user_manager.get_filtered(self.user2_auth_token,
+                {'exact' : {'id' : self.user3.id}},
+                ['id', 'first_name'])
         self.assertEquals(res[0]['first_name'], 'Website')
 
     def test_read_someone_else_without_permission(self):
-        self.user_manager.create(self.admin_token, 'around', 'you', 'Mr.', 'Lost', 'Enough', '704-123-4567',
-            'lost@enough.com', 'active')
-        evil_user = self.user_manager.create(self.admin_token, 'website', 'man', 'Mr.', 'Website', 'Man', '919-123-4567',
-            'website@man.com', 'active')
-        auth_token1 = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('around', 'you')['auth_token'])
-        res = self.user_manager.get_filtered(auth_token1, {}, ['last_name', 'id'])
+        self.auth_token = self.user1_auth_token
+        get_filtered = self.user_manager.get_filtered
+        res = get_filtered({}, ['last_name', 'id'])
         self.assertEquals(len(res), 5)
         last_names = []
         for user in res:
             if user.has_key('last_name'):
                 last_names.append(user['last_name'])
-        self.failUnless('Enough' in last_names)
-        res = self.user_manager.get_filtered(auth_token1, {'exact' : {'id' : evil_user.id}}, ['id', 'first_name'])
+        self.assertIn('Secundo', last_names)
+        res = get_filtered({'exact' : {'id' : self.user2.id}}, ['id', 'first_name'])
         self.assertEquals(len(res), 1)
-        self.assertEquals(res[0]['id'], evil_user.id)
+        self.assertEquals(res[0]['id'], self.user2.id)
         self.assertTrue('first_name' not in res[0])
 
     def test_delete(self):
@@ -2592,8 +2569,8 @@ class TestUserManager(TestCase):
         role2 = self.org_role_manager.create(self.admin_token, 'anotherrole')
         org = self.organization_manager.create(self.admin_token, 'anorg')
         org2 = self.organization_manager.create(self.admin_token, 'anotherorg')
-        user, user_at = self.create_student()
-        user2, user2_at = self.create_student()
+        user, user_at = self.user1, self.user1_auth_token
+        user2, user2_at = self.user2, self.user2_auth_token
         self.user_manager.update(self.admin_token, user.id,
             {'roles' : {'add' : [{'id' : role.id, 'organization' : org}]}})
         result = self.org_role_manager.get_filtered(self.admin_token,
@@ -2977,12 +2954,11 @@ class CommonObjectManagerTests:
     def test_check_exists(self):
         """checking field value exists (value is unique)"""
         check_exists = self.user_manager.check_exists
-        self.assertTrue(check_exists('email', self.user1.email))
-        self.assertTrue(check_exists('email', self.user2.email))
+        self.assertTrue(check_exists('email', 'admin@admin.org'))
         self.assertFalse(check_exists('email', 'nonexistent@email.com'))
 
 
-class TestObjectManager(TestCase, CommonObjectManagerTests):
+class TestObjectManager(GeneralTestCase, CommonObjectManagerTests):
     def setUp(self):
         super(TestObjectManager, self).setUp()
         self.tu = TestUtils()
@@ -3053,29 +3029,22 @@ class TestObjectManagerPermissions(RoleTestCase, CommonObjectManagerTests):
 
     def setUp(self):
         super(TestObjectManagerPermissions, self).setUp()
-
         # run common tests with no auth token, expect permission denied
         self.auth_token = None
 
     # supplement common tests with a few specific additional checks
-    @expectPermissionDenied
-    def test_check_exists_with_user_token(self):
-        "checking if value exists"
-        self.auth_token = self.user1_auth_token
-        self.user_manager.check_exists('email', 'foo@bar.com')
-
     def test_check_exists_with_create_perm_only(self):
         "checking if value exists with create permission only"
         self.create_quick_user_role("Foo Role", {'User': {'c': True}})
         check_exists = self.user_manager.check_exists
-        self.assertTrue(check_exists('email', self.user2.email))
+        self.assertTrue(check_exists('email', 'admin@admin.org'))
         self.assertFalse(check_exists('email', 'nonexistent@email.com'))
 
     def test_check_exists_with_update_perm_only(self):
         "checking if value exists with update permission only"
         self.create_quick_user_role("Foo Role", {'User': {'u': set(('email', ))}})
         check_exists = self.user_manager.check_exists
-        self.assertTrue(check_exists('email', self.user2.email))
+        self.assertTrue(check_exists('email', 'admin@admin.org'))
         self.assertFalse(check_exists('email', 'nonexistent@email.com'))
 
 
@@ -3349,6 +3318,7 @@ class TestUtilsManager(TestCase):
 #
 # Below this comment block is found utility code that is used to facilitate some of the above unit tests.
 #
+# XXX: all of which should eventually be moved into testlib
 ################################################################################################################################################
 class TestUtils(object):
     def __init__(self):
@@ -3587,7 +3557,7 @@ class TestEmailGeneration(TestCase):
         self.assertTrue('this is a critical test' in mess.body)
 
 
-class TestOrgSlots(TestCase):
+class TestOrgSlots(GeneralTestCase):
     """
     Test cases for organization slots.
 
@@ -3614,9 +3584,6 @@ class TestOrgSlots(TestCase):
                 organization=create_org(self.admin_token, 'bar org'),
                 role=create_role(self.admin_token, 'bar role'),
                 title='slot2', persistent=True)
-
-        self.user1, self.user1_token = self.create_student()
-        self.user2, self.user2_token = self.create_student()
 
         self.user_org_role_manager.update(self.admin_token, self.slot1.id,
                 {'owner': self.user1.id})
