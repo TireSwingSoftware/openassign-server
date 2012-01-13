@@ -16,8 +16,6 @@ from django.conf import settings
 
 from pr_services import pr_time
 from pr_services.object_manager import ObjectManager
-from pr_services.pr_models import (AuthToken, DomainAffiliation,
-        Organization, ProductLine, Region, Room, User, Venue)
 
 import facade
 import helpers
@@ -26,6 +24,7 @@ __all__ = ['common', 'mixins', 'helpers']
 
 _ONEDAY = timedelta(days=1)
 
+facade.import_models(locals(), globals())
 get_auth_token_object = facade.subsystems.Utils.get_auth_token_object
 
 # index of service methods' names by manager class type object

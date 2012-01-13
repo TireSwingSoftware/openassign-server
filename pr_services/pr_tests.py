@@ -29,10 +29,10 @@ from cookiecache import CookieCache
 from initial_setup import InitialSetupMachine, default_read_fields
 from pr_services import exceptions
 from pr_services import pr_time
-from pr_services.exam_system.models import *
 from pr_services.gettersetter import Getter, Setter
 from pr_services.object_manager import ObjectManager
-from pr_services.rpc.service import service_method, wrap_service_method, RpcService, create_rpc_service
+from pr_services.rpc.service import (service_method, wrap_service_method,
+        RpcService, create_rpc_service)
 from pr_services.testlib import GeneralTestCase, TestCase, RoleTestCase
 from pr_services.testlib import mixins
 from pr_services.testlib.helpers import expectPermissionDenied
@@ -40,16 +40,9 @@ from pr_services.utils import UnicodeCsvWriter
 
 import facade
 
-def _import_facade_models(_locals):
-    # this is a hack for now to import all of the models from facade
-    updates = {}
-    for model_name in facade.models:
-        model = getattr(facade.models, model_name)
-        updates[model_name] = model
-        assert model_name not in locals()
-    _locals.update(updates)
 
-_import_facade_models(locals())
+# import all models into our namespace
+facade.import_models(locals(), globals())
 
 ##############################################################################
 #
