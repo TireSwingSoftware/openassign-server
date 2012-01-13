@@ -22,69 +22,6 @@ class VideoTestCase(GeneralTestCase):
         'legacy_objects'
     ]
 
-    # XXX: should eventually go away
-    def create_instructor(self, title='Ms.', first_name='Teaching',
-            last_name='Instructor', label='1234 Test Address Lane',
-            locality='Testville', region='NC', postal_code='12345',
-            country='US', phone='378-478-3845'):
-        um = self.admin_user_manager
-        username = um.generate_username(first_name, last_name)
-        email = '%s@electronsweatshop.com' % username
-        shipping_address = {
-            'label': label,
-            'locality': locality,
-            'postal_code': postal_code,
-            'country': country,
-            'region': region
-        }
-        billing_address = shipping_address
-
-        group_filter = {'exact': {'name': 'Instructors'}}
-        instructor_group_id = self.admin_group_manager.get_filtered(group_filter)[0]['id']
-        instructor = um.create(username, 'password', title, first_name,
-            last_name, phone, email, 'active', {
-            'name_suffix': 'II',
-            'shipping_address': shipping_address,
-            'billing_address': billing_address,
-            'groups': [instructor_group_id]
-        })
-        sid = um.login(user_manager, 'password')['auth_token']
-        instructor_at = AuthToken.objects.get(session_id=sid)
-        return instructor, instructor_at
-
-    # XXX: should eventually go away
-    def create_student(self, group='Students', title='Private',
-            first_name='Learning', last_name='Student',
-            label='1234 Test Address Lane', locality='Testville',
-            region='NC', postal_code='12345', country='US',
-            phone='378-478-3845'):
-        um = self.admin_user_manager
-        username = um.generate_username(first_name, last_name)
-        email = '%s@electronsweatshop.com' % username
-        shipping_address = {
-            'label': label,
-            'locality': locality,
-            'postal_code': postal_code,
-            'country': country,
-            'region': region
-        }
-        billing_address = shipping_address
-        optional_attributes = {
-            'name_suffix': 'Jr.',
-            'shipping_address': shipping_address,
-            'billing_address': billing_address,
-        }
-
-        if group:
-            gid = self.admin_group_manager.get_filtered({'exact': {'name': group}})[0]['id']
-            optional_attributes['groups'] = [gid]
-
-        student = um.create(username, 'password', title, first_name, last_name,
-                phone, email, 'active', optional_attributes)
-        sid = um.login(username, 'password')['auth_token']
-        student_at = AuthToken.objects.get(session_id=sid)
-        return student, student_at
-
     def setUp(self):
         super(VideoTestCase, self).setUp()
         self.video_manager = facade.managers.VideoManager()
@@ -92,6 +29,25 @@ class VideoTestCase(GeneralTestCase):
         self.video_session_manager = facade.managers.VideoSessionManager()
         self.encoded_video_manager = facade.managers.EncodedVideoManager()
         self.category_manager = facade.managers.CategoryManager()
+
+    # XXX: should eventually go away
+    def create_student(self, group='Students', title='Private', first_name='Learning', last_name='Student', label='1234 Test Address Lane', locality='Testville',
+            region='NC', postal_code='12345', country='US', phone='378-478-3845'):
+        username = self.user_manager.generate_username('', first_name, last_name)
+        email = username+'@electronsweatshop.com'
+        shipping_address = {'label' : label, 'locality' : locality, 'postal_code' : postal_code, 'country' : country, 'region' : region}
+        billing_address = shipping_address
+        optional_attributes = {
+            'name_suffix' : 'Jr.',
+            'shipping_address' : shipping_address,
+            'billing_address' : billing_address,
+        }
+        if group:
+            student_group_id = self.group_manager.get_filtered(self.admin_token, {'exact' : {'name' : group}})[0]['id']
+            optional_attributes['groups'] = [student_group_id]
+        student = self.user_manager.create(self.admin_token, username, 'password', title, first_name, last_name, phone, email, 'active', optional_attributes)
+        student_at = facade.models.AuthToken.objects.get(session_id__exact=self.user_manager.login(username, 'password')['auth_token'])
+        return student, student_at
 
     def create_category_manager(self, title='Private', first_name='Category', last_name='Manager', label='1234 Test Address Lane', locality='Testville',
             region='NC', postal_code='12345', country='US', phone='378-478-3845'):
