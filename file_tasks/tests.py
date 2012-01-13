@@ -11,13 +11,18 @@ from django.core.urlresolvers import reverse
 
 # PowerReg
 import facade
-from pr_services.tests import TestCase
+from pr_services import testlib
 
-class TestFileDownload(TestCase):
+class FileTaskTestCase(testlib.GeneralTestCase):
+    fixtures = [
+        'initial_setup_precor',
+        'legacy_objects'
+    ]
+
+class TestFileDownload(FileTaskTestCase):
     """Test cases for the FileDownload Task."""
 
     def setUp(self):
-        self.initial_setup_args = ['precor']
         super(TestFileDownload, self).setUp()
         self.file_download_manager = facade.managers.FileDownloadManager()
         self.file_download_attempt_manager = facade.managers.FileDownloadAttemptManager()
@@ -101,7 +106,7 @@ class TestFileDownload(TestCase):
         self.assertTrue(result[0]['file_url'])
         self.assertFalse(result[0]['deleted'])
         file_download = self._upload_file(name='Test 2')
-        result = self.file_download_manager.get_filtered(self.admin_token, {}, 
+        result = self.file_download_manager.get_filtered(self.admin_token, {},
             ['name', 'description', 'file_size', 'file_url'])
         self.assertEqual(len(result), 2)
 
@@ -212,11 +217,10 @@ class TestFileDownload(TestCase):
         self.assertEqual(assignment.date_completed, date_completed)
         self.assertEqual(facade.models.FileDownloadAttempt.objects.count(), 2)
 
-class TestFileUpload(TestCase):
+class TestFileUpload(FileTaskTestCase):
     """Test cases for the FileUpload Task."""
 
     def setUp(self):
-        self.initial_setup_args = ['precor']
         super(TestFileUpload, self).setUp()
         self.file_upload_manager = facade.managers.FileUploadManager()
         self.file_upload_attempt_manager = facade.managers.FileUploadAttemptManager()
