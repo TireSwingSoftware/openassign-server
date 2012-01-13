@@ -102,7 +102,6 @@ class TestAuthToken(GeneralTestCase):
         self.assertTrue(new_admin_token.session_id in admin_users_auth_tokens)
 
     def test_caching(self):
-        user1 = self.user1
         auth_token = self.user1_auth_token
         ret = AuthToken.objects.get(session_id=auth_token.session_id)
         self.assertEquals(auth_token.id, ret.id)
