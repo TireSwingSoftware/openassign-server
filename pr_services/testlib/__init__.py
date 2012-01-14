@@ -107,11 +107,22 @@ class TestCase(django.test.TestCase):
     Base class used to do *very* basic setup for power reg test cases.
     """
 
+    def __init__(self, *args, **kwargs):
+        super(TestCase, self).__init__(*args, **kwargs)
+        self._flush_acls = True
+
     def setUp(self):
         super(TestCase, self).setUp()
 
         self._save_settings()
         self._setup_managers()
+
+        # XXX: this is somewhat of an optimization for the tests
+        # flush ACLs once for each test class but only after the
+        # fixtures are loaded the first time.
+        if self._flush_acls:
+            facade.subsystems.Authorizer()._load_acls()
+            self._flush_acls = False
 
         # Modify the celery configuration to run tasks eagerly for unit tests.
         self._always_eager = conf.ALWAYS_EAGER
