@@ -1,3 +1,4 @@
+import json
 import sys
 
 from StringIO import StringIO
@@ -39,11 +40,18 @@ class Command(NoArgsCommand):
             create_fixture()
 
     def _dumpdata(self, models, filename):
-        filepath = path.join(self.fixture_dir, filename)
         print("Writing %s" % filename)
+        buf = StringIO()
+        with catch_stdout(buf):
+            call_command('dumpdata', *models, natural=True)
+
+        obj = json.loads(buf.getvalue())
+        del buf
+
+        filepath = path.join(self.fixture_dir, filename)
         with open(filepath, 'w') as f:
-            with catch_stdout(f):
-                call_command('dumpdata', *models, natural=True)
+            formatted = json.dumps(obj, sort_keys=True, indent=4)
+            f.write(formatted)
 
     def _initial_setup_default(self):
         with catch_stdout(None):
