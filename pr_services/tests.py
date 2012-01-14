@@ -13,6 +13,7 @@ from pr_services.testlib import TestCase
 
 TEST_MODULES = (
         'pr_services.pr_tests',
+        'pr_services.pr_role_tests',
         'pr_services.exam_system.tests',
         # more coming soon...
 )
