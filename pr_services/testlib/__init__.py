@@ -30,6 +30,7 @@ get_auth_token_object = facade.subsystems.Utils.get_auth_token_object
 # index of service methods' names by manager class type object
 _SERVICE_METHODS = dict()
 
+# XXX: use a function to hide stuff from the namespace
 def _build_service_method_index():
     """Build an index of service methods for each manager class."""
 
@@ -86,25 +87,31 @@ class ManagerAuthTokenWrapper(object):
             return attr
 
 
+# Mapping of Manager names to Test class instance member names
+# Ex. for UserManager the instance member is self.user_manager
+# This dictionary will map UserManager to user_manager
+_MANAGER_MEMBER_NAMES = dict()
+
+# XXX: use a function to hide stuff from the namespace
+def _build_manager_member_names():
+    nocamel = re.compile('(.)([A-Z])')
+    for manager_name in facade.managers:
+        member_name = nocamel.sub(r'\1_\2', manager_name).lower()
+        _MANAGER_MEMBER_NAMES[manager_name] = member_name
+
+_build_manager_member_names()
+
+
 class TestCase(django.test.TestCase):
     """
     Base class used to do *very* basic setup for power reg test cases.
     """
-
-    fixtures = [
-        'initial_setup_default',
-    ]
 
     def setUp(self):
         super(TestCase, self).setUp()
 
         self._save_settings()
         self._setup_managers()
-        self._setup_admin_token()
-
-        self.utils = facade.subsystems.Utils()
-        self.right_now = datetime.utcnow().replace(microsecond=0, tzinfo=pr_time.UTC())
-        self.one_day = _ONEDAY
 
         # Modify the celery configuration to run tasks eagerly for unit tests.
         self._always_eager = conf.ALWAYS_EAGER
@@ -115,18 +122,8 @@ class TestCase(django.test.TestCase):
         self._restore_settings()
         super(TestCase, self).tearDown()
 
-    def _setup_admin_token(self):
-        """Create an easy-access auth token with the admin user."""
-        da = DomainAffiliation.objects.get(username='admin', domain__name='local', default=True)
-        self.admin_user = da.user
-
-        token_str = self.user_manager.login('admin', 'admin')['auth_token']
-        self.admin_token = get_auth_token_object(token_str)
-        # default the general auth token to administrator
-        self.auth_token = self.admin_token
-
     def _save_settings(self):
-        """Save configuration so it can be restored later if changes are made."""
+        """Save configuration for restoring later if changes are made."""
         self._settings = dict()
         for key in dir(settings):
             if key == key.upper():
@@ -153,10 +150,9 @@ class TestCase(django.test.TestCase):
         """
         get_default_token = lambda: self.auth_token
         get_admin_token = lambda: self.admin_token
-        nocamel = re.compile('(.)([A-Z])')
         for manager_name in facade.managers:
             manager_class = getattr(facade.managers, manager_name)
-            member_name = nocamel.sub(r'\1_\2', manager_name).lower()
+            member_name = _MANAGER_MEMBER_NAMES[manager_name]
             manager = manager_class()
             if isinstance(manager, ObjectManager):
                 default_manager = ManagerAuthTokenWrapper(manager, get_default_token)
@@ -167,8 +163,36 @@ class TestCase(django.test.TestCase):
                 setattr(self, member_name, manager)
 
 
+class BasicTestCase(TestCase):
+    """
+    Basic test case which loads the default initial setup objects and exposes a
+    few simple primitives.
+    """
 
-class GeneralTestCase(TestCase):
+    fixtures = [
+        'initial_setup_default',
+    ]
+
+    def setUp(self):
+        super(BasicTestCase, self).setUp()
+        self._setup_admin_token()
+
+        self.utils = facade.subsystems.Utils()
+        self.right_now = datetime.utcnow().replace(microsecond=0, tzinfo=pr_time.UTC())
+        self.one_day = _ONEDAY
+
+    def _setup_admin_token(self):
+        """Create an easy-access auth token with the admin user."""
+        da = DomainAffiliation.objects.get(username='admin', domain__name='local', default=True)
+        self.admin_user = da.user
+
+        token_str = self.user_manager.login('admin', 'admin')['auth_token']
+        self.admin_token = get_auth_token_object(token_str)
+        # default the general auth token to administrator
+        self.auth_token = self.admin_token
+
+
+class GeneralTestCase(BasicTestCase):
     """
     Legacy test class for backwards compatability with existing tests that do not
     make use of newer fixtures.
@@ -221,7 +245,7 @@ class RoleTestCaseMetaclass(type):
         return type.__new__(cls, name, bases, attrs)
 
 
-class RoleTestCase(TestCase):
+class RoleTestCase(BasicTestCase):
     __metaclass__ = RoleTestCaseMetaclass
 
     def create_quick_user_role(self, name, acl_dict):
@@ -244,6 +268,8 @@ class RoleTestCase(TestCase):
                 ac_check_parameters=cPickle.dumps({}))
 
         method_call.save()
+
+#XXX: if we're going to call this, the method should be public
         facade.subsystems.Authorizer()._load_acls()
 
         def _cleanup():

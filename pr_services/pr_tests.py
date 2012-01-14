@@ -33,7 +33,8 @@ from pr_services.gettersetter import Getter, Setter
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import (service_method, wrap_service_method,
         RpcService, create_rpc_service)
-from pr_services.testlib import GeneralTestCase, TestCase, RoleTestCase
+from pr_services.testlib import (GeneralTestCase, RoleTestCase, BasicTestCase,
+        TestCase)
 from pr_services.testlib import mixins
 from pr_services.testlib.helpers import expectPermissionDenied
 from pr_services.utils import UnicodeCsvWriter
@@ -689,7 +690,7 @@ class TestCsvExport(TestCase):
         # dialect (i.e. dialect=csv.excel) in the UnicodeCsvWriter
         self.assertEquals(first_line_should_be, first_line_actually_is)
 
-class TestDelete(TestCase):
+class TestDelete(BasicTestCase):
     def test_delete_blame(self):
         dont_taze_me_bro = self.user_manager.create('dont_taze_me_bro', 'password', 'Mr.', 'Don\'t', 'Taze Me Bro', '123-456-7890',
             'dont@tazemebro.com', 'active')
@@ -741,7 +742,7 @@ class TestErrorTemplates(TestCase):
         self.assertTrue('TemplateDoesNotExist' not in response.content)
         self.assertTemplateUsed(response, '500.html')
 
-class TestGetters(TestCase):
+class TestGetters(BasicTestCase):
     def test_get_content_type(self):
         some_exam = self.exam_manager.create('some exam')
         ret = self.exam_manager.get_filtered({'exact': {'id': some_exam.id}},
@@ -842,7 +843,7 @@ class TestGroupManager(GeneralTestCase):
         self.assertEquals(len(cool_group_dict['users']), 1)
         self.assertEquals(cool_group_dict['users'][0], sweep_it_up.id)
 
-class TestLogging(TestCase):
+class TestLogging(BasicTestCase):
     def test_log(self):
         lm = self.log_manager
         lm.critical(self.admin_token, 'this is a critical test')
@@ -967,7 +968,7 @@ if 'ecommerce' in settings.INSTALLED_APPS:
             # A normal user cannot issue a refund
             self.assertRaises(exceptions.PermissionDeniedException, self.payment_manager.refund, self.user1_auth_token, self.p.id, 50)
 
-class TestProductManager(TestCase):
+class TestProductManager(BasicTestCase):
     def setUp(self):
         super(TestProductManager, self).setUp()
         self.p1 = self.product_manager.create('ABC123', 'Bread Slicer', 'Slices bread', 4995, 2995, {'display_order' : 90})
@@ -1722,7 +1723,7 @@ class TestSessionTemplateManager(GeneralTestCase):
             'seminar on an exciting new approach to therapy for schizophrenia',
             150034, 240000, True, 'Generic', {'product_line':str(prod_2.id)})
 
-class TestSessionTemplateUserRoleRequirementManager(TestCase):
+class TestSessionTemplateUserRoleRequirementManager(BasicTestCase):
     def setUp(self):
         super(TestSessionTemplateUserRoleRequirementManager, self).setUp()
         self.pl = self.product_line_manager.create('Earn your MBA overnight!')
@@ -1885,7 +1886,7 @@ class TestTrainingVoucherManager(GeneralTestCase):
         self.assertEquals(voucher['id'], tv1.id)
         self.assertEquals(voucher['session_user_role_requirement'], tv1.session_user_role_requirement_id)
 
-class TestOrganizationManager(TestCase):
+class TestOrganizationManager(BasicTestCase):
     def setUp(self):
         super(TestOrganizationManager, self).setUp()
         self.FILE_UPLOAD_MAX_MEMORY_SIZE = settings.FILE_UPLOAD_MAX_MEMORY_SIZE
@@ -2853,7 +2854,7 @@ class TestUserManager(GeneralTestCase):
         self.assertTrue('Example Corporation' in mess.body)
         self.assertTrue('mypasswd' in mess.body)
 
-class TestUserModel(TestCase):
+class TestUserModel(BasicTestCase):
     def test_delete(self):
         number_of_initial_users = User.objects.all().count()
         number_of_initial_blames = Blame.objects.all().count()
@@ -3029,7 +3030,7 @@ class TestObjectManagerPermissions(RoleTestCase, CommonObjectManagerTests):
         self.assertFalse(check_exists('email', 'nonexistent@email.com'))
 
 
-class TestTaskBundles(TestCase):
+class TestTaskBundles(BasicTestCase):
 
     def setUp(self):
         super(TestTaskBundles, self).setUp()
@@ -3097,7 +3098,7 @@ class TestTaskBundles(TestCase):
               'continue_automatically': False}])
 
 
-class TestScormServer(TestCase):
+class TestScormServer(BasicTestCase):
     def test_mark_completed(self):
         # Upload a SCORM file for testing.
         scorm_zip_file_name = os.path.join(os.path.dirname(__file__), '..',
@@ -3155,7 +3156,7 @@ class TestScormServer(TestCase):
         self.assertEqual(ret[0]['status'], 'completed')
         self.assertNotEqual(ret[0]['date_completed'], None)
 
-class TestPrUtils(TestCase):
+class TestPrUtils(BasicTestCase):
     """
     Test the pr_services.utils.Utils class.
     """
@@ -3169,7 +3170,7 @@ class TestPrUtils(TestCase):
             admin_session_id)
 
 
-class TestCurriculumManagement(TestCase):
+class TestCurriculumManagement(BasicTestCase):
 
     def setUp(self):
         super(TestCurriculumManagement, self).setUp()
@@ -3518,7 +3519,7 @@ class TestDefaultACLCRUD(TestACLCRUD):
     def test_acl_crud(self):
         self.do_test()
 
-class TestEmailGeneration(TestCase):
+class TestEmailGeneration(BasicTestCase):
     def test_log_error_mails(self):
         self.log_manager.error(self.admin_token, 'this is an error test')
         self.log_manager.critical(self.admin_token, 'this is a critical test')
