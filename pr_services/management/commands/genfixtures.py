@@ -1,4 +1,3 @@
-import json
 import sys
 
 from StringIO import StringIO
@@ -43,15 +42,11 @@ class Command(NoArgsCommand):
         print("Writing %s" % filename)
         buf = StringIO()
         with catch_stdout(buf):
-            call_command('dumpdata', *models, natural=True)
-
-        obj = json.loads(buf.getvalue())
-        del buf
+            call_command('dumpdata', *models, use_natural_keys=True, indent=4)
 
         filepath = path.join(self.fixture_dir, filename)
         with open(filepath, 'w') as f:
-            formatted = json.dumps(obj, sort_keys=True, indent=4)
-            f.write(formatted)
+            f.write(buf.getvalue())
 
     def _initial_setup_default(self):
         with catch_stdout(None):
@@ -77,7 +72,7 @@ class Command(NoArgsCommand):
 
     def _initial_setup_precor(self):
         with catch_stdout(None):
-            call_command('setup', 'precor')
+            call_command('setup', 'base', 'legacy', 'precor')
 
         models = [
            'pr_messaging',
