@@ -11,8 +11,8 @@ class CommonExamTests(mixins.ExamTestMixin):
                               passing_score=90)
         qp = self._create_question_pool(e, "Mama's Question Pool")
         q = self._create_question(qp, 'bool', 'Is mama always right?')
-        a = self._create_answer(q, 'Yes', correct=True)
-        a = self._create_answer(q, 'No')
+        self._create_answer(q, 'Yes', correct=True)
+        self._create_answer(q, 'No')
 
     def test_exam_manager_xml(self):
         # import a new exam

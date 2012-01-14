@@ -3,15 +3,18 @@ from __future__ import with_statement
 import cPickle
 import functools
 import re
+import inspect
+
+from datetime import datetime, timedelta
+from operator import itemgetter
 
 import django.utils.unittest
+import django.test
 
 from celery import conf
-from datetime import datetime, timedelta
 from django.conf import settings
 
 from pr_services import pr_time
-from pr_services.initial_setup import InitialSetupMachine
 from pr_services.object_manager import ObjectManager
 
 import facade
@@ -19,118 +22,130 @@ import helpers
 
 __all__ = ['common', 'mixins', 'helpers']
 
+_ONEDAY = timedelta(days=1)
+
+facade.import_models(locals(), globals())
+get_auth_token_object = facade.subsystems.Utils.get_auth_token_object
+
+# index of service methods' names by manager class type object
+_SERVICE_METHODS = dict()
+
+# XXX: use a function to hide stuff from the namespace
+def _build_service_method_index():
+    """Build an index of service methods for each manager class."""
+
+    _member_name = itemgetter(0)
+    exclude = frozenset(('login', 'check_password_against_policy',
+                         'reset_password'))
+
+    def _service_methods(member):
+        name, value = member
+        return name not in exclude and getattr(value, '_service_method', False)
+
+    for name in facade.managers:
+        manager_class = getattr(facade.managers, name)
+        if issubclass(manager_class, ObjectManager):
+            members = inspect.getmembers(manager_class)
+            service_methods = filter(_service_methods, members)
+            service_method_names = map(_member_name, service_methods)
+            _SERVICE_METHODS[manager_class] = frozenset(service_method_names)
+
+_build_service_method_index()
+
+
 class ManagerAuthTokenWrapper(object):
     """
-    Wrap ObjectManager methods to automatically provide a specified auth token
+    Wrap ObjectManager service methods to automatically provide a specified auth token
     """
-
-    WRAP_METHODS = ('create', 'batch_create', 'update', 'get_filtered', 'check_exists')
 
     def __init__(self, manager, token_getter):
         assert isinstance(manager, ObjectManager)
         assert callable(token_getter)
         self.manager = manager
         self.token_getter = token_getter
+        self._service_methods = _SERVICE_METHODS[type(manager)]
 
     def _wrapped_method(self, method):
         @functools.wraps(method)
         def _wrapper(*args, **kwargs):
-            if args and isinstance(args[0], facade.models.AuthToken):
+            if args and isinstance(args[0], AuthToken):
                 return method(*args, **kwargs)
             token = kwargs.pop('auth_token', self.token_getter())
-            return method(token, *args, **kwargs)
+            try:
+                return method(token, *args, **kwargs)
+            except TypeError as e:
+                if 'takes exactly' in e.message:
+                    return method(*args, **kwargs)
 
         return _wrapper
 
     def __getattr__(self, name):
         attr = getattr(self.manager, name)
-        if name in self.WRAP_METHODS:
+        if name in self._service_methods:
             return self._wrapped_method(attr)
         else:
             return attr
 
-# make stdout and stderr use UTF-8 encoding so that printing out
-# UTF-8 data while debugging doesn't choke
 
-class TestCase(django.test.TestCase, django.utils.unittest.TestCase):
-    """Super-class used to do basic setup for almost all power reg test cases.
+# Mapping of Manager names to Test class instance member names
+# Ex. for UserManager the instance member is self.user_manager
+# This dictionary will map UserManager to user_manager
+_MANAGER_MEMBER_NAMES = dict()
 
-    This is useful for getting authentication taken care of without duplicating
-    a lot of code.
+# XXX: use a function to hide stuff from the namespace
+def _build_manager_member_names():
+    nocamel = re.compile('(.)([A-Z])')
+    for manager_name in facade.managers:
+        member_name = nocamel.sub(r'\1_\2', manager_name).lower()
+        _MANAGER_MEMBER_NAMES[manager_name] = member_name
 
+_build_manager_member_names()
+
+
+class TestCase(django.test.TestCase):
     """
+    Base class used to do *very* basic setup for power reg test cases.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(TestCase, self).__init__(*args, **kwargs)
+        self._flush_acls = True
+
     def setUp(self):
-        # Save all configuration settings so they can be restored following the test.
-        self._settings = dict((x, getattr(settings, x)) for x in dir(settings) if x == x.upper())
-        initial_setup_args = getattr(self, 'initial_setup_args', [])
-        initial_setup_kwargs = getattr(self, 'initial_setup_kwargs', {})
-        InitialSetupMachine().initial_setup(*initial_setup_args, **initial_setup_kwargs)
-        self.setup_managers()
-        self.utils = facade.subsystems.Utils()
-        self.admin_da = facade.models.DomainAffiliation.objects.get(username='admin', domain__name='local',
-            default=True)
-        self.admin_user = self.admin_da.user
-        self.admin_token_str=self.user_manager.login('admin', 'admin')['auth_token']
-        self.admin_token = facade.subsystems.Utils.get_auth_token_object(self.admin_token_str)
-        self.auth_token = self.admin_token
-        self.user1 = self.user_manager.create(self.admin_token, 'username', 'initial_password',
-            'Mr.', 'Primo', 'Uomo', '555.555.5555', 'user1@acme-u.com', 'active', {'name_suffix': 'Sr.'})
-        self.user1_auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('username',
-            'initial_password')['auth_token'])
-        self.user2 = self.user_manager.create(self.admin_token, 'otherusername', 'other_initial_password',
-            'Mr.', 'Secundo', 'Duomo', '666.666.6666', 'user2@acme-u.com', 'active', {'name_suffix': 'Sr.'})
-        self.user2_auth_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('otherusername',
-            'other_initial_password')['auth_token'])
-        self.region1 = self.region_manager.create(self.admin_token, 'Region 1')
-        address_dict = {'label' : '123 Main St', 'locality' : 'Raleigh', 'region' : 'NC', 'postal_code' : '27615', 'country' : 'US'}
-        self.venue1 = self.venue_manager.create(self.admin_token, 'Venue 1', '1253462', self.region1.id, {'address':address_dict})
-        self.room1 = self.room_manager.create(self.admin_token, 'Room 1', self.venue1.id, 100)
-        self.product_line1 = self.product_line_manager.create(self.admin_token, 'Product Line 1')
-        self.right_now = datetime.utcnow().replace(microsecond=0, tzinfo=pr_time.UTC())
-        self.one_day = timedelta(days=1)
-        self.organization1 = self.organization_manager.create(self.admin_token, 'Organization 1')
+        super(TestCase, self).setUp()
+
+        self._save_settings()
+        self._setup_managers()
+
+        # XXX: this is somewhat of an optimization for the tests
+        # flush ACLs once for each test class but only after the
+        # fixtures are loaded the first time.
+        if self._flush_acls:
+            facade.subsystems.Authorizer()._load_acls()
+            self._flush_acls = False
+
         # Modify the celery configuration to run tasks eagerly for unit tests.
         self._always_eager = conf.ALWAYS_EAGER
         conf.ALWAYS_EAGER = True
 
     def tearDown(self):
         conf.ALWAYS_EAGER = self._always_eager
-        # Restore all configuration settings to their previous values.
-        map(lambda x: setattr(settings, x[0], x[1]), self._settings.iteritems())
+        self._restore_settings()
+        super(TestCase, self).tearDown()
 
-    # XXX: should eventually go into mixins.py
-    def create_instructor(self, title='Ms.', first_name='Teaching', last_name='Instructor', label='1234 Test Address Lane', locality='Testville',
-            region='NC', postal_code='12345', country='US', phone='378-478-3845'):
-        username = self.user_manager.generate_username('', first_name, last_name)
-        email = username+'@electronsweatshop.com'
-        shipping_address = {'label' : label, 'locality' : locality, 'postal_code' : postal_code, 'country' : country, 'region' : region}
-        billing_address = shipping_address
-        instructor_group_id = self.group_manager.get_filtered(self.admin_token, {'exact' : {'name' : 'Instructors'}})[0]['id']
-        instructor = self.user_manager.create(self.admin_token, username, 'password', title, first_name, last_name, phone, email, 'active',
-            {'name_suffix' : 'II', 'shipping_address' : shipping_address, 'billing_address' : billing_address, 'groups' : [instructor_group_id]})
-        instructor_at = facade.models.AuthToken.objects.get(session_id__exact=self.user_manager.login(username, 'password')['auth_token'])
-        return instructor, instructor_at
+    def _save_settings(self):
+        """Save configuration for restoring later if changes are made."""
+        self._settings = dict()
+        for key in dir(settings):
+            if key == key.upper():
+                self._settings[key] = getattr(settings, key)
 
-    # XXX: should eventually go into mixins.py
-    def create_student(self, group='Students', title='Private', first_name='Learning', last_name='Student', label='1234 Test Address Lane', locality='Testville',
-            region='NC', postal_code='12345', country='US', phone='378-478-3845'):
-        username = self.user_manager.generate_username('', first_name, last_name)
-        email = username+'@electronsweatshop.com'
-        shipping_address = {'label' : label, 'locality' : locality, 'postal_code' : postal_code, 'country' : country, 'region' : region}
-        billing_address = shipping_address
-        optional_attributes = {
-            'name_suffix' : 'Jr.',
-            'shipping_address' : shipping_address,
-            'billing_address' : billing_address,
-        }
-        if group:
-            student_group_id = self.group_manager.get_filtered(self.admin_token, {'exact' : {'name' : group}})[0]['id']
-            optional_attributes['groups'] = [student_group_id]
-        student = self.user_manager.create(self.admin_token, username, 'password', title, first_name, last_name, phone, email, 'active', optional_attributes)
-        student_at = facade.models.AuthToken.objects.get(session_id__exact=self.user_manager.login(username, 'password')['auth_token'])
-        return student, student_at
+    def _restore_settings(self):
+        """Restore all configuration settings to their previous values."""
+        for key, value in self._settings.iteritems():
+            setattr(settings, key, value)
 
-    def setup_managers(self):
+    def _setup_managers(self):
         """
         Setup common managers for convenience in subclasses
 
@@ -146,10 +161,9 @@ class TestCase(django.test.TestCase, django.utils.unittest.TestCase):
         """
         get_default_token = lambda: self.auth_token
         get_admin_token = lambda: self.admin_token
-        nocamel = re.compile('(.)([A-Z])')
         for manager_name in facade.managers:
             manager_class = getattr(facade.managers, manager_name)
-            member_name = nocamel.sub(r'\1_\2', manager_name).lower()
+            member_name = _MANAGER_MEMBER_NAMES[manager_name]
             manager = manager_class()
             if isinstance(manager, ObjectManager):
                 default_manager = ManagerAuthTokenWrapper(manager, get_default_token)
@@ -158,6 +172,70 @@ class TestCase(django.test.TestCase, django.utils.unittest.TestCase):
                 setattr(self, 'admin_%s' % member_name, admin_manager)
             else:
                 setattr(self, member_name, manager)
+
+
+class BasicTestCase(TestCase):
+    """
+    Basic test case which loads the default initial setup objects and exposes a
+    few simple primitives.
+    """
+
+    fixtures = [
+        'initial_setup_default',
+    ]
+
+    def setUp(self):
+        super(BasicTestCase, self).setUp()
+        self._setup_admin_token()
+
+        self.utils = facade.subsystems.Utils()
+        self.right_now = datetime.utcnow().replace(microsecond=0, tzinfo=pr_time.UTC())
+        self.one_day = _ONEDAY
+
+    def _setup_admin_token(self):
+        """Create an easy-access auth token with the admin user."""
+        da = DomainAffiliation.objects.get(username='admin', domain__name='local', default=True)
+        self.admin_user = da.user
+
+        token_str = self.user_manager.login('admin', 'admin')['auth_token']
+        self.admin_token = get_auth_token_object(token_str)
+        # default the general auth token to administrator
+        self.auth_token = self.admin_token
+
+
+class GeneralTestCase(BasicTestCase):
+    """
+    Legacy test class for backwards compatability with existing tests that do not
+    make use of newer fixtures.
+    """
+
+    fixtures = [
+        'initial_setup_default',
+        'legacy_objects',
+    ]
+
+    def setUp(self):
+        super(GeneralTestCase, self).setUp()
+
+        # create instance variables for our 4 test users
+        # self.user1
+        # self.user1_auth_token
+        # ...
+        # self.user4
+        # self.user4_auth_token
+        for i in range(1, 5):
+            user = User.objects.get(id=i + 1)
+            username = 'user%d' % i
+            sid = self.user_manager.login(username, 'password')['auth_token']
+            setattr(self, username, user)
+            setattr(self, username + '_auth_token', get_auth_token_object(sid))
+
+        # create some other useful objects
+        self.region1 = Region.objects.get(name='Region 1')
+        self.venue1 = Venue.objects.get(name='Venue 1')
+        self.room1 = Room.objects.get(name='Room 1')
+        self.product_line1 = ProductLine.objects.get(name='Product Line 1')
+        self.organization1 = Organization.objects.get(name='Organization 1')
 
 
 class RoleTestCaseMetaclass(type):
@@ -178,7 +256,7 @@ class RoleTestCaseMetaclass(type):
         return type.__new__(cls, name, bases, attrs)
 
 
-class RoleTestCase(TestCase):
+class RoleTestCase(BasicTestCase):
     __metaclass__ = RoleTestCaseMetaclass
 
     def create_quick_user_role(self, name, acl_dict):
@@ -201,6 +279,15 @@ class RoleTestCase(TestCase):
                 ac_check_parameters=cPickle.dumps({}))
 
         method_call.save()
-        # XXX: we may want to think about handling this automatically
+
+#XXX: if we're going to call this, the method should be public
         facade.subsystems.Authorizer()._load_acls()
+
+        def _cleanup():
+            method_call.delete()
+            acl.delete()
+            role.delete()
+            facade.subsystems.Authorizer()._load_acls()
+        self.addCleanup(_cleanup)
+
         return role, acl

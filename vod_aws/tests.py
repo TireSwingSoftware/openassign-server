@@ -9,19 +9,45 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 import facade
 import os
-from pr_services.tests import TestCase, TestACLCRUD
+from pr_services.tests import GeneralTestCase, TestACLCRUD
 from pr_services import exceptions, pr_time
 import time
 
-class VideoTestCase(TestCase):
+class VideoTestCase(GeneralTestCase):
+
+    fixtures = [
+        'initial_setup_precor',
+        'precor_org_roles',
+        'precor_orgs',
+        'legacy_objects'
+    ]
+
     def setUp(self):
-        self.initial_setup_args = ['precor']
         super(VideoTestCase, self).setUp()
         self.video_manager = facade.managers.VideoManager()
         self.video_category_manager = facade.managers.VideoCategoryManager()
         self.video_session_manager = facade.managers.VideoSessionManager()
         self.encoded_video_manager = facade.managers.EncodedVideoManager()
         self.category_manager = facade.managers.CategoryManager()
+
+    # XXX: should eventually go away
+    def create_student(self, group='Students', title='Private', first_name='Learning', last_name='Student', label='1234 Test Address Lane', locality='Testville',
+            region='NC', postal_code='12345', country='US', phone='378-478-3845'):
+        username = self.user_manager.generate_username('', first_name, last_name)
+        email = username+'@electronsweatshop.com'
+        shipping_address = {'label' : label, 'locality' : locality, 'postal_code' : postal_code, 'country' : country, 'region' : region}
+        billing_address = shipping_address
+        optional_attributes = {
+            'name_suffix' : 'Jr.',
+            'shipping_address' : shipping_address,
+            'billing_address' : billing_address,
+        }
+        if group:
+            student_group_id = self.group_manager.get_filtered(self.admin_token, {'exact' : {'name' : group}})[0]['id']
+            optional_attributes['groups'] = [student_group_id]
+        student = self.user_manager.create(self.admin_token, username, 'password', title, first_name, last_name, phone, email, 'active', optional_attributes)
+        student_at = facade.models.AuthToken.objects.get(session_id__exact=self.user_manager.login(username, 'password')['auth_token'])
+        return student, student_at
 
     def create_category_manager(self, title='Private', first_name='Category', last_name='Manager', label='1234 Test Address Lane', locality='Testville',
             region='NC', postal_code='12345', country='US', phone='378-478-3845'):
@@ -97,23 +123,23 @@ We aliens don't mind, however.  All of our videos are imaginary to humans.''',
         ret = self.video_manager.get_filtered(self.admin_token, {'member': {'id' : [self.video_2.id]}},
             ['tags'])
         self.assertEquals(len(ret), 1)
-        self.assertEquals(len(ret[0]['tags']), 2) 
+        self.assertEquals(len(ret[0]['tags']), 2)
         self.failUnless('blah' in ret[0]['tags'])
         self.failUnless('uninteresting' in ret[0]['tags'])
-        
+
         self.video_3 = self.video_manager.create(self.admin_token, 'Video Number 3',
             '''Blah, blah, blah blah.  This is a description for video 3.''',
             categories=[1], optional_attributes={'tags': {'add': ['uninteresting']}})
         ret = self.video_manager.get_filtered(self.admin_token, {'member': {'id' : [self.video_3.id]}},
             ['tags'])
         self.assertEquals(len(ret), 1)
-        self.assertEquals(len(ret[0]['tags']), 1) 
+        self.assertEquals(len(ret[0]['tags']), 1)
         self.failUnless('uninteresting' in ret[0]['tags'])
-    
+
     def test_add_tags(self):
         self.video_manager.update(self.admin_token, self.video_1.id,
             {'tags' : {'add' : ['alien', 'unusual', 'imaginary']}})
-        
+
         ret = self.video_manager.get_filtered(self.admin_token, {'member': {'id' : [self.video_1.id]}},
             ['tags'])
         self.assertEquals(len(ret), 1)
@@ -122,10 +148,10 @@ We aliens don't mind, however.  All of our videos are imaginary to humans.''',
         self.failUnless('alien' in ret[0]['tags'])
         self.failUnless('unusual' in ret[0]['tags'])
         self.failUnless('imaginary' in ret[0]['tags'])
-        
+
         self.video_manager.update(self.admin_token, self.video_1.id,
             {'tags' : {'add' : ['extraterrestrial', 'facetious']}})
-        
+
         ret = self.video_manager.get_filtered(self.admin_token, {'member': {'id' : [self.video_1.id]}},
             ['tags'])
         self.assertEquals(len(ret), 1)
@@ -136,11 +162,11 @@ We aliens don't mind, however.  All of our videos are imaginary to humans.''',
         self.failUnless('imaginary' in ret[0]['tags'])
         self.failUnless('extraterrestrial' in ret[0]['tags'])
         self.failUnless('facetious' in ret[0]['tags'])
-    
+
     def test_remove(self):
         self.video_manager.update(self.admin_token, self.video_1.id,
             {'tags' : {'add': ['one', 'two', 'three']}})
-        
+
         ret = self.video_manager.get_filtered(self.admin_token, {'member': {'id' : [self.video_1.id]}},
             ['tags'])
         self.assertEquals(len(ret), 1)
@@ -149,20 +175,20 @@ We aliens don't mind, however.  All of our videos are imaginary to humans.''',
         self.failUnless('one' in ret[0]['tags'])
         self.failUnless('two' in ret[0]['tags'])
         self.failUnless('three' in ret[0]['tags'])
-        
+
         self.video_manager.update(self.admin_token, self.video_1.id,
             {'tags' : {'remove': ['two', 'three']}})
-        
+
         ret = self.video_manager.get_filtered(self.admin_token, {'member': {'id' : [self.video_1.id]}},
             ['tags'])
         self.assertEquals(len(ret), 1)
         self.failUnless(isinstance(ret[0]['tags'], list))
         self.assertEquals(len(ret[0]['tags']), 1)
         self.failUnless('one' in ret[0]['tags'])
-        
+
         self.video_manager.update(self.admin_token, self.video_1.id,
             {'tags' : {'remove': [u'one'], 'add' : [u'onesimus', u'origen']}})
-        
+
         ret = self.video_manager.get_filtered(self.admin_token, {'member': {'id' : [self.video_1.id]}},
             ['tags'])
         self.assertEquals(len(ret), 1)
@@ -170,13 +196,13 @@ We aliens don't mind, however.  All of our videos are imaginary to humans.''',
         self.assertEquals(len(ret[0]['tags']), 2)
         self.failUnless(u'onesimus' in ret[0]['tags'])
         self.failUnless(u'origen' in ret[0]['tags'])
-    
+
     def test_force_tags_to_lowercase(self):
         self.assertEquals(settings.FORCE_LOWERCASE_TAGS, True,
             'the FORCE_LOWERCASE_TAGS settings should be set to true for this unit test')
         self.video_manager.update(self.admin_token, self.video_1.id,
             {'tags' : {'add': [u'laurel', u'HArDy', u'FoO', u'中文的东西', u'Anschluß']}})
-        
+
         ret = self.video_manager.get_filtered(self.admin_token, {'member': {'id' : [self.video_1.id]}},
             ['tags'])
         self.assertEquals(len(ret), 1)
@@ -187,7 +213,7 @@ We aliens don't mind, however.  All of our videos are imaginary to humans.''',
         self.failUnless(u'foo' in ret[0]['tags'])
         self.failUnless(u'中文的东西' in ret[0]['tags'])
         self.failUnless(u'anschluß' in ret[0]['tags'])
-        
+
     def test_get_filtered_with_tags(self):
         ret = self.video_manager.get_filtered(self.admin_token,
             {'tag_union' : ['uninteresting']},
@@ -198,7 +224,7 @@ We aliens don't mind, however.  All of our videos are imaginary to humans.''',
             pks.append(video['id'])
         self.failUnless(self.video_2.id in pks)
         self.failUnless(self.video_3.id in pks)
-        
+
         ret = self.video_manager.get_filtered(self.admin_token,
             {'tag_union' : ['blah', 'uninteresting']},
             ['name', 'tags'])
@@ -208,13 +234,13 @@ We aliens don't mind, however.  All of our videos are imaginary to humans.''',
             pks.append(video['id'])
         self.failUnless(self.video_2.id in pks)
         self.failUnless(self.video_3.id in pks)
-        
+
         ret = self.video_manager.get_filtered(self.admin_token,
             {'tag_intersection' : ['blah', 'uninteresting']},
             ['name', 'tags'])
         self.assertEquals(len(ret), 1)
         self.assertEquals(ret[0]['id'], self.video_2.id)
-        
+
         ret = self.video_manager.get_filtered(self.admin_token,
             {'or' : [{'tag_intersection' : ['blah', 'uninteresting']},
              {'icontains' : {'name': 'VIDEO number 1'}}]},
@@ -594,7 +620,7 @@ class TestVideoSystem(VideoTestCase):
             self.video_session_manager.get_filtered(self.admin_token,
             {}, ['assignment']) ]
         self.assertEquals(set(self._expect_sessions), set(sessions))
-        
+
     def test_register_video_view(self):
         group = self.group_manager.create(self.admin_token, 'group1')
         self.category_manager.update(self.admin_token, 1,
@@ -830,7 +856,7 @@ class TestVideoAuthz(VideoTestCase):
         self.user_manager.update(self.admin_token, self.uploader.id,
             {'roles' : {'add' : [{'id' : user_role, 'organization' : self.organization1}]}})
         self.luser, self.luser_at = self.create_student(group=None)
-        
+
         self.video1 = self.video_manager.create(self.admin_token, 'video1',
             'approved video', categories=[self.cat1.id, self.cat2.id])
         vc = self.video_category_manager.get_filtered(self.admin_token,

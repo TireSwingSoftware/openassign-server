@@ -108,6 +108,11 @@ INSTALLED_APPS = (
     'file_tasks',
 )
 
+FIXTURE_DIRS = (
+    os.path.join(PROJECT_ROOT,
+        'pr_services/testlib/fixtures').replace('\\', '/'),
+)
+
 # List of apps to be skipped when running unit tests (see pr_services.__init__.py).
 TEST_SKIP_APP_TESTS = (
     'django.contrib.contenttypes',
@@ -158,7 +163,7 @@ LOGFILE_LOCATION = None
 
 ## The following USER_PHOTO_* options should not be left to the whim of the
 ## local administrator.
-# extension for one of PIL's writable formats, generally one of 
+# extension for one of PIL's writable formats, generally one of
 # (gif, jpg, png)
 # See http://www.pythonware.com/library/pil/handbook/index.htm for complete list
 PHOTO_FORMAT = 'png'
