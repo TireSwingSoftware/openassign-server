@@ -1,0 +1,67 @@
+[
+    {
+    "pk": 1,
+    "model": "pr_services.event",
+    "fields": {
+      "product_line": null,
+      "save_timestamp": "2012-01-14 07:07:34",
+      "final_type": [
+        "pr_services",
+        "event"
+      ],
+      "twitter_template": "I just signed up for {{event}}! Join me! {{url}}",
+      "title": "Some Event",
+      "url": null,
+      "facebook_template": "I just signed up for {{event}}! Click the link to join me.",
+      "region": null,
+      "description": "An Event",
+      "venue": null,
+      "external_reference": null,
+      "start": "2012-01-14",
+      "event_template": null,
+      "lag_time": 300,
+      "create_timestamp": "2012-01-14 07:07:34",
+      "organization": 1,
+      "owner": 1,
+      "end": "2012-01-15",
+      "lead_time": null,
+      "notes": [],
+      "name": "Foo1"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "pr_services.session",
+    "fields": {
+      "default_price": 123,
+      "save_timestamp": "2012-01-14 07:07:34",
+      "create_timestamp": "2012-01-14 07:07:34",
+      "owner": null,
+      "sent_reminders": false,
+      "modality": "Generic",
+      "confirmed": true,
+      "end": "2012-01-14 08:07:34",
+      "session_template": null,
+      "title": null,
+      "event": 1,
+      "start": "2012-01-14 07:07:34",
+      "shortname": "Short Name",
+      "evaluation": null,
+      "lead_time": null,
+      "status": "active",
+      "description": null,
+      "blame": 1,
+      "active": true,
+      "final_type": [
+        "pr_services",
+        "session"
+      ],
+      "graphic": "",
+      "room": 1,
+      "url": null,
+      "notes": [],
+      "audience": null,
+      "fullname": "Full Name"
+    }
+  }
+]

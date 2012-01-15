@@ -1838,36 +1838,42 @@ class TestSessionUserRoleManager(GeneralTestCase):
         session_user_roles = self.session_user_role_manager.get_filtered({'exact' : {'id' : session_user_role.id}}, ['id', 'name'])
         self.assertEquals(session_user_roles[0]['name'], 'Sweep It Upper')
 
+
 class TestSessionUserRoleRequirementManager(GeneralTestCase):
+
+    fixtures = GeneralTestCase.fixtures + ['session_and_event']
+
     def setUp(self):
         super(TestSessionUserRoleRequirementManager, self).setUp()
+
         self.instructor_role = SessionUserRole.objects.get(name__exact='Instructor')
         self.student_role = SessionUserRole.objects.get(name__exact='Student')
-        self.e1 = self.event_manager.create('Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
-        self.session = self.session_manager.create(self.right_now.isoformat(),
-            (self.right_now + self.one_day).isoformat(), 'active', False, 100, self.e1.id, 'short name 1', 'long name 1')
+        self.session = Session.objects.get(id=1)
+        self.event = Event.objects.get(id=1)
+
+        manager = self.session_user_role_requirement_manager
+        self.create_surr = manager.create
+        self.surr_view = manager.surr_view
+        self.get_filtered = manager.get_filtered
 
     def test_creation(self):
-        surr = self.session_user_role_requirement_manager.create(self.session.id, self.instructor_role.id, 1,
-            2, [])
-        ret = self.session_user_role_requirement_manager.get_filtered({'exact':{'id':surr.id}}, ['id', 'max'])
+        surr = self.create_surr(self.session.id, self.instructor_role.id, 1, 2, [])
+        ret = self.get_filtered({'exact':{'id':surr.id}}, ['id', 'max'])
         self.assertEquals(type(ret), list)
         self.assertEquals(ret[0]['id'], surr.id)
         self.assertEquals(ret[0]['max'], 2)
 
     def test_view(self):
-        surr1 = self.session_user_role_requirement_manager.create(self.session.id, self.instructor_role.id, 1,
-            2, [])
-        self.session_user_role_requirement_manager.create(self.session.id, self.student_role.id, 1,
-            2, [])
-        ret = self.session_user_role_requirement_manager.surr_view(self.admin_token)
+        surr1 = self.create_surr(self.session.id, self.instructor_role.id, 1, 2, [])
+        self.create_surr(self.session.id, self.student_role.id, 1, 2, [])
+        ret = self.surr_view()
         self.assertEquals(type(ret), list)
         self.assertEquals(len(ret), 2)
 
-        ret = self.session_user_role_requirement_manager.surr_view({'exact' : {'id' : surr1.id}})
+        ret = self.surr_view({'exact' : {'id' : surr1.id}})
         self.assertEquals(type(ret), list)
         self.assertEquals(len(ret), 1)
+        self.assertIn('id', ret[0])
         self.assertEquals(ret[0]['id'], surr1.id)
 
 class TestDomainManagement(GeneralTestCase):
