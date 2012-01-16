@@ -606,6 +606,12 @@ def setup(machine):
                 'u' : set(('contact', 'region', 'address', 'owner', 'phone', 'name', 'events', 'hours_of_operation',)),
                 'd' : True,
                 },
+        'BlackoutPeriod' : {
+                'c' : True,
+                'r' : set(('venue', 'start', 'end', 'description',)),
+                'u' : set(('venue', 'start', 'end', 'description',)),
+                'd' : True,
+                },
         'Video' : {
                 'c' : True,
                 'r' : set(('id', 'approved_categories', 'aspect_ratio', 'author',

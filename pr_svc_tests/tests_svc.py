@@ -127,6 +127,7 @@ class TestCase(BaseTestCase):
         self.user_manager = self.svcGateway.getService('UserManager')
         self.utils_manager = self.svcGateway.getService('UtilsManager')
         self.venue_manager = self.svcGateway.getService('VenueManager')
+        self.blackout_period_manager = self.svcGateway.getService('BlackoutPeriodManager')
         self.video_manager = self.svcGateway.getService('VideoManager')
         self.video_session_manager = self.svcGateway.getService('VideoSessionManager')
 
@@ -897,6 +898,8 @@ class TestRoomManagerSvc(TestCase):
         # make sure the busy rooms are NOT in this list
         self.assertTrue(unicode(place_ids['v1_room1_id']) not in ret['value'])
         self.assertTrue(unicode(place_ids['v1_room2_id']) in ret['value'])
+        self.assertTrue(unicode(place_ids['v2_room1_id']) in ret['value'])
+        self.assertTrue(unicode(place_ids['v2_room2_id']) in ret['value'])
 
         # test without the conflicting IDs
         test_room_ids = [
@@ -921,6 +924,32 @@ class TestRoomManagerSvc(TestCase):
             test_room_ids)
         self.assertEquals(ret['status'], 'OK')
         self.assertEquals(len(ret['value']), 0)
+
+        # test all rooms, during a blackout period for venue 1 (this should
+        # leave ONE room available in venue 2)
+        ret = self.blackout_period_manager.create(self.admin_token,
+            place_ids['venue1_id'],
+            now, # start
+            tomorrow, # end
+            "Closed for asbestos removal.") # description
+        self.assertEquals(ret['status'], 'OK')
+        test_room_ids = [
+            place_ids['v1_room1_id'], 
+            place_ids['v1_room2_id'],
+            place_ids['v2_room1_id'], 
+            place_ids['v2_room2_id']
+        ]
+        ret = self.room_manager.get_available_rooms(self.admin_token,
+            now, # start
+            tomorrow, # end
+            test_room_ids)
+        self.assertEquals(ret['status'], 'OK')
+        self.assertEquals(len(ret['value']), 2)
+        # make sure rooms from blacked-out venue 1 are NOT in this list
+        self.assertTrue(unicode(place_ids['v1_room1_id']) not in ret['value'])
+        self.assertTrue(unicode(place_ids['v1_room2_id']) not in ret['value'])
+        self.assertTrue(unicode(place_ids['v2_room1_id']) in ret['value'])
+        self.assertTrue(unicode(place_ids['v2_room2_id']) in ret['value'])
 
 class TestVenueManagerSvc(TestCase):
     def test_get_available_venues(self):
@@ -985,6 +1014,22 @@ class TestVenueManagerSvc(TestCase):
             ['id','name'])
         self.assertEquals(ret['status'], 'OK')
         self.assertEquals(len(ret['value']), 2)
+
+        # try again, after adding a blackout period to venue 2
+        ret = self.blackout_period_manager.create(self.admin_token,
+            place_ids['venue2_id'],
+            one_hour_from_now, # start
+            twelve_hours_from_now, # end
+            "Reserved for local pinochle tournament.") # description
+        self.assertEquals(ret['status'], 'OK')
+        ret = self.venue_manager.get_available_venues(self.admin_token,
+            now,      # start
+            tomorrow, # end
+            ['id','name'])
+        self.assertEquals(ret['status'], 'OK')
+        # should only return venue 1 as available
+        self.assertEquals(len(ret['value']), 1)
+        self.assertEquals(ret['value'][0]['id'], place_ids['venue1_id'])
 
 class TestScoManagerSvc(TestCase):
     def test_sco_url(self):

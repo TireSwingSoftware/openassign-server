@@ -1879,6 +1879,8 @@ class Venue(OwnedPRModel):
       - address (1 Venue to 0..1 Address)
       - session (1 Session to 0..1 Venue)
       - region (1 Venue to 0..1 Region)
+      - blackout_period (1 Venue to 0..* BlackoutPeriods)
+        [blackout_periods]
     """
 
     active = PRBooleanField(default=True)
@@ -1896,6 +1898,26 @@ class Venue(OwnedPRModel):
         return self.name
     def __unicode__(self):
         return u'%s' % (self.name)
+
+
+class BlackoutPeriod(OwnedPRModel):
+    """
+    A venue can have one or more blackout periods, during which no sessions
+    can be scheduled. These can start and end at any time, over multiple days.
+
+    relationships:
+     - venue (1 Venue to 0..* BlackoutPeriods)
+     - blame (1 BlackoutPeriod to 1 Blame)
+    """
+    blame = PRForeignKey(Blame, null=True)
+    venue = PRForeignKey(Venue, related_name='blackout_periods')
+    start = models.DateField()
+    end = models.DateField()
+    description = models.TextField()
+
+    @property
+    def venue_name(self):
+        return self.venue.name
 
 
 class Room(OwnedPRModel):

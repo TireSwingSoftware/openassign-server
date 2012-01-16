@@ -94,10 +94,16 @@ class RoomManager(ObjectManager):
         # query for available rooms
         e = facade.models.Room.objects.filter( 
             id__in = available_room_ids)
-        # iterate over these objects based on visibility of each room's ID
+        # iterate over these objects, filtering out those from blacked-out
+        # venues and any whose IDs are hidden from this user
         avail_ids = []
         auth = self.authorizer
+        venue_manager = facade.managers.VenueManager()
+        available_venues = venue_manager.get_available_venues(auth_token, start, end)
+        avail_venue_ids = [ven_info['id'] for ven_info in available_venues]
         for pr_object in e.iterator():
+            if pr_object.venue.id not in avail_venue_ids:
+                continue
             auth.check_read_permissions(auth_token, pr_object, ['id'])
             avail_ids.append(str(pr_object.id))
         return avail_ids
