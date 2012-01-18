@@ -21,6 +21,7 @@ class VenueManager(ObjectManager):
         'phone': 'get_general',
         'region': 'get_foreign_key',
         'rooms': 'get_many_to_one',
+        'blackout_periods': 'get_many_to_one',
     }
     SETTERS = {
         'address': 'set_address',
@@ -32,6 +33,7 @@ class VenueManager(ObjectManager):
         'phone': 'set_general',
         'region': 'set_foreign_key',
         'rooms': 'set_many',
+        'blackout_periods': 'set_many',
     }
     def __init__(self):
         """ constructor """
@@ -97,9 +99,20 @@ class VenueManager(ObjectManager):
         blocked_room_ids = list(set(blocked_room_ids))
         available_room_ids = [i for i in available_room_ids if i not in blocked_room_ids]
 
-        # query for available rooms
+        # query for available rooms, extract the venue ID from each
         available_venue_ids = facade.models.Room.objects.filter( 
             id__in = available_room_ids).values_list('venue', flat=True)
+
+        # filter out venues with with blackout periods in this time span
+        blackout_venue_ids = [ ]
+        conflicting_blackout_periods = (
+            facade.models.BlackoutPeriod.objects.filter(start__lt=end) &
+            facade.models.BlackoutPeriod.objects.filter(end__gt=start)
+        )
+        blackout_venue_ids.extend( conflicting_blackout_periods.values_list('venue', flat=True) )
+        # remove duplicates from the list of blocked IDs
+        blackout_venue_ids = list(set(blackout_venue_ids))
+        available_venue_ids = [i for i in available_venue_ids if i not in blackout_venue_ids]
 
         return self.get_filtered(auth_token, 
             {'member' : {'id' : available_venue_ids} },

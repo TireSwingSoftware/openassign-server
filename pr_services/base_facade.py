@@ -91,6 +91,7 @@ managers.add_import('TrainingVoucherManager', 'pr_services.product_system.traini
 managers.add_import('UserManager', 'pr_services.user_system.user_manager')
 managers.add_import('UserOrgRoleManager', 'pr_services.user_system.user_organization_role_manager')
 managers.add_import('VenueManager', 'pr_services.resource_system.venue_manager')
+managers.add_import('BlackoutPeriodManager', 'pr_services.resource_system.blackout_period_manager')
 managers.add_import('UtilsManager', 'pr_services.utils_manager')
 
 models = ModelsFacade()
@@ -171,5 +172,6 @@ models.add_import('TrainingVoucher', 'pr_services.models')
 models.add_import('User', 'pr_services.models')
 models.add_import('UserOrgRole', 'pr_services.models')
 models.add_import('Venue', 'pr_services.models')
+models.add_import('BlackoutPeriod', 'pr_services.models')
 
 # vim:tabstop=4 shiftwidth=4 expandtab
