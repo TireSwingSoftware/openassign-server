@@ -4,6 +4,7 @@ from django.conf import settings
 @authz
 def setup(machine):
     methods = [
+        {'name' : 'actor_assigned_to_curriculum_enrollment', 'params' : {}},
         {'name' : 'actor_has_completed_assignment_prerequisites', 'params' : {}},
         {'name' : 'actor_is_acting_upon_themselves', 'params' : {}},
         {'name' : 'actor_owns_achievement_award', 'params' : {}},
@@ -53,6 +54,12 @@ def setup(machine):
             'r' : set(('authority', 'credential_type', 'date_assigned',
                    'date_expires', 'date_granted', 'date_started',
                    'serial_number', 'status', 'user')),
+            'u' : set(),
+            'd' : False,
+        },
+        'CurriculumEnrollment' : {
+            'c' : False,
+            'r' : set(('curriculum_name', 'start', 'end')),
             'u' : set(),
             'd' : False,
         },

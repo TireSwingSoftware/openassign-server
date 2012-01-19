@@ -700,6 +700,25 @@ class Authorizer(object):
             pass
         return False
 
+    #################################################################################
+    #
+    # Methods for which actee is a CurriculumEnrollment
+    #
+    #################################################################################
+    def actor_assigned_to_curriculum_enrollment(self, auth_token, actee):
+        """
+        Returns True iff the actor is assigned to the CurriculumEnrollment
+        """
+        if not isinstance(actee, facade.models.CurriculumEnrollment):
+            raise exceptions.InvalidActeeTypeException()
+        try:
+            return actee.users.filter(id=auth_token.user_id).exists()
+        except ObjectDoesNotExist:
+            pass
+        except AttributeError:
+            pass
+        return False
+
     #################################################################
     #
     # Methods for which actee is a DomainAffiliation
