@@ -1,0 +1,15 @@
+[
+    {
+        "pk": 1,
+        "model": "pr_services.region",
+        "fields": {
+            "save_timestamp": "2012-01-19 01:55:05",
+            "final_type": 25,
+            "notes": [],
+            "active": true,
+            "create_timestamp": "2012-01-19 01:55:05",
+            "owner": null,
+            "name": "Planet Earth"
+        }
+    }
+]
