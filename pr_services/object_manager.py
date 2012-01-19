@@ -203,6 +203,8 @@ class ObjectManager(object):
 
             self.my_manager = my_manager
             self.handlers = {
+                'greater_than' : self._handle_endpoint,
+                'less_than' : self._handle_endpoint,
                 'range' : self._handle_range,
             }
 
@@ -226,6 +228,18 @@ class ObjectManager(object):
         boolean_operators = ('and', 'or', 'not')
 
         tag_operators = ('tag_union', 'tag_intersection')
+
+        def _handle_endpoint(self, arg):
+            """
+            This determines if the endpoint of a 'greater_than' or 'less_than' fitler is temporal, and if so, converts the endpoint from
+            ISO8601 string to a python datetime instance.
+
+            :param arg: string value of the filter
+            """
+            if pr_time.is_iso8601(arg):
+                return pr_time.iso8601_to_datetime(arg)
+            else:
+                return arg
 
         def _handle_range(self, range_arg):
             """
