@@ -896,10 +896,11 @@ class TestRoomManagerSvc(TestCase):
         self.assertEquals(ret['status'], 'OK')
         self.assertEquals(len(ret['value']), 3)
         # make sure the busy rooms are NOT in this list
-        self.assertTrue(unicode(place_ids['v1_room1_id']) not in ret['value'])
-        self.assertTrue(unicode(place_ids['v1_room2_id']) in ret['value'])
-        self.assertTrue(unicode(place_ids['v2_room1_id']) in ret['value'])
-        self.assertTrue(unicode(place_ids['v2_room2_id']) in ret['value'])
+        room_ids = [room['id'] for room in ret['value']]
+        self.assertTrue(place_ids['v1_room1_id'] not in room_ids)
+        self.assertTrue(place_ids['v1_room2_id'] in room_ids)
+        self.assertTrue(place_ids['v2_room1_id'] in room_ids)
+        self.assertTrue(place_ids['v2_room2_id'] in room_ids)
 
         # test without the conflicting IDs
         test_room_ids = [
@@ -945,11 +946,12 @@ class TestRoomManagerSvc(TestCase):
             test_room_ids)
         self.assertEquals(ret['status'], 'OK')
         self.assertEquals(len(ret['value']), 2)
+        room_ids = [room['id'] for room in ret['value']]
         # make sure rooms from blacked-out venue 1 are NOT in this list
-        self.assertTrue(unicode(place_ids['v1_room1_id']) not in ret['value'])
-        self.assertTrue(unicode(place_ids['v1_room2_id']) not in ret['value'])
-        self.assertTrue(unicode(place_ids['v2_room1_id']) in ret['value'])
-        self.assertTrue(unicode(place_ids['v2_room2_id']) in ret['value'])
+        self.assertTrue(place_ids['v1_room1_id'] not in room_ids)
+        self.assertTrue(place_ids['v1_room2_id'] not in room_ids)
+        self.assertTrue(place_ids['v2_room1_id'] in room_ids)
+        self.assertTrue(place_ids['v2_room2_id'] in room_ids)
 
 class TestVenueManagerSvc(TestCase):
     def test_get_available_venues(self):

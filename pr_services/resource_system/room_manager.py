@@ -63,7 +63,7 @@ class RoomManager(ObjectManager):
         return r
 
     @service_method
-    def get_available_rooms(self, auth_token, start, end, room_ids):
+    def get_available_rooms(self, auth_token, start, end, room_ids, requested_fields=None):
         """
         Query rooms available (from a selected set of room IDs) during the specified timespan
 
@@ -71,8 +71,9 @@ class RoomManager(ObjectManager):
         @param start              Start time as ISO8601 string or datetime
         @param end                End time as ISO8601 string or datetime
         @param room_ids           Required list of room IDs to check
-        @return                   a filtered, simple list of available room IDs
+        @return                   a result set produced by get_filtered()
         """
+        requested_fields = requested_fields or []
         test_room_ids = room_ids or [ ]
 
         # convert time arguments from isoformat string to datetime, if not already
@@ -106,7 +107,7 @@ class RoomManager(ObjectManager):
                 continue
             auth.check_read_permissions(auth_token, pr_object, ['id'])
             avail_ids.append(str(pr_object.id))
-        return avail_ids
+        return self.get_filtered(auth_token, {'member' : {'id' : avail_ids}}, requested_fields)
 
 
 # vim:tabstop=4 shiftwidth=4 expandtab
