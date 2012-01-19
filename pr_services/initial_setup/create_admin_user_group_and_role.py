@@ -601,7 +601,7 @@ def setup(machine):
                 },
         'Venue' : {
                 'c' : True,
-                'r' : set(('contact', 'region', 'address', 'owner', 'phone',
+                'r' : set(('blackout_periods', 'contact', 'region', 'address', 'owner', 'phone',
                     'name', 'events', 'rooms', 'hours_of_operation',)),
                 'u' : set(('contact', 'region', 'address', 'owner', 'phone', 'name', 'events', 'hours_of_operation',)),
                 'd' : True,
