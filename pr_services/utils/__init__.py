@@ -70,9 +70,12 @@ class Utils(object):
         :return:                    q1 with contents of field specified by glue_field replaced
                                     with more detailed data from q2
         """
+        # fast-path: query set is empty
+        if not q1:
+            return []
 
         # get a list of all pks for the secondary object
-        q2_ids = set([])
+        q2_ids = set()
         iterable_value = True
         for item in q1:
             value = item.get(glue_field_name, None)
@@ -88,20 +91,22 @@ class Utils(object):
         # execute a query for the secondary object
         q2 = q2_manager.get_filtered(auth_token,
             {'member' : {'id' : q2_ids}}, q2_requested_fields)
+        if not q2:
+            #XXX: what should really happen here?
+            return q1
         q2_dict = {}
         for item in q2:
             q2_dict[item['id']] = item
 
         # replace PKs in q1 with data about the secondary object
         for item in q1:
-            if item.get(glue_field_name, None) is not None:
-                if iterable_value:
-                    new_list = []
-                    for key in item.get(glue_field_name, []):
-                        new_list.append(q2_dict[key])
-                    item[glue_field_name] = new_list
-                else:
-                    item[glue_field_name] = q2_dict[item[glue_field_name]]
+            glue_field = item.get(glue_field_name, None)
+            if not glue_field:
+                continue
+            elif iterable_value:
+                item[glue_field_name] = [q2_dict[key] for key in glue_field]
+            else:
+                item[glue_field_name] = q2_dict[item[glue_field_name]]
 
         return q1
 
