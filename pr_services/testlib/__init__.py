@@ -74,7 +74,8 @@ class ManagerAuthTokenWrapper(object):
             try:
                 return method(token, *args, **kwargs)
             except TypeError as e:
-                if 'takes exactly' in e.message:
+                msg = str(e)
+                if 'takes exactly' in msg:
                     return method(*args, **kwargs)
 
         return _wrapper
