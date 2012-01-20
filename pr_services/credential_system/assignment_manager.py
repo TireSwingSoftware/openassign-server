@@ -6,6 +6,9 @@ import collections
 import datetime
 import logging
 
+from operator import itemgetter
+from itertools import chain
+
 from django.conf import settings
 
 import facade
@@ -17,7 +20,9 @@ from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 from pr_services.utils import Utils
 
+facade.import_models(locals(), globals())
 merge_queries = Utils.merge_queries
+flatten = chain.from_iterable
 
 _logger = logging.getLogger('pr_services.credential_system.assignment_manager')
 
@@ -27,6 +32,7 @@ class AssignmentManager(ObjectManager):
     """
 
     GETTERS = {
+        'achievement_awards': 'get_many_to_one',
         'assignment_attempts': 'get_many_to_one',
         'authority': 'get_general',
         'date_completed': 'get_time',
@@ -43,6 +49,7 @@ class AssignmentManager(ObjectManager):
     }
 
     SETTERS = {
+        'achievement_awards': 'set_many',
         'assignment_attempts': 'set_many',
         'authority': 'set_general',
         'date_completed': 'set_time',
@@ -357,5 +364,56 @@ class AssignmentManager(ObjectManager):
         return results
 
     @service_method
+    def transcript_view(self, auth_token, filters=None, fields=None,
+            user_id=None, *args, **kwargs):
+        """
+        A convenient view over a user's transcript. The contents of which is a
+        list of assignments for the user specified by `user_id` or the current
+        authenticated user.
+
+        The transcript includes general information about each task for
+        'completed' assignments and details of any associated achievements and awards.
+
+        Args:
+            See arguments for AssignmentManager.view
+        """
+        # fields needed to complete the view
+        default_fields = set(('date_started', 'date_completed', 'achievement_awards'))
+
+        # union with any fields the user specified
+        if fields:
+            fields = set(fields) | default_fields
+        else:
+            fields = default_fields
+
+        # default filter for completed status
+        if not filters:
+            filters = {
+                'exact': {
+                    'status': 'completed',
+                    'user': user_id or auth_token.user_id
+                }
+            }
+        # grab completed assignments and return early if there are none
+        assignments = self.view(auth_token, filters=filters, fields=fields,
+                task_fields=('achievements',), *args, **kwargs)
+
+        if (assignments and
+            'task' in assignments[0] and
+            'achievements' in assignments[0]['task']):
+            # merge in achievement details; hit the database only once
+            # TODO: this could be done pretty easily in merge_queries
+            manager = facade.managers.AchievementManager()
+            ids = set(flatten(a['task']['achievements'] for a in assignments))
+            query = Achievement.objects.filter(id__in=ids)
+            results = facade.subsystems.Getter(auth_token, manager, query,
+                    ('name', 'description')).results
+            achievements = {}
+            for row in results:
+                achievements[row['id']] = row
+            for task in map(itemgetter('task'), assignments):
+                task['achievements'] = map(achievements.get, task['achievements'])
+
+        return assignments
 
 # vim:tabstop=4 shiftwidth=4 expandtab
