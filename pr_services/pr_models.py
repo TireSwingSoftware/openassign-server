@@ -1123,7 +1123,8 @@ class Assignment(PRModel):
         """
 
         self.status = 'completed'
-        self.date_completed = datetime.utcnow()
+        self.date_completed = datetime.utcnow().replace(microsecond=0,
+                tzinfo=pr_time.UTC())
         # We need to call the super class save here so that the change of
         # 'completed' will be detected in the Credential checks.
         super(Assignment, self).save()
