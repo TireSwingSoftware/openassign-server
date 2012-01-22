@@ -146,7 +146,7 @@ class TestCase(django.test.TestCase):
         for key, value in self._settings.iteritems():
             setattr(settings, key, value)
 
-    def _setup_managers(self):
+    def _setup_managers(self, include_admin=False):
         """
         Setup common managers for convenience in subclasses
 
@@ -154,11 +154,12 @@ class TestCase(django.test.TestCase):
         lowercase and underscored instead of CamelCase. The 'FooBarManager'
         will be foo_bar_manager.
 
-        An additional 'admin_foo_bar_manager' manager will be provided which
-        wraps the foo_bar manager with an admin token such that all operations
-        are expected to succeed. This can be used to conveniently setup a test
-        context without having to worry about getting the correct token to
-        do so.
+        Args:
+            include_admin: if True, an additional 'admin_foo_bar_manager'
+            manager will be provided which wraps the foo_bar manager with an
+            admin token such that all operations are expected to succeed.
+            This can be used to conveniently setup a test context without
+            having to worry about getting the correct token to do so.
         """
         get_default_token = lambda: self.auth_token
         get_admin_token = lambda: self.admin_token
@@ -169,8 +170,9 @@ class TestCase(django.test.TestCase):
             if isinstance(manager, ObjectManager):
                 default_manager = ManagerAuthTokenWrapper(manager, get_default_token)
                 setattr(self, member_name, default_manager)
-                admin_manager = ManagerAuthTokenWrapper(manager, get_admin_token)
-                setattr(self, 'admin_%s' % member_name, admin_manager)
+                if include_admin:
+                    admin_manager = ManagerAuthTokenWrapper(manager, get_admin_token)
+                    setattr(self, 'admin_%s' % member_name, admin_manager)
             else:
                 setattr(self, member_name, manager)
 
@@ -202,6 +204,10 @@ class BasicTestCase(TestCase):
         self.admin_token = get_auth_token_object(token_str)
         # default the general auth token to administrator
         self.auth_token = self.admin_token
+
+    def _setup_managers(self):
+        """See `TestCase._setup_managers`."""
+        super(BasicTestCase, self)._setup_managers(include_admin=True)
 
 
 class GeneralTestCase(BasicTestCase):
