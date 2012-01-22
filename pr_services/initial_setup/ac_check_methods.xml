@@ -81,4 +81,5 @@
     <method name="actor_owns_assignment_for_task" title="Actor owns Assignment for Task" description="Returns True iff actor owns an assignment for the given task" />
     <method name="actor_assigned_to_session" title="Actor is assigned to the session" description="Returns True iff the actor has an assignment for this session" />
     <method name="actor_assigned_to_curriculum_enrollment" title="Actor is assigned to the CurriculumEnrollment" description="Returns True iff the actor is assigned to the CurriculumEnrollment" />
+    <method name="actor_assigned_to_event_session" title="Actor is assigned to the session for an event." description="Returns True if the actor is assigned to the session for an event." />
 </methods>

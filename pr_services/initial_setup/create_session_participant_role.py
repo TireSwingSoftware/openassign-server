@@ -3,10 +3,11 @@ from decorators import authz
 @authz
 def setup(machine):
     methods = [
-        {'name' : 'actor_owns_assignment', 'params' : {}},
-        {'name' : 'actor_owns_assignment_attempt', 'params' : {}},
-        {'name' : 'actor_owns_assignment_for_task', 'params' : {}},
-        {'name' : 'actor_assigned_to_session', 'params' : {}},
+        {'name': 'actor_assigned_to_event_session'},
+        {'name': 'actor_assigned_to_session'},
+        {'name': 'actor_owns_assignment'},
+        {'name': 'actor_owns_assignment_attempt'},
+        {'name': 'actor_owns_assignment_for_task'},
     ]
     crud = {
         'Assignment' : {
@@ -17,6 +18,13 @@ def setup(machine):
                        'assignment_attempts')),
             'u' : set(),
             'd' : False,
+        },
+        'Event': {
+            'c': False,
+            'r': set(('name', 'region', 'title', 'description', 'start', 'end',
+                      'venue', 'url', 'organization')),
+            'u': set(),
+            'd': False,
         },
         'Session' : {
             'c' : False,
