@@ -2878,37 +2878,35 @@ class TestUserManagerGetters(BasicTestCase):
 
     def test_get_achievements(self):
         _id = attrgetter('id')
-        expected = {
-            'id': _id(self.user),
-            'achievements': map(_id, self.user.achievements.all())
-        }
+        expected = sorted(map(_id, self.user.achievements.all()))
         # test getting achievement with the default token
         result = self.get_filtered(field_names=('achievements',))
         self.assertEquals(len(result), 1)
-        self.assertDictEqual(result[0], expected)
+        self.assertIn('achievements', result[0])
+        self.assertSequenceEqual(sorted(result[0]['achievements']), expected)
 
         # test getting achievements with the users token
         result = self.get_filtered(auth_token=self.user_token,
                 field_names=('achievements',))
         self.assertEquals(len(result), 1)
-        self.assertDictEqual(result[0], expected)
+        self.assertIn('achievements', result[0])
+        self.assertSequenceEqual(sorted(result[0]['achievements']), expected)
 
     def test_get_achievement_awards(self):
         _id = attrgetter('id')
-        expected = {
-            'id': _id(self.user),
-            'achievement_awards': map(_id, self.user.achievement_awards.all())
-        }
+        awards = sorted(map(_id, self.user.achievement_awards.all()))
         # test getting achievement awards with default token
         result = self.get_filtered(field_names=('achievement_awards',))
         self.assertEquals(len(result), 1)
-        self.assertDictEqual(result[0], expected)
+        self.assertIn('achievement_awards', result[0])
+        self.assertSequenceEqual(sorted(result[0]['achievement_awards']), awards)
 
         # test getting achievement awards with user's token
         result = self.get_filtered(auth_token=self.user_token,
                 field_names=('achievement_awards',))
         self.assertEquals(len(result), 1)
-        self.assertDictEqual(result[0], expected)
+        self.assertIn('achievement_awards', result[0])
+        self.assertSequenceEqual(sorted(result[0]['achievement_awards']), awards)
 
 
 class TestUserModel(BasicTestCase):
