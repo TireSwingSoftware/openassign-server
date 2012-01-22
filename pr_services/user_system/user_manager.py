@@ -39,6 +39,8 @@ class UserManager(ObjectManager):
     """
     #: Dictionary of attribute names and the functions used to get them
     GETTERS = {
+        'achievement_awards': 'get_many_to_one',
+        'achievements': 'get_many_to_many',
         'alleged_organization': 'get_general',
         'billing_address': 'get_address',
         'biography': 'get_general',
@@ -81,6 +83,8 @@ class UserManager(ObjectManager):
     }
     #: Dictionary of attribute names and the functions used to set them
     SETTERS = {
+        'achievement_awards': 'set_many',
+        'achievements': 'set_many',
         'alleged_organization': 'set_general',
         'billing_address': 'set_address',
         'biography': 'set_general',
