@@ -152,14 +152,15 @@ class TestFileDownload(FileTaskTestCase):
                 'id': fd.id,
                 'description': fd.description,
                 'name': fd.name,
-                'title': fd.title
-                },
+                'title': fd.title,
+                'type': 'file_tasks.file download'
+            },
             'user': {
                 'id': u.id,
                 'first_name': u.first_name,
-                'last_name': u.last_name,
-                }
+                'last_name': u.last_name
             }
+        }
         self.assertEquals(len(v), 1)
         self.assertDictEqual(v[0], expected)
 

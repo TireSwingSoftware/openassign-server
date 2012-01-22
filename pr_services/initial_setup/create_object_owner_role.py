@@ -100,7 +100,7 @@ def setup(machine):
         'User' : {
             # We allow users to create themselves
             'c' : True,
-            'r' : set(('credentials',
+            'r' : set(('achievements', 'achievement_awards', 'credentials',
                    'session_user_role_requirements', 'product_lines_managed',
                    'product_lines_instructor_manager_for', 'product_lines_instructor_for',
                    'groups', 'roles', 'photo_url', 'url', 'username',

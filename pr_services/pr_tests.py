@@ -14,11 +14,14 @@ import os
 import time
 import urllib2
 
+from datetime import datetime, date, timedelta
+from functools import partial
+from operator import attrgetter
+
 import django.test.client
 import django.utils.dateformat
 import django.utils.unittest
 
-from datetime import datetime, date, timedelta
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -2853,6 +2856,56 @@ class TestUserManager(GeneralTestCase):
         self.assertTrue('Mr. Mailme Mypassword' in mess.body)
         self.assertTrue('Example Corporation' in mess.body)
         self.assertTrue('mypasswd' in mess.body)
+
+
+class TestUserManagerGetters(BasicTestCase):
+
+    fixtures = BasicTestCase.fixtures + ['exams_and_achievements']
+
+    def setUp(self):
+        super(TestUserManagerGetters, self).setUp()
+        self.user = User.objects.get(id=2)
+        sid = self.user_manager.login('user1', 'password')['auth_token']
+        self.user_token = facade.subsystems.Utils.get_auth_token_object(sid)
+        self.exams = Exam.objects.all()
+        self.assignments = Assignment.objects.all()
+        self.get_filtered = partial(self.user_manager.get_filtered,
+                filters={'exact': {'id': self.user.id}})
+
+    def test_get_achievements(self):
+        _id = attrgetter('id')
+        expected = {
+            'id': _id(self.user),
+            'achievements': map(_id, self.user.achievements.all())
+        }
+        # test getting achievement with the default token
+        result = self.get_filtered(field_names=('achievements',))
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected)
+
+        # test getting achievements with the users token
+        result = self.get_filtered(auth_token=self.user_token,
+                field_names=('achievements',))
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected)
+
+    def test_get_achievement_awards(self):
+        _id = attrgetter('id')
+        expected = {
+            'id': _id(self.user),
+            'achievement_awards': map(_id, self.user.achievement_awards.all())
+        }
+        # test getting achievement awards with default token
+        result = self.get_filtered(field_names=('achievement_awards',))
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected)
+
+        # test getting achievement awards with user's token
+        result = self.get_filtered(auth_token=self.user_token,
+                field_names=('achievement_awards',))
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected)
+
 
 class TestUserModel(BasicTestCase):
     def test_delete(self):
