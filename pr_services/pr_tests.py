@@ -2872,6 +2872,10 @@ class TestUserManagerGetters(BasicTestCase):
         self.get_filtered = partial(self.user_manager.get_filtered,
                 filters={'exact': {'id': self.user.id}})
 
+        for a in self.assignments:
+            a.mark_completed()
+            a.save()
+
     def test_get_achievements(self):
         _id = attrgetter('id')
         expected = {
