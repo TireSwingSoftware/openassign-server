@@ -2865,8 +2865,7 @@ class TestUserManagerGetters(BasicTestCase):
     def setUp(self):
         super(TestUserManagerGetters, self).setUp()
         self.user = User.objects.get(id=2)
-        sid = self.user_manager.login('user1', 'password')['auth_token']
-        self.user_token = facade.subsystems.Utils.get_auth_token_object(sid)
+        self.user_token = self._get_auth_token('user1', 'password')
         self.exams = Exam.objects.all()
         self.assignments = Assignment.objects.all()
         self.get_filtered = partial(self.user_manager.get_filtered,

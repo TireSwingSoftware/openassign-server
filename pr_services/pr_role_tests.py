@@ -38,8 +38,7 @@ class TestSessionParticipantRole(TestCase):
         self.get_surr = partial(get_surr, filters=surr_filter)
 
         # perform the test operations as user1
-        auth_sid = self.user_manager.login('user1', 'password')['auth_token']
-        self.auth_token = AuthToken.objects.get(session_id=auth_sid)
+        self.auth_token = self._get_auth_token('user1', 'password')
 
 #    XXX: Test that arbitrary users can't assign themselves to sessions with
 #    escalated privileges.

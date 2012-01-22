@@ -146,6 +146,11 @@ class TestCase(django.test.TestCase):
         for key, value in self._settings.iteritems():
             setattr(settings, key, value)
 
+    def _get_auth_token(self, username, password):
+        """Perform user login and return the auth token object."""
+        sid = self.user_manager.login(username, password)['auth_token']
+        return get_auth_token_object(sid)
+
     def _setup_managers(self, include_admin=False):
         """
         Setup common managers for convenience in subclasses
@@ -200,8 +205,7 @@ class BasicTestCase(TestCase):
         da = DomainAffiliation.objects.get(username='admin', domain__name='local', default=True)
         self.admin_user = da.user
 
-        token_str = self.user_manager.login('admin', 'admin')['auth_token']
-        self.admin_token = get_auth_token_object(token_str)
+        self.admin_token = self._get_auth_token('admin', 'admin')
         # default the general auth token to administrator
         self.auth_token = self.admin_token
 
