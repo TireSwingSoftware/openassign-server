@@ -6,12 +6,41 @@ of common tests in testlib.
 import facade
 
 from functools import partial
+from datetime import timedelta
 
 from pr_services import pr_time
-from pr_services.testlib import TestCase
+from pr_services.testlib import TestCase, BasicTestCase
 from pr_services.testlib.helpers import expectPermissionDenied
 
 facade.import_models(locals(), globals())
+
+class TestObjectOwnerRole(BasicTestCase):
+
+    fixtures = BasicTestCase.fixtures + ['basic_curriculum_enrollment']
+
+    def setUp(self):
+        super(TestObjectOwnerRole, self).setUp()
+        self.user = User.objects.get(id=2)
+        self.exam = Exam.objects.get(id=1)
+        self.curr = Curriculum.objects.get(id=1)
+        self.enrollment = CurriculumEnrollment.objects.get(id=1)
+        self.auth_token = self._get_auth_token('user1', 'password')
+
+    def test_read_curriculum_enrollment(self):
+        # fixture created a curriculum with 1 exam and enrolled user1
+        # check that the enrollment can be read by the user
+        expected = {
+            'id': self.enrollment.id,
+            'curriculum_name': self.enrollment.curriculum_name,
+            'start': self.enrollment.start.isoformat(),
+            'end': self.enrollment.end.isoformat(),
+        }
+        result = self.curriculum_enrollment_manager.get_filtered(
+                {'exact': {'id': self.enrollment.id}},
+                ('curriculum_name', 'start', 'end'))
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected)
+
 
 class TestSessionParticipantRole(TestCase):
     """
