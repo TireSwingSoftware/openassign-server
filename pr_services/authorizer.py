@@ -30,6 +30,9 @@ _ATTR_NOT_UPDATED_MSG = 'Attributes not updated'
 _method_name = itemgetter('method_to_run')
 _check_passed = itemgetter('check_passed')
 
+
+facade.import_models(locals(), globals())
+
 class Authorizer(object):
     # Store a single instance of an Authorizer object, so we can manage the ACL cache effectively
     singleton_instance = None
@@ -759,6 +762,20 @@ class Authorizer(object):
             pass
         return False
 
+    def actor_assigned_to_event_session(self, auth_token, actee):
+        """
+        Returns True if the actor is assigned to a session for the
+        actee (an `Event` object).
+        """
+        if not isinstance(actee, Event):
+            raise exceptions.InvalidActeeTypeException(actee)
+
+        uid = auth_token.user_id
+        session_filter = {
+            'event': actee,
+            'session_user_role_requirements__assignments__user__id': uid,
+        }
+        return Session.objects.filter(**session_filter).exists()
 
     #################################################################################
     #

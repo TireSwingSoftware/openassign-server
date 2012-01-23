@@ -105,7 +105,7 @@ class InitialSetupMachine(object):
             method = facade.models.ACCheckMethod.objects.get(name=m['name'])
             facade.models.ACMethodCall.objects.create(acl=acl,
                 ac_check_method=method,
-                ac_check_parameters=cPickle.dumps(m['params']))
+                ac_check_parameters=cPickle.dumps(m.get('params', {})))
 
     def call_setup_method(self, name, authz_only=False):
         """A helper for calling the setup methods we define in this package's modules."""
