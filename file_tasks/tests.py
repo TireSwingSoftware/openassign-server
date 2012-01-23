@@ -191,6 +191,12 @@ class TestFileDownload(FileTaskTestCase):
         self.assertTrue(result[0]['description'])
         self.assertTrue(result[0]['file_size'])
         self.assertFalse('file_url' in result[0])
+        # now try to access it as a Task
+        result = self.task_manager.get_filtered(self.user1_auth_token,
+            {'exact': {'id': file_download.id}}, ['name', 'description'])
+        self.assertTrue(result)
+        self.assertTrue(result[0]['name'])
+        self.assertTrue(result[0]['description'])
         # There should be no completed Assignments or FileDownloadAttempts for
         # the acting user.
         assignment_qs = facade.models.Assignment.objects.filter(user=self.user1)
