@@ -26,6 +26,7 @@ class InitialSetupMachine(object):
               'create_object_owner_role',
               'create_authenticated_user_role',
               'create_guest_role',
+              'create_task_taker_role',
               'import_message_templates',
               'import_regions',
               'import_venues',

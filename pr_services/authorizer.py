@@ -1132,11 +1132,8 @@ class Authorizer(object):
 
         if not isinstance(actee, facade.models.Task):
             raise exceptions.InvalidActeeTypeException()
-        if facade.models.Assignment.objects.filter(\
-            task__id=actee.id, user__id=auth_token.user_id).count():
-            return True
-        else:
-            return False
+        return facade.models.Assignment.objects.filter(\
+            task__id=actee.id, user__id=auth_token.user_id).exists()
 
     #################################################################################
     #
