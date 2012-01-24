@@ -397,7 +397,7 @@ class ImportManager(object):
                 # If the key is found in the special fields, we'll need to do a lookup first to replace the object with a primary key
                 if special_fields[key].get('field_type', '') == 'many_to_many':
                     # We have a many to many relationship - look up the fields in our DB to find the primary keys, and build a list of them
-                    foreign_objects = row_dict[key].split(',')
+                    foreign_objects = row_dict[key].split('&&')
                     foreign_keys = []
                     for foreign_object in foreign_objects:
                         # Find the primary key of foreign_object
