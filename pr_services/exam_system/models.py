@@ -293,7 +293,7 @@ class Question(pr_models.OwnedPRModel):
 
     def _get_valid_widgets(self):
         """Return a set of all valid widget types for the question type."""
-        return set(self.QUESTION_WIDGETS.get(self.question_type, []))
+        return list(set(self.QUESTION_WIDGETS.get(self.question_type, [])))
     valid_widgets = property(_get_valid_widgets)
 
     def validate(self, validation_errors=None, related=False):
@@ -772,11 +772,11 @@ class Response(pr_models.OwnedPRModel):
             value = []
         elif isinstance(value, (Answer, int, long)):
             value = [value]
-        return set(value)
+        return list(set(value))
 
     def _get_choice_value(self):
         """Return a set of all answer id's associated with this reponse."""
-        return set(x.id for x in self.answers.all())
+        return list(set(x.id for x in self.answers.all()))
 
     def _set_choice_value(self, value, check_valid=False, value_type=None):
         """Update the answers selected for this response."""
