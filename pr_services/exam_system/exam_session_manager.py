@@ -208,7 +208,7 @@ class ExamSessionManager(AssignmentAttemptManager):
             if es.date_started is None:
                 es.date_started = datetime.utcnow()
                 es.save()
-            return self._get_next_questions(auth_token, es, True)
+            return self._get_next_questions(auth_token, es, False)
         else:
             return es
 
