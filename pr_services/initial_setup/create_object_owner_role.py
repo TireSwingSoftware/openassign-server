@@ -4,20 +4,20 @@ from django.conf import settings
 @authz
 def setup(machine):
     methods = [
-        {'name' : 'actor_assigned_to_curriculum_enrollment', 'params' : {}},
-        {'name' : 'actor_has_completed_assignment_prerequisites', 'params' : {}},
-        {'name' : 'actor_is_acting_upon_themselves', 'params' : {}},
-        {'name' : 'actor_owns_achievement_award', 'params' : {}},
-        {'name' : 'actor_owns_achievement_award_for_achievement', 'params' : {}},
-        {'name' : 'actor_owns_address', 'params' : {}},
-        {'name' : 'actor_owns_assignment', 'params' : {}},
-        {'name' : 'actor_owns_assignment_attempt', 'params' : {}},
-        {'name' : 'actor_owns_credential', 'params' : {}},
-        {'name' : 'actor_owns_prmodel', 'params' : {}},
-        {'name' : 'actor_owns_question_response', 'params' : {}},
-        {'name' : 'assignment_attempt_meets_date_restrictions', 'params' : {}},
-        {'name' : 'assignment_attempt_prerequisites_met', 'params' : {}},
-        {'name' : 'populated_exam_session_is_finished', 'params' : {}},
+        {'name': 'actor_assigned_to_curriculum_enrollment'},
+        {'name': 'actor_has_completed_assignment_prerequisites'},
+        {'name': 'actor_is_acting_upon_themselves'},
+        {'name': 'actor_owns_achievement_award'},
+        {'name': 'actor_owns_achievement_award_for_achievement'},
+        {'name': 'actor_owns_address'},
+        {'name': 'actor_owns_assignment'},
+        {'name': 'actor_owns_assignment_attempt'},
+        {'name': 'actor_owns_credential'},
+        {'name': 'actor_owns_prmodel'},
+        {'name': 'actor_owns_question_response'},
+        {'name': 'assignment_attempt_meets_date_restrictions'},
+        {'name': 'assignment_attempt_prerequisites_met'},
+        {'name': 'populated_exam_session_is_finished'},
     ]
     if 'vod_aws' in settings.INSTALLED_APPS:
         methods.append({'name' : 'assignment_is_not_video', 'params' : {}})
