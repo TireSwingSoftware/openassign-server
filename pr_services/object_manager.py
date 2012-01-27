@@ -236,7 +236,7 @@ class ObjectManager(object):
 
             :param arg: string value of the filter
             """
-            if pr_time.is_iso8601(arg):
+            if isinstance(arg, basestring) and pr_time.is_iso8601(arg):
                 return pr_time.iso8601_to_datetime(arg)
             else:
                 return arg
