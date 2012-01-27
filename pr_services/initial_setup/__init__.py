@@ -62,16 +62,21 @@ class InitialSetupMachine(object):
         self.import_manager = facade.managers.ImportManager()
 
     @classmethod
-    def add_default_read_fields_to_acl(cls, acl):
+    def normalize_acl(cls, acl):
         """
-        Add the default read fields to the list of readable attributes for every
-        model listed in an ACL.
+        Adds restrictive default values for unspecified CRUD fields. Also adds
+        default read attributes to the set of readable attributes for every
+        model listed in the ACL.
 
         :param acl: dictionary representation of the ACL
         :type acl: dict
         """
         for model_name, crud in acl.iteritems():
-            readable = crud.get('r', None)
+            # set restrictive defaults if not specified
+            crud.setdefault('c', False)
+            crud.setdefault('u', set())
+            crud.setdefault('d', False)
+            readable = crud.setdefault('r', set())
             if isinstance(readable, collections.MutableSet):
                 readable.update(default_read_fields)
             else:
@@ -93,7 +98,7 @@ class InitialSetupMachine(object):
         :type arbitrary_perms: list
         """
         role, created = facade.models.Role.objects.get_or_create(name=name)
-        InitialSetupMachine.add_default_read_fields_to_acl(crud)
+        InitialSetupMachine.normalize_acl(crud)
         crud = cPickle.dumps(crud)
         if arbitrary_perms is not None:
             arbitrary_perms = cPickle.dumps(arbitrary_perms)
