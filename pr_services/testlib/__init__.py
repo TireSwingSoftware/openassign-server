@@ -77,6 +77,7 @@ class ManagerAuthTokenWrapper(object):
                 msg = str(e)
                 if 'takes exactly' in msg:
                     return method(*args, **kwargs)
+                raise
 
         return _wrapper
 
