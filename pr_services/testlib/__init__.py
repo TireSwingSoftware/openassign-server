@@ -147,7 +147,7 @@ class TestCase(django.test.TestCase):
         for key, value in self._settings.iteritems():
             setattr(settings, key, value)
 
-    def _get_auth_token(self, username, password):
+    def _get_auth_token(self, username, password='password'):
         """Perform user login and return the auth token object."""
         sid = self.user_manager.login(username, password)['auth_token']
         return get_auth_token_object(sid)
