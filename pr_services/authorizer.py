@@ -213,15 +213,14 @@ class Authorizer(object):
         if not permission_granted:
             raise exceptions.PermissionDeniedException()
 
-    def get_authorized_attributes(self, auth_token, actee, requested_fields, access_type,
-        update_dict=None):
-
+    def get_authorized_attributes(self, auth_token, actee, requested,
+            access_type, update_dict=None):
         """
         This method returns a list of fields for which the actor has read permissions for on the actee.
 
         @param actee            The object being acted upon
-        @param requested_fields A list of the fields that the user would like to read
-        @type requested_fields  list of string
+        @param requested        A set of the fields that the user would like to read
+        @type requested         set of string
         @param access_type      The type of access being requested.  Either 'r' (read) or 'u' (update)
         @type access_type       string
         @param update_dict      This optional parameter should be used when asking about
@@ -231,43 +230,32 @@ class Authorizer(object):
         @return                 A list of fields that the user is authorized to access.  This
                                 method can also raise a PermissionDeniedException.
         """
-
         if update_dict is None:
             update_dict = {}
-        # We need to use introspection to get the type of the actee
+
+        # use introspection to get the type of the actee
         actee_type = actee._meta.object_name
         namespace = actee._meta.app_label
-        acls_to_check = self._get_relevant_acls_for_attributes(actee_type, namespace, requested_fields,
-            access_type)
-        authorized_attributes = [] # The authorized attributes that we are granting to the actor
-        # For each of the ACLs, we need to run their ac_check_methods, and if they all pass for
-        # that ACL, we add the ACLs attributes to actors_acls
-        for potential_acl_dict in acls_to_check:
-            # If all the checks have passed, we need to grant permissions to the user from the ACL
-            checks_pass = self._check_acl_methods(auth_token, actee, potential_acl_dict, update_dict)
-            self.logger.commit()
-            if checks_pass:
-                attributes_granted = potential_acl_dict['acl'][actee_type][access_type]
-                all_requested_fields_granted = True
-                # If the user has requested fields, we can perform some optimizations
-                if len(requested_fields) != 0:
-                    for requested_field in requested_fields:
-                        # If the requested field has been granted, add it to authorized_attributes
-                        if requested_field in attributes_granted:
-                            authorized_attributes.append(requested_field)
-                        # If the field hasn't been granted now, and not in the past, then not all
-                        # fields have been granted and we need to keep checking
-                        elif requested_field not in authorized_attributes:
-                            all_requested_fields_granted = False
-                    # If all the requested fields are granted then we can stop checking and save
-                    # the world now
-                    if all_requested_fields_granted:
-                        break
-                else: # Else, we just append the new fields to authorized attributes
-                    for acquired_field in attributes_granted:
-                        if acquired_field not in authorized_attributes:
-                            authorized_attributes.append(acquired_field)
-        return authorized_attributes
+        acls = self._get_relevant_acls_for_attributes(actee_type, namespace,
+                requested, access_type)
+
+        requested = set(requested)
+        authorized = set()
+
+        # build a set of authorized attributes
+        for acl_dict in acls:
+            attributes = acl_dict['acl'][actee_type][access_type]
+            if not attributes:
+                # short-circuit: skip the methods if there are no attributes
+                continue
+            if not self._check_acl_methods(auth_token, actee, acl_dict, update_dict):
+                continue
+            authorized.update(attributes)
+            if requested and authorized >= requested:
+                # all requested attributes are authorized
+                return requested
+        # return the intersection of authorized and requested attributes
+        return authorized & requested
 
     def _get_relevant_acls_for_cd(self, actee_type, namespace, access_type):
         """
