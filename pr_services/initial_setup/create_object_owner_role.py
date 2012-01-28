@@ -20,132 +20,107 @@ def setup(machine):
         {'name': 'populated_exam_session_is_finished'},
     ]
     if 'vod_aws' in settings.INSTALLED_APPS:
-        methods.append({'name' : 'assignment_is_not_video', 'params' : {}})
+        methods.append({'name' : 'assignment_is_not_video'})
 
     crud = {
         'Achievement' : {
-            'c' : False,
-            'r' : set(('description', 'name')),
-            'u' : set(),
-            'd' : False,
+            'r': set(('description', 'name')),
         },
-        'AchievementAward' : {
-            'c' : False,
-            'r' : set(('achievement', 'assignment', 'date', 'user')),
-            'u' : set(),
-            'd' : False,
+        'AchievementAward': {
+            'r': set(('achievement', 'assignment', 'date', 'user')),
         },
-        'Assignment' : {
-            'c' : True,
-            'r' : set(('assignment_attempts', 'achievement_awards',
-                       'date_completed', 'date_started', 'due_date',
-                       'effective_date_assigned', 'prerequisites_met',
-                       'status', 'task', 'task_content_type', 'user')),
-            'u' : set(),
-            'd' : False,
+        'Assignment': {
+            'c': True,
+            'r': set(('assignment_attempts', 'achievement_awards',
+                      'date_completed', 'date_started', 'due_date',
+                      'effective_date_assigned', 'prerequisites_met',
+                      'status', 'task', 'task_content_type', 'user')),
         },
-        'AssignmentAttempt' : {
-            'c' : True,
-            'r' : set(('assignment', 'date_started', 'date_completed')),
-            'u' : set(),
-            'd' : False,
+        'AssignmentAttempt': {
+            'c': True,
+            'r': set(('assignment', 'date_started', 'date_completed')),
         },
-        'Credential' : {
-            'c' : False,
-            'r' : set(('authority', 'credential_type', 'date_assigned',
-                   'date_expires', 'date_granted', 'date_started',
-                   'serial_number', 'status', 'user')),
-            'u' : set(),
-            'd' : False,
+        'Credential': {
+            'r': set(('authority', 'credential_type', 'date_assigned',
+                      'date_expires', 'date_granted', 'date_started',
+                      'serial_number', 'status', 'user')),
         },
-        'CurriculumEnrollment' : {
-            'c' : False,
-            'r' : set(('curriculum_name', 'start', 'end')),
-            'u' : set(),
-            'd' : False,
+        'CurriculumEnrollment': {
+            'r': set(('curriculum_name', 'start', 'end')),
         },
         'Exam': {
             'r': set(('achievements', 'description', 'name', 'passing_score',
                       'title', 'type')),
         },
-        'ExamSession' : {
-            'c' : True,
-            'r' : set(('id', 'exam', 'score', 'passed', 'date_started',
-                   'passing_score', 'number_correct', 'date_completed',
-                   'response_questions')),
-            'u' : set(('date_completed',)),
-            'd' : False,
+        'ExamSession': {
+            'c': True,
+            'r': set(('exam', 'score', 'passed', 'date_started',
+                      'passing_score', 'number_correct', 'date_completed',
+                      'response_questions')),
+            'u': set(('date_completed',)),
         },
-        'FileDownloadAttempt' : {
-            'c' : True,
-            'r' : set(('assignment', 'date_started', 'date_completed',
-                'file_download')),
-            'u' : set(),
-            'd' : False,
+        'Response': {
+            'c': True,
+            'r': set(('exam_session', 'question', 'text', 'value', 'valid')),
         },
-        'FileUploadAttempt' : {
-            'c' : True,
-            'r' : set(('assignment', 'date_started', 'date_completed',
-                      'file_upload')),
-            'u' : set(),
-            'd' : False,
-        },
-        'Response' : {
-            'c' : True,
-            'r' : set(('exam_session', 'question', 'text', 'value', 'valid')),
-            'u' : set(),
-            'd' : False,
-        },
-        'ScoSession' : {
-            'c' : True,
-            'r' : set(('date_completed', 'date_started', 'sco')),
-            'u' : set(),
-            'd' : False,
+        'ScoSession': {
+            'c': True,
+            'r': set(('date_completed', 'date_started', 'sco')),
         },
         'Task': {
             'r': set(('name', 'title', 'type', 'description', 'achievements')),
         },
-        'User' : {
+        'User': {
             # We allow users to create themselves
-            'c' : True,
-            'r' : set(('achievements', 'achievement_awards', 'credentials',
-                   'session_user_role_requirements', 'product_lines_managed',
-                   'product_lines_instructor_manager_for', 'product_lines_instructor_for',
-                   'groups', 'roles', 'photo_url', 'url', 'username',
-                   'title', 'first_name', 'middle_name', 'last_name', 'name_suffix',
-                   'full_name',
-                   'phone', 'phone2', 'phone3', 'email', 'email2',
-                   'status', 'color_code', 'biography',
-                   'shipping_address', 'billing_address', 'organizations', 'owned_userorgroles',
-                   'preferred_venues',
-                   'suppress_emails', 'default_username_and_domain',
-                   'alleged_organization')),
-            'u' : set(('photo_url', 'url',
-                   'title', 'first_name', 'middle_name', 'last_name', 'name_suffix',
-                   'phone', 'phone2', 'phone3', 'email', 'email2', 'color_code',
-                   'biography', 'shipping_address', 'billing_address',
-                   'preferred_venues', 'suppress_emails',
-                   'alleged_organization')),
-            'd' : False,
+            'c': True,
+            'r': set(('achievement_awards', 'achievements',
+                      'alleged_organization', 'billing_address', 'biography',
+                      'color_code', 'credentials',
+                      'default_username_and_domain', 'email', 'email2',
+                      'first_name', 'full_name', 'groups', 'last_name',
+                      'middle_name', 'name_suffix', 'organizations',
+                      'owned_userorgroles', 'phone', 'phone2', 'phone3',
+                      'photo_url', 'preferred_venues',
+                      'product_lines_instructor_for',
+                      'product_lines_instructor_manager_for',
+                      'product_lines_managed', 'roles',
+                      'session_user_role_requirements', 'shipping_address',
+                      'status', 'suppress_emails', 'title', 'url', 'username')),
+            'u': set(('alleged_organization', 'billing_address', 'biography',
+                      'color_code', 'email', 'email2', 'first_name',
+                      'last_name', 'middle_name', 'name_suffix', 'phone',
+                      'phone2', 'phone3', 'photo_url', 'preferred_venues',
+                      'shipping_address', 'suppress_emails', 'title', 'url')),
         },
-        'UserOrgRole' : {
-            'c' : False,
-            'r' : set(('owner', 'organization', 'organization_name', 'role',
-                'role_name', 'parent', 'children')),
-            'u' : set(),
-            'd' : False,
+        'UserOrgRole': {
+            'r': set(('owner', 'organization', 'organization_name', 'role',
+                      'role_name', 'parent', 'children')),
         },
-        'Venue' : {
-            'c' : False,
-            'r' : set(('region', 'address')),
-            'u' : set(),
-            'd' : False,
-        },
-        'VideoSession' : {
-            'c' : True,
-            'r' : set(('assignment', 'date_started', 'date_completed')),
-            'u' : set(),
-            'd' : False,
+        'Venue': {
+            'r': set(('region', 'address')),
         },
     }
+
+    if 'file_tasks' in settings.INSTALLED_APPS:
+        crud.update({
+            'FileDownloadAttempt' : {
+                'c' : True,
+                'r' : set(('assignment', 'date_started', 'date_completed',
+                           'file_download')),
+            },
+            'FileUploadAttempt' : {
+                'c' : True,
+                'r' : set(('assignment', 'date_started', 'date_completed',
+                           'file_upload')),
+            }
+        })
+
+    if 'vod_aws' in settings.INSTALLED_APPS:
+        crud.update({
+            'VideoSession' : {
+                'c' : True,
+                'r' : set(('assignment', 'date_started', 'date_completed')),
+            }
+        })
+
     machine.add_acl_to_role('Object Owner', methods, crud)
