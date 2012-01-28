@@ -33,9 +33,10 @@ def is_for_derived_attribute(func):
     func.is_for_derived_attribute = True
     return func
 
+_DEFAULT_AUTHORIZER = facade.subsystems.Authorizer()
+
 class Getter(object):
     logger = logging.getLogger('pr_services.getter')
-
 
     def __init__(self, auth_token, object_manager, django_query,
             requested_fields=()):
@@ -43,7 +44,7 @@ class Getter(object):
         self.getters = {}
         self.results = []
         self.object_manager = object_manager
-        self.authorizer = facade.subsystems.Authorizer()
+        self.authorizer = _DEFAULT_AUTHORIZER
 
         # if 'id' isn't in the requested fields, it really should be!
         requested_fields = set(requested_fields)
@@ -456,7 +457,7 @@ class Setter(object):
         for field in setter_dict:
             if field not in object_manager.SETTERS:
                 raise exceptions.FieldNameNotFoundException(field)
-        self.authorizer = facade.subsystems.Authorizer()
+        self.authorizer = _DEFAULT_AUTHORIZER
         self.auth_token = auth_token
         self.authorizer.check_update_permissions(auth_token, django_object, setter_dict)
         for field in setter_dict:

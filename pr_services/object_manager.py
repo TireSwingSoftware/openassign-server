@@ -15,6 +15,8 @@ import pr_time
 import tagging.models
 from pr_services.rpc.service import service_method
 
+_DEFAULT_AUTHORIZER = facade.subsystems.Authorizer()
+
 class ObjectManagerMetaclass(type):
     """
     Metaclass for ObjectManager subclasses to merge getters/setters
@@ -88,7 +90,7 @@ class ObjectManager(object):
         their own class, this method will provide them backward compatibility.
 
         """
-        return facade.subsystems.Authorizer()
+        return _DEFAULT_AUTHORIZER
 
     @service_method
     def update(self, auth_token, id, value_map):

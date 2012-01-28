@@ -4,6 +4,8 @@ import exceptions
 from pr_services.middleware import get_current_request
 from pr_services.rpc.service import service_method
 
+_DEFAULT_AUTHORIZER = facade.subsystems.Authorizer()
+
 class LogManager(object):
     """
     Allow a client to log to our general logging facilities. Messages are logged
@@ -12,7 +14,7 @@ class LogManager(object):
     """
 
     def __init__(self):
-        self.authorizer = facade.subsystems.Authorizer()
+        self.authorizer = _DEFAULT_AUTHORIZER
 
     @service_method
     def critical(self, auth_token, message):

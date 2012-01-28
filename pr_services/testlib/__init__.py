@@ -27,6 +27,8 @@ _ONEDAY = timedelta(days=1)
 facade.import_models(locals(), globals())
 get_auth_token_object = facade.subsystems.Utils.get_auth_token_object
 
+_DEFAULT_AUTHORIZER = facade.subsystems.Authorizer()
+
 # index of service methods' names by manager class type object
 _SERVICE_METHODS = dict()
 
@@ -111,6 +113,7 @@ class TestCase(django.test.TestCase):
 
     def __init__(self, *args, **kwargs):
         super(TestCase, self).__init__(*args, **kwargs)
+        self.authorizer = _DEFAULT_AUTHORIZER
         self._flush_acls = True
 
     def setUp(self):
@@ -123,7 +126,7 @@ class TestCase(django.test.TestCase):
         # flush ACLs once for each test class but only after the
         # fixtures are loaded the first time.
         if self._flush_acls:
-            facade.subsystems.Authorizer()._load_acls()
+            self.authorizer._load_acls()
             self._flush_acls = False
 
         # Modify the celery configuration to run tasks eagerly for unit tests.
@@ -293,13 +296,13 @@ class RoleTestCase(BasicTestCase):
         method_call.save()
 
 #XXX: if we're going to call this, the method should be public
-        facade.subsystems.Authorizer()._load_acls()
+        self.authorizer._load_acls()
 
         def _cleanup():
             method_call.delete()
             acl.delete()
             role.delete()
-            facade.subsystems.Authorizer()._load_acls()
+            self.authorizer._load_acls()
         self.addCleanup(_cleanup)
 
         return role, acl
