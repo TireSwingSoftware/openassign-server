@@ -36,51 +36,44 @@ def is_for_derived_attribute(func):
 class Getter(object):
     logger = logging.getLogger('pr_services.getter')
 
-    def __init__(self, auth_token, object_manager, django_query_set,
+
+    def __init__(self, auth_token, object_manager, django_query,
             requested_fields=()):
-        requested_fields = list(requested_fields)
-        self.django_query_set = django_query_set
-        self.object_manager = object_manager
-        self.results = []
-        # if 'id' isn't in the requested fields, it really should be!
-        if 'id' not in requested_fields:
-            requested_fields.append('id')
-        for field in requested_fields:
-            if field not in object_manager.GETTERS:
-                raise exceptions.FieldNameNotFoundException(field)
-        self.authorizer = facade.subsystems.Authorizer()
         self.cache = {}
-        # Create a dictionary of field names with method references to the appropriate getters
         self.getters = {}
-        for f in requested_fields:
-            try:
-                self.getters.update( { f : getattr(self, self.object_manager.GETTERS[f]) } )
-            except AttributeError:
-                raise exceptions.GetterNotFoundException(self.object_manager.GETTERS[f])
+        self.results = []
+        self.object_manager = object_manager
+        self.authorizer = facade.subsystems.Authorizer()
 
-        # If we are fetching any foreign key relationships, we can speed things up tremendously
-        # by declaring them to django ahead of time in the select_related() call.
+        # if 'id' isn't in the requested fields, it really should be!
+        requested_fields = set(requested_fields)
+        requested_fields.add('id')
         foreign_keys = []
-        for field_name in self.getters.keys():
-            if self.object_manager.GETTERS[field_name] in ['get_foreign_key', 'get_one_to_one']:
-                foreign_keys.append(field_name)
+        # Create a dictionary of field names with method references to the appropriate getters
+        for field in requested_fields:
+            getter_name = object_manager.GETTERS.get(field, None)
+            if not getter_name:
+                raise exceptions.FieldNameNotFoundException(field)
+            getter = getattr(self, getter_name, None)
+            if not getter:
+                raise exceptions.GetterNotFoundException(getter)
+            self.getters[field] = getter
+            # If we are fetching any foreign key relationships, we can speed
+            # things up tremendously by declaring them to django ahead of
+            # time in the select_related() call.
+            if getter == self.get_foreign_key or getter == self.get_one_to_one:
+                foreign_keys.append(field)
+
         if foreign_keys:
-            self.django_query_set = self.django_query_set.select_related(*foreign_keys)
+            django_query = django_query.select_related(*foreign_keys)
 
-        self.process(auth_token, requested_fields)
-
-    def process(self, auth_token, requested_fields):
-        for item in self.django_query_set:
-            # Get the list of fields the the user is authorized to read from the authorizer
-            authorized_fields = self.authorizer.get_authorized_attributes(auth_token, item, requested_fields, 'r')
-            ret = {}
-            for f in authorized_fields:
-                ret[f] = self.getters[f](item, f)
-            self.results.append(ret)
-
-        # Trim empty dictionaries from the result set
-        while {} in self.results:
-            self.results.remove({})
+        get_authorized_attributes = self.authorizer.get_authorized_attributes
+        for item in django_query:
+            # get attributes the user is authorized to read
+            attributes = get_authorized_attributes(auth_token, item, requested_fields, 'r')
+            if attributes:
+                row = dict((f, self.getters[f](item, f)) for f in attributes)
+                self.results.append(row)
 
     def get_general(self, result_object, field_name):
         try:
