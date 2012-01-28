@@ -2,16 +2,22 @@
 AssignmentManager class
 """
 
+import collections
 import datetime
 import logging
+
 from django.conf import settings
-from pr_services.object_manager import ObjectManager
-from pr_services import pr_time
-from pr_services.rpc.service import service_method
+
 import facade
-from pr_services import exceptions
-from pr_services.utils import Utils
+
 from pr_messaging import send_message
+from pr_services import exceptions
+from pr_services import pr_time
+from pr_services.object_manager import ObjectManager
+from pr_services.rpc.service import service_method
+from pr_services.utils import Utils
+
+merge_queries = Utils.merge_queries
 
 _logger = logging.getLogger('pr_services.credential_system.assignment_manager')
 
@@ -226,113 +232,130 @@ class AssignmentManager(ObjectManager):
             late_assignment.save()
 
     @service_method
-    def detailed_user_view(self, auth_token, filters=None, fields=None):
-        if filters is None:
-            filters = {}
-        ret = self.get_filtered(auth_token, filters, ['user', 'status', 'task'])
+    def view(self, auth_token, filters=None, fields=None,
+            user_id=None, task_manager=None, task_type_name=None,
+            task_fields=None):
+        """
+        A generic helper for returning information about a users assignments.
+        Assignments are filtered by the current user id unless otherwise
+        specified by `user_id`.
 
-        return Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['username', 'first_name', 'last_name', 'email'], 'user')
+        Args:
+            auth_token: The auth token for the current user.
+            filters: django query filters to use instead of the defaults.
+            fields: additional fields to include in the result.
+            user_id: a user id used to filter assignments.
+            task_manager: the task manager for expected resulting tasks.
+            task_type_name: the final type name of the resulting tasks.
+            task_fields: extra fields to return for resulting tasks.
+
+        Returns:
+            A merged queryset including fields optionally specified by `fields`
+            for each assignment with information about the associated task.
+            The assignments can be filtered by `filters` and additional fields
+            to retrieve can be specified with `fields`.
+        """
+        if not filters:
+            filters = {'exact': {'user': user_id or auth_token.user_id}}
+            if task_type_name:
+                filters['exact']['task__final_type__name'] = task_type_name
+
+        default_fields = frozenset(('user', 'status', 'task'))
+        if not fields:
+            fields = set()
+        elif not isinstance(fields, collections.Set):
+            fields = set(fields)
+
+        fields.update(default_fields)
+
+        results = self.get_filtered(auth_token, filters, fields)
+        if not results:
+            return []
+
+        default_task_fields = frozenset(('name', 'title', 'type',
+                                         'description'))
+        if not task_fields:
+            task_fields = set()
+        elif not isinstance(task_fields, collections.Set):
+            task_fields = set(task_fields)
+
+        task_fields.update(default_task_fields)
+
+        if not task_manager:
+            task_manager = facade.managers.TaskManager()
+
+        return merge_queries(results, task_manager, auth_token, task_fields, 'task')
 
     @service_method
-    def assignments_for_user(self, auth_token, filters=None, fields=None):
-        # apply our filters even if the passed filters is empty
-        if not filters:
-            filters = {'exact' : {'user' : auth_token.user_id}}
-        # apply our fields even if the passed fields is empty
-        if not fields:
-            fields = ['user', 'status', 'task']
-        ret = self.get_filtered(auth_token, filters, fields)
+    def detailed_view(self, auth_token, *args, **kwargs):
+        results = self.view(auth_token=auth_token, *args, **kwargs)
+        user_manager = facade.managers.UserManager()
+        return merge_queries(results, user_manager , auth_token,
+                ('username', 'first_name', 'last_name', 'email'), 'user')
 
-        return Utils.merge_queries(ret, facade.managers.TaskManager(), auth_token, ['name', 'title', 'type', 'description'], 'task')
+    if 'file_tasks' in settings.INSTALLED_APPS:
+        @service_method
+        def file_download_view(self, *args, **kwargs):
+            manager = facade.managers.FileDownloadManager()
+            return self.view(task_type_name='file download',
+                    task_manager=manager, task_fields=('file_size', 'file_url'),
+                    *args, **kwargs)
 
-    @service_method
-    def file_download_assignments_for_user(self, auth_token, filters=None, fields=None):
-        # apply our filters even if the passed filters is empty
-        if not filters:
-            filters = {'exact' : {'user' : auth_token.user_id}}
-        # apply our fields even if the passed fields is empty
-        if not fields:
-            fields = ['user', 'status', 'task']
-        query_set = self.my_django_model.objects.filter(task__final_type__name='file download', user__id=auth_token.user_id)
-        ret = facade.subsystems.Getter(auth_token, self, query_set, fields).results
+        @service_method
+        def detailed_file_download_view(self, auth_token, *args, **kwargs):
+            manager = facade.managers.FileDownloadManager()
+            result = self.view(auth_token=auth_token,
+                    task_type_name='file download',
+                    task_manager=manager, *args, **kwargs)
+            user_manager = facade.managers.UserManager()
+            # XXX: if this is ever changed to include the username and email
+            # address this routine should instead call AssignmentManager.detailed_view
+            # above.
+            return merge_queries(result, user_manager, auth_token,
+                    ('first_name', 'last_name'), 'user')
 
-        return Utils.merge_queries(ret, facade.managers.FileDownloadManager(), auth_token, ['name', 'title', 'type', 'description', 'file_size', 'file_url'], 'task')
-
-    @service_method
-    def file_upload_assignments_for_user(self, auth_token, filters=None, fields=None):
-        # apply our filters even if the passed filters is empty
-        if not filters:
-            filters = {'exact' : {'user' : auth_token.user_id}}
-        # apply our fields even if the passed fields is empty
-        if not fields:
-            fields = ['user', 'status', 'task']
-        query_set = self.my_django_model.objects.filter(task__final_type__name='file upload', user__id=auth_token.user_id)
-        ret = facade.subsystems.Getter(auth_token, self, query_set, fields).results
-
-        return Utils.merge_queries(ret, facade.managers.FileUploadManager(), auth_token, ['name', 'title', 'type', 'description'], 'task')
+        @service_method
+        def file_upload_view(self, *args, **kwargs):
+            manager = facade.managers.FileUploadManager()
+            return self.view(task_type_name='file upload',
+                    task_manager=manager, *args, **kwargs)
 
     @service_method
-    def exam_assignments_for_user(self, auth_token, filters=None, fields=None):
-        # apply our filters even if the passed filters is empty
-        if not filters:
-            filters = {'exact' : {'user' : auth_token.user_id}}
-        # apply our fields even if the passed fields is empty
-        if not fields:
-            fields = ['user', 'status', 'task']
-        query_set = self.my_django_model.objects.filter(task__final_type__name='exam', user__id=auth_token.user_id)
-        ret = facade.subsystems.Getter(auth_token, self, query_set, fields).results
-
-        return Utils.merge_queries(ret, facade.managers.ExamManager(), auth_token, ['name', 'title', 'type', 'description'], 'task')
+    def exam_view(self, *args, **kwargs):
+        manager = facade.managers.ExamManager()
+        return self.view(task_type_name='exam', task_manager=manager,
+                *args, **kwargs)
 
     @service_method
-    def session_assignments_for_user(self, auth_token, filters=None, fields=None):
-        # apply our filters even if the passed filters is empty
-        if not filters:
-            filters = {'exact' : {'user' : auth_token.user_id}}
-        # apply our fields even if the passed fields is empty
-        if not fields:
-            fields = ['user', 'status', 'task']
-        query_set = self.my_django_model.objects.filter(task__final_type__name='session user role requirement', user__id=auth_token.user_id)
-        ret = facade.subsystems.Getter(auth_token, self, query_set, fields).results
-
-        ret = Utils.merge_queries(ret, facade.managers.SessionUserRoleRequirementManager(), auth_token, ['name', 'title', 'type', 'description', 'session'], 'task')
-
-        # merge in session details
-        session_ids = [assignment['task']['session'] for assignment in ret]
-        session_query = facade.models.Session.objects.filter(id__in=session_ids)
-        sessions = facade.subsystems.Getter(auth_token, facade.managers.SessionManager(), session_query, ['start', 'end']).results
-        session_dict = {}
-        for session in sessions:
-            session_dict[session['id']] = session
-        for assignment in ret:
-            assignment['task']['session'] = session_dict[assignment['task']['session']]
-
-        return ret
+    def detailed_exam_view(self, auth_token, *args, **kwargs):
+        results = self.exam_view(auth_token=auth_token,
+                task_fields=('passing_score',), *args, **kwargs)
+        user_manager = facade.managers.UserManager()
+        return merge_queries(results, user_manager, auth_token,
+                ('first_name', 'last_name'), 'user')
 
     @service_method
-    def exam_assignments_detail_view(self, auth_token, filters=None, fields=None):
-        if not filters:
-            filters = {}
-        # apply our fields even if the passed fields is empty
-        if not fields:
-            fields = ['user', 'status', 'task']
-        ret = self.get_filtered(auth_token, filters, fields)
+    def session_view(self, auth_token, *args, **kwargs):
+        manager = facade.managers.SessionUserRoleRequirementManager()
+        results = self.view(auth_token, task_manager=manager,
+                task_type_name='session user role requirement',
+                task_fields=('session', ), *args, **kwargs)
 
-        ret = Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['first_name', 'last_name'], 'user')
+        if results and 'task' in results[0]:
+            # merge in session details
+            session_ids = [assignment['task']['session'] for assignment in results]
+            session_query = Session.objects.filter(id__in=session_ids)
+            session_manager = facade.managers.SessionManager()
+            sessions = facade.subsystems.Getter(auth_token, session_manager,
+                    session_query, ['start', 'end']).results
+            session_dict = {}
+            for session in sessions:
+                session_dict[session['id']] = session
+            for assignment in results:
+                assignment['task']['session'] = session_dict[assignment['task']['session']]
 
-        return Utils.merge_queries(ret, facade.managers.ExamManager(), auth_token, ['name', 'title', 'type', 'description', 'passing_score'], 'task')
+        return results
 
     @service_method
-    def file_download_assignments_detail_view(self, auth_token, filters=None, fields=None):
-        if not filters:
-            filters = {}
-        # apply our fields even if the passed fields is empty
-        if not fields:
-            fields = ['user', 'status', 'task']
-        ret = self.get_filtered(auth_token, filters, fields)
-
-        ret = Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['first_name', 'last_name'], 'user')
-
-        return Utils.merge_queries(ret, facade.managers.FileDownloadManager(), auth_token, ['name', 'title', 'type', 'description'], 'task')
 
 # vim:tabstop=4 shiftwidth=4 expandtab

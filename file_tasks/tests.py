@@ -4,7 +4,10 @@
 
 # Python
 from __future__ import with_statement
+
 import os
+
+from functools import partial
 
 # Django
 from django.core.urlresolvers import reverse
@@ -125,7 +128,7 @@ class TestFileDownload(FileTaskTestCase):
     def test_file_download_assignments_for_user(self):
         file_download = self._upload_file()
         self.assignment_manager.create(self.admin_token, file_download.id, self.user1.id)
-        ret = self.assignment_manager.file_download_assignments_for_user(self.user1_auth_token)
+        ret = self.assignment_manager.file_download_view(self.user1_auth_token)
         self.assertEquals(len(ret), 1)
         assignment = ret[0]
         self.assertEquals(assignment['user'], self.user1.id)
@@ -138,13 +141,11 @@ class TestFileDownload(FileTaskTestCase):
         self.assertTrue('description' in task)
 
     def test_assignment_details(self):
-        create_assignment = self.assignment_manager.create
-        details_view = self.assignment_manager.file_download_assignments_detail_view
-
+        am = self.assignment_manager
+        view = partial(am.detailed_file_download_view, user_id=self.user1.id)
         fd = self._upload_file()
         u = self.user1
-        a = create_assignment(fd.id, u.id)
-        v = details_view(self.admin_token)
+        a = am.create(fd.id, u.id)
         expected = {
             'id': a.id,
             'status': u'assigned',
@@ -161,8 +162,25 @@ class TestFileDownload(FileTaskTestCase):
                 'last_name': u.last_name
             }
         }
-        self.assertEquals(len(v), 1)
-        self.assertDictEqual(v[0], expected)
+        result = view()
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected)
+
+        # test using additional filters
+        result = view(filters={'exact': {'status': 'assigned'}})
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected)
+
+        result = view(filters={'greater_than': {'user': u.id}})
+        self.assertEquals(len(result), 0)
+
+        # test requesting additional fields
+        a.due_date = self.right_now + self.one_day
+        a.save()
+        expected['due_date'] = a.due_date.isoformat()
+        result = view(fields=('due_date', ))
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected)
 
     def test_download_when_file_is_not_ready(self):
         # this FileDownload does not have an actual file, similar to a case where
@@ -290,7 +308,7 @@ class TestFileUpload(FileTaskTestCase):
     def test_file_upload_assignments_for_user(self):
         file_upload = self.test_create_file_upload_as_admin()
         self.assignment_manager.create(self.admin_token, file_upload.id, self.user1.id)
-        ret = self.assignment_manager.file_upload_assignments_for_user(self.user1_auth_token)
+        ret = self.assignment_manager.file_upload_view(self.user1_auth_token)
         self.assertEquals(len(ret), 1)
         assignment = ret[0]
         self.assertEquals(assignment['user'], self.user1.id)
