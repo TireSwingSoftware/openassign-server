@@ -348,7 +348,8 @@ class AssignmentManager(ObjectManager):
                 task_type_name='session user role requirement',
                 task_fields=('session', ), *args, **kwargs)
 
-        if results and 'task' in results[0]:
+        if results and ('task' in results[0] and
+                        'session' in results[0]['task']):
             # merge in session details
             session_ids = [assignment['task']['session'] for assignment in results]
             session_query = Session.objects.filter(id__in=session_ids)
