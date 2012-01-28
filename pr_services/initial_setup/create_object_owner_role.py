@@ -102,6 +102,9 @@ def setup(machine):
             'u' : set(),
             'd' : False,
         },
+        'Task': {
+            'r': set(('name', 'title', 'type', 'description', 'achievements')),
+        },
         'User' : {
             # We allow users to create themselves
             'c' : True,
