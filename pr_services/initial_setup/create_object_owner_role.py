@@ -37,9 +37,10 @@ def setup(machine):
         },
         'Assignment' : {
             'c' : True,
-            'r' : set(('task', 'task_content_type', 'user', 'date_started',
-                   'date_completed', 'due_date', 'prerequisites_met',
-                   'effective_date_assigned', 'status', 'assignment_attempts')),
+            'r' : set(('assignment_attempts', 'achievement_awards',
+                       'date_completed', 'date_started', 'due_date',
+                       'effective_date_assigned', 'prerequisites_met',
+                       'status', 'task', 'task_content_type', 'user')),
             'u' : set(),
             'd' : False,
         },
@@ -62,6 +63,10 @@ def setup(machine):
             'r' : set(('curriculum_name', 'start', 'end')),
             'u' : set(),
             'd' : False,
+        },
+        'Exam': {
+            'r': set(('achievements', 'description', 'name', 'passing_score',
+                      'title', 'type')),
         },
         'ExamSession' : {
             'c' : True,
