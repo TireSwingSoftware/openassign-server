@@ -1,4 +1,21 @@
-[ { "fields" : { "alleged_organization" : null,
+[
+    { "fields" : {
+        "country": "us",
+        "region": "ohio",
+        "locality": "cleveland",
+        "postal_code": "12345",
+        "final_type": [ "pr_services",
+            "address"
+            ],
+        "label": "asdf",
+        "create_timestamp" : "2012-01-11 04:28:34",
+        "save_timestamp" : "2012-01-11 04:28:34",
+        "owner": 1
+       },
+       "model": "pr_services.address",
+       "pk": 1
+    },  
+    { "fields" : { "alleged_organization" : null,
         "billing_address" : null,
         "biography" : null,
         "blame" : null,
