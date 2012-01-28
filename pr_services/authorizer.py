@@ -135,7 +135,6 @@ class Authorizer(object):
         for acl in acls_to_check:
             # If all the checks have passed, we need to grant permissions to the user from the ACL
             acl_checks_passed = self._check_acl_methods(auth_token, actee, acl)
-            self.logger.commit()
             if acl_checks_passed:
                 try:
                     permission_granted = acl['acl'][actee_type]['c']
