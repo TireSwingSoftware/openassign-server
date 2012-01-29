@@ -242,7 +242,7 @@ class ObjectManager(object):
             :param arg: string value of the filter
             """
             if isinstance(arg, basestring) and pr_time.is_iso8601(arg):
-                return pr_time.iso8601_to_datetime(arg)
+                return pr_time.iso8601_to_datetime(arg).replace(tzinfo=pr_time.UTC())
             else:
                 return arg
 
