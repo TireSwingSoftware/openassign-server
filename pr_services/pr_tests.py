@@ -16,7 +16,7 @@ import urllib2
 
 from datetime import datetime, date, timedelta
 from functools import partial
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 
 import django.test.client
 import django.utils.dateformat
@@ -39,7 +39,7 @@ from pr_services.rpc.service import (service_method, wrap_service_method,
 from pr_services.testlib import (GeneralTestCase, RoleTestCase, BasicTestCase,
         TestCase)
 from pr_services.testlib import mixins
-from pr_services.testlib.helpers import expectPermissionDenied
+from pr_services.testlib.helpers import expectPermissionDenied, load_fixtures
 from pr_services.utils import UnicodeCsvWriter
 
 import facade
@@ -202,7 +202,7 @@ class TestTask(TestCase):
         self.assertEqual(exam3.name, 'my_exam')
 
 
-class TestAssignment(GeneralTestCase, mixins.ExamTestMixin):
+class TestAssignment(GeneralTestCase):
     def test_create_multiple_types(self):
         self.assertEquals(Assignment.objects.filter(user=self.user1).count(), 0)
         tasks = []
@@ -340,39 +340,124 @@ class TestAssignment(GeneralTestCase, mixins.ExamTestMixin):
         self.assertEquals(assignments[learner8.id]['status'], 'assigned')
 
 
-    def test_exam_assignment_details_view(self):
-        exam = self._create_exam('Some Exam', 'Exam Title', passing_score=70)
-        user = self.user1
+class TestAssignmentManagerViews(BasicTestCase):
 
-        am = self.assignment_manager
-        assignment = am.create(exam.id, user.id)
+    fixtures = BasicTestCase.fixtures + ['exams_and_achievements']
 
-        view = am.exam_assignments_detail_view()
+    def setUp(self):
+        super(TestAssignmentManagerViews, self).setUp()
+
+        self.user = User.objects.get(id=2)
+        self.exams = Exam.objects.all()
+        self.assignments = Assignment.objects.all()
+        self.manager = self.assignment_manager
+
+        # default auth token to regular user
+        self.auth_token = self._get_auth_token('user1')
+
+    def test_exam_view(self):
+        view = partial(self.manager.exam_view, user_id=self.user.id)
+        assignment = self.assignments[0]
+        exam = self.exams[0]
+        expected = {
+            'id': assignment.id,
+            'user': self.user.id,
+            'status': assignment.status,
+            'task': {
+                'id': exam.id,
+                'name': unicode(exam.name),
+                'title': unicode(exam.title),
+                'type': u'pr_services.exam',
+                'description': unicode(exam.description),
+            }
+        }
+        result = view()
+        self.assertEquals(len(result), 5)
+        self.assertDictEqual(result[0], expected)
+
+    def test_detailed_exam_view(self):
+        view = partial(self.manager.detailed_exam_view, user_id=self.user.id)
+        assignment = self.assignments[0]
+        exam = self.exams[0]
         expected = {
             'id': assignment.id,
             'user': {
-                'id': user.id,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
+                'id': self.user.id,
+                'first_name': self.user.first_name,
+                'last_name': self.user.last_name,
             },
             'status': u'assigned',
             'task': {
                 'id': exam.id,
                 'name': exam.name,
                 'title': exam.title,
-                'type': 'pr_services.exam',
+                'type': u'pr_services.exam',
                 'description': exam.description,
                 'passing_score': exam.passing_score,
             }
         }
-        self.assertEquals(len(view), 1)
-        self.assertDictEqual(view[0], expected)
-        del expected['user']
-        view = am.exam_assignments_detail_view(fields=['status', 'task'])
-        self.assertEquals(len(view), 1)
-        self.assertDictEqual(view[0], expected)
-        view = am.exam_assignments_detail_view(filters={'exact': {'id': assignment.id}})
-        self.assertEquals(len(view), 1)
+        result = view()
+        self.assertEquals(len(result), 5)
+        self.assertDictEqual(result[0], expected)
+
+        result = view(fields=['status', 'task'])
+        self.assertEquals(len(result), 5)
+        self.assertDictEqual(result[0], expected)
+
+        result = view(filters={'exact': {'id': assignment.id}})
+        self.assertEquals(len(result), 1)
+
+    def test_transcript_view(self):
+        view = partial(self.manager.transcript_view, user_id=self.user.id)
+        def _datestring(d):
+            return d.replace(tzinfo=pr_time.UTC()).isoformat()
+
+        # start the first 8 assignments
+        for a in self.assignments[:8]:
+            a.date_started = (self.right_now - self.one_day)
+            a.save()
+
+        # mark the first five completed and build the expected transcript
+        expected = []
+        for exam, asn in zip(self.exams, self.assignments[:5]):
+            asn.mark_completed()
+            asn.save()
+            awards = asn.achievement_awards.values_list('id', flat=True)
+            expected.append({
+                'id': asn.id,
+                'user': self.user.id,
+                'status': unicode(asn.status),
+                'date_completed': _datestring(asn.date_completed),
+                'date_started': _datestring(asn.date_started),
+                'achievement_awards': sorted(awards),
+                'task': {
+                    'id': exam.id,
+                    'description': unicode(exam.description),
+                    'achievements': [{
+                         'id': a.id,
+                         'name': unicode(a.name),
+                         'description': unicode(a.description)
+                    } for a in exam.achievements.all()],
+                    'title': unicode(exam.title),
+                    'type': u'pr_services.exam',
+                    'name': unicode(exam.name),
+                    }
+                })
+        result = view()
+        # check a few things first to make failing tests easier to read
+        self.assertGreater(len(result), 0)
+        self.assertIn('achievement_awards', result[0])
+        # sort awards in the result so we don't need to rely on the order
+        for row in result:
+            row['achievement_awards'] = sorted(row['achievement_awards'])
+
+        # sort both the test and expected transcript by id
+        # since the assignment ordering does not matter
+        _id = itemgetter('id')
+        result = sorted(result, key=_id)
+        expected = sorted(expected, key=_id)
+        self.assertSequenceEqual(result, expected)
+
 
 
 class TestAchievementAwardManager(GeneralTestCase):
