@@ -48,6 +48,9 @@ import facade
 # import all models into our namespace
 facade.import_models(locals(), globals())
 
+def datestring(d):
+    return d.replace(tzinfo=pr_time.UTC()).isoformat()
+
 ##############################################################################
 #
 # Let the unit tests begin!
@@ -409,9 +412,6 @@ class TestAssignmentManagerViews(BasicTestCase):
 
     def test_transcript_view(self):
         view = partial(self.manager.transcript_view, user_id=self.user.id)
-        def _datestring(d):
-            return d.replace(tzinfo=pr_time.UTC()).isoformat()
-
         # start the first 8 assignments
         for a in self.assignments[:8]:
             a.date_started = (self.right_now - self.one_day)
@@ -427,8 +427,8 @@ class TestAssignmentManagerViews(BasicTestCase):
                 'id': asn.id,
                 'user': self.user.id,
                 'status': unicode(asn.status),
-                'date_completed': _datestring(asn.date_completed),
-                'date_started': _datestring(asn.date_started),
+                'date_completed': datestring(asn.date_completed),
+                'date_started': datestring(asn.date_started),
                 'achievement_awards': sorted(awards),
                 'task': {
                     'id': exam.id,
@@ -458,6 +458,36 @@ class TestAssignmentManagerViews(BasicTestCase):
         expected = sorted(expected, key=_id)
         self.assertSequenceEqual(result, expected)
 
+    @load_fixtures('session_and_event')
+    def test_session_view(self):
+        surr_manager = self.admin_session_user_role_requirement_manager
+        session = Session.objects.get(id=1)
+        event = Event.objects.get(id=1)
+        student_role = SessionUserRole.objects.get(name='Student')
+        surr = surr_manager.create(session.id, student_role.id, 1, 2, [])
+        assignment = self.admin_assignment_manager.create(surr.id, self.user.id)
+
+        view = partial(self.manager.session_view, user_id=self.user.id)
+        expected = {
+            'id': assignment.id,
+            'user': self.user.id,
+            'status': assignment.status,
+            'task': {
+                'id': surr.id,
+                'name': unicode(surr.name),
+                'title': unicode(surr.title),
+                'description': unicode(surr.description),
+                'type': u'pr_services.session user role requirement',
+                'session': {
+                    'id': session.id,
+                    'start': datestring(session.start),
+                    'end': datestring(session.end)
+                }
+            }
+        }
+        result = view()
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected)
 
 
 class TestAchievementAwardManager(GeneralTestCase):
@@ -1838,37 +1868,48 @@ class TestSessionUserRoleManager(GeneralTestCase):
         session_user_roles = self.session_user_role_manager.get_filtered({'exact' : {'id' : session_user_role.id}}, ['id', 'name'])
         self.assertEquals(session_user_roles[0]['name'], 'Sweep It Upper')
 
+
 class TestSessionUserRoleRequirementManager(GeneralTestCase):
+
+    fixtures = GeneralTestCase.fixtures + ['session_and_event']
+
     def setUp(self):
         super(TestSessionUserRoleRequirementManager, self).setUp()
+
         self.instructor_role = SessionUserRole.objects.get(name__exact='Instructor')
         self.student_role = SessionUserRole.objects.get(name__exact='Student')
-        self.e1 = self.event_manager.create('Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
-            (self.right_now+self.one_day).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
-        self.session = self.session_manager.create(self.right_now.isoformat(),
-            (self.right_now + self.one_day).isoformat(), 'active', False, 100, self.e1.id, 'short name 1', 'long name 1')
+        self.session = Session.objects.get(id=1)
+        self.event = Event.objects.get(id=1)
+
+        manager = self.session_user_role_requirement_manager
+        self.create_surr = manager.create
+        self.surr_view = manager.surr_view
+        self.get_filtered = manager.get_filtered
 
     def test_creation(self):
-        surr = self.session_user_role_requirement_manager.create(self.session.id, self.instructor_role.id, 1,
-            2, [])
-        ret = self.session_user_role_requirement_manager.get_filtered({'exact':{'id':surr.id}}, ['id', 'max'])
+        surr = self.create_surr(self.session.id, self.instructor_role.id, 1, 2, [])
+        ret = self.get_filtered({'exact':{'id':surr.id}}, ['id', 'max'])
         self.assertEquals(type(ret), list)
         self.assertEquals(ret[0]['id'], surr.id)
         self.assertEquals(ret[0]['max'], 2)
 
     def test_view(self):
-        surr1 = self.session_user_role_requirement_manager.create(self.session.id, self.instructor_role.id, 1,
-            2, [])
-        self.session_user_role_requirement_manager.create(self.session.id, self.student_role.id, 1,
-            2, [])
-        ret = self.session_user_role_requirement_manager.surr_view(self.admin_token)
+        surr1 = self.create_surr(self.session.id, self.instructor_role.id, 1, 2, [])
+        self.create_surr(self.session.id, self.student_role.id, 1, 2, [])
+        ret = self.surr_view()
         self.assertEquals(type(ret), list)
         self.assertEquals(len(ret), 2)
 
-        ret = self.session_user_role_requirement_manager.surr_view({'exact' : {'id' : surr1.id}})
+        ret = self.surr_view({'exact' : {'id' : surr1.id}})
         self.assertEquals(type(ret), list)
         self.assertEquals(len(ret), 1)
+        self.assertIn('id', ret[0])
         self.assertEquals(ret[0]['id'], surr1.id)
+
+        # test viewing achievements
+        self.assertIn('achievements', ret[0])
+        self.assertEquals(len(ret[0]['achievements']), 0)
+
 
 class TestDomainManagement(GeneralTestCase):
     def test_affiliate_with_new_domain(self):

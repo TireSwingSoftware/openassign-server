@@ -5,12 +5,14 @@ from django.conf import settings
 def setup(machine):
     methods = [
         {'name': 'actor_assigned_to_curriculum_enrollment'},
+        {'name': 'actor_assigned_to_session'},
         {'name': 'actor_has_completed_assignment_prerequisites'},
         {'name': 'actor_is_acting_upon_themselves'},
         {'name': 'actor_owns_achievement_award'},
         {'name': 'actor_owns_achievement_award_for_achievement'},
         {'name': 'actor_owns_address'},
         {'name': 'actor_owns_assignment'},
+        {'name': 'actor_owns_assignment_for_task'},
         {'name': 'actor_owns_assignment_attempt'},
         {'name': 'actor_owns_credential'},
         {'name': 'actor_owns_prmodel'},
@@ -50,7 +52,7 @@ def setup(machine):
         },
         'Exam': {
             'r': set(('achievements', 'description', 'name', 'passing_score',
-                      'title', 'type')),
+                      'title', 'type', 'session')),
         },
         'ExamSession': {
             'c': True,
@@ -67,8 +69,15 @@ def setup(machine):
             'c': True,
             'r': set(('date_completed', 'date_started', 'sco')),
         },
+        'Session': {
+            'r': set(('start', 'end'))
+        },
+        'SessionUserRoleRequirement': {
+            'r': set(('session', 'name', 'title', 'type', 'description'))
+        },
         'Task': {
-            'r': set(('name', 'title', 'type', 'description', 'achievements')),
+            'r': set(('name', 'title', 'type', 'description', 'achievements',
+                      'session')),
         },
         'User': {
             # We allow users to create themselves
