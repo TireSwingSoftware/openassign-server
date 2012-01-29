@@ -190,7 +190,7 @@ class ObjectManager(object):
         # Convert any instances of a ValuesQuerySet in the result dictionaries
         # into a normal Python list so it can be marshalled for RPC.
         for row in result:
-            for key in row.keys():
+            for key in row:
                 if isinstance(row[key], ValuesQuerySet):
                     row[key] = list(row[key])
         return result
