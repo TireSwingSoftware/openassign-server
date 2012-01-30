@@ -16,13 +16,11 @@ class TaskBundleManager(ObjectManager):
     GETTERS = {
         'name': 'get_general',
         'description': 'get_general',
-        'tasks_depr': 'get_tasks_from_task_bundle',
         'tasks': 'get_many_to_many',
     }
     SETTERS = {
         'name': 'set_general',
         'description': 'set_general',
-        'tasks_depr': 'set_tasks_for_task_bundle',
         'tasks': 'set_many',
     }
     def __init__(self):
