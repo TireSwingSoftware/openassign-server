@@ -90,6 +90,14 @@ class InitialSetupMachine(object):
 
     @classmethod
     def validate_acl(cls, role_name, acl):
+        """
+        Validate an ACL by checking the crud definition for appropriate values.
+        The ACL should first be normalized by `normalize_acl` before validating.
+
+        The specific checks performed ensure:
+            - crud dicts only contains keys (c, r, u, and d)
+            - attribute sets contain valid attributes
+        """
         _read_update = itemgetter('r', 'u')
         for model_name, crud in acl.iteritems():
             if len(crud) != 4:
