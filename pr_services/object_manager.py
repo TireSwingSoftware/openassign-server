@@ -17,6 +17,9 @@ from pr_services.rpc.service import service_method
 
 _DEFAULT_AUTHORIZER = facade.subsystems.Authorizer()
 
+Getter = facade.subsystems.Getter
+Setter = facade.subsystems.Setter
+
 class ObjectManagerMetaclass(type):
     """
     Metaclass for ObjectManager subclasses to merge getters/setters
@@ -42,6 +45,16 @@ class ObjectManagerMetaclass(type):
 
         filter_removed(setters)
         filter_removed(getters)
+
+        # check that the getters/setters are valid
+        for attribute, getter in getters.iteritems():
+            if not hasattr(Getter, getter):
+                raise AttributeError("Invalid getter '%s' for attribute '%s'"
+                        " in %s" % (getter, attribute, name))
+        for attribute, setter in setters.iteritems():
+            if not hasattr(Setter, setter):
+                raise AttributeError("Invalid setter '%s' for attribute '%s'"
+                        " in %s" % (setter, attribute, name))
 
         attrs.update(GETTERS=getters, SETTERS=setters)
         return type.__new__(cls, name, bases, attrs)
