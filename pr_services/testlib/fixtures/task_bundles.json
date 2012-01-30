@@ -185,8 +185,8 @@
                 "pr_services",
                 "taskbundletaskassociation"
             ],
-            "presentation_order": 0,
-            "continue_automatically": false,
+            "presentation_order": 2,
+            "continue_automatically": true,
             "create_timestamp": "2012-01-30 03:04:49"
         }
     },
@@ -201,7 +201,7 @@
                 "pr_services",
                 "taskbundletaskassociation"
             ],
-            "presentation_order": 0,
+            "presentation_order": 1,
             "continue_automatically": false,
             "create_timestamp": "2012-01-30 03:04:49"
         }
