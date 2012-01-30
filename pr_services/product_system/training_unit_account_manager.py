@@ -25,8 +25,8 @@ class TrainingUnitAccountManager(ObjectManager):
         'balance': 'get_balance_from_training_unit_account',
         'notes': 'get_many_to_many',
         'organization': 'get_foreign_key',
-        'user': 'get_foreign_key',
         'training_unit_transactions': 'get_many_to_one',
+        'user': 'get_foreign_key',
     }
     def __init__(self):
         """ constructor """
