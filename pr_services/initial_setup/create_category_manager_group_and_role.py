@@ -1,8 +1,13 @@
 import facade
+import settings
+
 from decorators import authz
 
 @authz
 def setup(machine):
+    if not 'vod_aws' in settings.INSTALLED_APPS:
+        return
+
     group, created = facade.models.Group.objects.get_or_create(
         name='Category Managers')
 

@@ -1,7 +1,12 @@
+import settings
+
 from decorators import authz
 
 @authz
 def setup(machine):
+    if not 'file_tasks' in settings.INSTALLED_APPS:
+        return
+
     methods = [
         {'name' : 'actor_owns_assignment', 'params' : {}},
         {'name' : 'actor_owns_assignment_attempt', 'params' : {}},

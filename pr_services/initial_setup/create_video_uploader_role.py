@@ -1,7 +1,13 @@
+
+import settings
+
 from decorators import authz
 
 @authz
 def setup(machine):
+    if not 'vod_aws' in settings.INSTALLED_APPS:
+        return
+
     methods = [
         {'name' : 'actor_is_member_of_any_organization', 'params' : {}},
         # the below 2 are here to prevent everyone from seeing Videos in the

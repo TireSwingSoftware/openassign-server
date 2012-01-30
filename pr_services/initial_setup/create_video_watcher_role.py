@@ -1,7 +1,13 @@
+
+import settings
+
 from decorators import authz
 
 @authz
 def setup(machine):
+    if not 'vod_aws' in settings.INSTALLED_APPS:
+        return
+
     methods = [
         {'name' : 'actor_is_member_of_actee_related_category_authorized_groups', 'params' : {}},
         {'name' : 'actor_owns_assignment', 'params' : {}}
