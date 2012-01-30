@@ -23,6 +23,7 @@ class OrganizationManager(ObjectManager):
         'email': 'get_general',
         'fax': 'get_general',
         'name': 'get_general',
+        'notes': 'get_many_to_many',
         'org_email_domains': 'get_many_to_one',
         'parent': 'get_foreign_key',
         'phone': 'get_general',
@@ -48,6 +49,7 @@ class OrganizationManager(ObjectManager):
         'email': 'set_general',
         'fax': 'set_general',
         'name': 'set_general',
+        'notes': 'set_many',
         'parent': 'set_foreign_key',
         'phone': 'set_general',
         'photo_url': 'set_forbidden', # placeholder

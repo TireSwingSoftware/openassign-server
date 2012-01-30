@@ -13,11 +13,13 @@ class RegionManager(ObjectManager):
     SETTERS = {
         'events': 'set_many',
         'name': 'set_general',
+        'notes': 'set_many',
         'venues': 'set_many',
     }
     GETTERS = {
         'events': 'get_many_to_one',
         'name': 'get_general',
+        'notes': 'get_many_to_many',
         'venues': 'get_many_to_one',
     }
     def __init__(self):

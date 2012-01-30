@@ -12,18 +12,20 @@ class GroupManager(ObjectManager):
     Manage Groups in the Power Reg system
     """
     GETTERS = {
-        'categories' : 'get_many_to_many',
-        'default' : 'get_general',
-        'managers' : 'get_many_to_many',
-        'name' : 'get_general',
-        'users' : 'get_many_to_many',
+        'categories': 'get_many_to_many',
+        'default': 'get_general',
+        'managers': 'get_many_to_many',
+        'name': 'get_general',
+        'notes': 'get_many_to_many',
+        'users': 'get_many_to_many',
     }
     SETTERS = {
-        'categories' : 'set_many',
-        'default' : 'set_general',
-        'managers' : 'set_many',
-        'name' : 'set_general',
-        'users' : 'set_many',
+        'categories': 'set_many',
+        'default': 'set_general',
+        'managers': 'set_many',
+        'name': 'set_general',
+        'notes': 'set_many',
+        'users': 'set_many',
     }
     def __init__(self):
         """ constructor """

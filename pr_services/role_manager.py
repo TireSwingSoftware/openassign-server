@@ -15,11 +15,13 @@ class RoleManager(ObjectManager):
         'ac_check_methods': 'set_many',
         'acl': 'set_acl',
         'name': 'set_general',
+        'notes': 'set_many',
     }
     GETTERS = {
         'ac_check_methods': 'get_many_to_many',
         'acl': 'get_acl',
         'name': 'get_general',
+        'notes': 'get_many_to_many',
     }
     def __init__(self):
         """ constructor """

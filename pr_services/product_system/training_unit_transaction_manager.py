@@ -11,12 +11,14 @@ class TrainingUnitTransactionManager(ObjectManager):
     Manage TrainingUnitTransactions in the Power Reg system
     """
     GETTERS = {
+        'notes': 'get_many_to_many',
         'purchase_order': 'get_foreign_key',
         'training_unit_account': 'get_foreign_key',
         'training_unit_authorizations': 'get_many_to_many',
         'value': 'get_general',
     }
     SETTERS = {
+        'notes': 'set_many',
         'purchase_order': 'set_foreign_key',
         'training_unit_account': 'set_foreign_key',
         'training_unit_authorizations': 'set_many',

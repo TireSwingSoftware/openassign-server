@@ -14,6 +14,7 @@ class SessionResourceTypeRequirementManager(ObjectManager):
         'session': 'get_foreign_key',
         'max': 'get_general',
         'min': 'get_general',
+        'notes': 'get_many_to_many',
         'resource_type': 'get_foreign_key',
         'resources': 'get_many_to_many',
     }
@@ -21,6 +22,7 @@ class SessionResourceTypeRequirementManager(ObjectManager):
         'session': 'set_foreign_key',
         'max': 'set_general',
         'min': 'set_general',
+        'notes': 'set_many',
         'resource_type': 'set_foreign_key',
         'resources': 'set_many',
     }

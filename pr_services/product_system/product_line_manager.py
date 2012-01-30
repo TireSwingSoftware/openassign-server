@@ -15,12 +15,14 @@ class ProductLineManager(ObjectManager):
         'instructors': 'get_many_to_many',
         'managers': 'get_many_to_many',
         'name': 'get_general',
+        'notes': 'get_many_to_many',
     }
     SETTERS = {
         'instructor_managers': 'set_many',
         'instructors': 'set_many',
         'managers': 'set_many',
         'name': 'set_general',
+        'notes': 'set_many',
     }
     def __init__(self):
         """ constructor """

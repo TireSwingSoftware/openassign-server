@@ -14,12 +14,14 @@ class SessionTemplateResourceTypeRequirementManager(ObjectManager):
     GETTERS = {
         'max': 'get_general',
         'min': 'get_general',
+        'notes': 'get_many_to_many',
         'resource_type': 'get_foreign_key',
         'session_template': 'get_foreign_key',
     }
     SETTERS = {
         'max': 'set_general',
         'min': 'set_general',
+        'notes': 'set_many',
         'resource_type': 'set_foreign_key',
         'session_template': 'set_foreign_key',
     }

@@ -16,6 +16,7 @@ class RoomManager(ObjectManager):
     GETTERS = {
         'capacity': 'get_general',
         'name': 'get_general',
+        'notes': 'get_many_to_many',
         'venue': 'get_foreign_key',
         'venue_address': 'get_general',
         'venue_name': 'get_general',
@@ -23,6 +24,7 @@ class RoomManager(ObjectManager):
     SETTERS = {
         'capacity': 'set_general',
         'name': 'set_general',
+        'notes': 'set_many',
         'venue': 'set_foreign_key',
     }
     def __init__(self):

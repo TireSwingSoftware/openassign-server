@@ -13,10 +13,12 @@ class SessionUserRoleManager(ObjectManager):
 
     GETTERS = {
         'name': 'get_general',
+        'notes': 'get_many_to_many',
         'session_user_role_requirements': 'get_many_to_one',
     }
     SETTERS = {
         'name': 'set_general',
+        'notes': 'set_many',
         'session_user_role_requirements': 'set_many',
     }
     def __init__(self):

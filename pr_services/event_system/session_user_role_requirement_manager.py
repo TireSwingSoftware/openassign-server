@@ -16,6 +16,7 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
         'ignore_room_capacity': 'get_general',
         'max': 'get_general',
         'min': 'get_general',
+        'notes': 'get_many_to_many',
         'role_name': 'get_general',
         'session': 'get_foreign_key',
         'session_user_role': 'get_foreign_key',
@@ -25,6 +26,7 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
         'ignore_room_capacity': 'set_general',
         'max': 'set_general',
         'min': 'set_general',
+        'notes': 'set_many',
         'session': 'set_foreign_key',
         'session_user_role': 'set_foreign_key',
     }

@@ -20,12 +20,14 @@ class ProductOfferManager(ObjectManager):
     """
     GETTERS = {
         'description': 'get_general',
+        'notes': 'get_many_to_many',
         'price': 'get_general',
         'product': 'get_foreign_key',
         'seller': 'get_foreign_key',
     }
     SETTERS = {
         'description': 'set_general',
+        'notes': 'set_many',
         'price': 'set_general',
         'product': 'set_foreign_key',
         'seller': 'set_foreign_key',

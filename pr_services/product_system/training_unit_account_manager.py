@@ -13,6 +13,7 @@ class TrainingUnitAccountManager(ObjectManager):
     #: Dictionary of attribute names and the functions used to set them
 
     SETTERS = {
+        'notes': 'set_many',
         'organization': 'set_foreign_key',
         'user': 'set_foreign_key',
         'starting_value': 'set_general',
@@ -22,6 +23,7 @@ class TrainingUnitAccountManager(ObjectManager):
         # This is not in the data model, but it derived. It will not have a
         # setter for obvious reasons.
         'balance': 'get_balance_from_training_unit_account',
+        'notes': 'get_many_to_many',
         'organization': 'get_foreign_key',
         'user': 'get_foreign_key',
         'training_unit_transactions': 'get_many_to_one',

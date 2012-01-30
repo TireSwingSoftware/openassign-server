@@ -14,6 +14,7 @@ class TrainingUnitAuthorizationManager(ObjectManager):
     GETTERS = {
         'end': 'get_time',
         'max_value': 'get_general',
+        'notes': 'get_many_to_many',
         'start': 'get_time',
         'training_unit_account': 'get_foreign_key',
         'used_value': 'get_used_value_from_training_unit_authorization',
@@ -22,6 +23,7 @@ class TrainingUnitAuthorizationManager(ObjectManager):
     SETTERS = {
         'end': 'set_time',
         'max_value': 'set_general',
+        'notes': 'set_many',
         'start': 'set_time',
         'training_unit_account': 'set_foreign_key',
         'user': 'set_foreign_key',

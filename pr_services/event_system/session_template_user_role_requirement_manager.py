@@ -13,12 +13,14 @@ class SessionTemplateUserRoleRequirementManager(ObjectManager):
     GETTERS = {
         'max': 'get_general',
         'min': 'get_general',
+        'notes': 'get_many_to_many',
         'session_template': 'get_foreign_key',
         'session_user_role': 'get_foreign_key',
     }
     SETTERS = {
         'max': 'set_general',
         'min': 'set_general',
+        'notes': 'set_many',
         'session_template': 'set_foreign_key',
         'session_user_role': 'set_foreign_key',
     }

@@ -46,6 +46,7 @@ class PurchaseOrderManager(ObjectManager):
     GETTERS = {
         'expiration': 'get_time',
         'is_paid': 'get_is_paid_from_purchase_order',
+        'notes': 'get_many_to_many',
         'organization': 'get_foreign_key',
         'payments': 'get_many_to_many',
         'product_claims': 'get_many_to_one',
@@ -62,6 +63,7 @@ class PurchaseOrderManager(ObjectManager):
     #: dictionary of attribute names and the functions used to set them
     SETTERS = {
         'expiration': 'set_time',
+        'notes': 'set_many',
         'organization': 'set_foreign_key',
         'promo_code': 'set_general',
         'training_units_price': 'set_general',

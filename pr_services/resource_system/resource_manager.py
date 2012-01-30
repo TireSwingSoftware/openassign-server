@@ -14,12 +14,14 @@ class ResourceManager(ObjectManager):
     SETTERS = {
         'description': 'set_general',
         'name': 'set_general',
+        'notes': 'set_many',
         'resource_types': 'set_many',
         'session_resource_type_requirements': 'set_many',
     }
     GETTERS = {
         'description': 'get_general',
         'name': 'get_general',
+        'notes': 'get_many_to_many',
         'resource_types': 'get_many_to_many',
         'session_resource_type_requirements': 'get_many_to_one',
     }

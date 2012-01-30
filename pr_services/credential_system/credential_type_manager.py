@@ -21,6 +21,7 @@ class CredentialTypeManager(ObjectManager):
         'description': 'get_general',
         'min_required_tasks': 'get_general',
         'name': 'get_general',
+        'notes': 'get_many_to_many',
         'prerequisite_credential_types': 'get_many_to_many',
         'required_achievements': 'get_many_to_many',
     }
@@ -29,6 +30,7 @@ class CredentialTypeManager(ObjectManager):
         'description': 'set_general',
         'min_required_tasks': 'set_general',
         'name': 'set_general',
+        'notes': 'set_many',
         'prerequisite_credential_types': 'set_many',
         'required_achievements': 'set_many',
     }

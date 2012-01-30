@@ -13,12 +13,14 @@ class TrainingVoucherManager(ObjectManager):
     """
     #: Dictionary of attribute names and the functions used to set them
     SETTERS = {
+        'notes': 'set_many',
         'purchase_order': 'set_foreign_key',
         'session_user_role_requirement': 'set_foreign_key',
     }
     #: Dictionary of attribute names and the functions used to get them
     GETTERS = {
         'code': 'get_general',
+        'notes': 'get_many_to_many',
         'price': 'get_session_price_from_training_voucher',
         'purchase_order': 'get_foreign_key',
         'session_user_role_requirement': 'get_foreign_key',
