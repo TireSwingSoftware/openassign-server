@@ -25,6 +25,7 @@ import django.utils.unittest
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.utils import simplejson as json
 from django.utils.unittest import skipIf, skipUnless
 
@@ -39,7 +40,8 @@ from pr_services.rpc.service import (service_method, wrap_service_method,
 from pr_services.testlib import (GeneralTestCase, RoleTestCase, BasicTestCase,
         TestCase)
 from pr_services.testlib import mixins
-from pr_services.testlib.helpers import expectPermissionDenied, load_fixtures
+from pr_services.testlib.helpers import (expectPermissionDenied, load_fixtures,
+        object_dict)
 from pr_services.utils import UnicodeCsvWriter
 
 import facade
@@ -3244,94 +3246,142 @@ class TestObjectManagerPermissions(RoleTestCase, CommonObjectManagerTests):
         self.assertFalse(check_exists('email', 'nonexistent@email.com'))
 
 
-class TestTaskBundles(BasicTestCase):
+class TestTaskBundleManager(BasicTestCase):
 
-    def setUp(self):
-        super(TestTaskBundles, self).setUp()
-        # create some tasks so that we can bundle them together
-        self.exam_1 = self.exam_manager.create('Exam 1')
-        self.exam_2 = self.exam_manager.create('Exam 2')
-        self.exam_3 = self.exam_manager.create('Exam 3')
-
-    def test_create_and_update(self):
-        # create a task bundle with no tasks
-        task_bundle = self.task_bundle_manager.create(
-            'example task bundle', 'this is an example task bundle', [])
-        ret = self.task_bundle_manager.get_filtered(
-            {'exact': {'id': task_bundle.id}},
-            ['name', 'description', 'tasks_depr'])
-        self.failUnless(isinstance(ret, list))
-        self.failUnless(len(ret) == 1)
-        self.assertEquals(ret[0]['name'], 'example task bundle')
-        self.assertEquals(ret[0]['description'], 'this is an example task bundle')
-        self.assertEquals(ret[0]['tasks_depr'], [])
-        # add some associated tasks
-        self.task_bundle_manager.update(task_bundle.id,
-            {'tasks_depr': [{'id': self.exam_1.id, 'presentation_order': 2},
-                       {'id': self.exam_2.id, 'presentation_order': 1, 'continue_automatically': True},
-                      ]})
-        ret = self.task_bundle_manager.get_filtered(
-            {'exact': {'id': task_bundle.id}}, ['name', 'description', 'tasks_depr'])
-        self.failUnless(isinstance(ret, list))
-        self.failUnless(len(ret) == 1)
-        self.assertEquals(ret[0]['tasks_depr'],
-            [{'id': self.exam_2.id, 'presentation_order': 1, 'content_type': 'pr_services.exam',
-              'continue_automatically': True},
-             {'id': self.exam_1.id, 'presentation_order': 2, 'content_type': 'pr_services.exam',
-              'continue_automatically': False}])
-        # now swap the order of the tasks
-        self.task_bundle_manager.update(task_bundle.id,
-            {'tasks_depr': [{'id': self.exam_1.id, 'presentation_order': 1, 'continue_automatically': True},
-                       {'id': self.exam_2.id, 'presentation_order': 2, 'continue_automatically': False},
-                      ]})
-        ret = self.task_bundle_manager.get_filtered(
-            {'exact': {'id': task_bundle.id}}, ['name', 'description', 'tasks_depr'])
-        self.failUnless(isinstance(ret, list))
-        self.failUnless(len(ret) == 1)
-        self.assertEquals(ret[0]['tasks_depr'],
-            [{'id': self.exam_1.id, 'presentation_order': 1, 'content_type': 'pr_services.exam',
-                'continue_automatically': True},
-             {'id': self.exam_2.id, 'presentation_order': 2, 'content_type': 'pr_services.exam',
-                'continue_automatically': False}])
-        # now update to a different list of tasks
-        self.task_bundle_manager.update(task_bundle.id,
-            {'tasks_depr': [{'id': self.exam_1.id, 'presentation_order': 1, 'continue_automatically': False},
-                       {'id': self.exam_2.id, 'presentation_order': 2, 'continue_automatically': True},
-                       {'id': self.exam_3.id, 'presentation_order': 3, 'continue_automatically': False},
-                      ]})
-        ret = self.task_bundle_manager.get_filtered(
-            {'exact': {'id': task_bundle.id}}, ['name', 'description', 'tasks_depr'])
-        self.failUnless(isinstance(ret, list))
-        self.failUnless(len(ret) == 1)
-        self.assertEquals(ret[0]['tasks_depr'],
-            [{'id': self.exam_1.id, 'presentation_order': 1, 'content_type': 'pr_services.exam',
-              'continue_automatically': False},
-             {'id': self.exam_2.id, 'presentation_order': 2, 'content_type': 'pr_services.exam',
-              'continue_automatically': True},
-             {'id': self.exam_3.id, 'presentation_order': 3, 'content_type': 'pr_services.exam',
-              'continue_automatically': False}])
-
-class TestTaskBundleViews(BasicTestCase):
-
+    # the task bundles fixture has 2 task bundles
+    # bundle1 -> { task1, task2, task3 }
+    # bundle2 -> { task4, task5 }
     fixtures = BasicTestCase.fixtures + ['task_bundles']
 
     def setUp(self):
-        super(TestTaskBundleViews, self).setUp()
-        # the task bundles fixture has 2 task bundles
-        # bundle1 -> { task1, task2, task3 }
-        # bundle2 -> { task4, task5 }
+        super(TestTaskBundleManager, self).setUp()
         self.tasks = Task.objects.all()
+        self.empty_bundle = TaskBundle.objects.get(id=3)
         self.bundles = TaskBundle.objects.all()
+        self._bundle_fields = ('id', 'name', 'description', 'tasks')
         # XXX: run tests as administrator
+
+    def _bundle_dict(self, bundle, fields=None):
+        # convert a bundle object into a dict using `fields`
+        d = object_dict(bundle, fields or self._bundle_fields)
+        tasks = d.get('tasks', None)
+        if tasks:
+            d['tasks'] = sorted(tasks.values_list('id', flat=True))
+        return d
+
+    def _get_filtered(self, *args, **kwargs):
+        # a wrapper for get filtered to ensure consistent ordering
+        result = self.task_bundle_manager.get_filtered(*args, **kwargs)
+        if len(result) > 1:
+            _id = itemgetter('id')
+            if 'tasks' in result[0]:
+                for row in result:
+                    row['tasks'].sort()
+            result.sort(key=_id)
+        return result
+
+    def _compare_bundle(self, b1, b2, fields=None):
+        # compare two bundles as dicts
+        d1 = self._bundle_dict(b1, fields)
+        d2 = self._bundle_dict(b2, fields)
+        self.assertDictEqual(d1, d2)
+
+    def _expected_bundles(self, bundles, fields=None):
+        # helper to generate a list of bundle dicts
+        return [self._bundle_dict(b, fields) for b in bundles]
+
+    def test_get_filtered(self):
+        # test with no arguments
+        result = self._get_filtered()
+        expected = self._expected_bundles(self.bundles, ('id',))
+        self.assertSequenceEqual(result, expected)
+
+        # test with no filter but all fields
+        result = self._get_filtered(field_names=self._bundle_fields)
+        expected = self._expected_bundles(self.bundles)
+        self.assertSequenceEqual(result, expected)
+
+        # test with a simple filter and all fields
+        bundle = self.bundles[0]
+        expected = self._bundle_dict(bundle)
+        result = self._get_filtered({'exact': {'id': bundle.id}},
+                self._bundle_fields)
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected)
+
+        # test more complicated filter - finding a bundle with a given task
+        task = self.tasks[0]
+        result = self._get_filtered({'member': {'tasks': [task.id]}})
+        bundle = self.bundles.get(tasks__id__in=[task.id])
+        expected = self._bundle_dict(bundle, ('id',))
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected)
+
+    def test_create(self):
+        create = self.task_bundle_manager.create
+
+        # create an empty bundle
+        bundle = self.empty_bundle
+        result = create(bundle.name, bundle.description)
+        self._compare_bundle(result, bundle, ('name', 'description', 'tasks'))
+
+        # create a bundle with tasks
+        bundle = self.bundles[0]
+        self.assertGreater(len(bundle.tasks.all()), 1)
+        result = create(bundle.name, bundle.description,
+                tasks=bundle.tasks.values('id'))
+        self._compare_bundle(result, bundle, ('name', 'description', 'tasks'))
+
+    def test_update(self):
+        update = self.task_bundle_manager.update
+
+        ### test updating basic bundle attributes
+        bundle = self.bundles[0]
+        updates = {
+            'name': u'Foo Bundle',
+            'description': u'Too much foo'
+        }
+        bundle = update(bundle.id, updates)
+        # check that it updated the bundle for us
+        result = self._bundle_dict(bundle, updates.keys())
+        self.assertDictEqual(result, updates)
+
+        # check that get filtered sees the updates
+        result = self._get_filtered({'exact': {'id': bundle.id}},
+                field_names=self._bundle_fields)
+        expected = self._bundle_dict(bundle)
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected)
+
+        ### test updating a bundle's tasks
+
+        # get some tasks not in bundle
+        tasks = self.tasks.filter(~Q(task_bundles__in=[bundle.id]))
+        task_ids = list(tasks.values_list('id', flat=True))
+
+        # we expect the bundle to contain the tasks it has now
+        # plus the `task_ids` we're adding
+        expected = list(bundle.tasks.values_list('id', flat=True))
+        expected.extend(task_ids)
+
+        bundle = update(bundle.id, {'tasks': task_ids})
+
+        # check that we see the update
+        result = bundle.tasks.values_list('id', flat=True)
+        self.assertSequenceEqual(result, expected)
+
+        # check that get_filtered sees the update
+        result = self._get_filtered({'exact': {'id': bundle.id}}, ('tasks', ))
+        self.assertEquals(len(result), 1)
+        self.assertSequenceEqual(result[0]['tasks'], expected)
 
     def test_task_detail_view(self):
         # helpers for task related information
         _task_fields = ('id', 'name', 'description', 'title')
-        _task_detail = attrgetter(*_task_fields)
         def task_detail(t):
             # XXX: we know they are exams, lets make this part easy
             d = {'type': u'pr_services.exam'}
-            d.update(zip(_task_fields, _task_detail(t)))
+            d.update(object_dict(t, _task_fields))
             return d
 
         _id = itemgetter('id')
@@ -3339,8 +3389,9 @@ class TestTaskBundleViews(BasicTestCase):
             # wrapper to help with consistent ordering
             result = self.task_bundle_manager.task_detail_view(*args, **kwargs)
             for row in result:
-                row['tasks'] = sorted(row['tasks'], key=_id)
-            return sorted(result, key=_id)
+                row['tasks'].sort(key=_id)
+            result.sort(key=_id)
+            return result
 
         expected = []
         # build expected output
