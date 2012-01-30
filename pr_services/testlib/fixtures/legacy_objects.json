@@ -92,7 +92,7 @@
   { "fields" : { "alleged_organization" : null,
         "billing_address" : null,
         "biography" : null,
-        "blame" : 2,
+        "blame" : 1,
         "color_code" : null,
         "confirmation_code" : null,
         "create_timestamp" : "2012-01-11 21:02:04",
@@ -129,7 +129,7 @@
   { "fields" : { "alleged_organization" : null,
         "billing_address" : null,
         "biography" : null,
-        "blame" : 2,
+        "blame" : 1,
         "color_code" : null,
         "confirmation_code" : null,
         "create_timestamp" : "2012-01-11 21:02:04",
@@ -166,7 +166,7 @@
   { "fields" : { "alleged_organization" : null,
         "billing_address" : null,
         "biography" : null,
-        "blame" : 2,
+        "blame" : 1,
         "color_code" : null,
         "confirmation_code" : null,
         "create_timestamp" : "2012-01-11 21:02:04",
@@ -313,7 +313,7 @@
     "model" : "pr_services.organization",
     "pk" : 1
   },
-  { "fields" : { "blame" : 4,
+  { "fields" : { "blame" : 1,
         "capacity" : 100,
         "create_timestamp" : "2012-01-11 21:07:10",
         "final_type" : [ "pr_services",
@@ -331,7 +331,7 @@
   },
   { "fields" : { "active" : true,
         "address" : 1,
-        "blame" : 3,
+        "blame" : 1,
         "contact" : null,
         "create_timestamp" : "2012-01-11 21:06:48",
         "final_type" : [ "pr_services",
@@ -389,44 +389,5 @@
       },
     "model" : "pr_services.blame",
     "pk" : 1
-  },
-  { "fields" : { "create_timestamp" : "2012-01-11 21:02:04",
-        "final_type" : [ "pr_services",
-            "blame"
-          ],
-        "ip" : "0.0.0.0",
-        "owner" : null,
-        "save_timestamp" : "2012-01-11 21:02:04",
-        "time" : "2012-01-11 21:02:04",
-        "user" : 1
-      },
-    "model" : "pr_services.blame",
-    "pk" : 2
-  },
-  { "fields" : { "create_timestamp" : "2012-01-11 21:06:48",
-        "final_type" : [ "pr_services",
-            "blame"
-          ],
-        "ip" : "0.0.0.0",
-        "owner" : null,
-        "save_timestamp" : "2012-01-11 21:06:48",
-        "time" : "2012-01-11 21:06:48",
-        "user" : 1
-      },
-    "model" : "pr_services.blame",
-    "pk" : 3
-  },
-  { "fields" : { "create_timestamp" : "2012-01-11 21:07:10",
-        "final_type" : [ "pr_services",
-            "blame"
-          ],
-        "ip" : "0.0.0.0",
-        "owner" : null,
-        "save_timestamp" : "2012-01-11 21:07:10",
-        "time" : "2012-01-11 21:07:10",
-        "user" : 1
-      },
-    "model" : "pr_services.blame",
-    "pk" : 4
   }
 ]
