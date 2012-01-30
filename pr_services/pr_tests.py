@@ -3500,30 +3500,24 @@ class TestCurriculumManagement(BasicTestCase):
         self.assertTrue('name' in ret[0])
         self.assertEquals(ret[0]['name'], curriculum.name)
 
+    @load_fixtures('basic_curriculum_enrollment', 'task_bundles')
     def test_create_from_task_bundle(self):
-        task_bundle = self.task_bundle_manager.create(
-            'example task bundle', 'this is an example task bundle', [
-                {'id' : self.exam_1.id, 'presentation_order' : 10},
-                {'id' : self.exam_2.id, 'presentation_order' : 20},
-                ])
-        tbs = self.task_bundle_manager.get_filtered({}, ['id', 'tasks_depr', 'name'])
-        self.assertEquals(len(tbs), 1)
-        self.assertEquals(tbs[0]['id'], task_bundle.id)
-        self.assertTrue('tasks_depr' in tbs[0])
-        self.assertEquals(len(tbs[0]['tasks_depr']), 2)
-        self.assertTrue('presentation_order' in tbs[0]['tasks_depr'][0])
-        self.assertTrue('continue_automatically' in tbs[0]['tasks_depr'][0])
-
-        curriculum = self.curriculum_manager.create('Curriculum 1')
-        cta_dicts = []
-        for task in tbs[0]['tasks_depr']:
-            cta_dicts.append({'curriculum' : curriculum.id, 'task' : task['id'],
-                'optional_attributes' : {
-                    'presentation_order' : task['presentation_order'],
-                    'task_bundle' : tbs[0]['id'],
-                    'continue_automatically' : task['continue_automatically']}})
-        ret = self.curriculum_task_association_manager.bulk_create(cta_dicts)
-        self.assertEquals(len(ret), len(tbs[0]['tasks_depr']))
+        curriculum = Curriculum.objects.get(id=1)
+        bundle = TaskBundle.objects.get(id=1)
+        ta = TaskBundleTaskAssociation.objects.filter(task_bundle=bundle)
+        cta = [{
+            'curriculum': curriculum.id,
+            'task': task.id,
+            'optional_attributes': {
+                'task_bundle': bundle.id,
+                'continue_automatically': ta.get(task=task).continue_automatically,
+                'presentation_order': ta.get(task=task).presentation_order
+                }
+            } for task in bundle.tasks.all()]
+        result = self.curriculum_task_association_manager.bulk_create(cta)
+        self.assertEquals(len(result), len(bundle.tasks.all()))
+        for task in bundle.tasks.all():
+            self.assertIn(task, curriculum.tasks.all())
 
     @load_fixtures('legacy_objects', 'task_bundles')
     def test_enroll_users(self):
