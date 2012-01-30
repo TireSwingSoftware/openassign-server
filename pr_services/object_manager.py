@@ -145,7 +145,7 @@ class ObjectManager(object):
             return Utils.find_by_id(id, model_class)
 
     @service_method
-    def get_filtered(self, auth_token, filters, field_names=None):
+    def get_filtered(self, auth_token, filters=None, field_names=None):
         """
         Get Power Reg persistent objects filtered by various limits::
 
@@ -268,7 +268,7 @@ class ObjectManager(object):
             else:
                 return range_arg
 
-        def _filter_common(self, auth_token, filters, field_names=None):
+        def _filter_common(self, auth_token, filters=None, field_names=None):
             """
             Get objects filtered by various limits
             """
@@ -276,8 +276,11 @@ class ObjectManager(object):
             if field_names is None:
                 field_names = []
 
-            query = self.construct_query(filters)
-            query_set = self.my_manager.my_django_model.objects.filter(query)
+            if filters:
+                query = self.construct_query(filters)
+                query_set = self.my_manager.my_django_model.objects.filter(query)
+            else:
+                query_set = self.my_manager.my_django_model.objects.all()
 
             return facade.subsystems.Getter(auth_token, self.my_manager, query_set, field_names).results
 
