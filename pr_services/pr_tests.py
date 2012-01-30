@@ -1439,6 +1439,7 @@ class TestSessionManager(GeneralTestCase):
         self.assertTrue('venue_address' in room)
 
         address = room['venue_address']
+        self.assertTrue(address)
         self.assertTrue('label' in address)
         self.assertEquals(address['label'], self.venue1.address.label)
         self.assertTrue('locality' in address)
