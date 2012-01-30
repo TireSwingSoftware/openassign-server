@@ -3492,13 +3492,6 @@ class TestPrUtils(BasicTestCase):
 
 class TestCurriculumManagement(BasicTestCase):
 
-    def setUp(self):
-        super(TestCurriculumManagement, self).setUp()
-        # create some tasks so that we can bundle them together
-        self.exam_1 = self.exam_manager.create('Exam 1')
-        self.exam_2 = self.exam_manager.create('Exam 2')
-        self.exam_3 = self.exam_manager.create('Exam 3')
-
     def test_admin_curriculum_view(self):
         curriculum = self.curriculum_manager.create('Curriculum 1')
 
@@ -3532,17 +3525,18 @@ class TestCurriculumManagement(BasicTestCase):
         ret = self.curriculum_task_association_manager.bulk_create(cta_dicts)
         self.assertEquals(len(ret), len(tbs[0]['tasks_depr']))
 
+    @load_fixtures('legacy_objects', 'task_bundles')
     def test_enroll_users(self):
         # create users, create curriculum, enroll users
-        learner1 = self.user_manager.create('learner_1', 'password', '', '', '', '', '', 'active')
-        learner2 = self.user_manager.create('learner_2', 'password', '', '', '', '', '', 'active')
-        learner3 = self.user_manager.create('learner_3', 'password', '', '', '', '', '', 'active')
+        exams = Exam.objects.all()
+        user_ids = User.objects.filter(id__gt=1)[:3].values_list('id', flat=True)
         curriculum = self.curriculum_manager.create('Curriculum 1')
-        self.curriculum_task_association_manager.create(curriculum.id, self.exam_1.id)
-        self.curriculum_task_association_manager.create(curriculum.id, self.exam_2.id)
+        self.curriculum_task_association_manager.create(curriculum.id, exams[0].id)
+        self.curriculum_task_association_manager.create(curriculum.id, exams[1].id)
         start = self.right_now.isoformat()
         end = (self.right_now+self.one_day).isoformat()
-        enrollment = self.curriculum_enrollment_manager.create(curriculum.id, start, end, [learner1.id, learner2.id, learner3.id])
+        enrollment = self.curriculum_enrollment_manager.create(curriculum.id,
+                start, end, user_ids)
 
         # verify enrollment
         ret = self.curriculum_enrollment_manager.get_filtered({'exact' : {'id' : enrollment.id}}, ['id', 'users', 'assignments', 'user_completion_statuses'])
@@ -3556,7 +3550,8 @@ class TestCurriculumManagement(BasicTestCase):
             self.assertEquals(ret[0]['user_completion_statuses'][user], False)
 
         # verify enrollment status on user object
-        users = self.user_manager.get_filtered({'member' : {'id' : [learner1.id, learner2.id, learner3.id]}}, ['completed_curriculum_enrollments', 'incomplete_curriculum_enrollments'])
+        users = self.user_manager.get_filtered({'member' : {'id' : user_ids}},
+                ['completed_curriculum_enrollments', 'incomplete_curriculum_enrollments'])
         self.assertEquals(len(users), 3)
         for user in users:
             self.assertEquals(len(user['completed_curriculum_enrollments']), 0)
@@ -3572,7 +3567,7 @@ class TestCurriculumManagement(BasicTestCase):
             self.assertEquals(ret[0]['user_completion_statuses'][user], True)
 
         # verify new enrollment status on user object
-        users = self.user_manager.get_filtered({'member' : {'id' : [learner1.id, learner2.id, learner3.id]}}, ['completed_curriculum_enrollments', 'incomplete_curriculum_enrollments'])
+        users = self.user_manager.get_filtered({'member' : {'id' : user_ids}}, ['completed_curriculum_enrollments', 'incomplete_curriculum_enrollments'])
         self.assertEquals(len(users), 3)
         for user in users:
             self.assertEquals(len(user['completed_curriculum_enrollments']), 1)
