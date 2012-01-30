@@ -205,8 +205,11 @@ class ObjectManager(object):
 
             self.my_manager = my_manager
             self.handlers = {
+                'exact': self._handle_endpoint,
                 'greater_than' : self._handle_endpoint,
+                'greater_than_or_equal' : self._handle_endpoint,
                 'less_than' : self._handle_endpoint,
+                'less_than_or_equal' : self._handle_endpoint,
                 'range' : self._handle_range,
             }
 
@@ -239,7 +242,7 @@ class ObjectManager(object):
             :param arg: string value of the filter
             """
             if isinstance(arg, basestring) and pr_time.is_iso8601(arg):
-                return pr_time.iso8601_to_datetime(arg)
+                return pr_time.iso8601_to_datetime(arg).replace(tzinfo=pr_time.UTC())
             else:
                 return arg
 

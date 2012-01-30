@@ -3183,6 +3183,39 @@ class TestObjectManager(GeneralTestCase, CommonObjectManagerTests):
         self.assertEquals(ret[0]['id'], e2.id)
 
 
+class TestGetFiltered(BasicTestCase):
+    fixtures = BasicTestCase.fixtures + ['exams_and_achievements']
+
+    def test_get_filtered_dates(self):
+        # create a bunch of exams due on different days
+        assignments = Assignment.objects.all()
+        for i, a in enumerate(assignments):
+            a.due_date = self.right_now + timedelta(days=i)
+            a.save()
+
+        n = len(assignments)
+        low = datestring(self.right_now)
+        high = datestring(self.right_now + timedelta(days=n - 1))
+
+        # greater_than
+        get_filtered = self.assignment_manager.get_filtered
+        result = get_filtered({'greater_than': {'due_date': low}})
+        self.assertEquals(len(result), n - 1)
+        # greater than or equal
+        result = get_filtered({'greater_than_or_equal': {'due_date': low}})
+        self.assertEquals(len(result), n)
+        # less than
+        result = get_filtered({'less_than': {'due_date': high}})
+        self.assertEquals(len(result), n - 1)
+        # less than or equal
+        result = get_filtered({'less_than_or_equal': {'due_date': high}})
+        self.assertEquals(len(result), n)
+        # equal
+        result = get_filtered({'exact': {'due_date': low}})
+        self.assertEquals(len(result), 1)
+        self.assertEquals(result[0]['id'], assignments[0].id)
+
+
 class TestObjectManagerPermissions(RoleTestCase, CommonObjectManagerTests):
     """
     Tests for ObjectManager Permissions
