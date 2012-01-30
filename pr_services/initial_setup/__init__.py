@@ -5,7 +5,11 @@ initial setup for the power reg 2 application
 import cPickle
 import collections
 
+from operator import itemgetter
+
 import facade
+
+from admin_crud import admin_crud
 
 # the default fields that everyone should be able to read for any
 # model they have access to
@@ -62,7 +66,7 @@ class InitialSetupMachine(object):
         self.import_manager = facade.managers.ImportManager()
 
     @classmethod
-    def normalize_acl(cls, acl):
+    def normalize_acl(cls, role_name, acl):
         """
         Adds restrictive default values for unspecified CRUD fields. Also adds
         default read attributes to the set of readable attributes for every
@@ -74,15 +78,32 @@ class InitialSetupMachine(object):
         for model_name, crud in acl.iteritems():
             # set restrictive defaults if not specified
             crud.setdefault('c', False)
-            crud.setdefault('u', set())
             crud.setdefault('d', False)
+            updateable = crud.setdefault('u', set())
             readable = crud.setdefault('r', set())
-            if isinstance(readable, collections.MutableSet):
-                readable.update(default_read_fields)
+            if not (isinstance(readable, collections.MutableSet)
+                    and isinstance(updateable, collections.MutableSet)):
+                raise TypeError("expecting a set of attributes in %s crud "
+                    "for %s role" % (model_name, role_name))
             else:
-                raise TypeError("expecting a set of attributes for '%s' crud" %
-                        model_name)
+                readable.update(default_read_fields)
 
+    @classmethod
+    def validate_acl(cls, role_name, acl):
+        _read_update = itemgetter('r', 'u')
+        for model_name, crud in acl.iteritems():
+            if len(crud) != 4:
+                # check that there are only keys for c, r, u, d
+                raise ValueError("crud dict should contain only c, r, u, and d")
+
+            for operation, attributes in zip("ru", _read_update(crud)):
+                # check for extraneous attributes defined by the role
+                valid_attributes = admin_crud[model_name][operation]
+                invalid_attributes = list(attributes - valid_attributes)
+                if invalid_attributes:
+                    raise ValueError("invalid attributes %r for '%s' in %s crud"
+                            " for '%s' role" % (invalid_attributes, operation,
+                                model_name, role_name))
 
     def add_acl_to_role(self, name, methods, crud, arbitrary_perms=None):
         """
@@ -98,7 +119,8 @@ class InitialSetupMachine(object):
         :type arbitrary_perms: list
         """
         role, created = facade.models.Role.objects.get_or_create(name=name)
-        InitialSetupMachine.normalize_acl(crud)
+        InitialSetupMachine.normalize_acl(name, crud)
+        InitialSetupMachine.validate_acl(name, crud)
         crud = cPickle.dumps(crud)
         if arbitrary_perms is not None:
             arbitrary_perms = cPickle.dumps(arbitrary_perms)
