@@ -160,6 +160,21 @@
         }
     },
     {
+        "pk": 3,
+        "model": "pr_services.taskbundle",
+        "fields": {
+            "save_timestamp": "2012-01-30 05:01:19",
+            "description": "This bundle is empty",
+            "name": "Empty Task Bundle",
+            "create_timestamp": "2012-01-30 05:01:19",
+            "organization": null,
+            "final_type": [
+                "pr_services",
+                "taskbundle"
+            ]
+        }
+    },
+    {
         "pk": 1,
         "model": "pr_services.taskbundletaskassociation",
         "fields": {
