@@ -3379,9 +3379,9 @@ class TestTaskBundleManager(BasicTestCase):
         # helpers for task related information
         _task_fields = ('id', 'name', 'description', 'title')
         def task_detail(t):
+            d = object_dict(t, _task_fields)
             # XXX: we know they are exams, lets make this part easy
-            d = {'type': u'pr_services.exam'}
-            d.update(object_dict(t, _task_fields))
+            d['type'] = u'pr_services.exam'
             return d
 
         _id = itemgetter('id')
