@@ -395,56 +395,6 @@ class Getter(object):
             tag_list.append(tag.name)
         return tag_list
 
-    def get_tasks_from_task_bundle(self, result_object, field_name):
-        """
-        Returns an ordered list of dictionaries describing tasks in a
-        task bundle.  The tasks are ordered by their corresponding
-        presentation_order numbers.
-
-        Additionally, it may be desirable to immediately present the
-        next task to a user after completion of a task.  If so, the
-        first task will have 'continue_automatically' set to True in
-        the return value.
-
-        Sample return value::
-
-            [{'id': 3, 'presentation_order': 1, 'content_type': 'pr_services.video',
-              'continue_automatically': False},
-             {'id': 9, 'presentation_order': 2, 'content_type': 'pr_services.sco',
-              'continue_automatically': True},
-             {'id': 7, 'presentation_order': 3, 'content_type': 'pr_services.exam',
-              'continue_automatically': False}]
-
-        The content type is made from the final_type attribute of the tasks,
-        using its app_label attribute, followed by a dot, followed by its name
-        attribute.
-
-        :todo: use content_type getter here
-        """
-
-        if not isinstance(result_object, facade.models.TaskBundle):
-            raise exceptions.InvalidActeeTypeException()
-
-        if field_name != 'tasks_depr':
-            raise exceptions.InvalidDataException('field_name must be "tasks_depr"')
-
-        associations = facade.models.TaskBundleTaskAssociation.objects.filter(
-            task_bundle__id=result_object.id).order_by('presentation_order')
-
-        ordered_task_list = []
-
-        # the ternary expression for 'continue_automatically' is here
-        # so that versions of Django <= 1.1 on MySQL won't result in
-        # 1 or 0 being returned rather than True or False.  grrrr!
-        for association in associations:
-            ordered_task_list.append({'id': association.task.id,
-                'presentation_order': association.presentation_order,
-                'content_type': (association.task.final_type.app_label + '.' +
-                                 association.task.final_type.name),
-                'continue_automatically':
-                    True if association.continue_automatically else False})
-
-        return ordered_task_list
 
 class Setter(object):
     logger = logging.getLogger('pr_services.setter')
@@ -747,51 +697,5 @@ class Setter(object):
         else:
             raise exceptions.InvalidDataException(
                 'input to the set_tags() setter must be a dictionary')
-
-    def set_tasks_for_task_bundle(self, field_name, new_value):
-        """
-        Replaces the task associations for a task bundle with a new set of task
-        associations.
-
-        Nota bene:
-
-        Because this function replaces the task associations for a task bundle,
-        a race condition is possible where one user adds a task to the
-        task bundle after another user has read the contents of a task bundle.
-        If the user who has just read the (old) contents of the task bundle
-        then adds a different task to it, the previous update is lost.
-
-        :param field_name: the name of the field to set
-        :type field_name: string
-        :param new_value: ordered list of tasks to associate with this
-            task bundle, replaces previous associations
-        :type new_value: list
-
-        The structure of the new_value field should be almost exactly the same
-        as the structure of the return value given by
-        Getter.get_tasks_from_task_bundle.  However, the 'content_type'
-        attributes are not required (and are ignored if present).  Additionally,
-        the items do not need to be ordered by presentation_order.  If
-        'continue_automatically' is not specified, False will be assumed.
-
-        Example new_value::
-
-            [{'id': 3, 'presentation_order': 3, 'continue_automatically': False},
-            {'id': 9, 'presentation_order': 1, 'continue_automatically': True},
-            {'id': 7, 'presentation_order': 2, 'continue_automatically': False}]
-
-        """
-
-        self.django_object.tasks.clear()
-        for association in new_value:
-            if (not isinstance(association, dict) or 'id' not in association or
-                'presentation_order' not in association):
-                raise exceptions.InvalidDataException('expected a list of dictionaries, each with "id" and ' +\
-                    '"presentation_order" keys')
-            continue_automatically = association.get('continue_automatically', False)
-            facade.models.TaskBundleTaskAssociation.objects.create(
-                task_id=association['id'], task_bundle=self.django_object,
-                presentation_order=association['presentation_order'],
-                continue_automatically=continue_automatically)
 
 # vim:tabstop=4 shiftwidth=4 expandtab
