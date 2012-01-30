@@ -83,7 +83,7 @@ class RoomManager(ObjectManager):
             start = pr_time.iso8601_to_datetime(start)
         if isinstance(end, basestring):
             end = pr_time.iso8601_to_datetime(end)
-        
+
         # find any conflicting sessions, remove their room IDs
         blocked_room_ids = [ ]
         conflicting_sessions = (
@@ -95,7 +95,7 @@ class RoomManager(ObjectManager):
         blocked_room_ids = list(set(blocked_room_ids))
         available_room_ids = [i for i in test_room_ids if i not in blocked_room_ids]
         # query for available rooms
-        e = facade.models.Room.objects.filter( 
+        e = facade.models.Room.objects.filter(
             id__in = available_room_ids)
         # iterate over these objects, filtering out those from blacked-out
         # venues and any whose IDs are hidden from this user

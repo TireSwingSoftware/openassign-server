@@ -102,7 +102,7 @@ class VenueManager(ObjectManager):
         available_room_ids = [i for i in available_room_ids if i not in blocked_room_ids]
 
         # query for available rooms, extract the venue ID from each
-        available_venue_ids = facade.models.Room.objects.filter( 
+        available_venue_ids = facade.models.Room.objects.filter(
             id__in = available_room_ids).values_list('venue', flat=True)
 
         # filter out venues with with blackout periods in this time span
@@ -116,9 +116,9 @@ class VenueManager(ObjectManager):
         blackout_venue_ids = list(set(blackout_venue_ids))
         available_venue_ids = [i for i in available_venue_ids if i not in blackout_venue_ids]
 
-        return self.get_filtered(auth_token, 
+        return self.get_filtered(auth_token,
             {'member' : {'id' : available_venue_ids} },
             requested_fields or [])
-        
+
 
 # vim:tabstop=4 shiftwidth=4 expandtab
