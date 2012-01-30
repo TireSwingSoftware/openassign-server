@@ -8,26 +8,21 @@ def setup(machine):
         return
 
     methods = [
-        {'name' : 'actor_owns_assignment', 'params' : {}},
-        {'name' : 'actor_owns_assignment_attempt', 'params' : {}},
-        {'name' : 'actor_owns_assignment_for_task', 'params' : {}},
+        {'name': 'actor_owns_assignment'},
+        {'name': 'actor_owns_assignment_attempt'},
+        {'name': 'actor_owns_assignment_for_task'},
     ]
     crud = {
         'Assignment' : {
             'c' : True,
-            'r' : set(('task', 'task_content_type', 'user', 'date_started',
-                       'date_completed', 'due_date', 'prerequisites_met',
-                       'effective_date_assigned', 'status',
-                       'assignment_attempts')),
-            'u' : set(),
-            'd' : False,
+            'r' : set(('assignment_attempts', 'date_completed', 'date_started',
+                       'due_date', 'effective_date_assigned',
+                       'prerequisites_met', 'status', 'task',
+                       'task_content_type', 'user')),
         },
         'FileDownload' : {
-            'c' : False,
-            'r' : set(('author', 'create_timestamp', 'prerequisite_tasks',
-                       'name', 'description', 'file_size')),
-            'u' : set(),
-            'd' : False,
+            'r' : set(('description', 'file_size', 'name',
+                       'prerequisite_tasks')),
         },
     }
     machine.add_acl_to_role('File Downloader', methods, crud)

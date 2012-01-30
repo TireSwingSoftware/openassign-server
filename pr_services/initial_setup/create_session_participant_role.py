@@ -34,8 +34,8 @@ def setup(machine):
         },
         'SessionUserRoleRequirement' : {
             'c' : False,
-            'r' : set(('author', 'create_timestamp', 'prerequisite_tasks',
-                       'name', 'session', 'title', 'type', 'description')),
+            'r' : set(('description', 'name', 'prerequisite_tasks',
+                       'session', 'title', 'type')),
             'u' : set(),
             'd' : False,
         },
