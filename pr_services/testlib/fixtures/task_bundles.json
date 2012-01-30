@@ -1,0 +1,292 @@
+[
+    {
+        "pk": 1,
+        "model": "pr_services.task",
+        "fields": {
+            "achievements": [],
+            "prerequisite_tasks": [],
+            "save_timestamp": "2012-01-30 03:03:32",
+            "final_type": [
+                "pr_services",
+                "exam"
+            ],
+            "title": "Exam Title 1",
+            "max": null,
+            "min": 0,
+            "version_id": null,
+            "name": "Exam 1",
+            "version_comment": "",
+            "create_timestamp": "2012-01-30 03:03:32",
+            "version_label": "",
+            "owner": null,
+            "prerequisite_achievements": [],
+            "public": false,
+            "prevent_duplicate_assignments": false,
+            "description": "Some Description"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "pr_services.task",
+        "fields": {
+            "achievements": [],
+            "prerequisite_tasks": [],
+            "save_timestamp": "2012-01-30 03:03:32",
+            "final_type": [
+                "pr_services",
+                "exam"
+            ],
+            "title": "Exam Title 2",
+            "max": null,
+            "min": 0,
+            "version_id": null,
+            "name": "Exam 2",
+            "version_comment": "",
+            "create_timestamp": "2012-01-30 03:03:32",
+            "version_label": "",
+            "owner": null,
+            "prerequisite_achievements": [],
+            "public": false,
+            "prevent_duplicate_assignments": false,
+            "description": "Some Description"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "pr_services.task",
+        "fields": {
+            "achievements": [],
+            "prerequisite_tasks": [],
+            "save_timestamp": "2012-01-30 03:03:32",
+            "final_type": [
+                "pr_services",
+                "exam"
+            ],
+            "title": "Exam Title 3",
+            "max": null,
+            "min": 0,
+            "version_id": null,
+            "name": "Exam 3",
+            "version_comment": "",
+            "create_timestamp": "2012-01-30 03:03:32",
+            "version_label": "",
+            "owner": null,
+            "prerequisite_achievements": [],
+            "public": false,
+            "prevent_duplicate_assignments": false,
+            "description": "Some Description"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "pr_services.task",
+        "fields": {
+            "achievements": [],
+            "prerequisite_tasks": [],
+            "save_timestamp": "2012-01-30 03:03:32",
+            "final_type": [
+                "pr_services",
+                "exam"
+            ],
+            "title": "Exam Title 4",
+            "max": null,
+            "min": 0,
+            "version_id": null,
+            "name": "Exam 4",
+            "version_comment": "",
+            "create_timestamp": "2012-01-30 03:03:32",
+            "version_label": "",
+            "owner": null,
+            "prerequisite_achievements": [],
+            "public": false,
+            "prevent_duplicate_assignments": false,
+            "description": "Some Description"
+        }
+    },
+    {
+        "pk": 5,
+        "model": "pr_services.task",
+        "fields": {
+            "achievements": [],
+            "prerequisite_tasks": [],
+            "save_timestamp": "2012-01-30 03:03:32",
+            "final_type": [
+                "pr_services",
+                "exam"
+            ],
+            "title": "Exam Title 5",
+            "max": null,
+            "min": 0,
+            "version_id": null,
+            "name": "Exam 5",
+            "version_comment": "",
+            "create_timestamp": "2012-01-30 03:03:32",
+            "version_label": "",
+            "owner": null,
+            "prerequisite_achievements": [],
+            "public": false,
+            "prevent_duplicate_assignments": false,
+            "description": "Some Description"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.taskbundle",
+        "fields": {
+            "save_timestamp": "2012-01-30 03:04:49",
+            "description": "Task Bundle 1 Description",
+            "name": "Task Bundle 1",
+            "create_timestamp": "2012-01-30 03:04:49",
+            "organization": null,
+            "final_type": [
+                "pr_services",
+                "taskbundle"
+            ]
+        }
+    },
+    {
+        "pk": 2,
+        "model": "pr_services.taskbundle",
+        "fields": {
+            "save_timestamp": "2012-01-30 03:05:33",
+            "description": "Task Bundle 2 Description",
+            "name": "Task Bundle 2",
+            "create_timestamp": "2012-01-30 03:05:33",
+            "organization": null,
+            "final_type": [
+                "pr_services",
+                "taskbundle"
+            ]
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.taskbundletaskassociation",
+        "fields": {
+            "task_bundle": 1,
+            "task": 1,
+            "save_timestamp": "2012-01-30 03:04:49",
+            "final_type": [
+                "pr_services",
+                "taskbundletaskassociation"
+            ],
+            "presentation_order": 0,
+            "continue_automatically": false,
+            "create_timestamp": "2012-01-30 03:04:49"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "pr_services.taskbundletaskassociation",
+        "fields": {
+            "task_bundle": 1,
+            "task": 2,
+            "save_timestamp": "2012-01-30 03:04:49",
+            "final_type": [
+                "pr_services",
+                "taskbundletaskassociation"
+            ],
+            "presentation_order": 0,
+            "continue_automatically": false,
+            "create_timestamp": "2012-01-30 03:04:49"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "pr_services.taskbundletaskassociation",
+        "fields": {
+            "task_bundle": 1,
+            "task": 3,
+            "save_timestamp": "2012-01-30 03:04:49",
+            "final_type": [
+                "pr_services",
+                "taskbundletaskassociation"
+            ],
+            "presentation_order": 0,
+            "continue_automatically": false,
+            "create_timestamp": "2012-01-30 03:04:49"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "pr_services.taskbundletaskassociation",
+        "fields": {
+            "task_bundle": 2,
+            "task": 4,
+            "save_timestamp": "2012-01-30 03:05:33",
+            "final_type": [
+                "pr_services",
+                "taskbundletaskassociation"
+            ],
+            "presentation_order": 0,
+            "continue_automatically": false,
+            "create_timestamp": "2012-01-30 03:05:33"
+        }
+    },
+    {
+        "pk": 5,
+        "model": "pr_services.taskbundletaskassociation",
+        "fields": {
+            "task_bundle": 2,
+            "task": 5,
+            "save_timestamp": "2012-01-30 03:07:31",
+            "final_type": [
+                "pr_services",
+                "taskbundletaskassociation"
+            ],
+            "presentation_order": 0,
+            "continue_automatically": false,
+            "create_timestamp": "2012-01-30 03:07:31"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.exam",
+        "fields": {
+            "achievements": [],
+            "prerequisite_tasks": [],
+            "passing_score": 0,
+            "prerequisite_achievements": []
+        }
+    },
+    {
+        "pk": 2,
+        "model": "pr_services.exam",
+        "fields": {
+            "achievements": [],
+            "prerequisite_tasks": [],
+            "passing_score": 0,
+            "prerequisite_achievements": []
+        }
+    },
+    {
+        "pk": 3,
+        "model": "pr_services.exam",
+        "fields": {
+            "achievements": [],
+            "prerequisite_tasks": [],
+            "passing_score": 0,
+            "prerequisite_achievements": []
+        }
+    },
+    {
+        "pk": 4,
+        "model": "pr_services.exam",
+        "fields": {
+            "achievements": [],
+            "prerequisite_tasks": [],
+            "passing_score": 0,
+            "prerequisite_achievements": []
+        }
+    },
+    {
+        "pk": 5,
+        "model": "pr_services.exam",
+        "fields": {
+            "achievements": [],
+            "prerequisite_tasks": [],
+            "passing_score": 0,
+            "prerequisite_achievements": []
+        }
+    }
+]
