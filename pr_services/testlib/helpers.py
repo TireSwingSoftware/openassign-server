@@ -58,3 +58,26 @@ def load_fixtures(*fixtures):
         return wrapper
     return decorator
 
+
+def object_dict(obj, attributes):
+    """
+    Create a dictionary based on the specified `attributes` of object `obj`.
+
+    Args:
+        obj: A model object
+        attributes: A list of attributes to include in the result dict
+
+    Return:
+        a dictionary with `attributes` as keys and values from `obj`
+
+    Example:
+        examobj = Exam.objects.create(name='Foo')
+        object_dict(examobj, ('id', 'name'))
+        >>> {'id': 1, 'name': foo}
+    """
+    _hasattr = functools.partial(hasattr, obj)
+    keys = filter(_hasattr, attributes)
+    d = dict.fromkeys(keys)
+    for key in d:
+        d[key] = getattr(obj, key)
+    return d
