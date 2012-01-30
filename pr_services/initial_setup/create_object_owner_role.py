@@ -52,7 +52,7 @@ def setup(machine):
         },
         'Exam': {
             'r': set(('achievements', 'description', 'name', 'passing_score',
-                      'title', 'type', 'session')),
+                      'title', 'type')),
         },
         'ExamSession': {
             'c': True,
@@ -76,8 +76,7 @@ def setup(machine):
             'r': set(('session', 'name', 'title', 'type', 'description'))
         },
         'Task': {
-            'r': set(('name', 'title', 'type', 'description', 'achievements',
-                      'session')),
+            'r': set(('name', 'title', 'type', 'description', 'achievements')),
         },
         'User': {
             # We allow users to create themselves
