@@ -59,13 +59,14 @@ class TaskBundleManager(ObjectManager):
 
     @service_method
     def task_detail_view(self, auth_token, filters=None, fields=None):
-        if not filters:
-            filters = {}
-        # apply our fields even if the passed fields is empty
-        if not fields:
-            fields = ['name', 'description', 'tasks']
+        default_fields = set(('name', 'description', 'tasks'))
+        # apply view specific fields along with those specified by the caller
+        fields = (set(fields) | default_fields) if fields else default_fields
+
         ret = self.get_filtered(auth_token, filters, fields)
 
-        return Utils.merge_queries(ret, facade.managers.TaskManager(), auth_token, ['name', 'description', 'title', 'type'], 'tasks')
+        task_manager = facade.managers.TaskManager()
+        return Utils.merge_queries(ret, task_manager, auth_token,
+                ('name', 'description', 'title', 'type'), 'tasks')
 
 # vim:tabstop=4 shiftwidth=4 expandtab

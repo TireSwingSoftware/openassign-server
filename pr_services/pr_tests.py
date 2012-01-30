@@ -3311,6 +3311,61 @@ class TestTaskBundles(BasicTestCase):
              {'id': self.exam_3.id, 'presentation_order': 3, 'content_type': 'pr_services.exam',
               'continue_automatically': False}])
 
+class TestTaskBundleViews(BasicTestCase):
+
+    fixtures = BasicTestCase.fixtures + ['task_bundles']
+
+    def setUp(self):
+        super(TestTaskBundleViews, self).setUp()
+        # the task bundles fixture has 2 task bundles
+        # bundle1 -> { task1, task2, task3 }
+        # bundle2 -> { task4, task5 }
+        self.tasks = Task.objects.all()
+        self.bundles = TaskBundle.objects.all()
+        # XXX: run tests as administrator
+
+    def test_task_detail_view(self):
+        # helpers for task related information
+        _task_fields = ('id', 'name', 'description', 'title')
+        _task_detail = attrgetter(*_task_fields)
+        def task_detail(t):
+            # XXX: we know they are exams, lets make this part easy
+            d = {'type': u'pr_services.exam'}
+            d.update(zip(_task_fields, _task_detail(t)))
+            return d
+
+        _id = itemgetter('id')
+        def view(*args, **kwargs):
+            # wrapper to help with consistent ordering
+            result = self.task_bundle_manager.task_detail_view(*args, **kwargs)
+            for row in result:
+                row['tasks'] = sorted(row['tasks'], key=_id)
+            return sorted(result, key=_id)
+
+        expected = []
+        # build expected output
+        for bundle in self.bundles.order_by('id'):
+            expected.append({
+                'id': bundle.id,
+                'name': unicode(bundle.name),
+                'description': unicode(bundle.description),
+                'tasks': [task_detail(t) for t in bundle.tasks.order_by('id')]
+            })
+
+        result = view()
+        self.assertEquals(len(result), len(self.bundles))
+        self.assertSequenceEqual(result, expected)
+
+        # test passing custom filter
+        result = view(filters={'exact': {'id': self.bundles[0].id}})
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected[0])
+
+        # test passing additional fields
+        result = view(fields=('name', 'description'))
+        self.assertEquals(len(result), len(self.bundles))
+        self.assertSequenceEqual(result, expected)
+
 
 class TestScormServer(BasicTestCase):
     def test_mark_completed(self):
