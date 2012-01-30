@@ -1935,7 +1935,8 @@ class Room(OwnedPRModel):
 
     @property
     def venue_address(self):
-        return self.venue.address.address_dict
+        if self.venue.address:
+            return self.venue.address.address_dict
 
     def get_remaining_capacity(self, start, end):
         """
