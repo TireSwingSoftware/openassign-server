@@ -295,7 +295,7 @@ class AssignmentManager(ObjectManager):
 
     @service_method
     def detailed_view(self, auth_token, *args, **kwargs):
-        results = self.view(auth_token=auth_token, *args, **kwargs)
+        results = self.view(auth_token, *args, **kwargs)
         user_manager = facade.managers.UserManager()
         return merge_queries(results, user_manager , auth_token,
                 ('username', 'first_name', 'last_name', 'email'), 'user')
@@ -311,7 +311,7 @@ class AssignmentManager(ObjectManager):
         @service_method
         def detailed_file_download_view(self, auth_token, *args, **kwargs):
             manager = facade.managers.FileDownloadManager()
-            result = self.view(auth_token=auth_token,
+            result = self.view(auth_token,
                     task_type_name='file download',
                     task_manager=manager, *args, **kwargs)
             user_manager = facade.managers.UserManager()
@@ -335,7 +335,7 @@ class AssignmentManager(ObjectManager):
 
     @service_method
     def detailed_exam_view(self, auth_token, *args, **kwargs):
-        results = self.exam_view(auth_token=auth_token,
+        results = self.exam_view(auth_token,
                 task_fields=('passing_score',), *args, **kwargs)
         user_manager = facade.managers.UserManager()
         return merge_queries(results, user_manager, auth_token,
