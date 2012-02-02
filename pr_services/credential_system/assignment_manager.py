@@ -302,9 +302,9 @@ class AssignmentManager(ObjectManager):
 
     if 'file_tasks' in settings.INSTALLED_APPS:
         @service_method
-        def file_download_view(self, *args, **kwargs):
+        def file_download_view(self, auth_token, *args, **kwargs):
             manager = facade.managers.FileDownloadManager()
-            return self.view(task_type_name='file download',
+            return self.view(auth_token, task_type_name='file download',
                     task_manager=manager, task_fields=('file_size', 'file_url'),
                     *args, **kwargs)
 
@@ -322,15 +322,15 @@ class AssignmentManager(ObjectManager):
                     ('first_name', 'last_name'), 'user')
 
         @service_method
-        def file_upload_view(self, *args, **kwargs):
+        def file_upload_view(self, auth_token, *args, **kwargs):
             manager = facade.managers.FileUploadManager()
-            return self.view(task_type_name='file upload',
+            return self.view(auth_token, task_type_name='file upload',
                     task_manager=manager, *args, **kwargs)
 
     @service_method
-    def exam_view(self, *args, **kwargs):
+    def exam_view(self, auth_token, *args, **kwargs):
         manager = facade.managers.ExamManager()
-        return self.view(task_type_name='exam', task_manager=manager,
+        return self.view(auth_token, task_type_name='exam', task_manager=manager,
                 *args, **kwargs)
 
     @service_method
