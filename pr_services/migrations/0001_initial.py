@@ -44,6 +44,8 @@ class Migration(SchemaMigration):
             ('primary_contact_other_phone', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
             ('primary_contact_email', self.gf('django.db.models.fields.EmailField')(max_length=75)),
             ('url', self.gf('django.db.models.fields.URLField')(max_length=200, null=True)),
+            ('external_uid', self.gf('django.db.models.fields.CharField')(max_length=32, null=True, db_index=True)),
+            ('use_external_uid', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['Organization'])
 
@@ -65,7 +67,7 @@ class Migration(SchemaMigration):
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
-            ('default', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('default', self.gf('pr_services.fields.PRBooleanField')(default=False, db_index=True)),
         ))
         db.send_create_signal('pr_services', ['OrgRole'])
 
@@ -80,7 +82,7 @@ class Migration(SchemaMigration):
             ('role', self.gf('pr_services.fields.PRForeignKey')(related_name='user_org_roles', to=orm['pr_services.OrgRole'])),
             ('parent', self.gf('pr_services.fields.PRForeignKey')(related_name='children', null=True, to=orm['pr_services.UserOrgRole'])),
             ('title', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
-            ('persistent', self.gf('pr_services.fields.PRBooleanField')(default=False)),
+            ('persistent', self.gf('pr_services.fields.PRBooleanField')(default=False, db_index=True)),
         ))
         db.send_create_signal('pr_services', ['UserOrgRole'])
 
@@ -2616,6 +2618,7 @@ class Migration(SchemaMigration):
             'department': ('django.db.models.fields.CharField', [], {'max_length': '127', 'null': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75'}),
+            'external_uid': ('django.db.models.fields.CharField', [], {'max_length': '32', 'null': 'True', 'db_index': 'True'}),
             'fax': ('django.db.models.fields.CharField', [], {'max_length': '31', 'null': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -2633,7 +2636,8 @@ class Migration(SchemaMigration):
             'primary_contact_other_phone': ('django.db.models.fields.CharField', [], {'max_length': '31', 'null': 'True'}),
             'roles': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'organizations'", 'symmetrical': 'False', 'through': "orm['pr_services.UserOrgRole']", 'to': "orm['pr_services.OrgRole']"}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True'})
+            'url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True'}),
+            'use_external_uid': ('pr_services.fields.PRBooleanField', [], {'default': 'True'})
         },
         'pr_services.orgemaildomain': {
             'Meta': {'unique_together': "(('email_domain', 'organization', 'role'),)", 'object_name': 'OrgEmailDomain'},
@@ -2649,7 +2653,7 @@ class Migration(SchemaMigration):
         'pr_services.orgrole': {
             'Meta': {'object_name': 'OrgRole'},
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'default': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
+            'default': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'db_index': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
@@ -3228,7 +3232,7 @@ class Migration(SchemaMigration):
             'organization': ('pr_services.fields.PRForeignKey', [], {'related_name': "'user_org_roles'", 'to': "orm['pr_services.Organization']"}),
             'owner': ('pr_services.fields.PRForeignKey', [], {'related_name': "'owned_userorgroles'", 'null': 'True', 'to': "orm['pr_services.User']"}),
             'parent': ('pr_services.fields.PRForeignKey', [], {'related_name': "'children'", 'null': 'True', 'to': "orm['pr_services.UserOrgRole']"}),
-            'persistent': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
+            'persistent': ('pr_services.fields.PRBooleanField', [], {'default': 'False', 'db_index': 'True'}),
             'role': ('pr_services.fields.PRForeignKey', [], {'related_name': "'user_org_roles'", 'to': "orm['pr_services.OrgRole']"}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'})
