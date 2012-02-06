@@ -3032,6 +3032,34 @@ class TestExternalUID(BasicTestCase):
         self.org.save()
         self.create()
 
+    def test_organization_uid_getter(self):
+        result = self.organization_manager.get_filtered(
+                {'exact': {'id': self.org.id}},
+                ('id', 'external_uid', 'use_external_uid'))
+        self.assertEquals(len(result), 1)
+        self.assertEquals(result[0], {
+            'id': self.org.id,
+            'external_uid': self.org.external_uid,
+            'use_external_uid': self.org.use_external_uid,
+        })
+
+    def test_organization_uid_setter(self):
+        uid = str(uuid.uuid4())[:32]
+        self.organization_manager.update(self.org.id, {
+            'external_uid': uid,
+            'use_external_uid': False
+        })
+        result = self.organization_manager.get_filtered(
+                {'exact': {'external_uid': uid}},
+                ('id', 'external_uid', 'use_external_uid'))
+        self.assertEquals(len(result), 1)
+        self.assertEquals(result[0], {
+            'id': self.org.id,
+            'external_uid': uid,
+            'use_external_uid': False
+        })
+
+
 
 class TestUserManagerGetters(BasicTestCase):
 
