@@ -15,6 +15,7 @@ import uuid
 import urllib2
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 
 if getattr(settings, 'LDAP_AUTHENTICATION', False):
     import ldap
@@ -222,6 +223,8 @@ class UserManager(ObjectManager):
         challenge = optional_attributes.pop('recaptcha_challenge', '')
         response = optional_attributes.pop('recaptcha_response', '')
         send_password = optional_attributes.pop('send_password', False)
+        external_uid = optional_attributes.pop('external_uid', None)
+        self_registration = not isinstance(auth_token, facade.models.AuthToken)
 
         try:
             domain_object = facade.models.Domain.objects.get(name=domain)
@@ -250,9 +253,7 @@ class UserManager(ObjectManager):
         # if this User was created by an anonymous User, get an auth token for
         # the User that was created, so that we can set the
         # blame to the newly created User
-        should_unauth = False
-        if not isinstance(auth_token, facade.models.AuthToken):
-            should_unauth = True
+        if self_registration:
             old_auth_token = auth_token
             auth_token = self._generate_auth_token(da)
 
@@ -266,11 +267,22 @@ class UserManager(ObjectManager):
         default_groups = facade.models.Group.objects.filter(default=True).\
             values_list('id', flat=True)
         u.groups.add(*default_groups)
-        u.save() # To save any non-many-to-many attribute changes
 
+        # if an external_uid was specified place the user into the org
+        if external_uid: # and self_registration:
+            Organization = facade.models.Organization
+            try:
+                organization = Organization.objects.get(
+                        external_uid=external_uid, use_external_uid=True)
+            except ObjectDoesNotExist:
+                raise exceptions.PermissionDeniedException()
+
+            facade.models.UserOrgRole.objects.create(owner=u, organization=organization)
+
+        u.save() # To save any non-many-to-many attribute changes
         self.authorizer.check_create_permissions(auth_token, u)
 
-        if should_unauth:
+        if self_registration:
             self.logout(auth_token)
             auth_token = old_auth_token
             if not self.validate_recaptcha(challenge, response):

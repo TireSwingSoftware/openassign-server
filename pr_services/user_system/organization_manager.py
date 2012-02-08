@@ -21,6 +21,7 @@ class OrganizationManager(ObjectManager):
         'descendants': 'get_general',
         'description': 'get_general',
         'email': 'get_general',
+        'external_uid': 'get_general',
         'fax': 'get_general',
         'name': 'get_general',
         'notes': 'get_many_to_many',
@@ -40,6 +41,7 @@ class OrganizationManager(ObjectManager):
         'url': 'get_general',
         'user_org_roles': 'get_many_to_one',
         'users': 'get_many_to_many',
+        'use_external_uid': 'get_general',
     }
 
     SETTERS = {
@@ -47,6 +49,7 @@ class OrganizationManager(ObjectManager):
         'department': 'set_general',
         'description': 'set_general',
         'email': 'set_general',
+        'external_uid': 'set_general',
         'fax': 'set_general',
         'name': 'set_general',
         'notes': 'set_many',
@@ -62,6 +65,7 @@ class OrganizationManager(ObjectManager):
         'roles': 'set_many',
         'url': 'set_general',
         'users': 'set_many',
+        'use_external_uid': 'set_general',
     }
 
     def __init__(self):

@@ -13,6 +13,7 @@ import operator
 import os
 import time
 import urllib2
+import uuid
 
 from datetime import datetime, date, timedelta
 from functools import partial
@@ -2985,6 +2986,79 @@ class TestUserManager(GeneralTestCase):
         self.assertTrue('Mr. Mailme Mypassword' in mess.body)
         self.assertTrue('Example Corporation' in mess.body)
         self.assertTrue('mypasswd' in mess.body)
+
+
+class TestExternalUID(BasicTestCase):
+
+    fixtures = BasicTestCase.fixtures + ['precor_orgs', 'precor_org_roles']
+
+    def setUp(self):
+        super(TestExternalUID, self).setUp()
+        uid = str(uuid.uuid4())[:32]
+
+        org = Organization.objects.get(id=1)
+        org.external_uid = uid
+        org.use_external_uid = True
+        org.save()
+
+        self.org = org
+        self.create = partial(self.user_manager.create, 'JohnDoe', 'password',
+                'Mr.', 'John', 'Doe', '555.555.5555', 'john@doe.com', 'pending',
+                optional_attributes={'external_uid': uid})
+
+    def test_auth_create_with_uid(self):
+        # create a user with default auth token
+        user = self.create()
+        self.assertTrue(user.organizations.filter(id=self.org.id).exists())
+
+    def test_noauth_create_with_uid(self):
+        # create a user without an auth token (self registering)
+        user = self.create(auth_token=None)
+        self.assertTrue(user.organizations.filter(id=self.org.id).exists())
+
+    @expectPermissionDenied
+    def test_auth_create_with_uid_disabled(self):
+        # create a user without using an auth token when
+        # external_uid use is disabled
+        self.org.use_external_uid = False
+        self.org.save()
+        self.create(auth_token=None)
+
+    @expectPermissionDenied
+    def test_noauth_create_with_uid_disabled(self):
+        # create a user using the default auth token when
+        # external_uid use is disabled
+        self.org.use_external_uid = False
+        self.org.save()
+        self.create()
+
+    def test_organization_uid_getter(self):
+        result = self.organization_manager.get_filtered(
+                {'exact': {'id': self.org.id}},
+                ('id', 'external_uid', 'use_external_uid'))
+        self.assertEquals(len(result), 1)
+        self.assertEquals(result[0], {
+            'id': self.org.id,
+            'external_uid': self.org.external_uid,
+            'use_external_uid': self.org.use_external_uid,
+        })
+
+    def test_organization_uid_setter(self):
+        uid = str(uuid.uuid4())[:32]
+        self.organization_manager.update(self.org.id, {
+            'external_uid': uid,
+            'use_external_uid': False
+        })
+        result = self.organization_manager.get_filtered(
+                {'exact': {'external_uid': uid}},
+                ('id', 'external_uid', 'use_external_uid'))
+        self.assertEquals(len(result), 1)
+        self.assertEquals(result[0], {
+            'id': self.org.id,
+            'external_uid': uid,
+            'use_external_uid': False
+        })
+
 
 
 class TestUserManagerGetters(BasicTestCase):

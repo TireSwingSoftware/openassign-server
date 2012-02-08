@@ -511,6 +511,13 @@ class Organization(OwnedPRModel):
     url = models.URLField(null=True, verify_exists=False)
     roles = models.ManyToManyField('OrgRole', through='UserOrgRole', related_name='organizations')
 
+    # an external identifier for the organization
+    external_uid = models.CharField(max_length=32, null=True, db_index=True)
+
+    # whether or not to automatically place users registering with the
+    # `external_uid` into this organization.
+    use_external_uid = PRBooleanField(default=True)
+
     class Meta:
         unique_together = (('name', 'parent'),)
 
@@ -564,7 +571,7 @@ class OrgRole(PRModel):
      - orgs (0..* Orgs to 0..* OrgRoles)
     """
     name = models.CharField(max_length=255, unique=True)
-    default = PRBooleanField(default=False)
+    default = PRBooleanField(default=False, db_index=True)
 
     def __unicode__(self):
         return self.name
@@ -586,7 +593,7 @@ class UserOrgRole(OwnedPRModel):
     # persistent flag determines if the UserOrgRole will persist
     # as a "slot" regardless of whether or not it is occupied by
     # a user.
-    persistent = PRBooleanField(default=False)
+    persistent = PRBooleanField(default=False, db_index=True)
 
     def save(self, *args, **kwargs):
         try:
