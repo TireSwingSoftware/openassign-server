@@ -108,7 +108,7 @@ class OrganizationManager(ObjectManager):
 
     @service_method
     def admin_org_view(self, auth_token):
-        orgs = self.get_filtered(auth_token, {}, ['name', 'parent', 'user_org_roles', 'org_email_domains'])
+        orgs = self.get_filtered(auth_token, {}, ['name', 'parent', 'user_org_roles', 'org_email_domains', 'external_uid', 'use_external_uid'])
 
         ret = Utils.merge_queries(orgs, facade.managers.OrgEmailDomainManager(), auth_token, ['email_domain', 'effective_role', 'effective_role_name'], 'org_email_domains')
 
