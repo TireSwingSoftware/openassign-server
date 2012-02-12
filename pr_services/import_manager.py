@@ -26,7 +26,7 @@ class ImportManager(object):
         self.user_manager = facade.managers.UserManager()
         self.organization_manager = facade.managers.OrganizationManager()
         self.venue_manager = facade.managers.VenueManager()
-        self.venue_manager = facade.managers.BlackoutPeriodManager()
+        self.blackout_period_manager = facade.managers.BlackoutPeriodManager()
         self.region_manager = facade.managers.RegionManager()
         self.room_manager = facade.managers.RoomManager()
         self.exam_manager = facade.managers.ExamManager()

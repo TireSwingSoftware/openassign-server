@@ -1919,8 +1919,8 @@ class BlackoutPeriod(OwnedPRModel):
     """
     blame = PRForeignKey(Blame, null=True)
     venue = PRForeignKey(Venue, related_name='blackout_periods')
-    start = models.DateField()
-    end = models.DateField()
+    start = models.DateTimeField()
+    end = models.DateTimeField()
     description = models.TextField()
 
     @property
