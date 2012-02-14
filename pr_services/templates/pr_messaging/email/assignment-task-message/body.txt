@@ -1,0 +1,12 @@
+{{ sender.get_full_name }} has sent you a message about the assignment detailed below.
+
+Name: {{ task.name|capfirst }}
+Title: {{ task.title|capfirst }}
+Type of Task: {{ task.final_type.name|capfirst }}
+Assignment Status: {{ assignment.status|capfirst }}
+
+{% autoescape on %}
+{{ body }}
+{% endautoescape %}
+
+

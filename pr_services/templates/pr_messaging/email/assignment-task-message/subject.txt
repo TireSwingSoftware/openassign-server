@@ -1,0 +1,5 @@
+{% if subject %}
+{{ subject }}
+{% else %}
+Message about {{name}} Assignment
+{% endif %}

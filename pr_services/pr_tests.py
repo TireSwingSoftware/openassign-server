@@ -346,6 +346,75 @@ class TestAssignment(GeneralTestCase):
         self.assertEquals(assignments[learner8.id]['status'], 'assigned')
 
 
+class TestEmailTaskAssignees(BasicTestCase):
+
+    fixtures = BasicTestCase.fixtures + ['exams_and_achievements']
+
+    def setUp(self):
+        super(TestEmailTaskAssignees, self).setUp()
+        self.assertEquals(len(mail.outbox), 0)
+
+        self.task = Task.objects.get(id=1)
+        self.message = 'A message about the task'
+        self.subject = 'Some subject'
+
+        self.func = partial(self.assignment_manager.email_task_assignees,
+                self.task.id, self.message)
+
+    @expectPermissionDenied
+    def test_permission_denied(self):
+        self.auth_token = self._get_auth_token('user1')
+        self.func()
+
+    def test_from_admin(self):
+        self.func()
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertIn(self.message, mail.outbox[0].body)
+
+        mail.outbox = []
+        self.func(self.subject)
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertIn(self.subject, mail.outbox[0].subject)
+
+        mail.outbox = []
+        self.func(self.subject, status_filter=())
+        self.assertEquals(len(mail.outbox), 0)
+
+        self.func(self.subject, status_filter=(u'assigned', ))
+        self.assertEquals(len(mail.outbox), 1)
+
+        mail.outbox = []
+        assignment = Assignment.objects.get(task=self.task)
+        assignment.status = u'pending'
+        assignment.save()
+        self.func(self.subject, status_filter=(u'assigned', ))
+        self.assertEquals(len(mail.outbox), 0)
+        self.func(self.subject, status_filter=(u'pending', ))
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertIn('Status: Pending', mail.outbox[0].body)
+
+    @load_fixtures('session_participant_role', 'precor_org_roles')
+    def test_from_instructor(self):
+        session = Session.objects.get(id=1)
+        user = User.objects.get(id=3)
+
+        # make 'user2' an instructor
+        role = SessionUserRole.objects.get(name="Instructor")
+        surr = SessionUserRoleRequirement.objects.create(
+                session_user_role=role, session=session)
+        assmt = Assignment.objects.create(user=user, task=surr,
+                status=u'assigned')
+
+        self.auth_token = self._get_auth_token('user2')
+
+        self.func()
+        self.assertEquals(len(mail.outbox), 1)
+
+        mail.outbox = []
+        self.func(status_filter=(u'pending'))
+        self.assertEquals(len(mail.outbox), 0)
+
+
 class TestAssignmentManagerViews(BasicTestCase):
 
     fixtures = BasicTestCase.fixtures + ['exams_and_achievements']

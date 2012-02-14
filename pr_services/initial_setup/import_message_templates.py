@@ -22,6 +22,7 @@ def setup(machine):
     pr_messaging.models.MessageFormat.objects.create(slug='email', name='Email')
     message_types = [
         ('log-message', 'Log Message'),
+        ('assignment-task-message', 'Assignment Task Message'),
         #('assignment-late-notice', 'Assignment Late Notice'),
         #('assignment-pre-reminder', 'Assignment Pre-Reminder'),
         #('assignment-reminder', 'Assignment Reminder'),

@@ -37,4 +37,7 @@ def setup(machine):
             'd' : True,
         },
     }
-    machine.add_acl_to_role('Instructor', methods, crud)
+    arbitrary_perms = [
+        'email_task_assignees',
+    ]
+    machine.add_acl_to_role('Instructor', methods, crud, arbitrary_perms)
