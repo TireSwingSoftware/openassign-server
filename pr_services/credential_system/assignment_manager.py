@@ -16,6 +16,7 @@ import facade
 from pr_messaging import send_message
 from pr_services import exceptions
 from pr_services import pr_time
+from pr_services.exceptions import PermissionDeniedException
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 from pr_services.utils import Utils
@@ -227,6 +228,47 @@ class AssignmentManager(ObjectManager):
                          recipient=assignment.user)
             assignment.sent_confirmation = True
             assignment.save()
+
+    @service_method
+    def email_task_assignees(self, auth_token, task_id, message, subject=None,
+            status_filter=(u'assigned', u'pending')):
+        """
+        Send an arbitrary email message to users currently assigned to a Task if
+        their Assignment status is 'assigned' or 'pending'. The status filters
+        can be overriden by passing `status_filters` containing a list of
+        required statuses. If `subject` is not specified the default is used in
+        the template.
+
+        See pr_services/templates/pr_messaging/email/assignment-task-message
+        """
+        # TODO: move the following checks into an authorizer method
+        try:
+            self.authorizer.check_arbitrary_permissions(auth_token,
+                    'email_task_assignees')
+        except PermissionDeniedException:
+            surr = SessionUserRoleRequirement.objects.filter(id=task_id)
+            if not surr.exists():
+                raise PermissionDeniedException()
+            instructor_check = SessionUserRoleRequirement.objects.filter(
+                   session=surr[0].session,
+                   session_user_role__name="Instructor",
+                   users__in=[auth_token.user_id])
+            if not instructor_check.exists():
+                raise PermissionDeniedException()
+
+        task = Task.objects.get(id=task_id)
+        assignments = Assignment.objects.filter(task__id=task_id,
+                status__in=status_filter).select_related('user__email')
+        for assignment in assignments:
+            send_message(message_type='assignment-task-message',
+                    context={
+                        'task': task,
+                        'assignment': assignment,
+                        'subject': subject,
+                        'body': message,
+                        'sender': auth_token.user
+                    },
+                    recipient=assignment.user.email)
 
     def mark_late_assignments(self):
         end_of_today = (datetime.datetime.utcnow() + datetime.timedelta(days=1)).replace(hour=0, minute=0,
