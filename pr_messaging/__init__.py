@@ -4,6 +4,21 @@ from . import signals as _signals
 
 # Helper functions for use by other apps.
 def send_message(**kwargs):
+    """
+    If "sender" is in kwagrs, that is the entity which is sending a message,
+    such as would appear in the email's FROM field. This is different from the
+    "sender" parameter that must be passed to the signals' send() method. In the
+    latter case, this is a required concept of Django Signals. This is why we must
+    rename any "sender" parameter found in kwargs to "sender_". However, if the
+    calling code wants to specify the Django Signals sender, they can apparently
+    pass a value for "_sender". This should probably be renamed to minimize
+    confusion.
+
+    Please note that the message sender should almost never be a user, but should
+    probably be an email address associated with the system. settings.SERVER_EMAIL
+    might be a good default. In a world with SPF, DKIM, etc., we should not be
+    sending email on behalf of a domain we don't control.
+    """
     if 'sender' in kwargs:
         kwargs['sender_'] = kwargs.pop('sender')
     sender = kwargs.pop('_sender', send_message)
