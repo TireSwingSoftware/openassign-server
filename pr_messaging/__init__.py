@@ -14,10 +14,11 @@ def send_message(**kwargs):
     pass a value for "_sender". This should probably be renamed to minimize
     confusion.
 
-    Please note that the message sender should almost never be a user, but should
-    probably be an email address associated with the system. settings.SERVER_EMAIL
-    might be a good default. In a world with SPF, DKIM, etc., we should not be
-    sending email on behalf of a domain we don't control.
+    Please note that the message sender should almost never be a user, but
+    should probably be an email address associated with the system.
+    settings.DEFAULT_FROM_EMAIL is the default and usually a good choice. In a
+    world with SPF, DKIM, etc., we should not be sending email on behalf of a
+    domain we don't control.
     """
     if 'sender' in kwargs:
         kwargs['sender_'] = kwargs.pop('sender')
