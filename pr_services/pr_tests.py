@@ -431,7 +431,7 @@ class TestMessageTemplateManager(BasicTestCase):
         message_format = first_entry['message_format']
         self.assertTrue(isinstance(message_format, dict))
         self.assertTrue('slug' in message_format)
-        
+
     def test_admin_read_update(self):
         ret = self.get_templates()
         self.assertEquals(len(ret), facade.models.MessageTemplate.objects.all().count())
@@ -567,8 +567,8 @@ class TestAssignmentManagerViews(BasicTestCase):
         super(TestAssignmentManagerViews, self).setUp()
 
         self.user = User.objects.get(id=2)
-        self.exams = Exam.objects.all()
-        self.assignments = Assignment.objects.all()
+        self.exams = Exam.objects.all().order_by('id')
+        self.assignments = Assignment.objects.all().order_by('id')
         self.manager = self.assignment_manager
 
         # default auth token to regular user
