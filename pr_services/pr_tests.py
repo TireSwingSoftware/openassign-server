@@ -487,7 +487,7 @@ class TestEmailUsers(BasicTestCase):
     def test_permission_denied(self):
         # a normal user cannot send email
         self.auth_token = self._get_auth_token('user1')
-        self._send_email([self.auth_token.user])
+        self._send_email([self.auth_token.user.id])
 
 
 class TestEmailTaskAssignees(BasicTestCase):
