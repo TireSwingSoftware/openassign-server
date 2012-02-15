@@ -42,7 +42,7 @@ def process_messages(messages=[]):
         # for each recipient.
         if len(message.recipients()) == 0:
             logger.warning('skipping message with no recipients')
-        elif len(message.recipients()) == 1 or message_type.multiple_recipients:
+        elif len([r for r in message.recipients() if r.role == 'to']) == 1 or message_type.multiple_recipients:
             for message_format in MessageFormat.objects.filter(enabled=True):
                 new_message = message.updated(message_format=message_format.slug)
                 update_message_participants.delay(new_message)

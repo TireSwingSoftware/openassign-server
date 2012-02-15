@@ -111,12 +111,21 @@ class TestMessaging(TestCase):
     def tearDown(self):
         super(TestMessaging, self).tearDown()
 
+    def test_send_with_cc_and_bcc(self):
+        send_message(message_type='foo', context={'something': 'This is something!'},
+            sender=('Chris', 'cchurch@americanri.com'), recipients=['testing@americanri.com'], cc=['someone@openassign.org'], bcc=['someone_else@openassign.org'])
+        # This is 2 because both mf and mf2 are enabled, and so two versions of the
+        # same message are going out. Normally only one would be enabled.
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertTrue('someone@openassign.org' in mail.outbox[0].cc,)
+        self.assertTrue('someone_else@openassign.org' in mail.outbox[0].bcc,)
+
     def test_basic_send(self):
         send_message(message_type='foo', context={'something': 'This is something!'},
             sender=('Chris', 'cchurch@americanri.com'), recipients=['testing@americanri.com'])
+        # This is 2 because both mf and mf2 are enabled, and so two versions of the
+        # same message are going out. Normally only one would be enabled.
         self.assertEqual(len(mail.outbox), 2)
-        #for sm in SentMessage.objects.all():
-        #    print sm, sm.participants.all()
 
     def test_send_to_admins(self):
         message_admins(message_type='foo', context={})

@@ -112,9 +112,7 @@ def default_delivery_handler(sender, **kwargs):
         if message.sender():
             msg.from_email = message.sender().contact_info
         msg.to = [r.contact_info for r in message.recipients() if r.role == 'to']
-        # FIXME: Django doesn't yet support the CC field, so just add CC'ed
-        # recipients in the To: field for now.
-        msg.to += [r.contact_info for r in message.recipients() if r.role == 'cc']
+        msg.cc = [r.contact_info for r in message.recipients() if r.role == 'cc']
         msg.bcc = [r.contact_info for r in message.recipients() if r.role == 'bcc']
         for attachment in getattr(message, 'attachments', []):
             if isinstance(attachment, (list, tuple)):
