@@ -24,4 +24,4 @@ def setup(machine):
             'd' : False,
         },
     }
-    machine.add_acl_to_role('File Downloader', methods, crud)
+    machine.add_acl_to_role('Exam Taker', methods, crud)
