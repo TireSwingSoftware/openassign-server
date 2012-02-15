@@ -3437,7 +3437,7 @@ class TestObjectManager(GeneralTestCase, CommonObjectManagerTests):
 
 
 class TestGetFiltered(BasicTestCase):
-    fixtures = BasicTestCase.fixtures + ['exams_and_achievements']
+    fixtures = BasicTestCase.fixtures + ['unprivileged_user', 'exams_and_achievements']
 
     def test_get_filtered_dates(self):
         # create a bunch of exams due on different days
