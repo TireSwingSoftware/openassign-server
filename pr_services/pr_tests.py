@@ -454,6 +454,42 @@ class TestMessageTemplateManager(BasicTestCase):
         self.message_template_manager.update(first_type.id, {'subject' : 'stuff'})
 
 
+class TestEmailUsers(BasicTestCase):
+
+    fixtures = BasicTestCase.fixtures + ['unprivileged_user']
+
+    def setUp(self):
+        super(TestEmailUsers, self).setUp()
+        self.subject = 'Traffic Alert'
+        self.body = 'There is a wreck on I-40. Please leave plenty of time to get to class.'
+
+    def _send_email(self, users):
+        return self.user_manager.send_email(users, self.subject, self.body)
+
+    def test_invalid_user(self):
+        self.assertRaises(exceptions.InvalidInputException, self._send_email, ['user1'])
+        self.assertRaises(exceptions.InvalidInputException, self._send_email, [''])
+        self.assertRaises(exceptions.InvalidInputException, self._send_email, 'user1')
+        self.assertRaises(exceptions.InvalidInputException, self._send_email, 2)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_send(self):
+        user = self._get_auth_token('user1').user
+        self._send_email([user.id])
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        self.assertIn(self.subject, msg.subject)
+        self.assertIn(self.body, msg.body)
+        self.assertTrue(msg.to)
+        self.assertIn(user.email, msg.to[0])
+
+    @expectPermissionDenied
+    def test_permission_denied(self):
+        # a normal user cannot send email
+        self.auth_token = self._get_auth_token('user1')
+        self._send_email([self.auth_token.user])
+
+
 class TestEmailTaskAssignees(BasicTestCase):
 
     fixtures = BasicTestCase.fixtures + ['unprivileged_user', 'exams_and_achievements']

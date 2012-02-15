@@ -1,0 +1,7 @@
+{% autoescape off %}
+Dear {{ user.full_name }},
+
+{{ sender.full_name }} has sent you the following message:
+
+{{ body }}
+{% endautoescape %}

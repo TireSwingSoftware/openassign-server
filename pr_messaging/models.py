@@ -79,6 +79,9 @@ class MessageTemplate(models.Model):
 
     def render(self, context):
         subject = Template(self.subject).render(context)
+        # it is easy with templates to end up with a trailing \n. We must strip it here.
+        if subject.endswith('\n'):
+            subject = subject[:-1]
         body = Template(self.body).render(context)
         # Tries to render a plain text format as well for HTML emails.
         # FIXME: Should really find a more generic way to add attachments and

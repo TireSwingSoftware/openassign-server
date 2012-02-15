@@ -318,6 +318,37 @@ class UserManager(ObjectManager):
         return u
 
     @service_method
+    def send_email(self, auth_token, users, subject, body):
+        """
+        Send an email to any arbitrary list of users. This will send a unique message
+        to each recipient, so each user will only see him or her self in the TO field.
+
+        :param users:       list of users
+        :type users:        list
+        :param subject:     subject text to pass into generic subject template
+        :type subject:      string
+        :param body:        body text to pass into generic body template
+        :type body:         string
+
+        :returns:           None
+        """
+        self.authorizer.check_arbitrary_permissions(auth_token, 'send_email')
+
+        try:
+            users = self.my_django_model.objects.filter(id__in=users)
+        except (ValueError, TypeError):
+            raise exceptions.InvalidInputException('"users" must be a list of PKs.')
+
+        for user in users:
+            context = {
+                'subject' : subject,
+                'body' : body,
+                'sender' : auth_token.user,
+                'user' : user,
+            }
+            send_message(message_type='generic', recipient=user, context=context)
+
+    @service_method
     def change_password(self, auth_token, user_id, new_password, old_password=None,
         domain=u'local'):
         """

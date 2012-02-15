@@ -29,6 +29,7 @@ def setup(machine):
         #('assignment-confirmation', 'Assignment Confirmation'),
         #('session-reminder', 'Session Reminder'),
         #('payment-confirmation', 'Payment Confirmation'),
+        ('generic', 'Generic'),
         ('initial-password', 'Initial Password'),
         ('user-confirmation', 'User Confirmation'),
         ('password-reset', 'Password Reset'),
