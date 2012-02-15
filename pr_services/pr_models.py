@@ -516,7 +516,7 @@ class Organization(OwnedPRModel):
 
     # whether or not to automatically place users registering with the
     # `external_uid` into this organization.
-    use_external_uid = PRBooleanField(default=True)
+    use_external_uid = PRBooleanField(default=False)
 
     class Meta:
         unique_together = (('name', 'parent'),)
