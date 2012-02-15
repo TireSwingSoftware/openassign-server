@@ -1,5 +1,5 @@
 {% if subject %}
 {{ subject }}
 {% else %}
-Message about {{name}} Assignment
+Message about {{task.name|capfirst}} Assignment
 {% endif %}

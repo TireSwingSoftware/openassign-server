@@ -513,6 +513,7 @@ class TestEmailTaskAssignees(BasicTestCase):
     def test_from_admin(self):
         self.func()
         self.assertEquals(len(mail.outbox), 1)
+        self.assertIn(self.task.name, mail.outbox[0].subject)
         self.assertIn(self.message, mail.outbox[0].body)
 
         mail.outbox = []
@@ -555,7 +556,7 @@ class TestEmailTaskAssignees(BasicTestCase):
         self.assertEquals(len(mail.outbox), 1)
 
         mail.outbox = []
-        self.func(status_filter=(u'pending'))
+        self.func(status_filter=(u'pending',))
         self.assertEquals(len(mail.outbox), 0)
 
 
