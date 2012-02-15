@@ -144,6 +144,7 @@ class TestBlameManager(GeneralTestCase):
         b = facade.managers.BlameManager().create(self.user1_auth_token)
         self.assertEquals(b.user, self.user1)
 
+
 class TestCookiecache(GeneralTestCase):
     def setUp(self):
         super(TestCookiecache, self).setUp()
@@ -346,9 +347,116 @@ class TestAssignment(GeneralTestCase):
         self.assertEquals(assignments[learner8.id]['status'], 'assigned')
 
 
+class TestMessageTypeManager(BasicTestCase):
+    fixtures = BasicTestCase.fixtures + ['unprivileged_user']
+    FIELDS = ('name', 'slug', 'description', 'enabled')
+
+    def setUp(self):
+        super(TestMessageTypeManager, self).setUp()
+        self.get_types = partial(self.message_type_manager.get_filtered,
+            {}, self.FIELDS)
+
+    def test_admin_read_update(self):
+        ret = self.get_types()
+        self.assertEquals(len(ret), facade.models.MessageType.objects.all().count())
+        self.assertTrue(ret)
+        first_entry = ret[0]
+        for field in self.FIELDS:
+            self.assertTrue(field in first_entry)
+        self.assertTrue(len(first_entry['name']) > 0)
+        self.message_type_manager.update(first_entry['id'], {'slug' : 'stuff'})
+
+    def test_user_cannot_read(self):
+        self.auth_token = self._get_auth_token('user1')
+        ret = self.get_types()
+        self.assertFalse(ret)
+
+    @expectPermissionDenied
+    def test_user_cannot_update(self):
+        self.auth_token = self._get_auth_token('user1')
+        first_type = facade.models.MessageType.objects.all()[0]
+        self.message_type_manager.update(first_type.id, {'slug' : 'stuff'})
+
+
+class TestMessageFormatManager(BasicTestCase):
+    fixtures = BasicTestCase.fixtures + ['unprivileged_user']
+
+    def setUp(self):
+        super(TestMessageFormatManager, self).setUp()
+        self.get_formats = partial(self.message_format_manager.get_filtered,
+            {}, ['slug'])
+
+    def test_admin_read(self):
+        ret = self.get_formats()
+        self.assertEquals(len(ret), facade.models.MessageFormat.objects.all().count())
+        self.assertTrue(ret)
+        first_entry = ret[0]
+        self.assertTrue('slug' in first_entry)
+        self.assertTrue(len(first_entry['slug']) > 0)
+
+    def test_user_cannot_read(self):
+        self.auth_token = self._get_auth_token('user1')
+        ret = self.get_formats()
+        self.assertFalse(ret)
+
+    def test_user_cannot_update(self):
+        first_format = facade.models.MessageFormat.objects.all()[0]
+        self.auth_token = self._get_auth_token('user1')
+        # there is no setter for this attribute
+        self.assertRaises(exceptions.FieldNameNotFoundException, self.message_format_manager.update, first_format.id, {'slug' : 'stuff'})
+
+
+class TestMessageTemplateManager(BasicTestCase):
+    fixtures = BasicTestCase.fixtures + ['unprivileged_user']
+    FIELDS = ['body', 'message_format', 'message_type', 'subject']
+
+    def setUp(self):
+        super(TestMessageTemplateManager, self).setUp()
+        self.get_templates = partial(self.message_template_manager.get_filtered,
+            {}, self.FIELDS)
+
+    def test_detail_view(self):
+        ret = self.message_template_manager.detail_view({}, [])
+        self.assertEquals(len(ret), facade.models.MessageTemplate.objects.all().count())
+        self.assertTrue(ret)
+        first_entry = ret[0]
+        for field in self.FIELDS:
+            self.assertTrue(field in first_entry)
+        message_type = first_entry['message_type']
+        self.assertTrue(isinstance(message_type, dict))
+        self.assertTrue('name' in message_type)
+        self.assertTrue('slug' in message_type)
+        self.assertTrue('description' in message_type)
+        self.assertTrue('enabled' in message_type)
+        message_format = first_entry['message_format']
+        self.assertTrue(isinstance(message_format, dict))
+        self.assertTrue('slug' in message_format)
+        
+    def test_admin_read_update(self):
+        ret = self.get_templates()
+        self.assertEquals(len(ret), facade.models.MessageTemplate.objects.all().count())
+        self.assertTrue(ret)
+        first_entry = ret[0]
+        for field in self.FIELDS:
+            self.assertTrue(field in first_entry)
+        self.assertTrue(len(first_entry['body']) > 0)
+        self.message_template_manager.update(first_entry['id'], {'subject' : 'stuff'})
+
+    def test_user_cannot_read(self):
+        self.auth_token = self._get_auth_token('user1')
+        ret = self.get_templates()
+        self.assertFalse(ret)
+
+    @expectPermissionDenied
+    def test_user_cannot_update(self):
+        self.auth_token = self._get_auth_token('user1')
+        first_type = facade.models.MessageType.objects.all()[0]
+        self.message_template_manager.update(first_type.id, {'subject' : 'stuff'})
+
+
 class TestEmailTaskAssignees(BasicTestCase):
 
-    fixtures = BasicTestCase.fixtures + ['exams_and_achievements']
+    fixtures = BasicTestCase.fixtures + ['unprivileged_user', 'exams_and_achievements']
 
     def setUp(self):
         super(TestEmailTaskAssignees, self).setUp()
@@ -417,7 +525,7 @@ class TestEmailTaskAssignees(BasicTestCase):
 
 class TestAssignmentManagerViews(BasicTestCase):
 
-    fixtures = BasicTestCase.fixtures + ['exams_and_achievements']
+    fixtures = BasicTestCase.fixtures + ['unprivileged_user', 'exams_and_achievements']
 
     def setUp(self):
         super(TestAssignmentManagerViews, self).setUp()
@@ -3132,7 +3240,7 @@ class TestExternalUID(BasicTestCase):
 
 class TestUserManagerGetters(BasicTestCase):
 
-    fixtures = BasicTestCase.fixtures + ['exams_and_achievements']
+    fixtures = BasicTestCase.fixtures + ['unprivileged_user', 'exams_and_achievements']
 
     def setUp(self):
         super(TestUserManagerGetters, self).setUp()
