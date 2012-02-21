@@ -52,8 +52,10 @@ def load_fixtures(*fixtures):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
+            # 'commit = False' tells the loaddata command to not use its own
+            # transaction management
             call_command('loaddata', *fixtures,
-                    **{'verbosity': 0})
+                    **{'verbosity': 0, 'commit': False})
             return func(*args, **kwargs)
         return wrapper
     return decorator
