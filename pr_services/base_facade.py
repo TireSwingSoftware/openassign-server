@@ -85,7 +85,7 @@ managers.add_import('SessionTemplateUserRoleRequirementManager', 'pr_services.ev
 managers.add_import('SessionUserRoleManager', 'pr_services.event_system.session_user_role_manager')
 managers.add_import('SessionUserRoleRequirementManager', 'pr_services.event_system.session_user_role_requirement_manager')
 managers.add_import('TaskBundleManager', 'pr_services.credential_system.task_bundle_manager')
-managers.add_import('TaskFeeManager', 'pr_services.event_system.task_fee_manager')
+managers.add_import('TaskFeeManager', 'pr_services.product_system.task_fee_manager')
 managers.add_import('TaskManager', 'pr_services.credential_system.task_manager')
 managers.add_import('TrainingUnitAccountManager', 'pr_services.product_system.training_unit_account_manager')
 managers.add_import('TrainingUnitAuthorizationManager', 'pr_services.product_system.training_unit_authorization_manager')

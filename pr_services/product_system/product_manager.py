@@ -19,7 +19,7 @@ class ProductManager(ObjectManager):
         'inventory': 'get_inventory_from_product',
         'name': 'get_general',
         'notes': 'get_many_to_many',
-        'price': 'get_general',
+        'price': 'get_decimal',
         'sku': 'get_general',
         'starting_quantity': 'get_general',
         'training_units': 'get_general',
@@ -31,16 +31,12 @@ class ProductManager(ObjectManager):
         'display_order': 'set_general',
         'name': 'set_general',
         'notes': 'set_many',
-        'price': 'set_general',
+        'price': 'set_decimal',
         'sku': 'set_general',
         'starting_quantity': 'set_general',
         'training_units': 'set_general',
     }
-    def __init__(self):
-        """ constructor """
-
-        ObjectManager.__init__(self)
-        self.my_django_model = facade.models.Product
+    my_django_model = facade.models.Product
 
     @service_method
     def create(self, auth_token, sku, name, description, price, cost,

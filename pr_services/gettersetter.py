@@ -326,15 +326,14 @@ class Getter(object):
         :rtype: unicode or None
         """
 
-        if hasattr(result_object, field_name):
+        try:
             value = getattr(result_object, field_name)
             if value is not None:
-                return unicode(getattr(result_object, field_name))
+                return float(value)
             else:
                 return None
-        else:
+        except AttributeError:
             raise exceptions.FieldNameNotFoundException(field_name)
-
 
     @is_for_derived_attribute
     def get_inventory_from_product(self, result_object, field_name):
@@ -448,13 +447,13 @@ class Setter(object):
         :type value: string
         """
 
-        if field_name not in self.django_object._meta.fields:
+        if field_name not in [field.name for field in self.django_object._meta.fields]:
             raise exceptions.FieldNameNotFoundException(field_name)
 
         if value in (None, ''):
             setattr(self.django_object, field_name, None)
         else:
-            setattr(self.django_object, field_name, decimal.Decimal(value))
+            setattr(self.django_object, field_name, decimal.Decimal(unicode(value)))
 
     def set_foreign_key(self, field_name, foreign_key):
         winning_field = None

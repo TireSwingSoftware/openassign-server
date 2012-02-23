@@ -1149,7 +1149,7 @@ class Assignment(PRModel):
         has a status other than 'unpaid', the user may safely disregart this
         value.
         """
-        if self.task.task_fees.count():
+        if self.task.task_fees.exists():
             return not (isinstance(self.product_claim, ProductClaim) and self.product_claim.is_paid)
         else:
             return False
@@ -2809,7 +2809,8 @@ class Product(OwnedPRModel):
     name = models.CharField(max_length=127)
     notes = models.ManyToManyField(Note, related_name='products')
     #: US Cents, suggested price at which this should be sold to the end User
-    price = models.PositiveIntegerField(null=True)
+    #price = models.PositiveIntegerField(null=True)
+    price = models.DecimalField(decimal_places=2, max_digits=12)
     sku = models.CharField(max_length=32, unique=True)
     starting_quantity = models.PositiveIntegerField(default=0)
     training_units = models.PositiveIntegerField(null=True)

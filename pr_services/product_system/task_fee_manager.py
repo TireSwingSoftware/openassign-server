@@ -2,6 +2,8 @@
 TaskFee manager class
 """
 
+from decimal import Decimal
+
 from pr_services.rpc.service import service_method
 import facade
 
@@ -16,14 +18,10 @@ class TaskFeeManager(facade.managers.ProductManager):
     SETTERS = {
         'task': 'set_foreign_key',
     }
-    def __init__(self):
-        """ constructor """
-
-        super(TaskFeeManager, self).__init__()
-        self.my_django_model = facade.models.TaskFee
+    my_django_model = facade.models.TaskFee
 
     @service_method
-    def create(self, auth_token, sku, name, description, price, cost,
+    def create(self, auth_token, sku, name, description, price,
             task, optional_attributes=None):
         """
         Create a new TaskFee
@@ -34,7 +32,6 @@ class TaskFeeManager(facade.managers.ProductManager):
         @param name             name of the Product, up to 127 characters
         @param description      description, text field
         @param price            price in cents that we charge
-        @param cost             price in cents that it costs us to obtain this
         @param task             FK of a Task
 
         @return                 a reference to the newly created Product
@@ -46,7 +43,7 @@ class TaskFeeManager(facade.managers.ProductManager):
         blame = facade.managers.BlameManager().create(auth_token)
         task_object = self._find_by_id(task, facade.models.Task)
         new_fee = self.my_django_model(sku=sku, name=name, description=description,
-            task=task_object, price=price, cost=cost, blame=blame)
+            task=task_object, price=Decimal(unicode(price)), blame=blame)
         if 'starting_quantity' in optional_attributes:
             new_fee.starting_quantity = optional_attributes['starting_quantity']
             del optional_attributes['starting_quantity']

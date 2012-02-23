@@ -7,6 +7,7 @@ from __future__ import with_statement
 
 import cPickle
 import cStringIO
+import decimal
 import hashlib
 import inspect
 import operator
@@ -16,6 +17,7 @@ import urllib2
 import uuid
 
 from datetime import datetime, date, timedelta
+from decimal import Decimal
 from functools import partial
 from operator import attrgetter, itemgetter
 
@@ -26,6 +28,7 @@ import django.utils.unittest
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
+from django.db import models
 from django.db.models import Q
 from django.utils import simplejson as json
 from django.utils.unittest import skipIf, skipUnless
@@ -59,6 +62,58 @@ def datestring(d):
 # Let the unit tests begin!
 #
 ##############################################################################
+
+class TestGetDecimal(TestCase):
+    class DecimalModel(models.Model):
+        price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def setUp(self):
+        super(TestGetDecimal, self).setUp()
+        self.model = self.DecimalModel(price=Decimal('10.1'))
+        self.getter = Getter(None, ObjectManager(), [], [])
+
+    def test_get_value(self):
+        value = self.getter.get_decimal(self.model, 'price')
+        self.assertTrue(isinstance(value, float))
+        self.assertEqual(value, 10.1)
+
+    def test_get_none(self):
+        self.model.price = None
+        value = self.getter.get_decimal(self.model, 'price')
+        self.assertTrue(value is None)
+
+
+class TestSetDecimal(TestCase):
+    class DecimalModel(models.Model):
+        price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def setUp(self):
+        super(TestSetDecimal, self).setUp()
+        self.model = self.DecimalModel()
+        self.setter = Setter(None, None, self.model, {})
+
+    def test_set_float(self):
+        self.setter.set_decimal('price', 10.1)
+        self.assertTrue(isinstance(self.model.price, Decimal))
+        self.assertEqual(self.model.price, Decimal('10.1'))
+
+    def test_set_int(self):
+        self.setter.set_decimal('price', 10)
+        self.assertTrue(isinstance(self.model.price, Decimal))
+        self.assertEqual(self.model.price, Decimal('10'))
+
+    def test_set_none(self):
+        self.setter.set_decimal('price', None)
+        self.assertTrue(self.model.price is None)
+
+    def test_set_string(self):
+        self.setter.set_decimal('price', '10.1')
+        self.assertTrue(isinstance(self.model.price, Decimal))
+        self.assertEqual(self.model.price, Decimal('10.1'))
+
+    def test_set_invalid_string(self):
+        self.assertRaises(decimal.InvalidOperation, self.setter.set_decimal, 'price', 'abc')
+
 
 class TestAuthorizer(GeneralTestCase):
     def test_authorizer_caching(self):
@@ -288,7 +343,7 @@ class TestAssignment(GeneralTestCase):
         session2 = self.session_manager.create(self.right_now.isoformat(),
             (self.right_now+self.one_day).isoformat(), 'active', True, 10000, self.e1.id, 'Short Name 1', 'Full Name 1')
         role_req2 = self.session_user_role_requirement_manager.create(str(session2.id), str(student_role.id), 1, 3)
-        tf1 = self.task_fee_manager.create('TF001', 'slick deal', 'a really great deal', 200, 0, role_req1.id, {'starting_quantity' : 10})
+        tf1 = self.task_fee_manager.create('TF001', 'slick deal', 'a really great deal', 200.00, role_req1.id, {'starting_quantity' : 10})
         assignments = self.assignment_manager.bulk_create(role_req1.id, [learner1.id, learner2.id, learner3.id])
         assignment_ids = [assignment['id'] for assignment in assignments.values()]
         self.assertEquals(len(assignments), 3)
@@ -1314,7 +1369,8 @@ class TestProductManager(BasicTestCase):
     def test_create_products(self):
         products = self.product_manager.get_filtered({}, ['display_order', 'id', 'sku', 'price', 'cost'])
         self.assertEquals(products[0]['sku'], 'ABC123')
-        self.assertEquals(products[0]['price'], 4995)
+        self.assertEquals(products[0]['price'], 4995.0)
+        #self.assertEquals(products[0]['price'], unicode(Decimal(4995).quantize(Decimal('.01'))))
         self.assertEquals(products[0]['cost'], 2995)
         self.assertEquals(products[0]['display_order'], 90)
 

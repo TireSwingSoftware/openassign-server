@@ -395,7 +395,7 @@ class TestExamModels(GeneralTestCase):
         exam_session = self._take_exam(student_at, assignment.id, answer_key, 75, True)
         ret = self.exam_session_manager.get_filtered(student_at, {'exact' : {'id' : exam_session.id}}, ['score', 'number_correct', 'passed', 'passing_score'])
         self.assertEquals(len(ret), 1)
-        self.assertEquals(Decimal(ret[0]['score']), Decimal('75.00'))
+        self.assertEquals(Decimal(str(ret[0]['score'])), Decimal('75.00'))
         self.assertEquals(ret[0]['passing_score'], 75)
         self.assertEquals(ret[0]['number_correct'], 3)
         self.assertEquals(ret[0]['passed'], True)
@@ -406,7 +406,7 @@ class TestExamModels(GeneralTestCase):
         exam_session = self._take_exam(student_at, assignment.id, answer_key, 50, False)
         ret = self.exam_session_manager.get_filtered(student_at, {'exact' : {'id' : exam_session.id}}, ['score', 'number_correct', 'passed', 'passing_score'])
         self.assertEquals(len(ret), 1)
-        self.assertEquals(Decimal(ret[0]['score']), Decimal('50.00'))
+        self.assertEquals(Decimal(str(ret[0]['score'])), Decimal('50.00'))
         self.assertEquals(ret[0]['passing_score'], 75)
         self.assertEquals(ret[0]['number_correct'], 2)
         self.assertEquals(ret[0]['passed'], False)
@@ -1003,7 +1003,7 @@ class TestExamManagers(GeneralTestCase, CommonExamTests):
         exam_session_id_1 = self._take_exam(student_at, assignment, half_correct_answer_key, 50, False, True)
         exam_session_1 = self.exam_session_manager.get_filtered(student_at,
             {'exact': {'id': exam_session_id_1}}, ['score', 'date_completed', 'passed'])[0]
-        self.assertEquals(Decimal(exam_session_1['score']), Decimal('50.00'))
+        self.assertEquals(Decimal(str(exam_session_1['score'])), Decimal('50.00'))
         self.assertFalse(exam_session_1['passed'])
         self.assertNotEqual(exam_session_1['date_completed'], None)
 
@@ -1015,7 +1015,7 @@ class TestExamManagers(GeneralTestCase, CommonExamTests):
         exam_session_id_2 = self._take_exam(student_at, assignment, all_correct_answer_key, 100, True, True)
         exam_session_2 = self.exam_session_manager.get_filtered(student_at,
             {'exact': {'id': exam_session_id_2}}, ['score', 'date_completed', 'passed'])[0]
-        self.assertEquals(Decimal(exam_session_2['score']), Decimal('100.00'))
+        self.assertEquals(Decimal(str(exam_session_2['score'])), Decimal('100.00'))
         self.assertTrue(exam_session_2['passed'])
         self.assertNotEqual(exam_session_2['date_completed'], None)
 

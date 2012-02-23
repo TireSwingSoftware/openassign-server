@@ -45,7 +45,7 @@ class Migration(SchemaMigration):
             ('primary_contact_email', self.gf('django.db.models.fields.EmailField')(max_length=75)),
             ('url', self.gf('django.db.models.fields.URLField')(max_length=200, null=True)),
             ('external_uid', self.gf('django.db.models.fields.CharField')(max_length=32, null=True, db_index=True)),
-            ('use_external_uid', self.gf('pr_services.fields.PRBooleanField')(default=True)),
+            ('use_external_uid', self.gf('pr_services.fields.PRBooleanField')(default=False)),
         ))
         db.send_create_signal('pr_services', ['Organization'])
 
@@ -723,8 +723,8 @@ class Migration(SchemaMigration):
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_blackoutperiods', null=True, to=orm['pr_services.User'])),
             ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True)),
             ('venue', self.gf('pr_services.fields.PRForeignKey')(related_name='blackout_periods', to=orm['pr_services.Venue'])),
-            ('start', self.gf('django.db.models.fields.DateField')()),
-            ('end', self.gf('django.db.models.fields.DateField')()),
+            ('start', self.gf('django.db.models.fields.DateTimeField')()),
+            ('end', self.gf('django.db.models.fields.DateTimeField')()),
             ('description', self.gf('django.db.models.fields.TextField')()),
         ))
         db.send_create_signal('pr_services', ['BlackoutPeriod'])
@@ -1255,7 +1255,7 @@ class Migration(SchemaMigration):
             ('display_order', self.gf('django.db.models.fields.PositiveIntegerField')(default=None, null=True)),
             ('cost', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=127)),
-            ('price', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
+            ('price', self.gf('django.db.models.fields.DecimalField')(max_digits=12, decimal_places=2)),
             ('sku', self.gf('django.db.models.fields.CharField')(unique=True, max_length=32)),
             ('starting_quantity', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
             ('training_units', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
@@ -2298,12 +2298,12 @@ class Migration(SchemaMigration):
             'blame': ('pr_services.fields.PRForeignKey', [], {'to': "orm['pr_services.Blame']", 'null': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
-            'end': ('django.db.models.fields.DateField', [], {}),
+            'end': ('django.db.models.fields.DateTimeField', [], {}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'owner': ('pr_services.fields.PRForeignKey', [], {'related_name': "'owned_blackoutperiods'", 'null': 'True', 'to': "orm['pr_services.User']"}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'start': ('django.db.models.fields.DateField', [], {}),
+            'start': ('django.db.models.fields.DateTimeField', [], {}),
             'venue': ('pr_services.fields.PRForeignKey', [], {'related_name': "'blackout_periods'", 'to': "orm['pr_services.Venue']"})
         },
         'pr_services.blame': {
@@ -2637,7 +2637,7 @@ class Migration(SchemaMigration):
             'roles': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'organizations'", 'symmetrical': 'False', 'through': "orm['pr_services.UserOrgRole']", 'to': "orm['pr_services.OrgRole']"}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True'}),
-            'use_external_uid': ('pr_services.fields.PRBooleanField', [], {'default': 'True'})
+            'use_external_uid': ('pr_services.fields.PRBooleanField', [], {'default': 'False'})
         },
         'pr_services.orgemaildomain': {
             'Meta': {'unique_together': "(('email_domain', 'organization', 'role'),)", 'object_name': 'OrgEmailDomain'},
@@ -2699,7 +2699,7 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '127'}),
             'notes': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'products'", 'symmetrical': 'False', 'to': "orm['pr_services.Note']"}),
             'owner': ('pr_services.fields.PRForeignKey', [], {'related_name': "'owned_products'", 'null': 'True', 'to': "orm['pr_services.User']"}),
-            'price': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True'}),
+            'price': ('django.db.models.fields.DecimalField', [], {'max_digits': '12', 'decimal_places': '2'}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'sku': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '32'}),
             'starting_quantity': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
