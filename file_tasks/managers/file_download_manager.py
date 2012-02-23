@@ -120,6 +120,6 @@ class FileDownloadManager(TaskManager):
 
         ret = Utils.merge_queries(ret, facade.managers.TaskManager(), auth_token, ['name', 'description', 'title', 'type'], 'prerequisite_tasks')
 
-        ret = Utils.merge_queries(ret, facade.managers.ProductManager(), auth_token, ['name', 'price'], 'task_fees')
+        ret = Utils.merge_queries(ret, facade.managers.TaskFeeManager(), auth_token, ['name', 'price'], 'task_fees')
 
         return Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name', 'description'], 'achievements')

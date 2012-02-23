@@ -303,11 +303,13 @@ class ExamManager(TaskManager):
         if not filters:
             filters = {}
         # apply our fields even if the passed fields is empty
-        if not fields:
-            fields = ['name', 'title', 'description', 'passing_score', 'achievements', 'prerequisite_tasks']
+        default_fields = set(['name', 'title', 'description', 'passing_score', 'achievements', 'prerequisite_tasks', 'task_fees'])
+        fields = list(set(fields or []) or default_fields)
         ret = self.get_filtered(auth_token, filters, fields)
 
         ret = Utils.merge_queries(ret, facade.managers.TaskManager(), auth_token, ['name', 'description', 'title', 'type'], 'prerequisite_tasks')
+
+        ret = Utils.merge_queries(ret, facade.managers.TaskFeeManager(), auth_token, ['name', 'price'], 'task_fees')
 
         return Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name', 'description'], 'achievements')
 
