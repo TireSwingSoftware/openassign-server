@@ -194,6 +194,7 @@ class ExamSessionManager(AssignmentAttemptManager):
         es = self._find_by_id(exam_session)
 
         # Make sure the exam session user is the one submitting this response.
+        # XXX: should this be moved into the authorizer?
         if es.assignment.user.id != auth_token.user.id:
             raise exceptions.PermissionDeniedException()
 
@@ -228,7 +229,7 @@ class ExamSessionManager(AssignmentAttemptManager):
         return self._get_next_questions(auth_token, es, True, True)
 
     def _get_next_questions(self, auth_token, exam_session,
-                            include_answered=False, for_review=False):
+                            include_responses=False, for_review=False):
         """
         Return the next set of questions.
 
@@ -236,94 +237,71 @@ class ExamSessionManager(AssignmentAttemptManager):
         :type auth_token:           facade.models.AuthToken
         :param exam_session:        Reference to the exam session.
         :type exam_session:         facade.models.ExamSession
-        :param include_answered:    If True (default=False), return responses
+        :param include_responses:    If True (default=False), return responses
                                     submitted so far.
-        :type include_answered:     bool
+        :type include_responses:     bool
         :param for_review:          If True (default=False), return all
                                     questions and responses submitted.
         :type for_review:           bool
-        :return:                    A dictionary containing question pools with
-                                    questions and responses.
+        :return:                    A hierarchical dict-representation of an exam with
+                                    question pool(s), questions and answers all included.
         """
-
-        # This just builds a hierarchical representation of an exam with
-        # question pool(s), questions and answers all included.
-        #self.authorizer.check_read_permissions(auth_token, exam_session,
-        #                                       ('id', 'exam', 'response_questions'))
-        es_dict = {'id': exam_session.id}
-        #self.authorizer.check_read_permissions(auth_token, exam_session.exam,
-        #                                       ('title', 'passing_score'))
-        es_dict.update({'name': exam_session.exam.name,
-                        'title': exam_session.exam.title,
-                        'passing_score': exam_session.exam.passing_score,
-                        'question_pools': []})
+        assert isinstance(exam_session, facade.models.ExamSession)
         if for_review:
-            q_iter = exam_session.iter_questions
+            q_iter = exam_session.iter_questions()
         else:
-            q_iter = lambda: exam_session.get_next_questions(include_answered)
-        for q in q_iter():
-            # Get or create the question pool dictionary.
+            q_iter = exam_session.get_next_questions(include_responses)
+
+        qp_dicts = {} # remember question pool dicts
+        for q in q_iter:
             qp = q.question_pool
-            qp_dict = {}
-            for d in es_dict['question_pools']:
-                if d['id'] == qp.id:
-                    qp_dict = d
-                    break
+            qp_dict = qp_dicts.get(qp.id, None)
             if not qp_dict:
-                qp_attrs = ('id', 'title')
-                #self.authorizer.check_read_permissions(auth_token, qp, qp_attrs)
-                qp_dict = dict((x, getattr(qp, x)) for x in qp_attrs)
+                qp_dicts[qp.id] = qp_dict = {
+                    'id': qp.id,
+                    'title': qp.title,
+                    'questions': []
+                }
                 if qp.name:
                     qp_dict['name'] = qp.name
-                qp_dict['questions'] = []
-                es_dict['question_pools'].append(qp_dict)
-
-            # Now add the question and answers dictionary.
+            # add the question and answers dictionary.
             q_dict = {}
+            qp_dict['questions'].append(q_dict)
             q_attrs = ['id', 'name', 'required', 'label', 'help_text',
-                       'rejoinder', 'question_type', 'widget']
-            #self.authorizer.check_read_permissions(auth_token, q, q_attrs)
+                       'question_type', 'widget']
             if q.text_response or q.question_type == 'choice':
-                q_attrs.extend(['text_response', 'text_response_label',
-                                'min_length', 'max_length', 'text_regex'])
-            if q.question_type in ('decimal', 'float', 'int', 'rating'):
-                q_attrs.extend(['min_value', 'max_value'])
+                q_attrs.extend(('text_response', 'text_response_label',
+                                'min_length', 'max_length', 'text_regex'))
+            if q.question_type in frozenset(('decimal', 'float', 'int', 'rating')):
+                q_attrs.extend(('min_value', 'max_value'))
             if q.question_type == 'choice':
-                q_attrs.extend(['min_answers', 'max_answers'])
+                q_attrs.extend(('min_answers', 'max_answers'))
             for q_attr in q_attrs:
                 q_value = getattr(q, q_attr)
                 if q_value is not None:
                     q_dict[q_attr] = q_value
-            q_dict['answers'] = []
-            a_attrs = ['id', 'name', 'label', 'text_response',
-                       'end_question_pool', 'end_exam', 'value']
-            #self.authorizer.check_read_permissions(auth_token, a, a_attrs)
-            for a in q.answers.all():
-                if a.label:
-                    a_dict = {}
-                    for a_attr in a_attrs:
-                        a_value = getattr(a, a_attr)
-                        if a_value is not None:
-                            a_dict[a_attr] = a_value
-                    q_dict['answers'].append(a_dict)
-            if include_answered:
-                r_attrs = ('id', 'value', 'text', 'valid')
-                r_dict = {}
-                try:
-                    r = exam_session.responses.get(question=q)
-                    #self.authorizer.check_read_permissions(auth_token, r,
-                    #                                       r_attrs)
-                    if r.valid is not None:
-                        for r_attr in r_attrs:
-                            r_value = getattr(r, r_attr)
-                            if r_value is not None:
-                                r_dict[r_attr] = r_value
-                except facade.models.Response.DoesNotExist:
-                    pass
-                q_dict['response'] = r_dict
-            qp_dict['questions'].append(q_dict)
-
-        return es_dict
+            q_dict['answers'] = q.answers.values(
+                    'id', 'name', 'label', 'text_response',
+                    'end_question_pool', 'end_exam', 'value')
+            try:
+                response = exam_session.responses.get(question=q)
+                if response.valid is None: continue
+            except facade.models.Response.DoesNotExist:
+                continue
+            q_dict['rejoinder'] = q.rejoinder
+            if include_responses:
+               q_dict['response'] = r_dict = {}
+               for key in ('id', 'value', 'text', 'valid'):
+                   value = getattr(response, key)
+                   if value is not None:
+                      r_dict[key] = value
+        return {
+            'id': exam_session.id,
+            'name': exam_session.exam.name,
+            'title': exam_session.exam.title,
+            'passing_score': exam_session.exam.passing_score,
+            'question_pools': qp_dicts.values(),
+        }
 
     @service_method
     def add_response(self, auth_token, exam_session, question,
