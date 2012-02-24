@@ -6,8 +6,9 @@ __docformat__ = "restructuredtext en"
 
 # Python
 import codecs
-from decimal import Decimal
 import random
+
+from decimal import Decimal
 
 # PowerReg
 from pr_services import exceptions
@@ -878,14 +879,17 @@ class TestExamManagers(GeneralTestCase, CommonExamTests):
                                  passing_score=75)
         qp1 = self._create_question_pool(exam, title='Math')
         # Create a bool question with a correct answer.
-        q1 = self._create_question(qp1, 'bool', label='3 + 4 = 7?')
+        q1 = self._create_question(qp1, 'bool', label='3 + 4 = 7?',
+            rejoinder='The answer is !False')
         q1_a1 = self._create_answer(q1, correct=True, value=True)
         # Create a char question with a correct answer.
-        q2 = self._create_question(qp1, 'char', label='Spell "7"')
+        q2 = self._create_question(qp1, 'char', label='Spell "7"',
+            rejoinder='The answer is not "7"')
         q2_a1 = self._create_answer(q2, correct=True, value='seven')
         qp2 = self._create_question_pool(exam, title='Dwarfs')
         # Create an int question with choices listed and a correct answer.
-        q3 = self._create_question(qp2, 'int', label='Number of dwarfs?')
+        q3 = self._create_question(qp2, 'int', label='Number of dwarfs?',
+                rejoinder='Even we have no idea...')
         q3_a1 = self._create_answer(q3, value=5, label='five')
         q3_a2 = self._create_answer(q3, value=7, correct=True, label='seven')
         q3_a3 = self._create_answer(q3, value=9, label='nine')
@@ -906,7 +910,8 @@ class TestExamManagers(GeneralTestCase, CommonExamTests):
         # Create a question
         q5 = self._create_question(qp3, 'int', label='How many days in a week?',
                                    help_text='Only count those days that ' + \
-                                             'end with the word "day".')
+                                             'end with the word "day".',
+                                   rejoinder='Believe it or not, there are 7 days in a week.')
         q5_a1 = self._create_answer(q5, value=7, correct=True)
 
         exam = self.exam_manager.get_filtered(self.admin_token, {'exact' : {'id' : exam.id}}, ['question_pools'])[0]
@@ -951,10 +956,31 @@ class TestExamManagers(GeneralTestCase, CommonExamTests):
                                                             resume=False).id
         self.assertNotEqual(exam_session_id1, exam_session_id2)
 
+        def check_rejoinders(exam_session, func=self.assertNotIn):
+            self.assertTrue(exam_session)
+            self.assertIn('question_pools', exam_session)
+            for question_pool in exam_session['question_pools']:
+                self.assertIn('questions', question_pool)
+                for question in question_pool['questions']:
+                    func('rejoinder', question)
+
+        # check that rejoinders arent returned
+        result = self.exam_session_manager.create(student_at, assignment.id,
+                fetch_all=True)
+        check_rejoinders(result)
+
+        result = self.exam_session_manager.resume(student_at, assignment.id,
+                fetch_all=True)
+        check_rejoinders(result)
+
         # Now miss one question.
         assignment = self.assignment_manager.create(self.admin_token, exam['id'], student.id)
         answer_key[q1.id].update({'value': False, 'correct': False})
-        self._take_exam(student_at, assignment, answer_key, 75, True)
+        exam_session_id = self._take_exam(student_at, assignment, answer_key, 75, True)
+
+        # check that we can view the rejoinders
+        result = self.exam_session_manager.review(student_at, exam_session_id)
+        check_rejoinders(result, func=self.assertIn)
 
         # Now miss two questions.
         assignment = self.assignment_manager.create(self.admin_token, exam['id'], student.id)
