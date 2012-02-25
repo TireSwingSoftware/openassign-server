@@ -4173,6 +4173,8 @@ class TestDefaultACLCRUD(TestACLCRUD):
         self.do_test()
 
 class TestEmailGeneration(BasicTestCase):
+
+    @skipIf(not settings.ADMINS, 'no admin email address configured')
     def test_log_error_mails(self):
         self.log_manager.error(self.admin_token, 'this is an error test')
         self.log_manager.critical(self.admin_token, 'this is a critical test')
