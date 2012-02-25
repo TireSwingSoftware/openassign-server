@@ -1,5 +1,6 @@
 import logging
 from django.test import TestCase
+from django.utils.unittest import skipIf
 from django.conf import settings
 from django.core import mail
 from celery import conf
@@ -162,6 +163,7 @@ class TestLogger(TestCase):
     def tearDown(self):
         super(TestLogger, self).tearDown()
 
+    @skipIf(not settings.ADMINS, 'no admin email addresses defined')
     def test_log_handler(self):
         logger = logging.getLogger('pr_messaging.tests')
         logger.error('this is a test error')
