@@ -134,12 +134,10 @@ class TestAuthorizerChecks(BasicTestCase, mixins.RoleTestMixin):
     def test_guests_allowed(self):
         # these are wrapped because we need real python functions
         allowed_mock = Mock(return_value=True)
-        @staticmethod
         def allowed(actee, *args, **kwargs):
             return allowed_mock()
 
         allowed2_mock = Mock(return_value=True)
-        @staticmethod
         def allowed2(auth_token=None, *args, **kwargs):
             return allowed2_mock()
 
@@ -148,7 +146,7 @@ class TestAuthorizerChecks(BasicTestCase, mixins.RoleTestMixin):
             self.func()
 
         patch_spec = dict(create=True, allowed=allowed, allowed2=allowed2)
-        with patch.multiple('facade.subsystems.Authorizer', **patch_spec):
+        with patch.multiple('pr_services.authorizer.checks', **patch_spec):
             check_methods = (('allowed', None), ('allowed2', None))
             self.create_role({'User': {'d': True}}, check_methods)
             self.func()
@@ -158,7 +156,6 @@ class TestAuthorizerChecks(BasicTestCase, mixins.RoleTestMixin):
     def test_guest_not_allowed(self):
         # this is wrapped because we need a real python function
         not_allowed_mock = Mock()
-        @staticmethod
         def not_allowed(auth_token, *args, **kwargs):
             return not_allowed_mock()
 
@@ -167,7 +164,7 @@ class TestAuthorizerChecks(BasicTestCase, mixins.RoleTestMixin):
             self.func()
 
         patch_spec = dict(create=True, not_allowed=not_allowed)
-        with patch.multiple('facade.subsystems.Authorizer', **patch_spec):
+        with patch.multiple('pr_services.authorizer.checks', **patch_spec):
             self.create_role({'User': {'d': True}}, (('not_allowed', None),))
             with self.assertRaises(PermissionDeniedException):
                 self.func()
@@ -175,13 +172,12 @@ class TestAuthorizerChecks(BasicTestCase, mixins.RoleTestMixin):
 
     def test_actee_required(self):
         mock = Mock()
-        @staticmethod
         def check_method(auth_token, actee, *args, **kwargs):
             return mock()
 
         check_arbitrary_permissions = self.authorizer.check_arbitrary_permissions
         patch_spec = dict(create=True, check_method=check_method)
-        with patch.multiple('facade.subsystems.Authorizer', **patch_spec):
+        with patch.multiple('pr_services.authorizer.checks', **patch_spec):
             self.create_role(check_methods=(('check_method', None), ),
                     arbitrary_perms=['do_some_foo'])
             with self.assertRaises(PermissionDeniedException):
@@ -190,11 +186,9 @@ class TestAuthorizerChecks(BasicTestCase, mixins.RoleTestMixin):
 
     def test_actee_not_required(self):
         mock1 = Mock(return_value=True)
-        @staticmethod
         def notrequired1(auth_token, actee=None, *args, **kwargs):
             return mock1()
         mock2 = Mock(return_value=True)
-        @staticmethod
         def notrequired2(auth_token, *args, **kwargs):
             return mock2()
 
@@ -202,7 +196,7 @@ class TestAuthorizerChecks(BasicTestCase, mixins.RoleTestMixin):
                 auth_token=self.auth_token, permission='do_some_foo')
         patch_spec = dict(create=True, notrequired1=notrequired1,
                 notrequired2=notrequired2)
-        with patch.multiple('facade.subsystems.Authorizer', **patch_spec):
+        with patch.multiple('pr_services.authorizer.checks', **patch_spec):
             check_methods = (('notrequired1', None), ('notrequired2', None))
             self.create_role(check_methods=check_methods,
                     arbitrary_perms=['do_some_foo'])
@@ -290,17 +284,15 @@ class TestMethodCheckPermissions(TestMethodCheck, mixins.RoleTestMixin):
     def test_check_acl(self):
         # these are wrapped because we need real python functions
         foo_mock = Mock(return_value=False)
-        @staticmethod
         def foo_check(auth_token=None, *args, **kwargs):
             return foo_mock()
 
         bar_mock = Mock(return_value=False)
-        @staticmethod
         def bar_check(auth_token=None, *args, **kwargs):
             return bar_mock()
 
         spec = dict(create=True, foo_check=foo_check, bar_check=bar_check)
-        with patch.multiple('facade.subsystems.Authorizer', **spec):
+        with patch.multiple('pr_services.authorizer.checks', **spec):
             self.create_role({
                 'FakeManager': {
                     'methods': set(('service_foo', ))

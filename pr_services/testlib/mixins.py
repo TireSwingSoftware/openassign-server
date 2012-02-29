@@ -72,7 +72,7 @@ class RoleTestMixin:
         if arbitrary_perms:
             acl.arbitrary_perm_list = pickle.dumps(arbitrary_perms)
         if not check_methods:
-            check_methods = (('actor_is_anybody', None),)
+            check_methods = (('auth.actor_is_anybody', None),)
         self.addCleanup(self.delete_role, role)
         for name, params in check_methods:
             try:

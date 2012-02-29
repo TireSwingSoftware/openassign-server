@@ -1,10 +1,10 @@
 import logging
 import facade
 import exceptions
-from pr_services.object_manager import ObjectManager
-from pr_services.middleware import get_current_request
-from pr_services.rpc.service import public_service_method
 from pr_services.authorizer.checks.auth import actor_is_guest
+from pr_services.middleware import get_current_request
+from pr_services.object_manager import ObjectManager
+from pr_services.rpc.service import public_service_method
 
 class LogManager(object):
     """
@@ -75,7 +75,7 @@ class LogManager(object):
         Log a message with the specified level.
         """
 
-        if self.authorizer.actor_is_guest(auth_token):
+        if actor_is_guest(auth_token):
             request = get_current_request()
             if request and 'REMOTE_ADDR' in request.META:
                 ip_address = request.META['REMOTE_ADDR']
@@ -95,7 +95,7 @@ class LogManager(object):
         """
 
         self.authorizer.check_arbitrary_permissions(auth_token, 'logging')
-        if self.authorizer.actor_is_guest(auth_token):
+        if actor_is_guest(auth_token):
             username = 'guest'
         else:
             username = auth_token.user.username

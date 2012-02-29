@@ -1970,12 +1970,12 @@ class TestSessionManager(GeneralTestCase):
         }
         proctor_role = Role.objects.create(name='Proctor')
         proctor_acl = ACL.objects.create(acl = cPickle.dumps(acl), role=proctor_role)
-        group_test_method = ACCheckMethod.objects.get(name = 'actor_member_of_group')
+        group_test_method = ACCheckMethod.objects.get(name = 'membership.actor_member_of_group')
         ACMethodCall.objects.create(acl=proctor_acl, ac_check_method = group_test_method,
             ac_check_parameters = cPickle.dumps({'group_id' : proctor_group.id}))
 
         assignment_venue_matches_actor_preferred_venue = ACCheckMethod.objects.get(
-            name = 'assignment_venue_matches_actor_preferred_venue')
+            name = 'assignment.assignment_venue_matches_actor_preferred_venue')
         ACMethodCall.objects.create(acl=proctor_acl, ac_check_method=assignment_venue_matches_actor_preferred_venue)
         proctor = self.user_manager.create('proctor1', 'password', 'Dr', 'P', 'Roctor', '123-456-7890', 'p@roctor.org', 'active',
             {'groups' : {'add' : [proctor_group.id]}})

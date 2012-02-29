@@ -4,7 +4,7 @@ from decorators import authz
 @authz
 def setup(machine):
     methods = [
-        {'name' : 'actor_is_guest', 'params' : {}},
+        {'name' : 'auth.actor_is_guest', 'params' : {}},
     ]
     arb_perm_list = ['check_usernames']
     crud = {}

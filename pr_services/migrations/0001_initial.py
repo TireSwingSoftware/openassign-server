@@ -518,9 +518,9 @@ class Migration(SchemaMigration):
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_accheckmethods', null=True, to=orm['pr_services.User'])),
-            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=64)),
+            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=1024)),
             ('description', self.gf('django.db.models.fields.TextField')()),
-            ('title', self.gf('django.db.models.fields.CharField')(unique=True, max_length=128)),
+            ('title', self.gf('django.db.models.fields.CharField')(unique=True, max_length=1024)),
         ))
         db.send_create_signal('pr_services', ['ACCheckMethod'])
 
@@ -2146,10 +2146,10 @@ class Migration(SchemaMigration):
             'description': ('django.db.models.fields.TextField', [], {}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '64'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '1024'}),
             'owner': ('pr_services.fields.PRForeignKey', [], {'related_name': "'owned_accheckmethods'", 'null': 'True', 'to': "orm['pr_services.User']"}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'title': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '128'})
+            'title': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '1024'})
         },
         'pr_services.achievement': {
             'Meta': {'object_name': 'Achievement'},

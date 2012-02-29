@@ -26,8 +26,8 @@ def setup(machine):
             password_hash=password_hash, password_salt=salt)
 
     methods = [
-        {'name' : 'actor_member_of_group', 'params' : {'group_id' : group.id}},
-        {'name' : 'refund_does_not_exceed_payment', 'params' : {}},
+        {'name' : 'membership.actor_member_of_group', 'params' : {'group_id' : group.id}},
+        {'name' : 'payment.refund_does_not_exceed_payment', 'params' : {}},
     ]
     arb_perm_list = [
         'access_db_settings',

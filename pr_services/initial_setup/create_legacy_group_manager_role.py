@@ -3,7 +3,7 @@ from decorators import authz
 @authz
 def setup(machine):
     methods = [
-        {'name' : 'actor_is_group_manager', 'params' : {}},
+        {'name' : 'membership.actor_is_group_manager', 'params' : {}},
     ]
     crud = {
         'Group' : {

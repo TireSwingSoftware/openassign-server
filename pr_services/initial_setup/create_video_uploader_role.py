@@ -9,11 +9,11 @@ def setup(machine):
         return
 
     methods = [
-        {'name' : 'actor_is_member_of_any_organization', 'params' : {}},
+        {'name' : 'membership.actor_is_member_of_any_organization'},
         # the below 2 are here to prevent everyone from seeing Videos in the
         # system unless they absolutely have to in order for uploads to work
-        {'name' : 'actor_owns_prmodel', 'params' : {}},
-        {'name' : 'actees_attribute_is_set_to',
+        {'name' : 'ownership.actor_owns_prmodel'},
+        {'name' : 'constraint.actees_attribute_is_set_to',
             'params' : {
                 'actee_model_name' : 'Video',
                 'attribute_name' : 'deleted',

@@ -12,8 +12,8 @@ def setup(machine):
         name='Category Managers')
 
     methods = [
-        {'name' : 'actor_member_of_group', 'params' : {'group_id' : group.id}},
-        {'name' : 'actor_is_manager_of_actee_related_category', 'params' : {}},
+        {'name' : 'membership.actor_member_of_group', 'params' : {'group_id' : group.id}},
+        {'name' : 'membership.actor_is_manager_of_actee_related_category', 'params' : {}},
     ]
     crud = {
         'Assignment' : {
@@ -78,8 +78,8 @@ def setup(machine):
     }
     machine.add_acl_to_role('Category Manager', methods, crud)
     methods2 = [
-        {'name' : 'actor_member_of_group', 'params' : {'group_id' : group.id}},
-        {'name' : 'actees_foreign_key_object_has_attribute_set_to',
+        {'name' : 'membership.actor_member_of_group', 'params' : {'group_id' : group.id}},
+        {'name' : 'constraint.actees_foreign_key_object_has_attribute_set_to',
             'params' : {
                 'actee_model_name' : 'VideoCategory',
                 'attribute_name' : 'video',

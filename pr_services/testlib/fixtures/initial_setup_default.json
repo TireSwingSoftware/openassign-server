@@ -139,11 +139,11 @@
         "pk": 1,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor and the actee are both enrolled in the same session, for which actor is in the session_user_role actor_eur, and actee is in the session_user_role actee_eur.  Returns False otherwise.  This method is only for use when the actee is a user.",
-            "title": "Actor and actee are enrolled in the same session",
-            "name": "actor_actee_enrolled_in_same_session",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    This complicatedly name method exists to be a bit generically useful.\n    It will examine actee, ensuring that it is of type actee_model_name.\n    It will then ensure that attribute_name's value is equal to attribute_value.\n\n    ** Note: This depends on the model class's (or at least its parent class)\n    being in facade.models. **\n\n    @param auth_token       The authentication token of the acting user.\n                            Guests are allowed, and so this method does not\n                            use the auth_token\n    @type auth_token        facade.models.AuthToken\n    @param actee            The object in question\n    @type actee             pr_models.PRModel\n    @param actee_model_name The name of the type of the model that this check\n                             is supposed to be applied to\n    @type actee_model_name  str\n    @param attribute_name   The name of the attribute on actee that we want\n                            do perform a comparison on\n    @type attribute_name    str\n    @param attribute_value  The value that actee's attribute should be compared to\n    @type attribute_value   Many types are allowed (string, boolean, int, etc.)\n    ",
+            "title": "constraint.actees_attribute_is_set_to",
+            "name": "constraint.actees_attribute_is_set_to",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -155,11 +155,11 @@
         "pk": 2,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is an authenticated user who is acting upon themselves.  Only affects permissions for the user object",
-            "title": "Actor is acting upon themselves",
-            "name": "actor_is_acting_upon_themselves",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    This complicatedly name method exists to be a bit generically useful.\n    It will examine actee, ensuring that it is of type actee_model_name.\n    It will then follow a foreign key relationship,\n    actee.foreign_object_attribute_name, and ensure that that attribute's\n    value is equal to foreign_object_attribute_value.\n\n    ** Note: This depends on the model class's (or at least its parent class)\n    being in facade.models. **\n\n    @param auth_token                       The authentication token of the\n                                            acting user.  Guests are allowed,\n                                            and so this method does not use\n                                            the auth_token\n    @type auth_token                        facade.models.AuthToken\n    @param actee                            The object in question\n    @type actee                             pr_models.PRModel\n    @param actee_model_name                 The name of the type of the model\n                                            that this check is supposed to be\n                                            applied to\n    @type actee_model_name                  str\n    @param attribute_name                   The name of the attribute on actee\n                                            that we can use to retrieve the foreign\n                                            object\n    @type attribute_name                    str\n    @param foreign_object_attribute_name    The name of the attribute on actee\n                                            that will lead us to the foreign\n                                            object we care about\n    @type foreign_object_attribute_name     str\n    @param foreign_object_attribute_value   The value that the foriegn\n                                            object's attribute should be\n                                            compared to\n    @type foreign_object_attribute_value    Many types are allowed (string,\n                                            boolean, int, etc.)\n    ",
+            "title": "constraint.actees_foreign_key_object_has_attribute_set_to",
+            "name": "constraint.actees_foreign_key_object_has_attribute_set_to",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -171,11 +171,11 @@
         "pk": 3,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is an authenticated user",
-            "title": "Actor is authenticated",
-            "name": "actor_is_authenticated",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the actor and the actee are both enrolled in the same\n    session, for which actor is in the session_user_role actor_sur, and\n    actee is in the session_user_role actee_sur.  Returns False otherwise.\n\n    This method is only for use when the actee is a user.\n\n    @param actee      A user object that we are evaluation authorization for\n    @param actor_sur_id  The primary key of the session_user_role with which the\n            actor should be enrolled in the session\n    @param actee_sur_id  The primary key of the session_user_role with which\n            the actee should be enrolled in the session\n    ",
+            "title": "constraint.actor_actee_enrolled_in_same_session",
+            "name": "constraint.actor_actee_enrolled_in_same_session",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -187,11 +187,11 @@
         "pk": 4,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the Assignment's prerequisites have been met",
-            "title": "Assignment prerequisites have been met",
-            "name": "assignment_prerequisites_met",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the actor is a valid authenticated user in\n    the system who is acting upon themselves.\n\n    @param actee  A user object that we wish to compare the actor to\n    ",
+            "title": "constraint.actor_is_acting_upon_themselves",
+            "name": "constraint.actor_is_acting_upon_themselves",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -203,11 +203,11 @@
         "pk": 5,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the AssignmentAttempt's start date is after the Assignment's effective_date_assigned",
-            "title": "AssignmentAttempt meets date restrictions",
-            "name": "assignment_attempt_meets_date_restrictions",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    This is a strange new breed of auth_check that concerns itcls with the\n    update_dict. It ensures that the update_dict is only attempting to add\n    items from the list of allowed primary keys to the attribute on the actee.\n    It will return false if any 'remove' operation is in the dict, or if any\n    primary key appears in the add list that is not in the allowed primary\n    key list.\n\n    @param auth_token       The authentication token of the acting user\n    @type auth_token        auth_token\n    @param actee            A user object that we are evaluation authorization for\n    @type actee             user\n    @param attribute_name   The attribute that we are authorizing the update\n                            call based on\n    @type attribute_name    string\n    @param allowed_pks      A list of primary keys that we will allow the actor\n                            to add to the actee's many ended attribute\n    @type allowed_pks       list\n    @param update_dict      The dictionary of changes that the actor is\n                            attempting to apply to actee\n    @type update_dict       dict\n    @return                 A boolean of whether or not the actor will be\n                            allowed to run the update call\n    @raises                 InvalidActeeTypeException, AttributeNotInUpdateDictException\n    ",
+            "title": "constraint.actor_is_adding_allowed_many_ended_objects_to_user",
+            "name": "constraint.actor_is_adding_allowed_many_ended_objects_to_user",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -219,11 +219,11 @@
         "pk": 6,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the AssignmentAttempt's prerequisites have been met",
-            "title": "AssignmentAttempt prerequisites have been met",
-            "name": "assignment_attempt_prerequisites_met",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the actor is the instructor manager for a product\n    line in which the actee is an instructor.\n\n    @param actee      A user object that we are evaluation authorization for\n    ",
+            "title": "constraint.actor_is_instructor_manager_of_actee",
+            "name": "constraint.actor_is_instructor_manager_of_actee",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -235,11 +235,11 @@
         "pk": 7,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is the manager of the group they are acting upon",
-            "title": "Actor is the manager of the group in question",
-            "name": "actor_is_group_manager",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the actor is the user who created the venue, which is discovered by\n    examining the venue's blame\n    ",
+            "title": "constraint.actor_is_venue_creator",
+            "name": "constraint.actor_is_venue_creator",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -251,11 +251,11 @@
         "pk": 8,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is a member of the group they are acting upon",
-            "title": "Actor is a user in the group in question",
-            "name": "actor_is_in_actee_which_is_a_group",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the actor's status is equal to the specified status.\n\n    @param actee    Not used by this method\n    @type actee     user\n    @param status   The status value that we want to know if the user has or not\n    @type status    string\n    @return         True if the actor's status is equal to the specified status, false otherwise.\n    ",
+            "title": "constraint.actor_status_check",
+            "name": "constraint.actor_status_check",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -267,11 +267,11 @@
         "pk": 9,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is a guest, which means they have not authenticated or logged in",
-            "title": "Actor is a guest",
-            "name": "actor_is_guest",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Does nothing if the ExamSession does not have any answered questions\n    or ratings.  That allows us to use the same ACL to allow creation of\n    an ExamSession and allow reading results.  Returns True if the\n    ExamSession has been finished, else False.\n\n    @param actee      Instance of ExamSession\n    ",
+            "title": "constraint.populated_exam_session_is_finished",
+            "name": "constraint.populated_exam_session_is_finished",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -283,11 +283,11 @@
         "pk": 10,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is an instructor manager for a product line for which the actee is listed as an instructor",
-            "title": "Actor is the instructor manager of the actee",
-            "name": "actor_is_instructor_manager_of_actee",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True iff the session_user_role associate with the actee is the same as the\n    session_user_role specified by the parameter session_user_role.\n    ",
+            "title": "constraint.surr_is_of_a_particular_sur",
+            "name": "constraint.surr_is_of_a_particular_sur",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -299,11 +299,11 @@
         "pk": 11,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns true if the actor is a member of the specified group. Specify a group by passing its ID as 'group_id'",
-            "title": "Actor is Member of Group",
-            "name": "actor_member_of_group",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True iff the actor is assigned to the CurriculumEnrollment\n    ",
+            "title": "assignment.actor_assigned_to_curriculum_enrollment",
+            "name": "assignment.actor_assigned_to_curriculum_enrollment",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -315,11 +315,11 @@
         "pk": 12,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor owns the address in question.  Only affects permissions on the address object",
-            "title": "Actor owns the address",
-            "name": "actor_owns_address",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the actor is assigned to a session for the\n    actee (an `Event` object).\n    ",
+            "title": "assignment.actor_assigned_to_event_session",
+            "name": "assignment.actor_assigned_to_event_session",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -331,11 +331,11 @@
         "pk": 13,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is the product line manager for the product line being accessed.",
-            "title": "Actor is product line manager for a given product line",
-            "name": "actor_is_product_line_manager_of_product_line",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True iff the actor has an assignment for this session\n    ",
+            "title": "assignment.actor_assigned_to_session",
+            "name": "assignment.actor_assigned_to_session",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -347,11 +347,11 @@
         "pk": 14,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is the product line manager for the product line of the session being accessed.",
-            "title": "Actor is product line manager for the session_template being accessed",
-            "name": "actor_is_product_line_manager_of_session",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True iff the actor has completed all of the prerequisite tasks\n    for the task being queried.\n    ",
+            "title": "assignment.actor_has_completed_assignment_prerequisites",
+            "name": "assignment.actor_has_completed_assignment_prerequisites",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -363,11 +363,11 @@
         "pk": 15,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is the product line manager for the product line of the session_template being accessed.",
-            "title": "Actor is product line manager for the session being accessed",
-            "name": "actor_is_product_line_manager_of_session_template",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True iff the actor has completed all of the prerequisite tasks for the task being queried.\n    ",
+            "title": "assignment.actor_has_completed_task_prerequisites",
+            "name": "assignment.actor_has_completed_task_prerequisites",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -379,11 +379,11 @@
         "pk": 16,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is the product line manager for the product line of the user being accessed.",
-            "title": "Actor is product line manager for the user being accessed",
-            "name": "actor_is_product_line_manager_of_user",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True iff the assignment_attempt's dates meet the restrictions\n    defined on the Assignment\n    ",
+            "title": "assignment.assignment_attempt_meets_date_restrictions",
+            "name": "assignment.assignment_attempt_meets_date_restrictions",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -395,11 +395,11 @@
         "pk": 17,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor owns the purchase order being accessed.",
-            "title": "Actor is the owner of the purchase order being accessed",
-            "name": "actor_owns_purchase_order",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True iff the assignment_attempt's prerequisites have been met\n    ",
+            "title": "assignment.assignment_attempt_prerequisites_met",
+            "name": "assignment.assignment_attempt_prerequisites_met",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -411,11 +411,11 @@
         "pk": 18,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the purchase order being accessed has at least one payment.",
-            "title": "Purchase Order being accessed has payments",
-            "name": "purchase_order_has_payments",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True iff the assignment's prerequisites have been met\n    ",
+            "title": "assignment.assignment_prerequisites_met",
+            "name": "assignment.assignment_prerequisites_met",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -427,11 +427,11 @@
         "pk": 19,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the purchase order being accessed has no payments.",
-            "title": "Purchase Order being accessed has no payments",
-            "name": "purchase_order_has_no_payments",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns true if the assignment is at a venue that matches the actor's\n    preferred venue\n\n    @param actee      Instance of Assignment\n    ",
+            "title": "assignment.assignment_venue_matches_actor_preferred_venue",
+            "name": "assignment.assignment_venue_matches_actor_preferred_venue",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -443,11 +443,11 @@
         "pk": 20,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor owns the training_unit_authorization being accessed.",
-            "title": "Actor owns the training_unit_authorization being accessed",
-            "name": "actor_owns_training_unit_authorization",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns true if the actor is a product line manager for the given product line.\n\n    @param actee      Instance of product_line\n    ",
+            "title": "product_line.actor_is_product_line_manager_of_product_line",
+            "name": "product_line.actor_is_product_line_manager_of_product_line",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -459,11 +459,11 @@
         "pk": 21,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor owns the purchase order against which the currently accessed payment was made,",
-            "title": "Actor owns the given payment",
-            "name": "actor_owns_payment",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns true if the actor is a product line manager for the given session.\n\n    @param actee      Instance of session\n    ",
+            "title": "product_line.actor_is_product_line_manager_of_session",
+            "name": "product_line.actor_is_product_line_manager_of_session",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -475,11 +475,11 @@
         "pk": 22,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns true if the refund does not put the total amount of refunds for a particular payment over the value of the payment",
-            "title": "Refund does not exceed payment",
-            "name": "refund_does_not_exceed_payment",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns true if the actor is a product line manager for the given session_template\n\n    @param actee      Instance of session_template\n    ",
+            "title": "product_line.actor_is_product_line_manager_of_session_template",
+            "name": "product_line.actor_is_product_line_manager_of_session_template",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -491,11 +491,11 @@
         "pk": 23,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns true if the assignment is for a session at a venue that matches the actor's preferred venue",
-            "title": "Assignment venue matches actor venue",
-            "name": "assignment_venue_matches_actor_preferred_venue",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the actor is the product line manager for a\n    product line in which the actee is an instructor.\n\n    @param actee      A user object that we are evaluation authorization for\n    ",
+            "title": "product_line.actor_is_product_line_manager_of_user",
+            "name": "product_line.actor_is_product_line_manager_of_user",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -507,11 +507,11 @@
         "pk": 24,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns true if the actor is of the specified status.",
-            "title": "Actor is of specified status",
-            "name": "actor_status_check",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "auth.actor_is_anybody",
+            "title": "auth.actor_is_anybody",
+            "name": "auth.actor_is_anybody",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -523,11 +523,11 @@
         "pk": 25,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Always returns True.",
-            "title": "Actor is any user",
-            "name": "actor_is_anybody",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "Returns True if the actor is an authenticated user.",
+            "title": "auth.actor_is_authenticated",
+            "name": "auth.actor_is_authenticated",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -539,11 +539,11 @@
         "pk": 26,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "This is a strange new breed of auth_check that concerns itself with the update_dict.  It ensures that the update_dict is only attempting to add items from the list of allowed primary keys to the attribute on the actee.  It will return false if any 'remove' operation is in the dict, or if any primary key appears in the add list that is not in the allowed primary key list.",
-            "title": "Actor is adding allowed many ended objects to user",
-            "name": "actor_is_adding_allowed_many_ended_objects_to_user",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "Returns True if the actor is a guest.",
+            "title": "auth.actor_is_guest",
+            "name": "auth.actor_is_guest",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -555,11 +555,11 @@
         "pk": 27,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor owns the event.",
-            "title": "Actor owns the event",
-            "name": "actor_owns_event",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "discover_authorizer_checks",
+            "title": "discover_authorizer_checks",
+            "name": "discover_authorizer_checks",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -571,11 +571,11 @@
         "pk": 28,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor owns the session.",
-            "title": "Actor owns the session",
-            "name": "actor_owns_session",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "get_module",
+            "title": "get_module",
+            "name": "get_module",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -587,11 +587,11 @@
         "pk": 29,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor owns the session_user_role_requirement.",
-            "title": "Actor owns the session_user_role_requirement",
-            "name": "actor_owns_session_user_role_requirement",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "get_module_name_from_path",
+            "title": "get_module_name_from_path",
+            "name": "get_module_name_from_path",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -603,11 +603,11 @@
         "pk": 30,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Does nothing if the exam_session has no answered questions or ratings.  Returns True if exam_session is finished, else False.",
-            "title": "Populated exam_session is finished.",
-            "name": "populated_exam_session_is_finished",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "import_authorizer_checks",
+            "title": "import_authorizer_checks",
+            "name": "import_authorizer_checks",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -619,11 +619,11 @@
         "pk": 31,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is the user who created the venue, which is discovered by examining the venue's blame",
-            "title": "The actor is the venue's creator",
-            "name": "actor_is_venue_creator",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "load_checks_from_path",
+            "title": "load_checks_from_path",
+            "name": "load_checks_from_path",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -635,11 +635,11 @@
         "pk": 32,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the session_user_role associate with the actee is the same as the session_user_role specified by the parameter session_user_role.",
-            "title": "session_user_role_requirement is of a particular session_user_role",
-            "name": "surr_is_of_a_particular_sur",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "Returns True iff the actor is the owner of the AchievementAward",
+            "title": "ownership.actor_owns_achievement_award",
+            "name": "ownership.actor_owns_achievement_award",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -651,11 +651,11 @@
         "pk": 33,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the actor is the owner of the credential",
-            "title": "Actor owns Credential",
-            "name": "actor_owns_credential",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True iff the actor is the owner of an AchievementAward for the\n    Achievement.\n    ",
+            "title": "ownership.actor_owns_achievement_award_for_achievement",
+            "name": "ownership.actor_owns_achievement_award_for_achievement",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -667,11 +667,11 @@
         "pk": 34,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the actor has completed all of the prerequisite tasks for the task being queried.",
-            "title": "Actor has completed Task prerequisites",
-            "name": "actor_has_completed_task_prerequisites",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the address object is either the user's\n    shipping or billing address, False otherwise.\n\n    @param actee  The address object in question\n    ",
+            "title": "ownership.actor_owns_address",
+            "name": "ownership.actor_owns_address",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -683,11 +683,11 @@
         "pk": 35,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the actor is the owner of the AchievementAward",
-            "title": "Actor owns AchievementAward",
-            "name": "actor_owns_achievement_award",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "Returns True iff the actor is the owner of the Assignment.",
+            "title": "ownership.actor_owns_assignment",
+            "name": "ownership.actor_owns_assignment",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -699,11 +699,11 @@
         "pk": 36,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the actor is the owner of an AchievementAward for the Achievement",
-            "title": "Actor owns AchievementAward for Achievement",
-            "name": "actor_owns_achievement_award_for_achievement",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True iff the actor is the owner of the Assignment\n    ",
+            "title": "ownership.actor_owns_assignment_attempt",
+            "name": "ownership.actor_owns_assignment_attempt",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -715,11 +715,11 @@
         "pk": 37,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the actor is the owner of the assignment",
-            "title": "Actor owns Assignment",
-            "name": "actor_owns_assignment",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "Returns True iff actor owns an assignment for the given task.",
+            "title": "ownership.actor_owns_assignment_for_task",
+            "name": "ownership.actor_owns_assignment_for_task",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -731,11 +731,11 @@
         "pk": 38,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the actor is the owner of the assignment attempt",
-            "title": "Actor owns AssignmentAttempt",
-            "name": "actor_owns_assignment_attempt",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the actor is the owner of the Assignment, or if the\n    actor is a guest and the Assignment doesn't have a user defined.\n    ",
+            "title": "ownership.actor_owns_assignment_or_is_guest",
+            "name": "ownership.actor_owns_assignment_or_is_guest",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -747,11 +747,11 @@
         "pk": 39,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the actor has completed all of the prerequisite Tasks for the Assignment being queried.",
-            "title": "Actor has completed Assignment prerequisites",
-            "name": "actor_has_completed_assignment_prerequisites",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True iff the actor is the owner of the Credential\n    ",
+            "title": "ownership.actor_owns_credential",
+            "name": "ownership.actor_owns_credential",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -763,11 +763,11 @@
         "pk": 40,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the QuestionResponse is for an ExamSession owned by the actor.",
-            "title": "Actor owns QuestionResponse",
-            "name": "actor_owns_question_response",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns true if the actor is the owner of an event.\n    ",
+            "title": "ownership.actor_owns_event",
+            "name": "ownership.actor_owns_event",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -779,11 +779,11 @@
         "pk": 41,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "This complicatedly name method exists to be a bit genericly useful.  It will examine actee, ensuring that it is of type actee_model_name.  It will then ensure that attribute_name's value is equal to attribute_value.",
-            "title": "Actee's attribute is set to",
-            "name": "actees_attribute_is_set_to",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns true if the actor owns the payment.\n\n    @param actee      Instance of a purchase_order\n    ",
+            "title": "ownership.actor_owns_payment",
+            "name": "ownership.actor_owns_payment",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -795,11 +795,11 @@
         "pk": 42,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "This complicatedly name method exists to be a bit genericly useful.  It will examine actee, ensuring that it is of type actee_model_name.  It will then follow a foreign key relationship, actee.foreign_object_attribute_name, and ensure that that attribute's value is equal to foreign_object_attribute_value.",
-            "title": "Actee's foreign key object has attribute set to",
-            "name": "actees_foreign_key_object_has_attribute_set_to",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the actor is the same User object as is listed in the\n    PRModel's owner field, or if the PRModel has None in its owner field.\n    ",
+            "title": "ownership.actor_owns_prmodel",
+            "name": "ownership.actor_owns_prmodel",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -811,11 +811,11 @@
         "pk": 43,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is the owner of the Assignment, or if the actor is a guest and the Assignment doesn't have a user defined.",
-            "title": "Actor owns assignment or is guest",
-            "name": "actor_owns_assignment_or_is_guest",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns true if the actor owns the purchase order being accessed.\n\n    @param actee      Instance of a purchase_order\n    ",
+            "title": "ownership.actor_owns_purchase_order",
+            "name": "ownership.actor_owns_purchase_order",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -827,11 +827,11 @@
         "pk": 44,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is the same User object as is listed in the OwnedPRModel's owner field.",
-            "title": "Actor owns PRModel",
-            "name": "actor_owns_prmodel",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True iff the QuestionResponse is for an ExamSession owned by the\n    actor.\n    ",
+            "title": "ownership.actor_owns_question_response",
+            "name": "ownership.actor_owns_question_response",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -843,11 +843,11 @@
         "pk": 45,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "If the actee is in the group, the method returns True iff they are also of the domain.  If they are not in the group, it will return True.  This is useful for making sure that participants who register themselves are in the constantcontact.com domain.",
-            "title": "Actee is in group and domain",
-            "name": "actee_is_in_group_and_domain",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the actor owns the event associated with this session.\n    ",
+            "title": "ownership.actor_owns_session",
+            "name": "ownership.actor_owns_session",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -859,11 +859,11 @@
         "pk": 46,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if DomainAffiliation.user is the actor.",
-            "title": "DomainAffiliation user is actor",
-            "name": "actor_related_to_domain_affiliation",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the session associated with the session_user_role_requirement is owned\n    by the actor\n    ",
+            "title": "ownership.actor_owns_session_user_role_requirement",
+            "name": "ownership.actor_owns_session_user_role_requirement",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -875,11 +875,11 @@
         "pk": 47,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actee is an Organization and the actor belongs to that organization",
-            "title": "Actor is in actee organization",
-            "name": "actor_is_in_actee_which_is_an_organization",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns true if the actor owns the purchase order being accessed.\n\n    @param actee      Instance of a purchase_order\n    ",
+            "title": "ownership.actor_owns_training_unit_authorization",
+            "name": "ownership.actor_owns_training_unit_authorization",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -891,11 +891,11 @@
         "pk": 48,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the actee is an Assignment the Task in which is not a Video",
-            "title": "Assignment is not to watch Video",
-            "name": "assignment_is_not_video",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns true if the purchase order being accessed has no payments.\n\n    @param actee      Instance of a purchase_order\n    ",
+            "title": "payment.purchase_order_has_no_payments",
+            "name": "payment.purchase_order_has_no_payments",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -907,11 +907,11 @@
         "pk": 49,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the actor is a manager of a category that the actee is directly or indirectly related to, and the relationship is not through a deleted video",
-            "title": "Actor is Category Manager of category related to actee",
-            "name": "actor_is_manager_of_actee_related_category",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns true if the purchase order being accessed has at least one payment.\n\n    @param actee      Instance of a purchase_order\n    ",
+            "title": "payment.purchase_order_has_payments",
+            "name": "payment.purchase_order_has_payments",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -923,11 +923,11 @@
         "pk": 50,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns true iff the actor is a member of an authorized group on a category that's in an approved relationship to the actee",
-            "title": "Actor is a member of an actee-related Category's authorized groups",
-            "name": "actor_is_member_of_actee_related_category_authorized_groups",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns true if the refund does not put the total amount of\n    refunds for a particular payment over the value of the payment.\n\n    @param actee      Instance of refund\n    ",
+            "title": "payment.refund_does_not_exceed_payment",
+            "name": "payment.refund_does_not_exceed_payment",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -939,11 +939,11 @@
         "pk": 51,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns true iff the actor is a member of any Organization",
-            "title": "Actor is member of any Organization",
-            "name": "actor_is_member_of_any_organization",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    If the actee is in the group, the method returns True iff they are also\n    of the domain.  If they are not in the group, it will return False.\n\n    This is useful for making sure that participants who register themselves are\n    in a particular domain, such as 'constantcontact.com' for the Constant\n    Contact variant.\n\n    Note that returning False instead of True if the user is not a part of\n    the specified group is a different behavior from what the Constant\n    Contact variant does!\n\n    @param actee    The user object in question\n    @type actee     user\n    @param group_id The primary key of the group that the actee must be a member of\n    @param domain_id the primary key of the domain\n    ",
+            "title": "membership.actee_is_in_group_and_domain",
+            "name": "membership.actee_is_in_group_and_domain",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -955,11 +955,11 @@
         "pk": 52,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff actor owns an assignment for the given task",
-            "title": "Actor owns Assignment for Task",
-            "name": "actor_owns_assignment_for_task",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the actor is the manager of the group.\n\n    @param actee  Instance of a group\n    ",
+            "title": "membership.actor_is_group_manager",
+            "name": "membership.actor_is_group_manager",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -971,11 +971,11 @@
         "pk": 53,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the actor has an assignment for this session",
-            "title": "Actor is assigned to the session",
-            "name": "actor_assigned_to_session",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "Returns true if the actee is a group and the actor is a member thereof.",
+            "title": "membership.actor_is_in_actee_which_is_a_group",
+            "name": "membership.actor_is_in_actee_which_is_a_group",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -987,11 +987,11 @@
         "pk": 54,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True iff the actor is assigned to the CurriculumEnrollment",
-            "title": "Actor is assigned to the CurriculumEnrollment",
-            "name": "actor_assigned_to_curriculum_enrollment",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the actee is an Organization and the actor belongs to that\n    organization.\n    ",
+            "title": "membership.actor_is_in_actee_which_is_an_organization",
+            "name": "membership.actor_is_in_actee_which_is_an_organization",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -1003,11 +1003,27 @@
         "pk": 55,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
-            "description": "Returns True if the actor is assigned to the session for an event.",
-            "title": "Actor is assigned to the session for an event.",
-            "name": "actor_assigned_to_event_session",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the actor is a member of the specified group, False otherwise.\n\n    @param actee      Not used by this method, but must be passed anyway as\n            per authorization system requirements\n    @param group_id   The primary key of the group we wish to test membership in\n    ",
+            "title": "membership.actor_member_of_group",
+            "name": "membership.actor_member_of_group",
+            "create_timestamp": "2012-03-02 00:16:10",
+            "owner": null,
+            "final_type": [
+                "pr_services",
+                "accheckmethod"
+            ]
+        }
+    },
+    {
+        "pk": 56,
+        "model": "pr_services.accheckmethod",
+        "fields": {
+            "save_timestamp": "2012-03-02 00:16:10",
+            "description": "\n    Returns True if the DomainAffiliation's 'user' attribute\n    references the actor\n\n    @param actee  The DomainAffiliation object in question\n    ",
+            "title": "membership.actor_related_to_domain_affiliation",
+            "name": "membership.actor_related_to_domain_affiliation",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -1019,7 +1035,7 @@
         "pk": 1,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1027,7 +1043,7 @@
             "arbitrary_perm_list": "(lp1\nS'access_db_settings'\np2\naS'change_password_of_other_users'\np3\naS'check_usernames'\np4\naS'exceed_enrollment_capacity'\np5\naS'export_exam_to_xml'\np6\naS'email_task_assignees'\np7\naS'import_exam_from_xml'\np8\naS'logging'\np9\naS'read_reports'\np10\naS'regenerate_payment_confirmations'\np11\naS'resend_payment_confirmations'\np12\naS'send_email'\np13\naS'upload_scorm_course'\np14\na.",
             "acl": "(dp1\nS'Payment'\np2\n(dp3\nS'c'\nI01\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'city'\np6\naS'first_name'\np7\naS'last_name'\np8\naS'save_timestamp'\np9\naS'zip'\np10\naS'refunds'\np11\naS'country'\np12\naS'notes'\np13\naS'state'\np14\naS'id'\np15\naS'purchase_order'\np16\naS'card_type'\np17\naS'amount'\np18\naS'exp_date'\np19\naS'create_timestamp'\np20\naS'content_type'\np21\naS'sales_tax'\np22\naS'date'\np23\naS'invoice_number'\np24\naS'result_message'\np25\naS'transaction_id'\np26\natRp27\nsS'u'\ng4\n((ltRp28\nsS'd'\nI00\nssS'ExamSession'\np29\n(dp30\nS'c'\nI01\nsS'r'\ng4\n((lp31\nS'save_timestamp'\np32\naS'exam'\np33\naS'number_correct'\np34\naS'assignment'\np35\naS'notes'\np36\naS'response_questions'\np37\naS'score'\np38\naS'content_type'\np39\naS'create_timestamp'\np40\naS'passed'\np41\naS'date_completed'\np42\naS'date_started'\np43\naS'passing_score'\np44\naS'id'\np45\naS'user'\np46\natRp47\nsS'u'\ng4\n((lp48\ng36\nag42\nag43\natRp49\nsS'd'\nI01\nssS'FileDownload'\np50\n(dp51\nS'c'\nI01\nsS'r'\ng4\n((lp52\nS'achievements'\np53\nag32\naS'description'\np54\naS'deleted'\np55\naS'max'\np56\naS'prerequisite_tasks'\np57\naS'version_id'\np58\nag40\naS'version_label'\np59\naS'file_size'\np60\naS'task_fees'\np61\nag45\naS'users'\np62\naS'yielded_tasks'\np63\naS'name'\np64\naS'min'\np65\nag36\naS'title'\np66\naS'file_url'\np67\naS'version_comment'\np68\nag39\naS'remaining_capacity'\np69\naS'type'\np70\naS'prevent_duplicate_assignments'\np71\natRp72\nsS'u'\ng4\n((lp73\ng53\nag62\nag55\nag56\nag57\nag58\nag59\nag61\nag54\nag63\nag64\nag66\nag36\nag65\nag68\nag69\nag71\natRp74\nsS'd'\nI01\nssS'ResourceType'\np75\n(dp76\nS'c'\nI01\nsS'r'\ng4\n((lp77\ng32\nag64\nag36\nag40\nag39\naS'sessiontemplateresourcetypereqs'\np78\nag45\naS'resources'\np79\naS'sessionresourcetyperequirements'\np80\natRp81\nsS'u'\ng4\n((lp82\ng36\nag80\nag64\nag79\nag78\natRp83\nsS'd'\nI01\nssS'AssignmentManager'\np84\n(dp85\nS'methods'\np86\ng4\n((lp87\nS'email_task_assignees'\np88\natRp89\nssS'ForumTopic'\np90\n(dp91\nS'c'\nI01\nsS'r'\ng4\n((lp92\ng32\nag39\naS'forum'\np93\nag36\naS'posts'\np94\naS'sticky'\np95\nag40\naS'closed'\np96\nag45\nag64\natRp97\nsS'u'\ng4\n((lp98\ng93\nag36\nag64\nag96\nag95\natRp99\nsS'd'\nI01\nssS'SessionTemplateResourceTypeReq'\np100\n(dp101\nS'c'\nI01\nsS'r'\ng4\n((lp102\ng32\naS'session_template'\np103\nag65\nag56\nag36\nag40\nag39\nag45\naS'resource_type'\np104\natRp105\nsS'u'\ng4\n((lp106\ng56\nag36\nag103\nag104\nag65\natRp107\nsS'd'\nI01\nssS'CurriculumEnrollment'\np108\n(dp109\nS'c'\nI01\nsS'r'\ng4\n((lp110\ng32\nag62\naS'start'\np111\naS'curriculum_name'\np112\naS'curriculum'\np113\nag45\naS'assignments'\np114\nag40\nag39\naS'end'\np115\nag36\naS'user_completion_statuses'\np116\natRp117\nsS'u'\ng4\n((lp118\ng111\nag36\nag113\nag115\nag62\natRp119\nsS'd'\nI01\nssS'Note'\np120\n(dp121\nS'c'\nI01\nsS'r'\ng4\n((lp122\ng32\naS'text'\np123\nag40\nag39\nag45\natRp124\nsS'u'\ng4\n((lp125\ng123\natRp126\nsS'd'\nI01\nssS'PurchaseOrder'\np127\n(dp128\nS'c'\nI01\nsS'r'\ng4\n((lp129\nS'training_units_price'\np130\naS'total_training_units'\np131\nag32\naS'promo_code'\np132\naS'training_units_purchased'\np133\naS'product_offers'\np134\nag40\nag39\naS'organization'\np135\nag46\nag45\naS'product_claims'\np136\naS'total_price'\np137\nag36\naS'products'\np138\naS'payments'\np139\naS'product_discounts'\np140\naS'is_paid'\np141\naS'expiration'\np142\natRp143\nsS'u'\ng4\n((lp144\ng130\nag132\nag133\nag135\nag36\nag46\nag142\natRp145\nsS'd'\nI01\nssS'Task'\np146\n(dp147\nS'c'\nI01\nsS'r'\ng4\n((lp148\ng53\nag32\nag54\nag56\nag57\nag58\nag40\nag59\nag61\nag45\nag62\nag63\nag64\nag65\nag36\nag66\nag68\nag39\nag69\nag70\nag71\natRp149\nsS'u'\ng4\n((lp150\ng53\nag62\nag56\nag57\nag58\nag59\nag61\nag54\nag63\nag64\nag66\nag36\nag65\nag68\nag69\nag71\natRp151\nsS'd'\nI01\nssS'Role'\np152\n(dp153\nS'c'\nI01\nsS'r'\ng4\n((lp154\nS'ac_check_methods'\np155\nag32\nag64\nag36\naS'acl'\np156\nag40\nag39\nag45\natRp157\nsS'u'\ng4\n((lp158\ng36\nag155\nag64\nag156\natRp159\nsS'd'\nI01\nssS'MessageType'\np160\n(dp161\nS'c'\nI01\nsS'r'\ng4\n((lp162\ng32\nag54\nag36\naS'enabled'\np163\nag45\nag40\nag39\naS'slug'\np164\nag64\natRp165\nsS'u'\ng4\n((lp166\ng36\nag164\natRp167\nsS'd'\nI01\nssS'CSVData'\np168\n(dp169\nS'c'\nI01\nsS'r'\ng4\n((lp170\ng9\nag15\nag21\nag20\natRp171\nsS'u'\ng4\n((ltRp172\nsS'd'\nI01\nssS'Answer'\np173\n(dp174\nS'c'\nI01\nsS'r'\ng4\n((lp175\nS'correct'\np176\nag32\naS'responses'\np177\naS'end_question_pool'\np178\naS'next_question_pool'\np179\nag40\nag39\nag45\naS'text_response'\np180\nag64\nag36\naS'end_exam'\np181\naS'question'\np182\naS'value'\np183\naS'label'\np184\naS'order'\np185\natRp186\nsS'u'\ng4\n((lp187\ng180\nag178\nag177\nag36\nag181\nag182\nag179\nag183\nag184\nag185\nag176\nag64\natRp188\nsS'd'\nI01\nssS'Group'\np189\n(dp190\nS'c'\nI01\nsS'r'\ng4\n((lp191\ng32\nag64\naS'default'\np192\nag36\nag40\nag39\naS'managers'\np193\nag45\naS'categories'\np194\nag62\natRp195\nsS'u'\ng4\n((lp196\ng193\nag64\nag192\nag36\nag194\nag62\natRp197\nsS'd'\nI01\nssS'Region'\np198\n(dp199\nS'c'\nI01\nsS'r'\ng4\n((lp200\ng32\nag64\nag36\naS'venues'\np201\nag45\nag40\nag39\naS'events'\np202\natRp203\nsS'u'\ng4\n((lp204\ng36\nag202\nag201\nag64\natRp205\nsS'd'\nI01\nssS'TrainingUnitAccount'\np206\n(dp207\nS'c'\nI01\nsS'r'\ng4\n((lp208\ng32\naS'training_unit_transactions'\np209\nag36\nag40\nag39\nag135\naS'balance'\np210\nag45\nag46\natRp211\nsS'u'\ng4\n((lp212\ng135\nag36\naS'starting_value'\np213\nag46\natRp214\nsS'd'\nI01\nssS'Room'\np215\n(dp216\nS'c'\nI01\nsS'r'\ng4\n((lp217\ng32\nag64\naS'venue_name'\np218\naS'venue_address'\np219\nag36\naS'venue'\np220\nag40\nag39\naS'capacity'\np221\nag45\natRp222\nsS'u'\ng4\n((lp223\ng220\nag36\nag221\nag64\natRp224\nsS'd'\nI01\nssS'Credential'\np225\n(dp226\nS'c'\nI01\nsS'r'\ng4\n((lp227\nS'status'\np228\nag32\naS'credential_type'\np229\nag36\naS'authority'\np230\naS'date_expires'\np231\nag40\nag39\naS'serial_number'\np232\nag43\naS'date_granted'\np233\nag45\naS'date_assigned'\np234\nag46\natRp235\nsS'u'\ng4\n((lp236\ng228\nag229\nag36\nag230\nag231\nag46\nag232\nag43\nag233\nag234\natRp237\nsS'd'\nI01\nssS'Product'\np238\n(dp239\nS'c'\nI01\nsS'r'\ng4\n((lp240\nS'sku'\np241\naS'custom_actions'\np242\nag32\nag54\nag36\naS'inventory'\np243\naS'price'\np244\naS'starting_quantity'\np245\naS'display_order'\np246\naS'cost'\np247\nag40\nag39\naS'training_units'\np248\nag45\nag64\natRp249\nsS'u'\ng4\n((lp250\ng241\nag242\nag248\nag54\nag36\nag244\nag247\nag245\nag246\nag64\natRp251\nsS'd'\nI01\nssS'DomainAffiliation'\np252\n(dp253\nS'c'\nI01\nsS'r'\ng4\n((lp254\nS'username'\np255\naS'domain'\np256\nag32\nag192\nag36\nag40\nag39\naS'may_log_me_in'\np257\nag45\nag46\natRp258\nsS'u'\ng4\n((lp259\ng255\nag192\nag256\nag46\nag257\nag36\natRp260\nsS'd'\nI01\nssS'ProductLine'\np261\n(dp262\nS'c'\nI01\nsS'r'\ng4\n((lp263\ng32\nag64\nag36\naS'instructors'\np264\nag40\nag39\nag193\naS'instructor_managers'\np265\nag45\natRp266\nsS'u'\ng4\n((lp267\ng264\nag36\nag265\nag193\nag64\natRp268\nsS'd'\nI01\nssS'SessionUserRole'\np269\n(dp270\nS'c'\nI01\nsS'r'\ng4\n((lp271\ng32\nag64\naS'session_user_role_requirements'\np272\nag36\nag40\nag39\nag45\natRp273\nsS'u'\ng4\n((lp274\ng36\nag64\nag272\natRp275\nsS'd'\nI01\nssS'FormPage'\np276\n(dp277\nS'c'\nI01\nsS'r'\ng4\n((lp278\ng32\nag33\naS'photo'\np279\nag36\naS'number'\np280\nag40\nag39\naS'form_widgets'\np281\nag45\natRp282\nsS'u'\ng4\n((lp283\ng36\nag281\nag33\nag280\natRp284\nsS'd'\nI01\nssS'SessionUserRoleRequirement'\np285\n(dp286\nS'c'\nI01\nsS'r'\ng4\n((lp287\ng53\nag32\nag54\nag56\nag57\nag58\naS'session'\np288\naS'session_user_role'\np289\nag40\nag59\naS'credential_types'\np290\nag61\nag45\nag62\nag63\nag64\nag65\nag36\nag66\nag68\naS'role_name'\np291\nag39\nag69\naS'ignore_room_capacity'\np292\nag70\nag71\natRp293\nsS'u'\ng4\n((lp294\ng53\nag62\nag56\nag57\nag58\nag288\nag289\nag59\nag290\nag61\nag54\nag63\nag64\nag66\nag36\nag65\nag68\nag69\nag292\nag71\natRp295\nsS'd'\nI01\nssS'Assignment'\np296\n(dp297\nS'c'\nI01\nsS'r'\ng4\n((lp298\ng228\naS'due_date'\np299\nag32\nag230\naS'prerequisites_met'\np300\nag40\nag39\nag46\nag45\naS'achievement_awards'\np301\naS'task'\np302\nag42\naS'task_content_type'\np303\nag36\naS'effective_date_assigned'\np304\naS'status_change_log'\np305\nag232\nag43\naS'assignment_attempts'\np306\natRp307\nsS'u'\ng4\n((lp308\ng228\nag299\nag302\nag42\nag36\nag230\nag304\nag46\nag301\nag232\nag43\nag306\natRp309\nsS'd'\nI01\nssS'FileDownloadAttempt'\np310\n(dp311\nS'c'\nI01\nsS'r'\ng4\n((lp312\ng32\naS'file_download'\np313\nag35\nag36\nag40\nag39\nag42\nag43\nag45\nag46\natRp314\nsS'u'\ng4\n((lp315\ng36\nag42\nag43\natRp316\nsS'd'\nI01\nssS'Curriculum'\np317\n(dp318\nS'c'\nI01\nsS'r'\ng4\n((lp319\ng53\naS'curriculum_task_associations'\np320\naS'tasks'\np321\nag32\nag64\nag36\nag40\nag39\nag135\nag45\natRp322\nsS'u'\ng4\n((lp323\ng53\nag135\nag36\nag321\nag64\natRp324\nsS'd'\nI01\nssS'CurriculumTaskAssociation'\np325\n(dp326\nS'c'\nI01\nsS'r'\ng4\n((lp327\nS'task_bundle'\np328\naS'continue_automatically'\np329\nag32\nag39\naS'presentation_order'\np330\nag36\nag113\naS'days_before_start'\np331\nag302\nag40\naS'task_name'\np332\naS'days_to_complete'\np333\nag45\natRp334\nsS'u'\ng4\n((lp335\ng328\nag302\nag330\nag36\nag113\nag331\nag329\nag333\natRp336\nsS'd'\nI01\nssS'Blame'\np337\n(dp338\nS'c'\nI01\nsS'r'\ng4\n((lp339\ng32\nag36\nag40\nag39\nag45\natRp340\nsS'u'\ng4\n((lp341\ng36\natRp342\nsS'd'\nI01\nssS'User'\np343\n(dp344\nS'c'\nI01\nsS'r'\ng4\n((lp345\ng53\naS'product_lines_managed'\np346\naS'last_name'\np347\nag32\nag39\naS'is_staff'\np348\nag40\naS'full_name'\np349\naS'product_lines_instructor_manager_for'\np350\naS'email2'\np351\nag45\naS'biography'\np352\nag301\naS'alleged_organization'\np353\naS'first_name'\np354\naS'middle_name'\np355\naS'domain_affiliations'\np356\nag66\naS'enable_paypal'\np357\naS'product_lines_instructor_for'\np358\naS'email'\np359\nag228\naS'billing_address'\np360\naS'color_code'\np361\naS'default_username_and_domain'\np362\naS'phone3'\np363\naS'phone'\np364\naS'groups'\np365\naS'credentials'\np366\naS'owned_userorgroles'\np367\naS'preferred_venues'\np368\naS'photo_url'\np369\nag255\naS'organizations'\np370\naS'roles'\np371\nag272\naS'url'\np372\nag36\naS'name_suffix'\np373\naS'completed_curriculum_enrollments'\np374\naS'suppress_emails'\np375\naS'incomplete_curriculum_enrollments'\np376\naS'paypal_address'\np377\naS'shipping_address'\np378\naS'domains'\np379\naS'phone2'\np380\natRp381\nsS'u'\ng4\n((lp382\ng228\nag53\nag347\nag361\nag380\nag363\nag364\nag348\nag365\nag366\nag351\nag352\nag369\nag301\nag370\nag354\nag355\nag371\nag66\nag353\nag36\nag373\nag357\nag372\nag375\nag368\nag377\nag378\nag360\nag359\natRp383\nsS'd'\nI01\nssS'MessageTemplate'\np384\n(dp385\nS'c'\nI01\nsS'r'\ng4\n((lp386\nS'body'\np387\nag32\naS'message_format'\np388\nag36\nag40\nag39\naS'message_type'\np389\nag45\naS'subject'\np390\natRp391\nsS'u'\ng4\n((lp392\ng387\nag36\nag390\natRp393\nsS'd'\nI01\nssS'FileUploadAttempt'\np394\n(dp395\nS'c'\nI01\nsS'r'\ng4\n((lp396\nS'file_upload'\np397\nag32\nag55\nag35\nag36\nag67\naS'file_name'\np398\nag40\nag39\nag60\nag42\nag43\nag45\nag46\natRp399\nsS'u'\ng4\n((lp400\ng55\nag36\nag42\nag43\natRp401\nsS'd'\nI01\nssS'TrainingUnitTransaction'\np402\n(dp403\nS'c'\nI01\nsS'r'\ng4\n((lp404\ng32\nag36\nag183\naS'purchase_order'\np405\naS'training_unit_authorizations'\np406\nag40\nag39\naS'training_unit_account'\np407\nag45\natRp408\nsS'u'\ng4\n((lp409\ng36\nag406\nag407\nag405\natRp410\nsS'd'\nI01\nssS'CustomAction'\np411\n(dp412\nS'c'\nI01\nsS'r'\ng4\n((lp413\ng32\nag54\nag36\nag64\nag40\nag39\nag45\naS'function_name'\np414\natRp415\nsS'u'\ng4\n((lp416\ng36\nag54\nag64\nag414\natRp417\nsS'd'\nI01\nssS'SessionTemplate'\np418\n(dp419\nS'c'\nI01\nsS'r'\ng4\n((lp420\ng32\nag54\naS'sequence'\np421\nag244\naS'duration'\np422\nag40\nag39\naS'active'\np423\nag45\naS'product_line'\np424\naS'event_template'\np425\nag36\naS'sessions'\np426\naS'session_template_resource_type_requirements'\np427\naS'modality'\np428\naS'audience'\np429\naS'version'\np430\naS'session_template_user_role_requirements'\np431\naS'shortname'\np432\naS'fullname'\np433\naS'lead_time'\np434\natRp435\nsS'u'\ng4\n((lp436\ng54\nag421\nag244\nag422\nag423\nag428\nag424\nag425\nag36\nag426\nag427\nag429\nag430\nag431\nag432\nag433\nag434\natRp437\nsS'd'\nI01\nssS'Achievement'\np438\n(dp439\nS'c'\nI01\nsS'r'\ng4\n((lp440\ng32\nag62\naS'component_achievements'\np441\nag64\nag40\nag39\nag45\naS'yielded_achievements'\np442\nag36\nag54\natRp443\nsS'u'\ng4\n((lp444\ng62\nag36\nag54\nag441\nag442\nag64\natRp445\nsS'd'\nI01\nssS'TrainingVoucher'\np446\n(dp447\nS'c'\nI01\nsS'r'\ng4\n((lp448\nS'code'\np449\nag32\nag36\nag45\nag405\nag40\nag39\naS'session_user_role_requirement'\np450\nag244\natRp451\nsS'u'\ng4\n((lp452\ng36\nag450\nag405\natRp453\nsS'd'\nI01\nssS'Refund'\np454\n(dp455\nS'c'\nI01\nsS'r'\ng4\n((lp456\ng9\nag15\nag21\nag20\natRp457\nsS'u'\ng4\n((ltRp458\nsS'd'\nI00\nssS'BlackoutPeriod'\np459\n(dp460\nS'c'\nI01\nsS'r'\ng4\n((lp461\ng32\nag54\nag36\nag220\nag111\nag40\nag39\nag115\nag45\natRp462\nsS'u'\ng4\n((lp463\ng111\nag36\nag115\nag54\nag220\natRp464\nsS'd'\nI01\nssS'FileUpload'\np465\n(dp466\nS'c'\nI01\nsS'r'\ng4\n((lp467\ng53\nag32\nag54\nag56\nag57\nag58\nag40\nag59\nag61\nag45\nag62\nag63\nag64\nag65\nag36\nag66\nag68\nag39\nag69\nag70\nag71\natRp468\nsS'u'\ng4\n((lp469\ng53\nag62\nag56\nag57\nag58\nag59\nag61\nag54\nag63\nag64\nag66\nag36\nag65\nag68\nag69\nag71\natRp470\nsS'd'\nI01\nssS'Resource'\np471\n(dp472\nS'c'\nI01\nsS'r'\ng4\n((lp473\nS'session_resource_type_requirements'\np474\nag32\nag54\nag36\nag40\nag39\naS'resource_types'\np475\nag45\nag64\natRp476\nsS'u'\ng4\n((lp477\ng36\nag474\nag475\nag54\nag64\natRp478\nsS'd'\nI01\nssS'ScoSession'\np479\n(dp480\nS'c'\nI01\nsS'r'\ng4\n((lp481\nS'sco'\np482\nag32\nag39\naS'cmi_core_score_max'\np483\nag35\nag36\naS'cmi_core_lesson_status'\np484\nag45\nag40\naS'cmi_core_lesson_location'\np485\naS'cmi_core_score_min'\np486\nag42\nag43\naS'shared_object'\np487\natRp488\nsS'u'\ng4\n((lp489\ng36\nag42\nag43\natRp490\nsS'd'\nI01\nssS'Forum'\np491\n(dp492\nS'c'\nI01\nsS'r'\ng4\n((lp493\nS'category'\np494\nag32\nag54\nag36\nag45\nag40\nag39\naS'topics'\np495\nag64\natRp496\nsS'u'\ng4\n((lp497\ng494\nag36\nag54\nag64\natRp498\nsS'd'\nI01\nssS'ProductClaim'\np499\n(dp500\nS'c'\nI01\nsS'r'\ng4\n((lp501\nS'product'\np502\nag32\naS'discounts'\np503\nag36\nag114\nag405\naS'training_units_paid'\np504\nag40\nag39\nag45\naS'price_paid'\np505\naS'quantity'\np506\natRp507\nsS'u'\ng4\n((lp508\ng36\nag405\nag502\nag506\natRp509\nsS'd'\nI01\nssS'TaskBundleTaskAssociation'\np510\n(dp511\nS'c'\nI01\nsS'r'\ng4\n((lp512\ng328\nag302\nag9\nag330\nag329\nag20\nag21\nag15\natRp513\nsS'u'\ng4\n((lp514\ng328\nag302\nag329\nag330\natRp515\nsS'd'\nI01\nssS'ConditionTestCollection'\np516\n(dp517\nS'c'\nI01\nsS'r'\ng4\n((lp518\ng32\nag64\nag36\nag40\nag39\naS'condition_tests'\np519\nag45\natRp520\nsS'u'\ng4\n((lp521\ng36\nag64\natRp522\nsS'd'\nI01\nssS'ConditionTest'\np523\n(dp524\nS'c'\nI01\nsS'r'\ng4\n((lp525\ng32\nag39\nag421\nag40\nag365\nag366\nag45\nag115\nag272\naS'condition_test_collection'\np526\nag36\nag426\naS'companies'\np527\naS'match_all_defined_parameters'\np528\nag111\nag202\natRp529\nsS'u'\ng4\n((lp530\ng528\nag272\nag426\nag526\nag36\nag421\nag527\nag111\nag365\nag366\nag115\nag202\natRp531\nsS'd'\nI01\nssS'ProductDiscount'\np532\n(dp533\nS'c'\nI01\nsS'r'\ng4\n((lp534\ng134\nag32\nag64\nag526\nag36\naS'cumulative'\np535\naS'currency'\np536\nag138\nag40\nag39\nag248\naS'percentage'\np537\nag45\nag132\natRp538\nsS'u'\ng4\n((lp539\ng134\nag248\nag64\nag526\nag36\nag535\nag536\nag138\nag537\nag132\natRp540\nsS'd'\nI01\nssS'Venue'\np541\n(dp542\nS'c'\nI01\nsS'r'\ng4\n((lp543\ng32\nag64\nag36\naS'hours_of_operation'\np544\nag202\nag364\naS'contact'\np545\nag40\nag39\naS'address'\np546\naS'owner'\np547\naS'blackout_periods'\np548\naS'region'\np549\nag45\naS'rooms'\np550\natRp551\nsS'u'\ng4\n((lp552\ng548\nag64\nag36\nag546\nag364\nag545\nag550\nag544\nag547\nag549\nag202\natRp553\nsS'd'\nI01\nssS'CredentialType'\np554\n(dp555\nS'c'\nI01\nsS'r'\ng4\n((lp556\nS'min_required_tasks'\np557\nag32\nag54\nag36\nag64\naS'prerequisite_credential_types'\np558\nag40\nag39\nag45\naS'required_achievements'\np559\natRp560\nsS'u'\ng4\n((lp561\ng557\nag54\nag64\nag558\nag36\nag559\natRp562\nsS'd'\nI01\nssS'SessionResourceTypeRequirement'\np563\n(dp564\nS'c'\nI01\nsS'r'\ng4\n((lp565\ng32\nag65\nag56\nag36\nag104\nag288\nag40\nag39\nag45\nag79\natRp566\nsS'u'\ng4\n((lp567\ng288\nag104\nag65\nag56\nag36\nag79\natRp568\nsS'd'\nI01\nssS'UserOrgRole'\np569\n(dp570\nS'c'\nI01\nsS'r'\ng4\n((lp571\ng32\naS'parent'\np572\nag66\nag36\naS'persistent'\np573\nag45\naS'organization_name'\np574\nag291\naS'role'\np575\nag40\nag39\nag547\nag135\naS'children'\np576\natRp577\nsS'u'\ng4\n((lp578\ng575\nag572\nag66\nag547\nag135\nag36\nag573\natRp579\nsS'd'\nI01\nssS'FormWidget'\np580\n(dp581\nS'c'\nI01\nsS'r'\ng4\n((lp582\ng32\naS'y'\naS'form_page'\np583\nag36\nag182\naS'height'\np584\naS'width'\np585\nag40\nag39\naS'answer'\np586\naS'x'\nag45\natRp587\nsS'u'\ng4\n((lp588\nS'y'\nag583\nag36\nag182\nag584\nag585\nag586\naS'x'\natRp589\nsS'd'\nI01\nssS'OrgRole'\np590\n(dp591\nS'c'\nI01\nsS'r'\ng4\n((lp592\ng370\nag32\nag64\naS'user_org_roles'\np593\nag36\nag40\nag39\nag45\nag62\natRp594\nsS'u'\ng4\n((lp595\ng370\nag36\nag64\nag62\natRp596\nsS'd'\nI01\nssS'Organization'\np597\n(dp598\nS'c'\nI01\nsS'r'\ng4\n((lp599\ng32\nag593\naS'primary_contact_cell_phone'\np600\nag40\naS'primary_contact_first_name'\np601\nag45\nag62\naS'use_external_uid'\np602\naS'external_uid'\np603\naS'ancestors'\np604\naS'org_email_domains'\np605\naS'primary_contact_email'\np606\nag576\naS'training_unit_accounts'\np607\naS'department'\np608\nag359\naS'fax'\np609\nag54\nag572\naS'descendants'\np610\naS'purchase_orders'\np611\naS'primary_contact_other_phone'\np612\nag364\nag39\nag546\nag369\nag64\nag371\naS'primary_contact_office_phone'\np613\nag372\nag36\naS'primary_contact_last_name'\np614\natRp615\nsS'u'\ng4\n((lp616\ng609\nag54\nag572\nag600\nag602\nag612\nag364\nag546\nag601\nag62\nag603\nag64\nag371\nag613\nag372\nag36\nag606\nag614\nag608\nag369\nag359\natRp617\nsS'd'\nI01\nssS'ForumCategory'\np618\n(dp619\nS'c'\nI01\nsS'r'\ng4\n((lp620\ng32\nag64\nag36\nag40\nag39\naS'forums'\np621\nag45\natRp622\nsS'u'\ng4\n((lp623\ng36\nag64\natRp624\nsS'd'\nI01\nssS'Exam'\np625\n(dp626\nS'c'\nI01\nsS'r'\ng4\n((lp627\ng53\naS'question_pools'\np628\nag32\nag54\nag56\nag57\nag58\nag40\nag59\nag61\nag45\nag62\nag63\nag64\nag65\nag36\nag66\nag68\nag44\nag39\nag69\nag70\nag71\natRp629\nsS'u'\ng4\n((lp630\ng53\nag628\nag62\nag56\nag57\nag58\nag59\nag61\nag54\nag63\nag64\nag66\nag36\nag65\nag68\nag44\nag69\nag71\natRp631\nsS'd'\nI01\nssS'ForumPost'\np632\n(dp633\nS'c'\nI01\nsS'r'\ng4\n((lp634\ng387\nag32\naS'attachments'\np635\nag36\naS'topic'\np636\nag40\nag39\nag45\natRp637\nsS'u'\ng4\n((lp638\ng387\nag636\nag36\natRp639\nsS'd'\nI01\nssS'ForumPostAttachment'\np640\n(dp641\nS'c'\nI01\nsS'r'\ng4\n((lp642\ng32\nag54\nag36\nag40\nag39\naS'post'\np643\nag45\nag64\natRp644\nsS'u'\ng4\n((lp645\ng36\nag54\nag643\nag64\natRp646\nsS'd'\nI01\nssS'Domain'\np647\n(dp648\nS'c'\nI01\nsS'r'\ng4\n((lp649\ng32\nag64\nag36\nag40\nag39\naS'authentication_ip'\np650\nag45\nag62\natRp651\nsS'u'\ng4\n((lp652\ng650\nag36\naS'authentication_password_hash'\np653\nag64\natRp654\nsS'd'\nI01\nssS'OrgEmailDomain'\np655\n(dp656\nS'c'\nI01\nsS'r'\ng4\n((lp657\ng135\nag32\nag36\naS'effective_role_name'\np658\nag575\nag40\nag39\naS'email_domain'\np659\naS'effective_role'\np660\nag45\natRp661\nsS'u'\ng4\n((lp662\ng135\nag36\nag575\nag659\natRp663\nsS'd'\nI01\nssS'Question'\np664\n(dp665\nS'c'\nI01\nsS'r'\ng4\n((lp666\nS'rejoinder'\np667\naS'widget'\np668\nag32\nag177\naS'text_response_label'\np669\naS'max_value'\np670\naS'min_value'\np671\naS'max_answers'\np672\naS'answers'\np673\naS'question_pool'\np674\naS'min_answers'\np675\nag40\nag39\naS'help_text'\np676\nag45\nag180\naS'min_length'\np677\nag64\nag36\naS'required'\np678\nag184\naS'max_length'\np679\naS'question_type'\np680\naS'text_regex'\np681\nag185\nag46\natRp682\nsS'u'\ng4\n((lp683\ng667\nag668\nag177\nag669\nag670\nag671\nag672\nag673\nag674\nag675\nag46\nag676\nag180\nag677\nag64\nag36\nag678\nag184\nag679\nag680\nag681\nag185\natRp684\nsS'd'\nI01\nssS'MessageFormat'\np685\n(dp686\nS'c'\nI01\nsS'r'\ng4\n((lp687\ng32\nag40\nag39\nag36\nag45\nag164\natRp688\nsS'u'\ng4\n((lp689\ng36\natRp690\nsS'd'\nI01\nssS'SessionTemplateUserRoleReq'\np691\n(dp692\nS'c'\nI01\nsS'r'\ng4\n((lp693\ng32\nag103\nag65\nag56\nag36\nag289\nag40\nag39\nag45\natRp694\nsS'u'\ng4\n((lp695\ng56\nag36\nag289\nag103\nag65\natRp696\nsS'd'\nI01\nssS'Response'\np697\n(dp698\nS'c'\nI01\nsS'r'\ng4\n((lp699\ng32\naS'exam_session'\np700\nag36\nag182\nag183\nag45\naS'valid'\np701\nag673\nag39\nag123\nag176\nag40\natRp702\nsS'u'\ng4\n((lp703\ng36\natRp704\nsS'd'\nI01\nssS'TrainingUnitAuthorization'\np705\n(dp706\nS'c'\nI01\nsS'r'\ng4\n((lp707\ng32\nag670\nag36\naS'used_value'\np708\nag111\nag40\nag39\nag115\nag407\nag45\nag46\natRp709\nsS'u'\ng4\n((lp710\ng111\nag115\nag46\nag670\nag36\nag407\natRp711\nsS'd'\nI01\nssS'Session'\np712\n(dp713\nS'c'\nI01\nsS'r'\ng4\n((lp714\nS'default_price'\np715\nag228\nag32\nag54\nag428\naS'paypal_url'\np716\nag40\nag39\nag45\nag103\naS'confirmed'\np717\nag474\nag115\naS'room'\np718\nag272\nag66\nag372\nag36\naS'session_user_roles'\np719\naS'event'\np720\nag111\nag429\nag432\nag433\naS'evaluation'\np721\nag434\natRp722\nsS'u'\ng4\n((lp723\ng715\nag228\nag54\nag428\nag718\nag717\nag474\nag115\nag103\nag272\nag66\nag372\nag36\nag719\nag720\nag111\nag429\nag432\nag433\nag434\natRp724\nsS'd'\nI01\nssS'AchievementAward'\np725\n(dp726\nS'c'\nI01\nsS'r'\ng4\n((lp727\ng32\nag35\nag36\nag40\nag39\naS'date'\np728\nag45\naS'achievement'\np729\nag46\natRp730\nsS'u'\ng4\n((lp731\ng728\nag35\nag36\nag46\nag729\natRp732\nsS'd'\nI01\nssS'CurriculumEnrollmentUserAssociation'\np733\n(dp734\nS'c'\nI01\nsS'r'\ng4\n((lp735\ng9\nag15\nag21\nag20\natRp736\nsS'u'\ng4\n((ltRp737\nsS'd'\nI01\nssS'TaskFee'\np738\n(dp739\nS'c'\nI01\nsS'r'\ng4\n((lp740\ng242\nag32\nag54\nag244\nag247\nag245\nag39\nag45\nag241\nag302\nag248\nag64\nag36\nag243\nag246\nag40\natRp741\nsS'u'\ng4\n((lp742\ng241\nag242\nag248\nag54\nag36\nag246\nag64\nag302\nag245\nag244\nag247\natRp743\nsS'd'\nI01\nssS'AssignmentAttempt'\np744\n(dp745\nS'c'\nI01\nsS'r'\ng4\n((lp746\ng32\nag35\nag36\nag40\nag39\nag42\nag43\nag45\natRp747\nsS'u'\ng4\n((lp748\ng36\nag42\nag43\natRp749\nsS'd'\nI01\nssS'Sco'\np750\n(dp751\nS'c'\nI01\nsS'r'\ng4\n((lp752\ng53\nag32\nag54\nag56\nag57\nag58\naS'course'\np753\nag40\nag59\nag61\nag45\nag62\nag63\nag64\nag65\nag372\naS'completion_requirement'\np754\nag36\nag66\naS'data'\np755\nag68\nag39\nag69\nag70\nag71\natRp756\nsS'u'\ng4\n((lp757\ng53\nag62\nag56\nag57\nag58\nag753\nag59\nag61\nag54\nag63\nag64\nag66\nag372\nag754\nag36\nag65\nag755\nag68\nag69\nag71\natRp758\nsS'd'\nI01\nssS'QuestionPool'\np759\n(dp760\nS'c'\nI01\nsS'r'\ng4\n((lp761\ng32\nag33\nag66\nag36\naS'randomize_questions'\np762\nag45\nag39\nag40\naS'questions'\np763\nag185\naS'number_to_answer'\np764\nag64\natRp765\nsS'u'\ng4\n((lp766\ng33\nag66\nag36\nag762\nag763\nag185\nag764\nag64\natRp767\nsS'd'\nI01\nssS'EventTemplate'\np768\n(dp769\nS'c'\nI01\nsS'r'\ng4\n((lp770\ng32\nag54\naS'facebook_message'\np771\nag40\nag39\nag45\nag424\naS'external_reference'\np772\nag66\nag372\nag36\naS'session_templates'\np773\naS'notify_cfgs'\np774\naS'lag_time'\np775\nag135\naS'twitter_message'\np776\naS'name_prefix'\np777\nag202\nag434\natRp778\nsS'u'\ng4\n((lp779\ng424\nag54\nag66\nag771\nag36\nag772\nag774\nag372\nag775\nag135\nag776\nag777\nag434\natRp780\nsS'd'\nI01\nssS'TaskBundle'\np781\n(dp782\nS'c'\nI01\nsS'r'\ng4\n((lp783\ng321\nag32\nag64\nag36\nag40\nag39\nag45\nag54\natRp784\nsS'u'\ng4\n((lp785\ng36\nag321\nag64\nag54\natRp786\nsS'd'\nI01\nssS'Event'\np787\n(dp788\nS'c'\nI01\nsS'r'\ng4\n((lp789\ng228\nag32\nag54\nag426\nag771\nag40\nag39\nag547\nag45\nag64\nag424\nag115\nag772\nag425\nag372\nag36\nag66\nag220\nag774\nag111\nag775\nag135\nag776\nag549\nag434\natRp790\nsS'u'\ng4\n((lp791\ng54\nag771\nag547\nag64\nag424\nag115\nag772\nag425\nag372\nag36\nag66\nag220\nag774\nag111\nag775\nag135\nag776\nag549\nag434\natRp792\nsS'd'\nI01\nssS'ProductOffer'\np793\n(dp794\nS'c'\nI01\nsS'r'\ng4\n((lp795\ng502\nag32\nag54\nag36\naS'seller'\np796\nag40\nag39\nag45\nag244\natRp797\nsS'u'\ng4\n((lp798\ng36\nag502\nag244\nag54\nag796\natRp799\nsS'd'\nI01\nss.",
             "role": 1,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null
         }
     },
@@ -1035,7 +1051,7 @@
         "pk": 2,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1043,7 +1059,7 @@
             "arbitrary_perm_list": "(l.",
             "acl": "(dp1\nS'Credential'\np2\n(dp3\nS'c'\nI00\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'status'\np6\naS'save_timestamp'\np7\naS'date_expires'\np8\naS'authority'\np9\naS'credential_type'\np10\naS'user'\np11\naS'content_type'\np12\naS'serial_number'\np13\naS'date_started'\np14\naS'date_granted'\np15\naS'id'\np16\naS'date_assigned'\np17\naS'create_timestamp'\np18\natRp19\nsS'u'\ng4\n((ltRp20\nsS'd'\nI00\nssS'Task'\np21\n(dp22\nS'c'\nI00\nsS'r'\ng4\n((lp23\nS'achievements'\np24\nag7\naS'description'\np25\naS'title'\np26\nag18\nag12\naS'type'\np27\nag16\naS'name'\np28\natRp29\nsS'u'\ng4\n((ltRp30\nsS'd'\nI00\nssS'ExamSession'\np31\n(dp32\nS'c'\nI01\nsS'r'\ng4\n((lp33\nS'date_completed'\np34\naS'score'\np35\naS'number_correct'\np36\naS'response_questions'\np37\naS'passing_score'\np38\nag12\nag18\naS'passed'\np39\nag7\nag14\nag16\naS'exam'\np40\natRp41\nsS'u'\ng4\n((lp42\ng34\natRp43\nsS'd'\nI00\nssS'Exam'\np44\n(dp45\nS'c'\nI00\nsS'r'\ng4\n((lp46\ng24\nag7\nag25\nag26\nag38\nag18\nag12\nag27\nag16\nag28\natRp47\nsS'u'\ng4\n((ltRp48\nsS'd'\nI00\nssS'SessionUserRoleRequirement'\np49\n(dp50\nS'c'\nI00\nsS'r'\ng4\n((lp51\ng7\nag25\nag26\naS'session'\np52\nag18\nag12\nag27\nag16\nag28\natRp53\nsS'u'\ng4\n((ltRp54\nsS'd'\nI00\nssS'Assignment'\np55\n(dp56\nS'c'\nI01\nsS'r'\ng4\n((lp57\nS'achievement_awards'\np58\naS'due_date'\np59\naS'task'\np60\nag34\naS'task_content_type'\np61\naS'effective_date_assigned'\np62\naS'prerequisites_met'\np63\nag6\nag11\nag12\nag7\nag14\nag18\nag16\naS'assignment_attempts'\np64\natRp65\nsS'u'\ng4\n((ltRp66\nsS'd'\nI00\nssS'FileDownloadAttempt'\np67\n(dp68\nS'c'\nI01\nsS'r'\ng4\n((lp69\ng34\naS'file_download'\np70\naS'assignment'\np71\nag18\nag12\nag7\nag14\nag16\natRp72\nsS'u'\ng4\n((ltRp73\nsS'd'\nI00\nssS'Venue'\np74\n(dp75\nS'c'\nI00\nsS'r'\ng4\n((lp76\ng7\nag18\nag12\naS'address'\np77\naS'region'\np78\nag16\natRp79\nsS'u'\ng4\n((ltRp80\nsS'd'\nI00\nssS'CurriculumEnrollment'\np81\n(dp82\nS'c'\nI00\nsS'r'\ng4\n((lp83\nS'start'\np84\naS'end'\np85\nag18\nag12\nag7\naS'curriculum_name'\np86\nag16\natRp87\nsS'u'\ng4\n((ltRp88\nsS'd'\nI00\nssS'UserOrgRole'\np89\n(dp90\nS'c'\nI00\nsS'r'\ng4\n((lp91\ng7\naS'parent'\np92\nag16\naS'organization_name'\np93\naS'role_name'\np94\naS'role'\np95\nag18\nag12\naS'owner'\np96\naS'organization'\np97\naS'children'\np98\natRp99\nsS'u'\ng4\n((ltRp100\nsS'd'\nI00\nssS'Session'\np101\n(dp102\nS'c'\nI00\nsS'r'\ng4\n((lp103\ng84\nag85\nag18\nag12\nag7\nag16\natRp104\nsS'u'\ng4\n((ltRp105\nsS'd'\nI00\nssS'AchievementAward'\np106\n(dp107\nS'c'\nI00\nsS'r'\ng4\n((lp108\ng7\nag71\nag11\nag12\naS'date'\np109\nag16\naS'achievement'\np110\nag18\natRp111\nsS'u'\ng4\n((ltRp112\nsS'd'\nI00\nssS'User'\np113\n(dp114\nS'c'\nI01\nsS'r'\ng4\n((lp115\ng6\naS'product_lines_managed'\np116\naS'last_name'\np117\nag7\nag12\nag18\naS'full_name'\np118\naS'product_lines_instructor_manager_for'\np119\naS'email2'\np120\nag16\naS'biography'\np121\nag58\naS'first_name'\np122\naS'middle_name'\np123\naS'product_lines_instructor_for'\np124\naS'phone2'\np125\naS'email'\np126\nag24\naS'billing_address'\np127\naS'color_code'\np128\naS'default_username_and_domain'\np129\naS'phone3'\np130\naS'phone'\np131\naS'groups'\np132\naS'credentials'\np133\naS'owned_userorgroles'\np134\naS'preferred_venues'\np135\naS'photo_url'\np136\naS'username'\np137\naS'organizations'\np138\naS'session_user_role_requirements'\np139\naS'roles'\np140\naS'alleged_organization'\np141\nag26\naS'name_suffix'\np142\naS'suppress_emails'\np143\naS'url'\np144\naS'shipping_address'\np145\natRp146\nsS'u'\ng4\n((lp147\ng122\nag127\nag123\nag128\nag26\nag141\nag130\nag142\nag143\nag131\nag117\nag125\nag145\nag144\nag135\nag120\nag126\nag121\nag136\natRp148\nsS'd'\nI00\nssS'AssignmentAttempt'\np149\n(dp150\nS'c'\nI01\nsS'r'\ng4\n((lp151\ng34\nag18\nag12\nag71\nag14\nag16\nag7\natRp152\nsS'u'\ng4\n((ltRp153\nsS'd'\nI00\nssS'FileUploadAttempt'\np154\n(dp155\nS'c'\nI01\nsS'r'\ng4\n((lp156\nS'file_upload'\np157\nag34\nag71\nag18\nag12\nag7\nag14\nag16\natRp158\nsS'u'\ng4\n((ltRp159\nsS'd'\nI00\nssS'Response'\np160\n(dp161\nS'c'\nI01\nsS'r'\ng4\n((lp162\ng7\naS'exam_session'\np163\naS'question'\np164\naS'value'\np165\naS'valid'\np166\nag18\nag12\naS'text'\np167\nag16\natRp168\nsS'u'\ng4\n((ltRp169\nsS'd'\nI00\nssS'Achievement'\np170\n(dp171\nS'c'\nI00\nsS'r'\ng4\n((lp172\ng7\nag25\nag12\nag18\nag16\nag28\natRp173\nsS'u'\ng4\n((ltRp174\nsS'd'\nI00\nssS'ScoSession'\np175\n(dp176\nS'c'\nI01\nsS'r'\ng4\n((lp177\nS'sco'\np178\nag34\nag18\nag12\nag7\nag14\nag16\natRp179\nsS'u'\ng4\n((ltRp180\nsS'd'\nI00\nss.",
             "role": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null
         }
     },
@@ -1051,7 +1067,7 @@
         "pk": 3,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1059,7 +1075,7 @@
             "arbitrary_perm_list": "(l.",
             "acl": "(dp1\nS'Group'\np2\n(dp3\nS'c'\nI00\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'create_timestamp'\np6\naS'save_timestamp'\np7\naS'name'\np8\naS'content_type'\np9\naS'id'\np10\natRp11\nsS'u'\ng4\n((ltRp12\nsS'd'\nI00\nss.",
             "role": 3,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null
         }
     },
@@ -1067,7 +1083,7 @@
         "pk": 4,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1075,7 +1091,7 @@
             "arbitrary_perm_list": "(lp1\nS'check_usernames'\np2\na.",
             "acl": "(dp1\n.",
             "role": 4,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null
         }
     },
@@ -1083,7 +1099,7 @@
         "pk": 5,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1091,7 +1107,7 @@
             "arbitrary_perm_list": "(l.",
             "acl": "(dp1\nS'Assignment'\np2\n(dp3\nS'c'\nI01\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'status'\np6\naS'due_date'\np7\naS'task'\np8\naS'date_completed'\np9\naS'task_content_type'\np10\naS'effective_date_assigned'\np11\naS'prerequisites_met'\np12\naS'user'\np13\naS'content_type'\np14\naS'save_timestamp'\np15\naS'date_started'\np16\naS'create_timestamp'\np17\naS'id'\np18\naS'assignment_attempts'\np19\natRp20\nsS'u'\ng4\n((ltRp21\nsS'd'\nI00\nssS'Task'\np22\n(dp23\nS'c'\nI00\nsS'r'\ng4\n((lp24\ng15\naS'description'\np25\naS'title'\np26\naS'prerequisite_tasks'\np27\naS'create_timestamp'\np28\nag14\naS'type'\np29\nag18\naS'name'\np30\natRp31\nsS'u'\ng4\n((ltRp32\nsS'd'\nI00\nss.",
             "role": 5,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null
         }
     },
@@ -1099,7 +1115,7 @@
         "pk": 6,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1107,7 +1123,7 @@
             "arbitrary_perm_list": "(l.",
             "acl": "(dp1\nS'Group'\np2\n(dp3\nS'c'\nI00\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'managers'\np6\naS'name'\np7\naS'content_type'\np8\naS'save_timestamp'\np9\naS'create_timestamp'\np10\naS'id'\np11\naS'users'\np12\natRp13\nsS'u'\ng4\n((ltRp14\nsS'd'\nI00\nssS'ProductClaim'\np15\n(dp16\nS'c'\nI01\nsS'r'\ng4\n((lp17\nS'product'\np18\nag9\nag10\nag8\nag11\naS'purchase_order'\np19\naS'quantity'\np20\natRp21\nsS'u'\ng4\n((lp22\ng20\natRp23\nsS'd'\nI01\nssS'Venue'\np24\n(dp25\nS'c'\nI00\nsS'r'\ng4\n((lp26\ng9\nag7\naS'region'\np27\naS'phone'\np28\naS'contact'\np29\nag10\nag8\naS'address'\np30\nag11\natRp31\nsS'u'\ng4\n((ltRp32\nsS'd'\nI00\nssS'PurchaseOrder'\np33\n(dp34\nS'c'\nI01\nsS'r'\ng4\n((lp35\ng9\nag11\nag8\nag10\natRp36\nsS'u'\ng4\n((ltRp37\nsS'd'\nI00\nssS'OrgRole'\np38\n(dp39\nS'c'\nI00\nsS'r'\ng4\n((lp40\ng10\nag9\nag7\nag8\nag11\natRp41\nsS'u'\ng4\n((ltRp42\nsS'd'\nI00\nssS'Answer'\np43\n(dp44\nS'c'\nI00\nsS'r'\ng4\n((lp45\ng10\nag9\nag11\nag8\naS'label'\np46\natRp47\nsS'u'\ng4\n((ltRp48\nsS'd'\nI00\nssS'Organization'\np49\n(dp50\nS'c'\nI00\nsS'r'\ng4\n((lp51\nS'ancestors'\np52\nag9\nag7\naS'parent'\np53\naS'descendants'\np54\nag11\nag10\nag8\naS'children'\np55\natRp56\nsS'u'\ng4\n((ltRp57\nsS'd'\nI00\nssS'Domain'\np58\n(dp59\nS'c'\nI00\nsS'r'\ng4\n((lp60\ng10\nag9\nag7\nag8\nag11\natRp61\nsS'u'\ng4\n((ltRp62\nsS'd'\nI00\nssS'SessionUserRoleRequirement'\np63\n(dp64\nS'c'\nI00\nsS'r'\ng4\n((lp65\ng9\nag11\nag8\nag10\natRp66\nsS'u'\ng4\n((ltRp67\nsS'd'\nI00\nssS'Payment'\np68\n(dp69\nS'c'\nI01\nsS'r'\ng4\n((lp70\nS'city'\np71\naS'first_name'\np72\naS'last_name'\np73\nag9\naS'zip'\np74\naS'refunds'\np75\naS'country'\np76\nag11\naS'state'\np77\nag19\naS'card_type'\np78\naS'amount'\np79\naS'exp_date'\np80\nag10\nag8\naS'sales_tax'\np81\naS'date'\np82\naS'invoice_number'\np83\naS'result_message'\np84\naS'transaction_id'\np85\natRp86\nsS'u'\ng4\n((ltRp87\nsS'd'\nI00\nssS'TrainingUnitAuthorization'\np88\n(dp89\nS'c'\nI00\nsS'r'\ng4\n((lp90\nS'end'\np91\naS'max_value'\np92\naS'used_value'\np93\naS'start'\np94\naS'user'\np95\nag8\nag9\naS'training_unit_account'\np96\nag11\nag10\natRp97\nsS'u'\ng4\n((ltRp98\nsS'd'\nI00\nssS'User'\np99\n(dp100\nS'c'\nI00\nsS'r'\ng4\n((lp101\nS'default_username_and_domain'\np102\nag9\nag11\nag8\nag10\natRp103\nsS'u'\ng4\n((ltRp104\nsS'd'\nI00\nssS'DomainAffiliation'\np105\n(dp106\nS'c'\nI01\nsS'r'\ng4\n((lp107\nS'username'\np108\naS'domain'\np109\nag9\naS'default'\np110\nag95\nag8\naS'may_log_me_in'\np111\nag11\nag10\natRp112\nsS'u'\ng4\n((lp113\ng110\nag111\nag109\nag108\natRp114\nsS'd'\nI00\nssS'SessionTemplate'\np115\n(dp116\nS'c'\nI00\nsS'r'\ng4\n((lp117\nS'product_line'\np118\nag9\naS'description'\np119\naS'sequence'\np120\naS'sessions'\np121\nag11\naS'duration'\np122\naS'audience'\np123\naS'version'\np124\nag10\nag8\naS'active'\np125\naS'shortname'\np126\naS'fullname'\np127\naS'modality'\np128\natRp129\nsS'u'\ng4\n((ltRp130\nsS'd'\nI00\nss.",
             "role": 6,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null
         }
     },
@@ -1115,7 +1131,7 @@
         "pk": 7,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1123,7 +1139,7 @@
             "arbitrary_perm_list": "(l.",
             "acl": "(dp1\nS'Sco'\np2\n(dp3\nS'c'\nI00\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'save_timestamp'\np6\naS'description'\np7\naS'prerequisite_tasks'\np8\naS'version_id'\np9\naS'course'\np10\naS'content_type'\np11\naS'create_timestamp'\np12\naS'version_label'\np13\naS'type'\np14\naS'id'\np15\naS'name'\np16\natRp17\nsS'u'\ng4\n((ltRp18\nsS'd'\nI00\nssS'Task'\np19\n(dp20\nS'c'\nI00\nsS'r'\ng4\n((lp21\ng6\nag7\nag8\nag9\nag11\nag12\nag13\nag14\nag15\nag16\natRp22\nsS'u'\ng4\n((ltRp23\nsS'd'\nI00\nss.",
             "role": 7,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null
         }
     },
@@ -1131,7 +1147,7 @@
         "pk": 8,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1139,7 +1155,7 @@
             "arbitrary_perm_list": "(l.",
             "acl": "(dp1\nS'Sco'\np2\n(dp3\nS'c'\nI00\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'url'\np6\naS'save_timestamp'\np7\naS'id'\np8\naS'content_type'\np9\naS'create_timestamp'\np10\natRp11\nsS'u'\ng4\n((ltRp12\nsS'd'\nI00\nss.",
             "role": 7,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null
         }
     },
@@ -1147,7 +1163,7 @@
         "pk": 9,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1155,7 +1171,7 @@
             "arbitrary_perm_list": "(lp1\nS'email_task_assignees'\np2\na.",
             "acl": "(dp1\nS'User'\np2\n(dp3\nS'c'\nI01\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'status'\np6\naS'product_lines_managed'\np7\naS'last_name'\np8\naS'save_timestamp'\np9\naS'content_type'\np10\naS'create_timestamp'\np11\naS'full_name'\np12\naS'product_lines_instructor_manager_for'\np13\naS'email2'\np14\naS'id'\np15\naS'biography'\np16\naS'first_name'\np17\naS'middle_name'\np18\naS'title'\np19\naS'product_lines_instructor_for'\np20\naS'email'\np21\naS'username'\np22\naS'billing_address'\np23\naS'color_code'\np24\naS'phone2'\np25\naS'phone3'\np26\naS'phone'\np27\naS'groups'\np28\naS'credentials'\np29\naS'photo_url'\np30\naS'session_user_role_requirements'\np31\naS'url'\np32\naS'name_suffix'\np33\naS'shipping_address'\np34\naS'domains'\np35\natRp36\nsS'u'\ng4\n((lp37\ng6\nag17\nag8\nag18\nag24\nag19\nag32\nag26\nag33\nag14\nag27\nag23\nag28\nag34\nag29\nag25\nag21\nag16\nag30\natRp38\nsS'd'\nI01\nss.",
             "role": 8,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null
         }
     },
@@ -1163,7 +1179,7 @@
         "pk": 10,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1171,7 +1187,7 @@
             "arbitrary_perm_list": "(l.",
             "acl": "(dp1\nS'Group'\np2\n(dp3\nS'c'\nI00\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'managers'\np6\naS'name'\np7\naS'content_type'\np8\naS'save_timestamp'\np9\naS'create_timestamp'\np10\naS'id'\np11\naS'users'\np12\natRp13\nsS'u'\ng4\n((lp14\ng6\nag7\nag12\natRp15\nsS'd'\nI00\nss.",
             "role": 9,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null
         }
     },
@@ -1179,7 +1195,7 @@
         "pk": 11,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1187,7 +1203,7 @@
             "arbitrary_perm_list": "(l.",
             "acl": "(dp1\nS'Session'\np2\n(dp3\nS'c'\nI01\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'default_price'\np6\naS'status'\np7\naS'confirmed'\np8\naS'end'\np9\naS'room'\np10\naS'title'\np11\naS'url'\np12\naS'modality'\np13\naS'start'\np14\naS'audience'\np15\naS'create_timestamp'\np16\naS'content_type'\np17\naS'id'\np18\naS'save_timestamp'\np19\naS'shortname'\np20\naS'evaluation'\np21\naS'fullname'\np22\naS'session_template'\np23\natRp24\nsS'u'\ng4\n((lp25\ng6\nag7\nag8\nag9\nag10\nag11\nag12\nag13\nag14\nag15\nag20\nag22\nag23\natRp26\nsS'd'\nI01\nssS'ProductLine'\np27\n(dp28\nS'c'\nI00\nsS'r'\ng4\n((lp29\nS'managers'\np30\naS'name'\np31\naS'instructors'\np32\nag16\nag17\nag19\naS'instructor_managers'\np33\nag18\natRp34\nsS'u'\ng4\n((lp35\ng32\nag33\nag31\natRp36\nsS'd'\nI00\nssS'SessionTemplate'\np37\n(dp38\nS'c'\nI01\nsS'r'\ng4\n((lp39\nS'product_line'\np40\nag19\naS'description'\np41\naS'sequence'\np42\naS'price'\np43\naS'event_template'\np44\nag13\nag15\naS'version'\np45\nag18\nag16\nag17\naS'duration'\np46\nag20\nag22\naS'lead_time'\np47\natRp48\nsS'u'\ng4\n((lp49\ng41\nag44\nag43\nag42\nag13\nag15\nag45\nag46\nag20\nag22\nag47\natRp50\nsS'd'\nI01\nssS'User'\np51\n(dp52\nS'c'\nI01\nsS'r'\ng4\n((lp53\nS'phone'\np54\naS'last_name'\np55\nag19\nag16\nag17\naS'credentials'\np56\nag18\natRp57\nsS'u'\ng4\n((lp58\ng54\nag55\natRp59\nsS'd'\nI00\nss.",
             "role": 10,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null
         }
     },
@@ -1195,7 +1211,7 @@
         "pk": 12,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1203,7 +1219,7 @@
             "arbitrary_perm_list": "(l.",
             "acl": "(dp1\nS'User'\np2\n(dp3\nS'c'\nI01\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'status'\np6\naS'product_lines_managed'\np7\naS'last_name'\np8\naS'save_timestamp'\np9\naS'content_type'\np10\naS'create_timestamp'\np11\naS'full_name'\np12\naS'default_username_and_domain'\np13\naS'product_lines_instructor_manager_for'\np14\naS'email2'\np15\naS'id'\np16\naS'biography'\np17\naS'first_name'\np18\naS'middle_name'\np19\naS'title'\np20\naS'product_lines_instructor_for'\np21\naS'email'\np22\naS'username'\np23\naS'billing_address'\np24\naS'color_code'\np25\naS'phone2'\np26\naS'phone3'\np27\naS'phone'\np28\naS'groups'\np29\naS'credentials'\np30\naS'photo_url'\np31\naS'session_user_role_requirements'\np32\naS'url'\np33\naS'name_suffix'\np34\naS'shipping_address'\np35\natRp36\nsS'u'\ng4\n((lp37\ng6\nag18\nag8\nag19\nag25\nag20\nag33\nag27\nag34\nag15\nag28\nag24\nag29\nag35\nag30\nag26\nag22\nag17\nag31\natRp38\nsS'd'\nI01\nss.",
             "role": 11,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null
         }
     },
@@ -1211,7 +1227,7 @@
         "pk": 13,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1219,7 +1235,7 @@
             "arbitrary_perm_list": "(l.",
             "acl": "(dp1\nS'PurchaseOrder'\np2\n(dp3\nS'c'\nI00\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'training_units_price'\np6\naS'save_timestamp'\np7\naS'training_units_purchased'\np8\naS'is_paid'\np9\naS'product_offers'\np10\naS'products'\np11\naS'expiration'\np12\naS'content_type'\np13\naS'organization'\np14\naS'product_discounts'\np15\naS'create_timestamp'\np16\naS'id'\np17\naS'payments'\np18\natRp19\nsS'u'\ng4\n((ltRp20\nsS'd'\nI00\nss.",
             "role": 12,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null
         }
     },
@@ -1227,7 +1243,7 @@
         "pk": 14,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1235,7 +1251,7 @@
             "arbitrary_perm_list": "(l.",
             "acl": "(dp1\nS'PurchaseOrder'\np2\n(dp3\nS'c'\nI00\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'training_units_price'\np6\naS'save_timestamp'\np7\naS'training_units_purchased'\np8\naS'is_paid'\np9\naS'product_offers'\np10\naS'products'\np11\naS'expiration'\np12\naS'content_type'\np13\naS'organization'\np14\naS'product_discounts'\np15\naS'create_timestamp'\np16\naS'id'\np17\naS'payments'\np18\natRp19\nsS'u'\ng4\n((lp20\ng8\nag6\nag12\naS'user'\np21\natRp22\nsS'd'\nI00\nss.",
             "role": 13,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null
         }
     },
@@ -1243,15 +1259,15 @@
         "pk": 1,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 11,
+            "ac_check_method": 55,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 1,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(dp1\nS'group_id'\np2\nI1\ns."
         }
     },
@@ -1259,15 +1275,15 @@
         "pk": 2,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 22,
+            "ac_check_method": 50,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 1,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(dp1\n."
         }
     },
@@ -1275,15 +1291,15 @@
         "pk": 3,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 54,
+            "ac_check_method": 11,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(d."
         }
     },
@@ -1291,15 +1307,15 @@
         "pk": 4,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 53,
+            "ac_check_method": 13,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(d."
         }
     },
@@ -1307,15 +1323,15 @@
         "pk": 5,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 39,
+            "ac_check_method": 14,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(d."
         }
     },
@@ -1323,15 +1339,15 @@
         "pk": 6,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 2,
+            "ac_check_method": 4,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(d."
         }
     },
@@ -1339,100 +1355,20 @@
         "pk": 7,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 35,
+            "ac_check_method": 32,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 8,
-        "model": "pr_services.acmethodcall",
-        "fields": {
-            "ac_check_method": 36,
-            "final_type": [
-                "pr_services",
-                "acmethodcall"
-            ],
-            "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
-            "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(d."
-        }
-    },
-    {
-        "pk": 9,
-        "model": "pr_services.acmethodcall",
-        "fields": {
-            "ac_check_method": 12,
-            "final_type": [
-                "pr_services",
-                "acmethodcall"
-            ],
-            "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
-            "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(d."
-        }
-    },
-    {
-        "pk": 10,
-        "model": "pr_services.acmethodcall",
-        "fields": {
-            "ac_check_method": 37,
-            "final_type": [
-                "pr_services",
-                "acmethodcall"
-            ],
-            "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
-            "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(d."
-        }
-    },
-    {
-        "pk": 11,
-        "model": "pr_services.acmethodcall",
-        "fields": {
-            "ac_check_method": 52,
-            "final_type": [
-                "pr_services",
-                "acmethodcall"
-            ],
-            "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
-            "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(d."
-        }
-    },
-    {
-        "pk": 12,
-        "model": "pr_services.acmethodcall",
-        "fields": {
-            "ac_check_method": 38,
-            "final_type": [
-                "pr_services",
-                "acmethodcall"
-            ],
-            "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
-            "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(d."
-        }
-    },
-    {
-        "pk": 13,
         "model": "pr_services.acmethodcall",
         "fields": {
             "ac_check_method": 33,
@@ -1441,14 +1377,110 @@
                 "acmethodcall"
             ],
             "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
+            "ac_check_parameters": "(d."
+        }
+    },
+    {
+        "pk": 9,
+        "model": "pr_services.acmethodcall",
+        "fields": {
+            "ac_check_method": 34,
+            "final_type": [
+                "pr_services",
+                "acmethodcall"
+            ],
+            "acl": 2,
+            "create_timestamp": "2012-03-02 00:16:10",
+            "owner": null,
+            "save_timestamp": "2012-03-02 00:16:10",
+            "ac_check_parameters": "(d."
+        }
+    },
+    {
+        "pk": 10,
+        "model": "pr_services.acmethodcall",
+        "fields": {
+            "ac_check_method": 35,
+            "final_type": [
+                "pr_services",
+                "acmethodcall"
+            ],
+            "acl": 2,
+            "create_timestamp": "2012-03-02 00:16:10",
+            "owner": null,
+            "save_timestamp": "2012-03-02 00:16:10",
+            "ac_check_parameters": "(d."
+        }
+    },
+    {
+        "pk": 11,
+        "model": "pr_services.acmethodcall",
+        "fields": {
+            "ac_check_method": 37,
+            "final_type": [
+                "pr_services",
+                "acmethodcall"
+            ],
+            "acl": 2,
+            "create_timestamp": "2012-03-02 00:16:10",
+            "owner": null,
+            "save_timestamp": "2012-03-02 00:16:10",
+            "ac_check_parameters": "(d."
+        }
+    },
+    {
+        "pk": 12,
+        "model": "pr_services.acmethodcall",
+        "fields": {
+            "ac_check_method": 36,
+            "final_type": [
+                "pr_services",
+                "acmethodcall"
+            ],
+            "acl": 2,
+            "create_timestamp": "2012-03-02 00:16:10",
+            "owner": null,
+            "save_timestamp": "2012-03-02 00:16:10",
+            "ac_check_parameters": "(d."
+        }
+    },
+    {
+        "pk": 13,
+        "model": "pr_services.acmethodcall",
+        "fields": {
+            "ac_check_method": 39,
+            "final_type": [
+                "pr_services",
+                "acmethodcall"
+            ],
+            "acl": 2,
+            "create_timestamp": "2012-03-02 00:16:10",
+            "owner": null,
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 14,
+        "model": "pr_services.acmethodcall",
+        "fields": {
+            "ac_check_method": 42,
+            "final_type": [
+                "pr_services",
+                "acmethodcall"
+            ],
+            "acl": 2,
+            "create_timestamp": "2012-03-02 00:16:10",
+            "owner": null,
+            "save_timestamp": "2012-03-02 00:16:10",
+            "ac_check_parameters": "(d."
+        }
+    },
+    {
+        "pk": 15,
         "model": "pr_services.acmethodcall",
         "fields": {
             "ac_check_method": 44,
@@ -1457,25 +1489,9 @@
                 "acmethodcall"
             ],
             "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(d."
-        }
-    },
-    {
-        "pk": 15,
-        "model": "pr_services.acmethodcall",
-        "fields": {
-            "ac_check_method": 40,
-            "final_type": [
-                "pr_services",
-                "acmethodcall"
-            ],
-            "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
-            "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(d."
         }
     },
@@ -1483,15 +1499,15 @@
         "pk": 16,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 5,
+            "ac_check_method": 16,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(d."
         }
     },
@@ -1499,15 +1515,15 @@
         "pk": 17,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 6,
+            "ac_check_method": 17,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(d."
         }
     },
@@ -1515,15 +1531,15 @@
         "pk": 18,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 30,
+            "ac_check_method": 9,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 2,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(d."
         }
     },
@@ -1531,15 +1547,15 @@
         "pk": 19,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 3,
+            "ac_check_method": 25,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 3,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(dp1\n."
         }
     },
@@ -1547,15 +1563,15 @@
         "pk": 20,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 8,
+            "ac_check_method": 53,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 3,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(dp1\n."
         }
     },
@@ -1563,20 +1579,36 @@
         "pk": 21,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 9,
+            "ac_check_method": 26,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 4,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "ac_check_parameters": "(dp1\n."
         }
     },
     {
         "pk": 22,
+        "model": "pr_services.acmethodcall",
+        "fields": {
+            "ac_check_method": 35,
+            "final_type": [
+                "pr_services",
+                "acmethodcall"
+            ],
+            "acl": 5,
+            "create_timestamp": "2012-03-02 00:16:10",
+            "owner": null,
+            "save_timestamp": "2012-03-02 00:16:10",
+            "ac_check_parameters": "(d."
+        }
+    },
+    {
+        "pk": 23,
         "model": "pr_services.acmethodcall",
         "fields": {
             "ac_check_method": 37,
@@ -1585,105 +1617,89 @@
                 "acmethodcall"
             ],
             "acl": 5,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
-        }
-    },
-    {
-        "pk": 23,
-        "model": "pr_services.acmethodcall",
-        "fields": {
-            "ac_check_method": 52,
-            "final_type": [
-                "pr_services",
-                "acmethodcall"
-            ],
-            "acl": 5,
-            "create_timestamp": "2012-03-02 00:15:04",
-            "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
+            "save_timestamp": "2012-03-02 00:16:10",
+            "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 24,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 3,
+            "ac_check_method": 25,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 6,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
+            "save_timestamp": "2012-03-02 00:16:11",
+            "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 25,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 21,
+            "ac_check_method": 41,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 6,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
+            "save_timestamp": "2012-03-02 00:16:11",
+            "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 26,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 46,
+            "ac_check_method": 56,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 6,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
+            "save_timestamp": "2012-03-02 00:16:11",
+            "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 27,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 20,
+            "ac_check_method": 47,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 6,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
+            "save_timestamp": "2012-03-02 00:16:11",
+            "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 28,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 11,
+            "ac_check_method": 55,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 7,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "ac_check_parameters": "(dp1\nS'group_id'\np2\nI2\ns."
         }
     },
@@ -1691,15 +1707,15 @@
         "pk": 29,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 34,
+            "ac_check_method": 15,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 8,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "ac_check_parameters": "(dp1\n."
         }
     },
@@ -1707,15 +1723,15 @@
         "pk": 30,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 11,
+            "ac_check_method": 55,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 9,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "ac_check_parameters": "(dp1\nS'group_id'\np2\nI3\ns."
         }
     },
@@ -1723,15 +1739,15 @@
         "pk": 31,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 1,
+            "ac_check_method": 3,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 9,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "ac_check_parameters": "(dp1\nS'actor_sur_id'\np2\nI1\nsS'actee_sur_id'\np3\nI2\ns."
         }
     },
@@ -1739,15 +1755,15 @@
         "pk": 32,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 7,
+            "ac_check_method": 52,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 10,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "ac_check_parameters": "(dp1\n."
         }
     },
@@ -1755,79 +1771,79 @@
         "pk": 33,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 14,
+            "ac_check_method": 21,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 11,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
+            "save_timestamp": "2012-03-02 00:16:11",
+            "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 34,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 15,
+            "ac_check_method": 22,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 11,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
+            "save_timestamp": "2012-03-02 00:16:11",
+            "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 35,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 16,
+            "ac_check_method": 23,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 11,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
+            "save_timestamp": "2012-03-02 00:16:11",
+            "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 36,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 13,
+            "ac_check_method": 20,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 11,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
+            "save_timestamp": "2012-03-02 00:16:11",
+            "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 37,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 10,
+            "ac_check_method": 6,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 12,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "ac_check_parameters": "(dp1\n."
         }
     },
@@ -1835,77 +1851,77 @@
         "pk": 38,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 17,
+            "ac_check_method": 43,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 13,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
+            "save_timestamp": "2012-03-02 00:16:11",
+            "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 39,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 18,
+            "ac_check_method": 49,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 13,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
+            "save_timestamp": "2012-03-02 00:16:11",
+            "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 40,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 17,
+            "ac_check_method": 43,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 14,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
+            "save_timestamp": "2012-03-02 00:16:11",
+            "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 41,
         "model": "pr_services.acmethodcall",
         "fields": {
-            "ac_check_method": 19,
+            "ac_check_method": 48,
             "final_type": [
                 "pr_services",
                 "acmethodcall"
             ],
             "acl": 14,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
-            "save_timestamp": "2012-03-02 00:15:04",
-            "ac_check_parameters": "(dp1\n."
+            "save_timestamp": "2012-03-02 00:16:11",
+            "ac_check_parameters": "(d."
         }
     },
     {
         "pk": 1,
         "model": "pr_services.domain",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "domain"
             ],
             "password_hash_type": "SHA-512",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "authentication_ip": null,
             "authentication_password_hash": "",
             "name": "local"
@@ -1915,13 +1931,13 @@
         "pk": 2,
         "model": "pr_services.domain",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "domain"
             ],
             "password_hash_type": "SHA-512",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "authentication_ip": null,
             "authentication_password_hash": "",
             "name": "LDAP"
@@ -1933,25 +1949,25 @@
         "fields": {
             "username": "admin",
             "domain": 1,
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "domainaffiliation"
             ],
-            "password_salt": "aVzWqCEm",
+            "password_salt": "CbvziaBf",
             "default": true,
             "user": 1,
             "password_hash_type": "SHA-512",
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "may_log_me_in": false,
-            "password_hash": "275970d84153cf54293b5549c83c053343b08a61b09b71da8b267921794fecaa8f143f7b6a188c7154f1006c826ef548cdca176715687c363ea03220351a4c61"
+            "password_hash": "f2157aa39dcd5e233e2c8421b12d6a762a121c99555b0d61d5138222bef4c7e1a0618b187d3aa551702cb55193d564fae362964e74d516dc880a1c3a35bede31"
         }
     },
     {
         "pk": 3,
         "model": "pr_services.group",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "group"
@@ -1959,7 +1975,7 @@
             "default": false,
             "notes": [],
             "active": true,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
             "managers": [],
             "name": "Instructors"
@@ -1969,7 +1985,7 @@
         "pk": 2,
         "model": "pr_services.group",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "group"
@@ -1977,7 +1993,7 @@
             "default": false,
             "notes": [],
             "active": true,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
             "managers": [],
             "name": "Students"
@@ -1987,7 +2003,7 @@
         "pk": 1,
         "model": "pr_services.group",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "group"
@@ -1995,7 +2011,7 @@
             "default": false,
             "notes": [],
             "active": true,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "managers": [],
             "name": "Super Administrators"
@@ -2005,13 +2021,13 @@
         "pk": 1,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "name": "Admin"
         }
@@ -2020,13 +2036,13 @@
         "pk": 2,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "name": "Object Owner"
         }
@@ -2035,13 +2051,13 @@
         "pk": 3,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "name": "Authenticated User"
         }
@@ -2050,13 +2066,13 @@
         "pk": 4,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "name": "Guest"
         }
@@ -2065,13 +2081,13 @@
         "pk": 5,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "name": "Task Taker"
         }
@@ -2080,13 +2096,13 @@
         "pk": 6,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
             "name": "User"
         }
@@ -2095,13 +2111,13 @@
         "pk": 7,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
             "name": "Student"
         }
@@ -2110,13 +2126,13 @@
         "pk": 8,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
             "name": "Instructor"
         }
@@ -2125,13 +2141,13 @@
         "pk": 9,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
             "name": "Group Manager"
         }
@@ -2140,13 +2156,13 @@
         "pk": 10,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
             "name": "Product Line Manager"
         }
@@ -2155,13 +2171,13 @@
         "pk": 11,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
             "name": "Instructor Manager"
         }
@@ -2170,13 +2186,13 @@
         "pk": 12,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
             "name": "Owner of purchase order with payments"
         }
@@ -2185,13 +2201,13 @@
         "pk": 13,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
             "name": "Owner of purchase order with no payments"
         }
@@ -2200,14 +2216,14 @@
         "pk": 1,
         "model": "pr_services.sessionuserrole",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "sessionuserrole"
             ],
             "notes": [],
             "active": true,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
             "name": "Instructor"
         }
@@ -2216,14 +2232,14 @@
         "pk": 2,
         "model": "pr_services.sessionuserrole",
         "fields": {
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:11",
             "final_type": [
                 "pr_services",
                 "sessionuserrole"
             ],
             "notes": [],
             "active": true,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:11",
             "owner": null,
             "name": "Student"
         }
@@ -2233,10 +2249,10 @@
         "model": "pr_services.user",
         "fields": {
             "last_name": "user",
-            "save_timestamp": "2012-03-02 00:15:04",
+            "save_timestamp": "2012-03-02 00:16:10",
             "photo": "",
             "is_staff": false,
-            "create_timestamp": "2012-03-02 00:15:04",
+            "create_timestamp": "2012-03-02 00:16:10",
             "owner": null,
             "email2": null,
             "biography": null,

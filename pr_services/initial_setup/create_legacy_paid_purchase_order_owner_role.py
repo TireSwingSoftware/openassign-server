@@ -3,8 +3,8 @@ from decorators import authz
 @authz
 def setup(machine):
     methods = [
-        {'name' : 'actor_owns_purchase_order', 'params' : {}},
-        {'name' : 'purchase_order_has_payments', 'params' : {}},
+        {'name' : 'ownership.actor_owns_purchase_order'},
+        {'name' : 'payment.purchase_order_has_payments'},
     ]
     crud = {
         'PurchaseOrder' : {

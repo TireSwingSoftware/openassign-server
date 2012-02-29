@@ -1499,9 +1499,9 @@ class ACCheckMethod(OwnedPRModel):
     """
 
     #: the name of the method in the authorizer class to be called
-    name = models.CharField(max_length=64, unique=True)
+    name = models.CharField(max_length=1024, unique=True)
     description = models.TextField()
-    title = models.CharField(max_length=128, unique=True)
+    title = models.CharField(max_length=1024, unique=True)
 
     def __str__(self):
         return '%s' % (self.name)

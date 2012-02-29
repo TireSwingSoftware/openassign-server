@@ -8,9 +8,9 @@ def setup(machine):
         return
 
     methods = [
-        {'name': 'actor_owns_assignment'},
-        {'name': 'actor_owns_assignment_attempt'},
-        {'name': 'actor_owns_assignment_for_task'},
+        {'name': 'ownership.actor_owns_assignment'},
+        {'name': 'ownership.actor_owns_assignment_attempt'},
+        {'name': 'ownership.actor_owns_assignment_for_task'},
     ]
     crud = {
         'Assignment' : {
