@@ -3,24 +3,28 @@ abstract base class for classes that manage persistent objects in the Power Reg 
 """
 __docformat__ = "restructuredtext en"
 
+import abc
+
 from django.db.models import Q
 from django.db.models.fields import FieldDoesNotExist
 from django.db.models.fields.related import RelatedField, RelatedObject
 from django.db.models.query import ValuesQuerySet
+
+from pr_services.rpc.service import service_method
 from utils import Utils
+
 import exceptions
 import facade
 import logging
 import pr_time
 import tagging.models
-from pr_services.rpc.service import service_method
 
 _DEFAULT_AUTHORIZER = facade.subsystems.Authorizer()
 
 Getter = facade.subsystems.Getter
 Setter = facade.subsystems.Setter
 
-class ObjectManagerMetaclass(type):
+class ObjectManagerMetaclass(abc.ABCMeta):
     """
     Metaclass for ObjectManager subclasses to merge getters/setters
     from base classes.
@@ -57,7 +61,7 @@ class ObjectManagerMetaclass(type):
                         " in %s" % (setter, attribute, name))
 
         attrs.update(GETTERS=getters, SETTERS=setters)
-        return type.__new__(cls, name, bases, attrs)
+        return super(ObjectManagerMetaclass, cls).__new__(cls, name, bases, attrs)
 
 
 class ObjectManager(object):
