@@ -509,7 +509,7 @@ class TestEmailUsers(BasicTestCase):
 
 class TestEmailTaskAssignees(BasicTestCase):
 
-    fixtures = BasicTestCase.fixtures + ['unprivileged_user', 'exams_and_achievements']
+    fixtures = ['initial_setup_precor', 'unprivileged_user', 'exams_and_achievements']
 
     def setUp(self):
         super(TestEmailTaskAssignees, self).setUp()

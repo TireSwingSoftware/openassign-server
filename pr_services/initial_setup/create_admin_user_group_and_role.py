@@ -35,7 +35,6 @@ def setup(machine):
         'check_usernames',
         'exceed_enrollment_capacity',
         'export_exam_to_xml',
-        'email_task_assignees',
         'import_exam_from_xml',
         'logging',
         'read_reports',
