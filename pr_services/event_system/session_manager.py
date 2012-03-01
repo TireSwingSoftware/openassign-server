@@ -338,7 +338,7 @@ class SessionManager(ObjectManager):
         """
         if filters is None:
             filters = {}
-        ret = self.get_filtered(auth_token, filters, ['start', 'end', 'status', 'confirmed', 'event', 'fullname', 'room', 'shortname', 'title', 'url', 'description', 'session_user_role_requirements'])
+        ret = self.get_filtered(auth_token, filters, ['start', 'end', 'status', 'confirmed', 'event', 'fullname', 'room', 'shortname', 'title', 'url', 'description', 'session_user_role_requirements', 'lead_time'])
 
         ret = Utils.merge_queries(ret, facade.managers.RoomManager(), auth_token, ['name', 'venue_name', 'venue_address'], 'room')
 
