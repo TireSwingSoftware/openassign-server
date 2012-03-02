@@ -14,7 +14,7 @@ def get_current_request():
     return getattr(_thread_locals, 'request', None)
 
 def get_client_ip():
-    # adapted from solution at 
+    # adapted from solution at
     # http://stackoverflow.com/questions/4581789/how-do-i-get-user-ip-address-in-django
     request = get_current_request()
     if request is not None:
@@ -28,6 +28,17 @@ def get_client_ip():
         ip = '127.0.0.1'
     return ip
 
+def get_auth_token():
+    """
+    Returns the auth token associated with the current RPC request
+    from thread local storage.
+
+    See ShimInvoke._run in rpc/service.py
+    """
+    return getattr(_thread_locals, 'auth_token', None)
+
+def set_auth_token(auth_token):
+    _thread_locals.auth_token = auth_token
 
 class ThreadLocal(object):
     """
