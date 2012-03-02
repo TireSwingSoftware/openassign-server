@@ -729,36 +729,64 @@ class TestAssignmentManagerViews(BasicTestCase):
         expected = sorted(expected, key=_id)
         self.assertSequenceEqual(result, expected)
 
-    @load_fixtures('session_and_event')
-    def test_session_view(self):
-        surr_manager = self.admin_session_user_role_requirement_manager
-        session = Session.objects.get(id=1)
-        event = Event.objects.get(id=1)
-        student_role = SessionUserRole.objects.get(name='Student')
-        surr = surr_manager.create(session.id, student_role.id, 1, 2, [])
-        assignment = self.admin_assignment_manager.create(surr.id, self.user.id)
 
-        view = partial(self.manager.session_view, user_id=self.user.id)
+class TestAssignmentManagerSessionView(BasicTestCase):
+    fixtures = BasicTestCase.fixtures + ['unprivileged_user', 'session_and_event']
+
+    def setUp(self):
+        super(TestAssignmentManagerSessionView, self).setUp()
+        self.create_surr = self.admin_session_user_role_requirement_manager.create
+        self.create_assignment = self.admin_assignment_manager.create
+
+        self.user = User.objects.get(id=2)
+        self.auth_token = self._get_auth_token('user1')
+
+        self.session = Session.objects.get(id=1)
+        self.event = Event.objects.get(id=1)
+        self.student_role = SessionUserRole.objects.get(name='Student')
+
+        self.surr = self.create_surr(self.session.id, self.student_role.id, 1, 2, [])
+
+    def session_view(self, *args, **kwargs):
+        if not (args or kwargs):
+            kwargs = {'user_id': self.user.id}
+        result = self.assignment_manager.session_view(*args, **kwargs)
+        return sorted(result, key=_id)
+
+    def test_session_view(self):
+        assignment = self.create_assignment(self.surr.id, self.user.id)
         expected = {
             'id': assignment.id,
             'user': self.user.id,
             'status': assignment.status,
             'task': {
-                'id': surr.id,
-                'name': unicode(surr.name),
-                'title': unicode(surr.title),
-                'description': unicode(surr.description),
+                'id': self.surr.id,
+                'name': unicode(self.surr.name),
+                'title': unicode(self.surr.title),
+                'description': unicode(self.surr.description),
                 'type': u'pr_services.session user role requirement',
                 'session': {
-                    'id': session.id,
-                    'start': datestring(session.start),
-                    'end': datestring(session.end)
+                    'id': self.session.id,
+                    'start': datestring(self.session.start),
+                    'end': datestring(self.session.end)
                 }
             }
         }
-        result = view()
+        result = self.session_view()
         self.assertEquals(len(result), 1)
         self.assertDictEqual(result[0], expected)
+
+    def test_session_view_duplicate_assignment(self):
+        # (see github issue #94)
+        # create two assignments for the same session
+        a1 = self.assignment_manager.create(self.surr.id, self.user.id)
+        a2 = self.assignment_manager.create(self.surr.id, self.user.id)
+        self.assertTrue(a1 and a2)
+        result = self.session_view()
+        self.assertEquals(len(result), 2)
+        self.assertEquals(result[0]['id'], a1.id)
+        self.assertEquals(result[1]['id'], a2.id)
+
 
 
 class TestAchievementAwardManager(GeneralTestCase):
