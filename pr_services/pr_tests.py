@@ -54,6 +54,8 @@ import facade
 # import all models into our namespace
 facade.import_models(locals(), globals())
 
+_id = itemgetter('id')
+
 def datestring(d):
     return d.replace(tzinfo=pr_time.UTC()).isoformat()
 
@@ -632,8 +634,7 @@ class TestAssignmentManagerViews(BasicTestCase):
 
     def test_exam_view(self):
         view = partial(self.manager.exam_view, user_id=self.user.id)
-        assignment = self.assignments[0]
-        exam = self.exams[0]
+        assignment, exam = self.assignments[0], self.exams[0]
         expected = {
             'id': assignment.id,
             'user': self.user.id,
@@ -646,14 +647,13 @@ class TestAssignmentManagerViews(BasicTestCase):
                 'description': unicode(exam.description),
             }
         }
-        result = view()
+        result = sorted(view(), key=itemgetter('id'))
         self.assertEquals(len(result), 5)
         self.assertDictEqual(result[0], expected)
 
     def test_detailed_exam_view(self):
         view = partial(self.manager.detailed_exam_view, user_id=self.user.id)
-        assignment = self.assignments[0]
-        exam = self.exams[0]
+        assignment, exam = self.assignments[0], self.exams[0]
         expected = {
             'id': assignment.id,
             'user': {
@@ -671,15 +671,15 @@ class TestAssignmentManagerViews(BasicTestCase):
                 'passing_score': exam.passing_score,
             }
         }
-        result = view()
+        result = sorted(view(), key=_id)
         self.assertEquals(len(result), 5)
         self.assertDictEqual(result[0], expected)
 
-        result = view(fields=['status', 'task'])
+        result = sorted(view(fields=['status', 'task']), key=_id)
         self.assertEquals(len(result), 5)
         self.assertDictEqual(result[0], expected)
 
-        result = view(filters={'exact': {'id': assignment.id}})
+        result = sorted(view(filters={'exact': {'id': assignment.id}}), key=_id)
         self.assertEquals(len(result), 1)
 
     def test_transcript_view(self):
@@ -725,7 +725,6 @@ class TestAssignmentManagerViews(BasicTestCase):
 
         # sort both the test and expected transcript by id
         # since the assignment ordering does not matter
-        _id = itemgetter('id')
         result = sorted(result, key=_id)
         expected = sorted(expected, key=_id)
         self.assertSequenceEqual(result, expected)
