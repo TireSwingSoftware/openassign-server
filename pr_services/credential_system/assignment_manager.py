@@ -393,16 +393,20 @@ class AssignmentManager(ObjectManager):
         if results and ('task' in results[0] and
                         'session' in results[0]['task']):
             # merge in session details
-            session_ids = [assignment['task']['session'] for assignment in results]
+            session_ids = set(assignment['task']['session'] for assignment in results)
             session_query = Session.objects.filter(id__in=session_ids)
             session_manager = facade.managers.SessionManager()
             sessions = facade.subsystems.Getter(auth_token, session_manager,
-                    session_query, ['start', 'end']).results
+                    session_query, ('start', 'end')).results
             session_dict = {}
             for session in sessions:
                 session_dict[session['id']] = session
             for assignment in results:
-                assignment['task']['session'] = session_dict[assignment['task']['session']]
+                if not isinstance(assignment['task']['session'], dict):
+                    # XXX: if there are duplicate assignments for the same session
+                    # it is possible for assignment['task']['session'] to
+                    # already be a dict. (see github issue #94)
+                    assignment['task']['session'] = session_dict[assignment['task']['session']]
 
         return results
 
