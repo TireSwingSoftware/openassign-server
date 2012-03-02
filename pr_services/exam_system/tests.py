@@ -969,7 +969,7 @@ class TestExamManagers(GeneralTestCase, CommonExamTests):
                 fetch_all=True)
         check_rejoinders(result)
 
-        result = self.exam_session_manager.resume(student_at, assignment.id,
+        result = self.exam_session_manager.resume(student_at, result['id'],
                 fetch_all=True)
         check_rejoinders(result)
 
