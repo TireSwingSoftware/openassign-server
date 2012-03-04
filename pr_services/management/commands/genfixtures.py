@@ -50,7 +50,7 @@ class Command(NoArgsCommand):
 
     def _initial_setup_default(self):
         with catch_stdout(None):
-            call_command('setup')
+            call_command('setup', 'base', 'legacy')
 
         models = [
            'pr_messaging',

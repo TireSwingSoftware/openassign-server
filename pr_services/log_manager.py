@@ -1,10 +1,10 @@
 import logging
 import facade
 import exceptions
+from pr_services.object_manager import ObjectManager
 from pr_services.middleware import get_current_request
-from pr_services.rpc.service import service_method
-
-_DEFAULT_AUTHORIZER = facade.subsystems.Authorizer()
+from pr_services.rpc.service import public_service_method
+from pr_services.authorizer.checks.auth import actor_is_guest
 
 class LogManager(object):
     """
@@ -13,10 +13,9 @@ class LogManager(object):
     the username and IP address.
     """
 
-    def __init__(self):
-        self.authorizer = _DEFAULT_AUTHORIZER
+    authorizer = facade.subsystems.Authorizer()
 
-    @service_method
+    @public_service_method
     def critical(self, auth_token, message):
         """
         Log a message with level CRITICAL. Requires a valid auth_token or
@@ -27,7 +26,7 @@ class LogManager(object):
 
         self._log(auth_token, logging.CRITICAL, message)
 
-    @service_method
+    @public_service_method
     def error(self, auth_token, message):
         """
         Log a message with level ERROR. Requires a valid auth_token or logging
@@ -38,7 +37,7 @@ class LogManager(object):
 
         self._log(auth_token, logging.ERROR, message)
 
-    @service_method
+    @public_service_method
     def warning(self, auth_token, message):
         """
         Log a message with level WARNING. Requires a valid auth_token or
@@ -49,7 +48,7 @@ class LogManager(object):
 
         self._log(auth_token, logging.WARNING, message)
 
-    @service_method
+    @public_service_method
     def info(self, auth_token, message):
         """
         Log a message with level INFO. Requires a valid auth_token or logging
@@ -60,7 +59,7 @@ class LogManager(object):
 
         self._log(auth_token, logging.INFO, message)
 
-    @service_method
+    @public_service_method
     def debug(self, auth_token, message):
         """
         Log a message with level DEBUG. Requires a valid auth_token or logging

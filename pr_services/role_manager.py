@@ -42,7 +42,7 @@ class RoleManager(ObjectManager):
         r = self.my_django_model(name=name)
         r.save()
         self.authorizer.check_create_permissions(auth_token, r)
-        self.authorizer._load_acls()
+        self.authorizer.flush()
 
         return r
 

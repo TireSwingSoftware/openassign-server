@@ -22,6 +22,7 @@ from pr_services.object_manager import ObjectManager
 
 import facade
 import helpers
+import mixins
 
 __all__ = (
     'FixtureTestCase',
@@ -38,66 +39,36 @@ get_auth_token_object = facade.subsystems.Utils.get_auth_token_object
 
 _DEFAULT_AUTHORIZER = facade.subsystems.Authorizer()
 
-# index of service methods' names by manager class type object
-_SERVICE_METHODS = dict()
-
-# XXX: use a function to hide stuff from the namespace
-def _build_service_method_index():
-    """Build an index of service methods for each manager class."""
-
-    _member_name = itemgetter(0)
-    exclude = frozenset(('login', 'check_password_against_policy',
-                         'reset_password'))
-
-    def _service_methods(member):
-        name, value = member
-        return name not in exclude and getattr(value, '_service_method', False)
-
-    for name in facade.managers:
-        manager_class = getattr(facade.managers, name)
-        if issubclass(manager_class, ObjectManager):
-            members = inspect.getmembers(manager_class)
-            service_methods = filter(_service_methods, members)
-            service_method_names = map(_member_name, service_methods)
-            _SERVICE_METHODS[manager_class] = frozenset(service_method_names)
-
-_build_service_method_index()
-
-
 class ManagerAuthTokenWrapper(object):
     """
     Wrap ObjectManager service methods to automatically provide a specified auth token
     """
-
     def __init__(self, manager, token_getter):
         assert isinstance(manager, ObjectManager)
         assert callable(token_getter)
         self.manager = manager
         self.token_getter = token_getter
-        self._service_methods = _SERVICE_METHODS[type(manager)]
 
     def _wrapped_method(self, method):
+        spec = inspect.getargspec(method)
         @functools.wraps(method)
-        def _wrapper(*args, **kwargs):
-            if args and isinstance(args[0], AuthToken):
+        def wrapper(*args, **kwargs):
+            if 'auth_token' in kwargs:
+                auth_token = kwargs.pop('auth_token')
+                return method(auth_token, *args, **kwargs)
+            if ((args and isinstance(args[0], AuthToken)) or
+                len(args) >= len(spec.args) - 1):
                 return method(*args, **kwargs)
-            token = kwargs.pop('auth_token', self.token_getter())
-            try:
-                return method(token, *args, **kwargs)
-            except TypeError as e:
-                msg = str(e)
-                if 'takes exactly' in msg:
-                    return method(*args, **kwargs)
-                raise
-
-        return _wrapper
+            auth_token = self.token_getter()
+            return method(auth_token, *args, **kwargs)
+        return wrapper
 
     def __getattr__(self, name):
-        attr = getattr(self.manager, name)
-        if name in self._service_methods:
-            return self._wrapped_method(attr)
+        obj = getattr(self.manager, name)
+        if callable(obj) and hasattr(obj, '_service_method'):
+            return self._wrapped_method(obj)
         else:
-            return attr
+            return obj
 
 
 # Mapping of Manager names to Test class instance member names
@@ -186,8 +157,7 @@ class TestCase(FixtureTestCase):
 
         self._save_settings()
         self._setup_managers()
-
-        self.authorizer._load_acls()
+        self.authorizer.flush()
 
         # Modify the celery configuration to run tasks eagerly for unit tests.
         self._always_eager = conf.ALWAYS_EAGER
@@ -331,38 +301,6 @@ class RoleTestCaseMetaclass(type):
         return type.__new__(cls, name, bases, attrs)
 
 
-class RoleTestCase(BasicTestCase):
+class RoleTestCase(BasicTestCase, mixins.RoleTestMixin):
     __metaclass__ = RoleTestCaseMetaclass
 
-    def create_quick_user_role(self, name, acl_dict):
-        create_role = facade.models.Role.objects.create
-        create_acl = facade.models.ACL.objects.create
-        methods = facade.models.ACCheckMethod.objects
-        ACMethodCall = facade.models.ACMethodCall
-
-        for model, crud in acl_dict.iteritems():
-            crud.setdefault('c', False)
-            crud.setdefault('r', set())
-            crud.setdefault('u', set())
-            crud.setdefault('d', False)
-
-        role = create_role(name=name)
-        acl = create_acl(role=role, acl=cPickle.dumps(acl_dict))
-        method = methods.get(name='actor_is_anybody')
-        method_call = ACMethodCall.objects.create(acl=acl,
-                ac_check_method=method,
-                ac_check_parameters=cPickle.dumps({}))
-
-        method_call.save()
-
-#XXX: if we're going to call this, the method should be public
-        self.authorizer._load_acls()
-
-        def _cleanup():
-            method_call.delete()
-            acl.delete()
-            role.delete()
-            self.authorizer._load_acls()
-        self.addCleanup(_cleanup)
-
-        return role, acl
