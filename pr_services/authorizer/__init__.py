@@ -63,17 +63,16 @@ def defaultargvalue(method, argname):
         return _sentinel
 
 
-class CheckMethodNotFound(Exception):
+class CheckNotFound(Exception):
     pass
 
-class CheckMethodWrapper(namedtuple('_CheckMethodWrapper',
-                                    'method actee_required allow_guests')):
+class CheckWrapper(namedtuple('_CheckWrapper',
+                              'method actee_required allow_guests')):
     """
-    Structure for wrapping check method objects to expose a more efficient
+    Structure for wrapping authorizer check functions to expose a more efficient
     interface to access the properties we need when running the checks. Provides
     a thin interface to call the method checks with the appropriate handling.
     """
-
     @property
     def name(self):
         return self.method.func.__name__
@@ -100,7 +99,7 @@ class CheckMethodWrapper(namedtuple('_CheckMethodWrapper',
         try:
             method = getattr(module, method_name)
         except AttributeError:
-            raise CheckMethodNotFound('%s.%s' % (import_path, method_name))
+            raise CheckNotFound('%s.%s' % (import_path, method_name))
 
         # check if the actee is required/used by the check method.
         # it is considered to be required if the method has an argument
@@ -119,7 +118,7 @@ class CheckMethodWrapper(namedtuple('_CheckMethodWrapper',
         # apply the method keyword arguments defined by the role
         method = partial(method, **method_kwargs)
 
-        return super(CheckMethodWrapper, cls).__new__(cls, method,
+        return super(CheckWrapper, cls).__new__(cls, method,
                 actee_required, allow_guests)
 
     def __call__(self, auth_token=None, actee=None, *args, **kwargs):
@@ -201,11 +200,10 @@ class ACLCache(object):
     A simple authorizer-specific caching mechanism for efficiently storing all
     ACL objects and related models.
 
-    ACLs are partitioned into several dicts for each of the crud operations
-    allowing more efficient lookup for ACLs given an operation and a specific
-    type.
+    ACLs are partitioned into several dicts for each of the privilege specific
+    operations allowing more efficient lookup for ACLs given an operation and
+    a specific type.
     """
-
     # a timestamp for when the cache was last updated
     timestamp = None
 
@@ -228,7 +226,7 @@ class ACLCache(object):
         for method_call in ACMethodCall.objects.values(*method_cols):
             acl, method_name, kwargs = method_call_items(method_call)
             kwargs = pickle.loads(str(kwargs)) if kwargs else {}
-            method = CheckMethodWrapper(str(method_name), kwargs)
+            method = CheckWrapper(str(method_name), kwargs)
             aclmethods[acl].append(method)
 
         c, r, u, d = acldict(), acldict(), acldict(), acldict()
