@@ -92,9 +92,7 @@ def get_arg_from_context(context, argname):
     return args[i-2] # self and auth_token are not part of call args
 
 
-@check
-@decorator
-def methodcheck(func, *args, **kwargs):
+def methodcheck(func):
     """
     Decorator for functions that check method calls. This decorator serves two
     purposes.
@@ -106,8 +104,12 @@ def methodcheck(func, *args, **kwargs):
        method import machinery. Using this decorator means that you will
        *not* have to do anything special for the method to be available.
     """
-    _check_context(kwargs)
-    return func(*args, **kwargs)
+    def method_check_wrapper(func, *args, **kwargs):
+        _check_context(kwargs)
+        return func(*args, **kwargs)
+    func = decorator(method_check_wrapper, func)
+    setattr(func, '_authorizer_check', True)
+    return func
 
 
 @methodcheck

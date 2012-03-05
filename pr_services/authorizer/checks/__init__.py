@@ -1,27 +1,64 @@
 
+import inspect
 import os.path
 import re
 import sys
 import types
 
+from decorator import decorator
+
 import facade
 import settings
 
+from pr_services.exceptions import InvalidActeeTypeException
+
 VALID_MODULE_NAME = re.compile(r'[_a-z]\w*\.py$', re.IGNORECASE)
 
-def check(func):
-    """Decorator for authorizer check functions."""
-    setattr(func, '_authorizer_check', True)
-    return func
+def check(*args):
+    """Decorator for authorizer check functions to reduce boilerplate
+    operations and provide filtering by actee types while raising
+    InvalidActeeTypeException when appropriate.
+
+    Example:
+        @check(Foo, Bar)
+        def some_check_function(auth_token, actee, *args, **kwargs):
+            # this is only called when the actee is a Foo or Bar object
+            pass
+    """
+    if len(args) == 1 and isinstance(args[0], types.FunctionType):
+        func = args[0]
+        setattr(func, '_authorizer_check', True)
+        return func
+
+    check_types = args
+    def check_wrapper(func):
+        spec = inspect.getargspec(func)
+        actee_argpos = spec.args.index('actee')
+        def inner(func, *args, **kwargs):
+            actee = kwargs.get('actee', None)
+            if not actee:
+                actee = args[actee_argpos]
+            if not isinstance(actee, check_types):
+                raise InvalidActeeTypeException(actee)
+            result = func(*args, **kwargs)
+#               logger.trace('%s: %s' % (func.__name__, repr(result)))
+            return result
+        func = decorator(inner, func)
+        setattr(func, '_authorizer_check', True)
+        return func
+    return check_wrapper
+
 
 def get_name_from_path(path):
     path = os.path.splitext(os.path.normpath(path))[0]
     _relpath = os.path.relpath(path, settings.PROJECT_ROOT)
     return _relpath.replace(os.sep, '.')
 
+
 def get_module_from_name(name):
     __import__(name)
     return sys.modules[name]
+
 
 def get_checks_in_module(module):
     for name in dir(module):
@@ -51,6 +88,7 @@ def discover_authorizer_checks(startpath=None):
             for check in get_checks_in_module(module):
                 shortname = '%s.%s' % (name[len(thisname)+1:], check.__name__)
                 yield shortname, check
+
 
 def import_authorizer_checks():
     ACCheckMethod = facade.models.ACCheckMethod

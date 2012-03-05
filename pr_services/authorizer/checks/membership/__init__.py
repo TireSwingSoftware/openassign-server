@@ -6,6 +6,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from pr_services.authorizer.checks import check
 from pr_services.exceptions import InvalidActeeTypeException
 
+facade.import_models(locals())
+
+
 @check
 def actor_member_of_group(auth_token, group_id, *args, **kwargs):
     """
@@ -19,7 +22,7 @@ def actor_member_of_group(auth_token, group_id, *args, **kwargs):
             id=group_id, users__id=auth_token.user_id).exists()
 
 
-@check
+@check(DomainAffiliation)
 def actor_related_to_domain_affiliation(auth_token, actee, *args, **kwargs):
     """
     Returns True if the DomainAffiliation's 'user' attribute
@@ -27,28 +30,23 @@ def actor_related_to_domain_affiliation(auth_token, actee, *args, **kwargs):
 
     @param actee  The DomainAffiliation object in question
     """
-    if not isinstance(actee, facade.models.DomainAffiliation):
-        raise InvalidActeeTypeException()
-
     return bool(auth_token.user_id == actee.user.id)
 
 
-@check
+@check(Group)
 def actor_is_group_manager(auth_token, actee, *args, **kwargs):
     """
     Returns True if the actor is the manager of the group.
 
     @param actee  Instance of a group
     """
-    if not isinstance(actee, facade.models.Group):
-        raise InvalidActeeTypeException()
     try:
         return actee.managers.filter(id=auth_token.user_id).exists()
     except ObjectDoesNotExist:
         pass
 
 
-@check
+@check(User)
 def actee_is_in_group_and_domain(auth_token, actee, group_id, domain_id,
         *args, **kwargs):
     """
@@ -68,37 +66,24 @@ def actee_is_in_group_and_domain(auth_token, actee, group_id, domain_id,
     @param group_id The primary key of the group that the actee must be a member of
     @param domain_id the primary key of the domain
     """
-    if not isinstance(actee, facade.models.User):
-        raise InvalidActeeTypeException()
-
     in_group = actee.groups.filter(id=group_id).exists()
     in_domain = actee.domain_affiliations.filter(domain_id=domain_id).exists()
     return in_group and in_domain
 
 
-@check
+@check(Group)
 def actor_is_in_actee_which_is_a_group(auth_token, actee, *args, **kwargs):
     """Returns true if the actee is a group and the actor is a member thereof."""
-
-    if not isinstance(actee, facade.models.Group):
-        raise InvalidActeeTypeException()
-
     try:
         return actee.users.filter(id=auth_token.user_id).exists()
-    except ObjectDoesNotExist:
-        pass
-    except AttributeError:
-        pass
+    except (ObjectDoesNotExist, AttributeError):
+        return False
 
 
-@check
+@check(Organization)
 def actor_is_in_actee_which_is_an_organization(auth_token, actee, *args, **kwargs):
     """
     Returns True if the actee is an Organization and the actor belongs to that
     organization.
     """
-    if not isinstance(actee, facade.models.Organization):
-        raise InvalidActeeTypeException()
-
     return auth_token.user.organizations.filter(id=actee.id).exists()
-

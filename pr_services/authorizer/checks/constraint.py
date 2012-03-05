@@ -5,7 +5,9 @@ from pr_services.exceptions import InvalidActeeTypeException, AttributeNotUpdate
 
 import facade
 
-@check
+facade.import_models(locals())
+
+@check(User)
 def actor_is_acting_upon_themselves(auth_token, actee, *args, **kwargs):
     """
     Returns True if the actor is a valid authenticated user in
@@ -13,13 +15,10 @@ def actor_is_acting_upon_themselves(auth_token, actee, *args, **kwargs):
 
     @param actee  A user object that we wish to compare the actor to
     """
-    if not isinstance(actee, facade.models.User):
-        raise InvalidActeeTypeException()
-
     return auth_token.user_id == actee.id
 
 
-@check
+@check(User)
 def actor_is_adding_allowed_many_ended_objects_to_user(auth_token, actee,
         attribute_name, allowed_pks, update_dict, *args, **kwargs):
     """
@@ -47,8 +46,6 @@ def actor_is_adding_allowed_many_ended_objects_to_user(auth_token, actee,
                             allowed to run the update call
     @raises                 InvalidActeeTypeException, AttributeNotInUpdateDictException
     """
-    if not isinstance(actee, facade.models.User):
-        raise InvalidActeeTypeException()
     if attribute_name not in update_dict:
         raise AttributeNotUpdatedException()
     allowed_pks = set(allowed_pks)
@@ -84,15 +81,12 @@ def actor_status_check(auth_token, status, *args, **kwargs):
     return auth_token.user.status == status
 
 
-@check
+@check(Venue)
 def actor_is_venue_creator(auth_token, actee, *args, **kwargs):
     """
     Returns True if the actor is the user who created the venue, which is discovered by
     examining the venue's blame
     """
-    if not isinstance(actee, facade.models.Venue):
-        raise InvalidActeeTypeException()
-
     try:
         return auth_token.user_id == actee.blame.user.id
     except (ObjectDoesNotExist, AttributeError):
@@ -184,7 +178,7 @@ def actees_foreign_key_object_has_attribute_set_to(auth_token, actee,
         return False
 
 
-@check
+@check(ExamSession)
 def populated_exam_session_is_finished(auth_token, actee, *args, **kwargs):
     """
     Does nothing if the ExamSession does not have any answered questions
@@ -196,14 +190,13 @@ def populated_exam_session_is_finished(auth_token, actee, *args, **kwargs):
     """
     # This test allows us to know if this ExamSession is new or not by
     # virtue of it being populated.
-    if not (isinstance(actee, facade.models.ExamSession) and
-            actee.response_questions.count()):
-        raise InvalidActeeTypeException()
+    if not actee.response_questions.count():
+        raise InvalidActeeTypeException(actee)
 
     return bool(actee.date_completed)
 
 
-@check
+@check(User)
 def actor_actee_enrolled_in_same_session(auth_token, actee, actor_sur_id,
         actee_sur_id, *args, **kwargs):
     """
@@ -219,9 +212,6 @@ def actor_actee_enrolled_in_same_session(auth_token, actee, actor_sur_id,
     @param actee_sur_id  The primary key of the session_user_role with which
             the actee should be enrolled in the session
     """
-    if not isinstance(actee, facade.models.User):
-        raise InvalidActeeTypeException()
-
     actee_sessions = set(facade.models.Session.objects.filter(
         session_user_role_requirements__assignments__user__id=actee.id,
         session_user_role_requirements__session_user_role__id=actee_sur_id
@@ -235,7 +225,7 @@ def actor_actee_enrolled_in_same_session(auth_token, actee, actor_sur_id,
     return bool(actor_sessions & actee_sessions)
 
 
-@check
+@check(User)
 def actor_is_instructor_manager_of_actee(auth_token, actee, *args, **kwargs):
     """
     Returns True if the actor is the instructor manager for a product
@@ -243,33 +233,17 @@ def actor_is_instructor_manager_of_actee(auth_token, actee, *args, **kwargs):
 
     @param actee      A user object that we are evaluation authorization for
     """
-    if not isinstance(actee, facade.models.User):
-        raise InvalidActeeTypeException()
-
     return facade.models.ProductLine.objects.filter(
             instructors__id__exact=actee.id,
             instructor_managers__id__exact=auth_token.user_id).exists()
 
-#    actee_product_lines_instructor_in = set(
-#        facade.models.ProductLine.objects.filter(
-#            instructors__id__exact=actee.id).values_list('id', flat=True))
-#    actor_product_lines_im_for = set(
-#        facade.models.ProductLine.objects.filter(
-#            instructor_managers__id__exact=auth_token.user_id
-#        ).values_list('id', flat = True))
-#    if actor_product_lines_im_for & actee_product_lines_instructor_in:
-#        return True
-#    return False
 
-@check
+@check(SessionUserRoleRequirement)
 def surr_is_of_a_particular_sur(actee, session_user_role_id, *args, **kwargs):
     """
     Returns True iff the session_user_role associate with the actee is the same as the
     session_user_role specified by the parameter session_user_role.
     """
-    if not isinstance(actee, facade.models.SessionUserRoleRequirement):
-        raise InvalidActeeTypeException()
-
     try:
         return actee.session_user_role.id == session_user_role_id
     except (ObjectDoesNotExist, AttributeError):
