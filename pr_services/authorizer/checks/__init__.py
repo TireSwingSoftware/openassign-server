@@ -28,6 +28,7 @@ def check(*args):
     if len(args) == 1 and isinstance(args[0], types.FunctionType):
         func = args[0]
         setattr(func, '_authorizer_check', True)
+        setattr(func, '_check_types', None)
         return func
 
     check_types = args
@@ -45,6 +46,7 @@ def check(*args):
             return result
         func = decorator(inner, func)
         setattr(func, '_authorizer_check', True)
+        setattr(func, '_check_types', check_types)
         return func
     return check_wrapper
 
