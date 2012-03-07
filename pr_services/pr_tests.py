@@ -3738,7 +3738,7 @@ class TestTaskBundleManager(BasicTestCase):
         bundle = update(bundle.id, {'tasks': task_ids})
 
         # check that we see the update
-        result = bundle.tasks.values_list('id', flat=True)
+        result = bundle.tasks.values_list('id', flat=True).order_by('id')
         self.assertSequenceEqual(result, expected)
 
         # check that get_filtered sees the update
