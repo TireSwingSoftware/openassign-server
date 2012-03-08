@@ -1,4 +1,5 @@
 /local_settings.py
+/nose.cfg
 /tests_svc_settings.py
 *.pyc
 *.pyo

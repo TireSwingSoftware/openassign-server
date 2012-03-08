@@ -25,6 +25,7 @@ import django.test.client
 import django.utils.dateformat
 import django.utils.unittest
 
+from django import test
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -65,7 +66,7 @@ def datestring(d):
 #
 ##############################################################################
 
-class TestGetDecimal(TestCase):
+class TestGetDecimal(test.TestCase):
     class DecimalModel(models.Model):
         price = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -85,7 +86,7 @@ class TestGetDecimal(TestCase):
         self.assertTrue(value is None)
 
 
-class TestSetDecimal(TestCase):
+class TestSetDecimal(test.TestCase):
     class DecimalModel(models.Model):
         price = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -1669,7 +1670,7 @@ class TestEventTemplateManager(GeneralTestCase):
 class TestEventManager(GeneralTestCase):
     def setUp(self):
         super(TestEventManager, self).setUp()
-        self.test_utils = TestUtils()
+        self.test_utils = LegacyUtils()
 
     def test_create_with_sessions(self):
         sessions = [
@@ -1716,7 +1717,7 @@ class TestEventManager(GeneralTestCase):
 class TestSessionManager(GeneralTestCase):
     def setUp(self):
         super(TestSessionManager, self).setUp()
-        self.test_utils = TestUtils()
+        self.test_utils = LegacyUtils()
 
     def test_view(self):
         e1 = self.event_manager.create('Event 1',
@@ -1986,7 +1987,7 @@ class TestSessionManager(GeneralTestCase):
         self.assertEquals(len(ret), 1)
 
     def test_get_events_needing_reminders(self):
-        tu = TestUtils()
+        tu = LegacyUtils()
         tu.setup_test_sessions()
         sessions = self.session_manager._get_sessions_needing_reminders()
         self.assertEquals(len(sessions), 2)
@@ -3497,7 +3498,7 @@ class CommonObjectManagerTests:
 class TestObjectManager(GeneralTestCase, CommonObjectManagerTests):
     def setUp(self):
         super(TestObjectManager, self).setUp()
-        self.tu = TestUtils()
+        self.tu = LegacyUtils()
 
     def test_query_on_related_objects(self):
         self.failUnless(ProductLine.objects.count() > 0)
@@ -3941,7 +3942,7 @@ class TestCurriculumManagement(BasicTestCase):
             self.assertEquals(len(user['incomplete_curriculum_enrollments']), 0)
 
 
-class TestUtilsManager(TestCase):
+class LegacyUtilsManager(TestCase):
     def test_get_choices(self):
         get_choices = self.utils_manager.get_choices
 
@@ -3976,7 +3977,7 @@ class TestUtilsManager(TestCase):
 #
 # XXX: all of which should eventually be moved into testlib
 ##############################################################################
-class TestUtils(object):
+class LegacyUtils(object):
     def __init__(self):
         self.session_manager = facade.managers.SessionManager()
         self.assignment_manager = facade.managers.AssignmentManager()
@@ -4111,7 +4112,7 @@ class TestUtils(object):
         self.assignment_manager.bulk_create(self.admin_token, learner_req4.id, s4_learners)
 
 
-class TestAdminPasswordSetup(django.test.TestCase):
+class TestAdminPasswordSetup(TestCase):
     def test_admin_password_setup(self):
         InitialSetupMachine().initial_setup(default_admin_password='Oog5faga')
         user_manager = facade.managers.UserManager()

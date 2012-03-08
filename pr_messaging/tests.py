@@ -1,5 +1,5 @@
 import logging
-from django.test import TestCase
+from pr_services.testlib import TestCase
 from django.utils.unittest import skipIf
 from django.conf import settings
 from django.core import mail
@@ -15,19 +15,19 @@ else:
     User = None
 
 class TestCase(TestCase):
-    
+
     def setUp(self):
         super(TestCase, self).setUp()
         # Modify the celery configuration to run tasks eagerly for unit tests.
         self._always_eager = conf.ALWAYS_EAGER
         conf.ALWAYS_EAGER = True
-        
+
     def tearDown(self):
         conf.ALWAYS_EAGER = self._always_eager
         super(TestCase, self).tearDown()
 
 class TestImmutables(TestCase):
-    
+
     def test_immutable(self):
         i0 = Immutable()
         self.assertFalse(hasattr(i0, 'name'))
@@ -140,14 +140,14 @@ class TestMessaging(TestCase):
         request_started(None) # Fake it for the test case.
         enable_messages(all=True)
         send_message(message_type='foo', context={}, recipients=['user@americanri.com'])
-        self.assertEqual(len(mail.outbox), 0) 
+        self.assertEqual(len(mail.outbox), 0)
         request_finished(None) # Fake it for the test case.
         self.assertEqual(len(mail.outbox), 2)
 
     def test_send_with_request_exception(self):
         request_started(None) # Fake it for the test case.
         send_message(message_type='foo', context={}, recipients=['user@americanri.com'])
-        self.assertEqual(len(mail.outbox), 0) 
+        self.assertEqual(len(mail.outbox), 0)
         got_request_exception(None) # Fake it for the test case.
         self.assertEqual(len(mail.outbox), 0)
 

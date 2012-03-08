@@ -106,7 +106,11 @@ INSTALLED_APPS = (
     'storages',
     'pr_messaging',
     'file_tasks',
+    'django_nose',
 )
+
+NOSE_ARGS = ['--config=%s' % os.path.join(PROJECT_ROOT, 'nose.cfg')]
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 FIXTURE_DIRS = (
     os.path.join(PROJECT_ROOT,

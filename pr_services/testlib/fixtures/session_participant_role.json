@@ -63,7 +63,7 @@
     { "fields" : { "alleged_organization" : null,
         "billing_address" : null,
         "biography" : null,
-        "blame" : 1,
+        "blame" : null,
         "color_code" : null,
         "confirmation_code" : null,
         "create_timestamp" : "2012-01-11 21:01:10",
@@ -100,7 +100,7 @@
       { "fields" : { "alleged_organization" : null,
         "billing_address" : null,
         "biography" : null,
-        "blame" : 1,
+        "blame" : null,
         "color_code" : null,
         "confirmation_code" : null,
         "create_timestamp" : "2012-01-11 21:01:10",
@@ -133,19 +133,6 @@
       },
     "model" : "pr_services.user",
     "pk" : 3
-  },
-    { "fields" : { "create_timestamp" : "2012-01-11 21:01:10",
-        "final_type" : [ "pr_services",
-            "blame"
-          ],
-        "ip" : "0.0.0.0",
-        "owner" : null,
-        "save_timestamp" : "2012-01-11 21:01:10",
-        "time" : "2012-01-11 21:01:10",
-        "user" : 2
-      },
-    "model" : "pr_services.blame",
-    "pk" : 1
   },
   {
     "pk": 1,
@@ -219,6 +206,54 @@
       "name": "Foo1"
     }
   },
+   { "fields" : { "active" : true,
+        "create_timestamp" : "2012-01-11 21:03:29",
+        "final_type" : [ "pr_services",
+            "region"
+          ],
+        "name" : "Region 1",
+        "notes" : [  ],
+        "owner" : null,
+        "save_timestamp" : "2012-01-11 21:03:29"
+      },
+    "model" : "pr_services.region",
+    "pk" : 1
+  },
+    { "fields" : { "active" : true,
+        "address" : null,
+        "blame" : null,
+        "contact" : null,
+        "create_timestamp" : "2012-01-11 21:06:48",
+        "final_type" : [ "pr_services",
+            "venue"
+          ],
+        "hours_of_operation" : "",
+        "name" : "Venue 1",
+        "notes" : [  ],
+        "owner" : 1,
+        "phone" : "1253462",
+        "region" : 1,
+        "save_timestamp" : "2012-01-11 21:06:48"
+      },
+    "model" : "pr_services.venue",
+    "pk" : 1
+  },
+    { "fields" : { "blame" : null,
+        "capacity" : 100,
+        "create_timestamp" : "2012-01-11 21:07:10",
+        "final_type" : [ "pr_services",
+            "room"
+          ],
+        "name" : "Room 1",
+        "notes" : [  ],
+        "owner" : null,
+        "room_number" : "",
+        "save_timestamp" : "2012-01-11 21:07:10",
+        "venue" : 1
+      },
+    "model" : "pr_services.room",
+    "pk" : 1
+  },
   {
     "pk": 1,
     "model": "pr_services.session",
@@ -240,7 +275,7 @@
       "lead_time": null,
       "status": "active",
       "description": null,
-      "blame": 5,
+      "blame": null,
       "active": true,
       "final_type": [
         "pr_services",
@@ -271,7 +306,7 @@
       "product_claim": null,
       "sent_confirmation": false,
       "authority": null,
-      "blame": 6,
+      "blame": null,
       "effective_date_assigned": null,
       "status_change_log": "Object created by <User: Mr. Primo Uomo Sr.> (IP=127.0.0.1), with initial status 'assigned'",
       "user": 2,
