@@ -29,7 +29,7 @@ import pr_time
 import storage
 
 from fields import *
-from pr_services.middleware import get_client_ip
+from pr_services.middleware import get_client_ip, get_auth_token
 
 
 def add_validation_error(validation_errors, attname, message):
@@ -1171,6 +1171,8 @@ class Assignment(PRModel):
 
         # retrieve source IP address from request (to log status changes)
         ip = get_client_ip()
+        auth_token = get_auth_token()
+        user = auth_token.user if auth_token else self.user
 
         if self.pk is None:
             # The first time the object is saved, see if it requires payment.
@@ -1180,7 +1182,7 @@ class Assignment(PRModel):
                 self.status = 'unpaid'
             # Log creation and initial status of new assignments?
             self.status_change_log += u'Object created by %s (IP=%s), with initial status \'%s\'' % \
-                (repr(self.user), ip, self.status)
+                (repr(user), ip, self.status)
 
         else:
             old_status = self.__class__.objects.get(pk=self.pk).status
@@ -1196,7 +1198,7 @@ class Assignment(PRModel):
                 ## self.log_status_change(*args, **kwargs);
                 ## OR (assignment=self, oldStatus=old_status, newStatus=self.status );
                 self.status_change_log += u'\nStatus changed at %s by %s (IP=%s), from \'%s\' to \'%s\'' % \
-                    (datetime.utcnow(), repr(self.user), ip, old_status, self.status)
+                    (datetime.utcnow(), repr(user), ip, old_status, self.status)
 
         super(Assignment, self).save(*args, **kwargs)
 

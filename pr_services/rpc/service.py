@@ -16,6 +16,7 @@ import django.db.transaction
 # Power Reg
 from pr_services import exceptions
 from pr_services.utils import Utils
+from pr_services.middleware import set_auth_token
 import facade
 
 # Decorator module
@@ -193,7 +194,7 @@ class ShimInvoke:
         Execute a call
 
         @param parameters    All of the parameters that were passed
-        
+
         @return               A data structure indicating status as well
                               as a return value if the invocation was
                               successful.
@@ -203,20 +204,20 @@ class ShimInvoke:
 
         parameters = list(parameters)
 
-        if (len(parameters) > 0 and getargspec(self.method)[0][1] == 'auth_token' and
+        if (len(parameters) > 0 and getargspec(self.method).args[1] == 'auth_token' and
             isinstance(parameters[0], basestring) and parameters[0]):
 
             try:
-                at = Utils.get_auth_token_object(parameters[0], start_time)
-                parameters[0] = at
+                auth_token = Utils.get_auth_token_object(parameters[0], start_time)
             except exceptions.PrException, e:
                 stop_time = datetime.datetime.utcnow()
-                rpc_ret = {}
-                rpc_ret['status'] = 'error'
-                rpc_ret['error'] = [e.get_error_code(), e.get_error_msg()]
-                logger.info(self.format_trace_log_message(start_time,
-                    stop_time, rpc_ret, *parameters))
+                rpc_ret = {'status': 'error',
+                           'error': [e.get_error_code(), e.get_error_msg()]}
+                logger.info(self.format_trace_log_message(start_time, stop_time,
+                    rpc_ret, *parameters))
                 return rpc_ret
+            parameters[0] = auth_token
+            set_auth_token(auth_token)
 
         rpc_ret = {}
         try:
