@@ -9,10 +9,13 @@ from datetime import datetime, timedelta
 from operator import itemgetter
 
 import django.utils.unittest
-import django.test
 
-from celery import conf
+from django import test
 from django.conf import settings
+from django.core import cache, mail
+from django.core.management import call_command
+from django.db import transaction, connection, connections, DEFAULT_DB_ALIAS
+from celery import conf
 
 from pr_services import pr_time
 from pr_services.object_manager import ObjectManager
@@ -20,7 +23,13 @@ from pr_services.object_manager import ObjectManager
 import facade
 import helpers
 
-__all__ = ['common', 'mixins', 'helpers']
+__all__ = (
+    'FixtureTestCase',
+    'BasicTestCase',
+    'GeneralTestCase',
+    'RoleTestCase'
+    'TestCase',
+)
 
 _ONEDAY = timedelta(days=1)
 
@@ -105,8 +114,65 @@ def _build_manager_member_names():
 
 _build_manager_member_names()
 
+class FixtureTestCase(test.TransactionTestCase):
 
-class TestCase(django.test.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        if not test.testcases.connections_support_transactions():
+            raise NotImplementedError('%s requires DB with transaction '
+                                      'capability.' % cls.__name__)
+        for db in cls._databases():
+            transaction.enter_transaction_management(using=db)
+            transaction.managed(True, using=db)
+        cls._fixture_setup()
+
+    @classmethod
+    def tearDownClass(cls):
+        for db in cls._databases():
+            if transaction.is_dirty(using=db):
+                transaction.commit(using=db)
+            transaction.leave_transaction_management(using=db)
+
+    @classmethod
+    def _fixture_setup(cls):
+        for db in cls._databases():
+            if hasattr(cls, 'fixtures'):
+                if getattr(cls, '_fb_should_setup_fixtures', True):
+                    call_command('syncdb')
+                    call_command('flush', verbosity=0, interactive=False,
+                            database=db)
+                    call_command('loaddata', *cls.fixtures, verbosity=0,
+                            commit=False, database=db)
+            elif not hasattr(cls, '_fb_should_setup_fixtures'):
+                call_command('syncdb')
+                call_command('flush', verbosity=0, interactive=False,
+                        database=db)
+            transaction.commit(using=db)
+
+    def _pre_setup(self):
+        cache.cache.clear()
+        test.testcases.disable_transaction_methods()
+        self._urlconf_setup()
+        mail.outbox = []
+        from django.contrib.sites.models import Site
+        Site.objects.clear_cache()
+
+    def _post_teardown(self):
+        test.testcases.restore_transaction_methods()
+        for db in self._databases():
+            transaction.rollback(using=db)
+        self._urlconf_teardown()
+
+    @classmethod
+    def _databases(cls):
+        if getattr(cls, 'multi_db', False):
+            databases = connections
+        else:
+            databases = [DEFAULT_DB_ALIAS]
+        return databases
+
+
+class TestCase(FixtureTestCase):
     """
     Base class used to do *very* basic setup for power reg test cases.
     """
@@ -114,7 +180,6 @@ class TestCase(django.test.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestCase, self).__init__(*args, **kwargs)
         self.authorizer = _DEFAULT_AUTHORIZER
-        self._flush_acls = True
 
     def setUp(self):
         super(TestCase, self).setUp()
@@ -122,12 +187,7 @@ class TestCase(django.test.TestCase):
         self._save_settings()
         self._setup_managers()
 
-        # XXX: this is somewhat of an optimization for the tests
-        # flush ACLs once for each test class but only after the
-        # fixtures are loaded the first time.
-        if self._flush_acls:
-            self.authorizer._load_acls()
-            self._flush_acls = False
+        self.authorizer._load_acls()
 
         # Modify the celery configuration to run tasks eagerly for unit tests.
         self._always_eager = conf.ALWAYS_EAGER

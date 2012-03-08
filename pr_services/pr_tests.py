@@ -25,6 +25,7 @@ import django.test.client
 import django.utils.dateformat
 import django.utils.unittest
 
+from django import test
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -65,7 +66,7 @@ def datestring(d):
 #
 ##############################################################################
 
-class TestGetDecimal(TestCase):
+class TestGetDecimal(test.TestCase):
     class DecimalModel(models.Model):
         price = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -85,7 +86,7 @@ class TestGetDecimal(TestCase):
         self.assertTrue(value is None)
 
 
-class TestSetDecimal(TestCase):
+class TestSetDecimal(test.TestCase):
     class DecimalModel(models.Model):
         price = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -4111,7 +4112,7 @@ class LegacyUtils(object):
         self.assignment_manager.bulk_create(self.admin_token, learner_req4.id, s4_learners)
 
 
-class TestAdminPasswordSetup(django.test.TestCase):
+class TestAdminPasswordSetup(TestCase):
     def test_admin_password_setup(self):
         InitialSetupMachine().initial_setup(default_admin_password='Oog5faga')
         user_manager = facade.managers.UserManager()
