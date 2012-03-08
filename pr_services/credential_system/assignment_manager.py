@@ -241,21 +241,6 @@ class AssignmentManager(ObjectManager):
 
         See pr_services/templates/pr_messaging/email/assignment-task-message
         """
-        # TODO: move the following checks into an authorizer method
-        try:
-            self.authorizer.check_arbitrary_permissions(auth_token,
-                    'email_task_assignees')
-        except PermissionDeniedException:
-            surr = SessionUserRoleRequirement.objects.filter(id=task_id)
-            if not surr.exists():
-                raise PermissionDeniedException()
-            instructor_check = SessionUserRoleRequirement.objects.filter(
-                   session=surr[0].session,
-                   session_user_role__name="Instructor",
-                   users__in=[auth_token.user_id])
-            if not instructor_check.exists():
-                raise PermissionDeniedException()
-
         task = Task.objects.get(id=task_id)
         assignments = Assignment.objects.filter(task__id=task_id,
                 status__in=status_filter).select_related('user__email')

@@ -219,7 +219,7 @@ class ScoManager(TaskManager):
         # Make sure that the user is allowed to upload a scorm course
         if not isinstance(auth_token, facade.models.AuthToken):
             auth_token = Utils.get_auth_token_object(auth_token)
-        facade.subsystems.Authorizer().check_arbitrary_permissions(auth_token, 'upload_scorm_course')
+        self.authorizer.check_arbitrary_permissions(auth_token, 'upload_scorm_course')
         scorm_zip_file = zipfile.ZipFile(scorm_file)
         manifest = scorm_zip_file.read('imsmanifest.xml')
         manifest = ElementTree.XML(manifest)

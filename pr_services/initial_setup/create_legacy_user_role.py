@@ -3,10 +3,10 @@ from decorators import authz
 @authz
 def setup(machine):
     methods = [
-        {'name' : 'actor_is_authenticated', 'params' : {}},
-        {'name' : 'actor_owns_payment', 'params' : {}},
-        {'name' : 'actor_related_to_domain_affiliation', 'params' : {}},
-        {'name' : 'actor_owns_training_unit_authorization', 'params' : {}},
+        {'name' : 'auth.actor_is_authenticated'},
+        {'name' : 'ownership.actor_owns_payment'},
+        {'name' : 'membership.actor_related_to_domain_affiliation'},
+        {'name' : 'ownership.actor_owns_training_unit_authorization'},
     ]
     crud = {
         'Answer' : {

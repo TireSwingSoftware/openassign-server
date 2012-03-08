@@ -19,8 +19,6 @@ import logging
 import pr_time
 import tagging.models
 
-_DEFAULT_AUTHORIZER = facade.subsystems.Authorizer()
-
 Getter = facade.subsystems.Getter
 Setter = facade.subsystems.Setter
 
@@ -87,27 +85,16 @@ class ObjectManager(object):
         'save_timestamp': 'get_time'
     }
 
+
     def __init__(self):
         """ constructor """
         #: Sometimes we do nested iterations, such as going through a list of users, and
         #: for each one, figuring out which groups they belong to.  It's helpful to
         #: cache the relationship data here so don't have to fetch it again for each user.
         self.cache = {}
-        #self.authorizer = facade.subsystems.Authorizer()
+        self.authorizer = facade.subsystems.Authorizer()
         self.logger = logging.getLogger(self.__module__)
         self.blame = None
-
-    @property
-    def authorizer(self):
-        """Returns an instance of the latest Authorizer class
-
-        Since the Authorizer class might get extended by a plugin we should
-        avoid accessing by any other means than the facade itself.  However,
-        since so much of our tests expect there to be an authorizer within
-        their own class, this method will provide them backward compatibility.
-
-        """
-        return _DEFAULT_AUTHORIZER
 
     @service_method
     def update(self, auth_token, id, value_map):

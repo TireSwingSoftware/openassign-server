@@ -9,7 +9,7 @@ from operator import itemgetter
 
 import facade
 
-from admin_crud import admin_crud
+from admin_privs import admin_privs
 
 # the default fields that everyone should be able to read for any
 # model they have access to
@@ -75,18 +75,19 @@ class InitialSetupMachine(object):
         :param acl: dictionary representation of the ACL
         :type acl: dict
         """
-        for model_name, crud in acl.iteritems():
-            # set restrictive defaults if not specified
-            crud.setdefault('c', False)
-            crud.setdefault('d', False)
-            updateable = crud.setdefault('u', set())
-            readable = crud.setdefault('r', set())
-            if not (isinstance(readable, collections.MutableSet)
-                    and isinstance(updateable, collections.MutableSet)):
-                raise TypeError("expecting a set of attributes in %s crud "
-                    "for %s role" % (model_name, role_name))
-            else:
-                readable.update(default_read_fields)
+        for actee_type, privs in acl.iteritems():
+            if hasattr(facade.models, actee_type):
+                # set restrictive defaults if not specified
+                privs.setdefault('c', False)
+                privs.setdefault('d', False)
+                updateable = privs.setdefault('u', set())
+                readable = privs.setdefault('r', set())
+                if not (isinstance(readable, collections.MutableSet)
+                        and isinstance(updateable, collections.MutableSet)):
+                    raise TypeError("expecting a set of attributes in %s crud "
+                        "for %s role" % (model_name, role_name))
+                else:
+                    readable.update(default_read_fields)
 
     @classmethod
     def validate_acl(cls, role_name, acl):
@@ -99,19 +100,25 @@ class InitialSetupMachine(object):
             - attribute sets contain valid attributes
         """
         _read_update = itemgetter('r', 'u')
-        for model_name, crud in acl.iteritems():
-            if len(crud) != 4:
-                # check that there are only keys for c, r, u, d
-                raise ValueError("crud dict should contain only c, r, u, and d")
+        for actee_type, privs in acl.iteritems():
+            if hasattr(facade.models, actee_type):
+                if len(privs) != 4:
+                    # check that there are only keys for c, r, u, d
+                    raise ValueError("privs dict should contain only c, r, u, and d")
 
-            for operation, attributes in zip("ru", _read_update(crud)):
-                # check for extraneous attributes defined by the role
-                valid_attributes = admin_crud[model_name][operation]
-                invalid_attributes = list(attributes - valid_attributes)
-                if invalid_attributes:
-                    raise ValueError("invalid attributes %r for '%s' in %s crud"
-                            " for '%s' role" % (invalid_attributes, operation,
-                                model_name, role_name))
+                for operation, attributes in zip("ru", _read_update(privs)):
+                    # check for extraneous attributes defined by the role
+                    valid_attributes = admin_privs[actee_type][operation]
+                    invalid_attributes = list(attributes - valid_attributes)
+                    if invalid_attributes:
+                        raise ValueError("invalid attributes %r for '%s' in %s privs"
+                                " for '%s' role" % (invalid_attributes, operation,
+                                    actee_type, role_name))
+            elif hasattr(facade.managers, actee_type):
+                if not privs or 'methods' not in privs:
+                    raise ValueError("No method privs defined for %s" % actee_Type)
+                if len(privs) > 1:
+                    raise ValueError("manager privs should contain one key for 'methods'")
 
     def add_acl_to_role(self, name, methods, crud, arbitrary_perms=None):
         """
@@ -130,10 +137,7 @@ class InitialSetupMachine(object):
         InitialSetupMachine.normalize_acl(name, crud)
         InitialSetupMachine.validate_acl(name, crud)
         crud = cPickle.dumps(crud)
-        if arbitrary_perms is not None:
-            arbitrary_perms = cPickle.dumps(arbitrary_perms)
-        else:
-            arbitrary_perms = ''
+        arbitrary_perms = cPickle.dumps(arbitrary_perms or [])
         acl = facade.models.ACL.objects.create(role=role, acl=crud,
             arbitrary_perm_list=arbitrary_perms)
         for m in methods:
@@ -174,6 +178,6 @@ class InitialSetupMachine(object):
         if self.options.has_key('admin_token'):
             self.user_manager.logout(self.options['admin_token'])
         # we need to reload the ACLs because we just modified them
-        facade.subsystems.Authorizer()._load_acls()
+        facade.subsystems.Authorizer.flush()
 
 # vim:tabstop=4 shiftwidth=4 expandtab

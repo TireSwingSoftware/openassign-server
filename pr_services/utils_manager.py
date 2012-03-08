@@ -1,7 +1,7 @@
 from facade import models
 import pr_services.exceptions as exceptions
 from django.db.models.fields import FieldDoesNotExist
-from pr_services.rpc.service import service_method
+from pr_services.rpc.service import public_service_method
 import logging
 import time
 
@@ -9,7 +9,7 @@ class UtilsManager(object):
     """Utility methods usable through RPC."""
     logger = logging.getLogger('UtilsManager')
 
-    @service_method
+    @public_service_method
     def get_choices(self, model_name, attribute_name):
         """
         Fetch the list of valid values for a model's multiple-choice attribute

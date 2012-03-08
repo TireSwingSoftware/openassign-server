@@ -3,10 +3,10 @@ from decorators import authz
 @authz
 def setup(machine):
     methods = [
-        {'name' : 'actor_is_product_line_manager_of_session', 'params' : {}},
-        {'name' : 'actor_is_product_line_manager_of_session_template', 'params' : {}},
-        {'name' : 'actor_is_product_line_manager_of_user', 'params' : {}},
-        {'name' : 'actor_is_product_line_manager_of_product_line', 'params' : {}},
+        {'name' : 'product_line.actor_is_product_line_manager_of_session'},
+        {'name' : 'product_line.actor_is_product_line_manager_of_session_template'},
+        {'name' : 'product_line.actor_is_product_line_manager_of_user'},
+        {'name' : 'product_line.actor_is_product_line_manager_of_product_line'},
     ]
     crud = {
         'ProductLine' : {

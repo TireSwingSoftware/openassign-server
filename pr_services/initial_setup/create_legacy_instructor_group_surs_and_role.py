@@ -11,9 +11,9 @@ def setup(machine):
         name='Instructors')
 
     methods = [
-        {'name' : 'actor_member_of_group', 'params' : {'group_id' : group.id}},
-        {'name' : 'actor_actee_enrolled_in_same_session', 'params' : {
-            'actor_sur_id' : sur.id, 'actee_sur_id' : student_sur.id}},
+        {'name': 'membership.actor_member_of_group', 'params' : {'group_id' : group.id}},
+        {'name': 'constraint.actor_actee_enrolled_in_same_session',
+            'params': {'actor_sur_id': sur.id, 'actee_sur_id': student_sur.id}},
     ]
     crud = {
         'User' : {
@@ -37,7 +37,4 @@ def setup(machine):
             'd' : True,
         },
     }
-    arbitrary_perms = [
-        'email_task_assignees',
-    ]
-    machine.add_acl_to_role('Instructor', methods, crud, arbitrary_perms)
+    machine.add_acl_to_role('Instructor', methods, crud)

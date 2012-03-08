@@ -1,7 +1,7 @@
 import facade
 from pr_services.utils import Utils
 from decorators import authz
-from admin_crud import admin_crud
+from admin_privs import admin_privs
 
 @authz
 def setup(machine):
@@ -26,8 +26,8 @@ def setup(machine):
             password_hash=password_hash, password_salt=salt)
 
     methods = [
-        {'name' : 'actor_member_of_group', 'params' : {'group_id' : group.id}},
-        {'name' : 'refund_does_not_exceed_payment', 'params' : {}},
+        {'name' : 'membership.actor_member_of_group', 'params' : {'group_id' : group.id}},
+        {'name' : 'payment.refund_does_not_exceed_payment', 'params' : {}},
     ]
     arb_perm_list = [
         'access_db_settings',
@@ -35,7 +35,6 @@ def setup(machine):
         'check_usernames',
         'exceed_enrollment_capacity',
         'export_exam_to_xml',
-        'email_task_assignees',
         'import_exam_from_xml',
         'logging',
         'read_reports',
@@ -45,11 +44,11 @@ def setup(machine):
         'upload_scorm_course',
     ]
 
-    machine.add_acl_to_role('Admin', methods, admin_crud, arb_perm_list)
+    machine.add_acl_to_role('Admin', methods, admin_privs, arb_perm_list)
 
     if not machine.options['authz_only']:
         # we need to reload ACLs that were just modified before using them to login
-        facade.subsystems.Authorizer()._load_acls()
+        facade.subsystems.Authorizer.flush()
 
         # we log in here so that other setup methods can have an admin_token
         token_str = machine.user_manager.login('admin', password)['auth_token']

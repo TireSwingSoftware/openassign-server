@@ -24,7 +24,7 @@ from pr_services import exceptions
 from pr_services import pr_time
 from pr_services import storage
 from pr_services.object_manager import ObjectManager
-from pr_services.rpc.service import service_method
+from pr_services.rpc.service import service_method, public_service_method
 from pr_services.utils import upload
 from pr_services.utils import Utils
 from pr_services import middleware
@@ -133,7 +133,7 @@ class UserManager(ObjectManager):
                 self.ldap_connection = ldap.initialize(settings.LDAP_URL)
         self.photo_storage_engine = storage.UserPhotoStorage()
 
-    @service_method
+    @public_service_method
     def check_password_against_policy(self, proposed_password, messages=None):
         """
         Checks a proposed password against the password policy, raising a
@@ -460,7 +460,7 @@ class UserManager(ObjectManager):
         domain_affiliation.password_hash = Utils._hash(new_password + salt, 'SHA-512')
         domain_affiliation.save()
 
-    @service_method
+    @public_service_method
     def confirm_email(self, confirmation_code):
         """
         Validate a confirmation code sent to a new user via email when they
@@ -487,7 +487,7 @@ class UserManager(ObjectManager):
                 da = self._find_da_by_username(ud['username'], ud['domain'])
                 return self._generate_auth_token(da)
 
-    @service_method
+    @public_service_method
     def reset_password(self, username, email, domain=u'local'):
         """
         Resets a user's password.  This is used for when the user
@@ -572,7 +572,7 @@ class UserManager(ObjectManager):
             o.save()
         return accounts
 
-    @service_method
+    @public_service_method
     def login(self, username, password, domain=u'local'):
         """
         Authenticate a user by password, returning an authentication token if successful.
@@ -627,7 +627,7 @@ class UserManager(ObjectManager):
 
         return authenticated_session
 
-    @service_method
+    @public_service_method
     def redeem_auth_token_voucher(self, voucher):
         """
         Obtain an AuthToken in exchange for an AuthTokenVoucher. The voucher is good for only one
@@ -662,7 +662,7 @@ class UserManager(ObjectManager):
         return {'auth_token' : at.session_id,
             'expiration' : at.time_of_expiration.replace(microsecond=0, tzinfo=pr_time.UTC()).isoformat()}
 
-    @service_method
+    @public_service_method
     def obtain_auth_token_voucher(self, domain, username, password):
         """
         Each domain is authorized to call this method from no more than one IP address.
@@ -1137,7 +1137,7 @@ class UserManager(ObjectManager):
         user_ids = self.my_django_model.objects.filter(groups__name=group_name).values_list('id', flat=True)
         return self.get_filtered(auth_token, {'member' : {'id' : user_ids}}, fields)
 
-    @service_method
+    @public_service_method
     def get_recaptcha_challenge(self):
         html = urllib2.urlopen('%s/noscript?k=%s' %
             (captcha.API_SSL_SERVER, settings.RECAPTCHA_PUBLIC_KEY)).read()

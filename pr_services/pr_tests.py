@@ -36,15 +36,13 @@ from django.utils.unittest import skipIf, skipUnless, skip
 
 from cookiecache import CookieCache
 from initial_setup import InitialSetupMachine, default_read_fields
-from pr_services import exceptions
-from pr_services import pr_time
+from pr_services import exceptions, pr_time
 from pr_services.gettersetter import Getter, Setter
 from pr_services.object_manager import ObjectManager
-from pr_services.rpc.service import (service_method, wrap_service_method,
-        RpcService, create_rpc_service)
+from pr_services.rpc.service import (public_service_method,
+        wrap_public_service_method, RpcService, create_rpc_service)
 from pr_services.testlib import (GeneralTestCase, RoleTestCase, BasicTestCase,
         TestCase)
-from pr_services.testlib import mixins
 from pr_services.testlib.helpers import (expectPermissionDenied, load_fixtures,
         object_dict)
 from pr_services.utils import UnicodeCsvWriter
@@ -117,45 +115,6 @@ class TestSetDecimal(test.TestCase):
     def test_set_invalid_string(self):
         self.assertRaises(decimal.InvalidOperation, self.setter.set_decimal, 'price', 'abc')
 
-
-class TestAuthorizer(GeneralTestCase):
-    def test_authorizer_caching(self):
-        student_id, student_at = self.user1, self.user1_auth_token
-        # The admin should be allowed to create a group, but not a student
-        the_group = self.group_manager.create('The group!')
-        authorizer = facade.subsystems.Authorizer()
-        # By using the same authorizer to check the admin and the student on the same object, we can ensure that the caching works as intended
-        authorizer.check_create_permissions(self.admin_token, the_group)
-        self.assertRaises(exceptions.PermissionDeniedException, authorizer.check_create_permissions, student_at, the_group)
-        self.assertRaises(exceptions.PermissionDeniedException, self.group_manager.create, student_at, 'The other group!')
-
-    def test_merge_acls(self):
-        def get_admin_acl():
-            admin_role = Role.objects.get(name='Admin')
-            acl = admin_role.acls.all()[0]
-            return acl, cPickle.loads(str(acl.acl))
-        acl, acl_dict = get_admin_acl()
-        self.assertNotIn('annual_beer_consumption', acl_dict['User']['r'])
-        self.assertNotIn('Beer', acl_dict)
-        acl_updates = {
-                        'User' : {
-                            'r' : set(('annual_beer_consumption',)),
-                        },
-                        'Beer' : {
-                            'c' : True,
-                            'r' : set(('name', 'brewery', 'style', 'IBU',)),
-                            'u' : set(),
-                            'd' : False,
-                        }
-        }
-        acl.merge_updates(acl_updates)
-        acl, acl_dict = get_admin_acl()
-        self.assertIn('annual_beer_consumption', acl_dict['User']['r'])
-        self.assertIn('first_name', acl_dict['User']['r'])
-        self.assertIn('Beer', acl_dict)
-        self.assertIn('IBU', acl_dict['Beer']['r'])
-        self.assertEquals(len(acl_dict['Beer']['u']), 0)
-        self.assertTrue(acl_dict['Beer']['c'])
 
 class TestAuthToken(GeneralTestCase):
     def test_user_related_name(self):
@@ -550,7 +509,7 @@ class TestEmailUsers(BasicTestCase):
 
 class TestEmailTaskAssignees(BasicTestCase):
 
-    fixtures = BasicTestCase.fixtures + ['unprivileged_user', 'exams_and_achievements']
+    fixtures = ['initial_setup_precor', 'unprivileged_user', 'exams_and_achievements']
 
     def setUp(self):
         super(TestEmailTaskAssignees, self).setUp()
@@ -1277,7 +1236,7 @@ class TestLogging(BasicTestCase):
             arb_perm_list.remove('logging')
             guest_acl.arbitrary_perm_list = cPickle.dumps(arb_perm_list)
             guest_acl.save()
-            facade.subsystems.Authorizer._load_acls() # must reload from DB for it to take effect
+            facade.subsystems.Authorizer.flush() # must reload from DB for it to take effect
         self.assertRaises(exceptions.NotLoggedInException,
             self.log_manager.error, 'this is not a valid auth token',
             'this is an invalid auth token test')
@@ -1293,7 +1252,7 @@ class TestLogging(BasicTestCase):
             arb_perm_list.append('logging')
             guest_acl.arbitrary_perm_list = cPickle.dumps(arb_perm_list)
             guest_acl.save()
-            facade.subsystems.Authorizer._load_acls() # must reload from DB for it to take effect
+            facade.subsystems.Authorizer.flush() # must reload from DB for it to take effect
         self.log_manager.error('', 'this is a guest auth token test')
         self.log_manager.error(None, 'this is a guest auth token test')
 
@@ -1573,20 +1532,22 @@ class TestRpcService(TestCase):
             obj_m_argspec = inspect.getargspec(obj_m)
             svc_m_argspec = inspect.getargspec(svc_m)
             self.assertEquals(obj_m_argspec, svc_m_argspec)
-            self.assertTrue(hasattr(obj_m, '_service_method'))
-            self.assertTrue(hasattr(svc_m, '_service_method'))
+            self.assertTrue(hasattr(obj_m, '_service_method') or
+                    hasattr(obj_m, '_public_service_method'))
+            self.assertTrue(hasattr(svc_m, '_service_method') or
+                    hasattr(svc_m, '_public_service_method'))
 
     def test_rpc_service(self):
         # Define example manager classes.
         class MyObject(object):
             """MyObject"""
 
-            @service_method
+            @public_service_method
             def create(self, name):
                 """Create something with a name"""
                 return id(name)
 
-            @service_method
+            @public_service_method
             def delete(self, pk):
                 """Delete the thing with primary key pk."""
 
@@ -1597,12 +1558,12 @@ class TestRpcService(TestCase):
         class MySubObject(MyObject):
             """MySubObject"""
 
-            @service_method
+            @public_service_method
             def create(self, name, description):
                 """Create something else with a name and description"""
                 return id(name)
 
-            @service_method
+            @public_service_method
             def do_stuff(self, pk):
                 """Do stuff to the something with primary key pk."""
 
@@ -1624,7 +1585,7 @@ class TestRpcService(TestCase):
             def non_service_method(self):
                 """This extra method is not exposed."""
 
-            @wrap_service_method
+            @wrap_public_service_method
             def exposed_service_method(self):
                 """This extra method is exposed."""
 
@@ -2002,24 +1963,24 @@ class TestSessionManager(GeneralTestCase):
         acl = {
             'Assignment' : {
                 'c' : False,
-                'r' : ['id', 'status'],
-                'u' : ['status'],
+                'r' : set(('id', 'status')),
+                'u' : set(('status',)),
                 'd' : False,
             },
         }
         proctor_role = Role.objects.create(name='Proctor')
         proctor_acl = ACL.objects.create(acl = cPickle.dumps(acl), role=proctor_role)
-        group_test_method = ACCheckMethod.objects.get(name = 'actor_member_of_group')
+        group_test_method = ACCheckMethod.objects.get(name = 'membership.actor_member_of_group')
         ACMethodCall.objects.create(acl=proctor_acl, ac_check_method = group_test_method,
             ac_check_parameters = cPickle.dumps({'group_id' : proctor_group.id}))
 
         assignment_venue_matches_actor_preferred_venue = ACCheckMethod.objects.get(
-            name = 'assignment_venue_matches_actor_preferred_venue')
+            name = 'assignment.assignment_venue_matches_actor_preferred_venue')
         ACMethodCall.objects.create(acl=proctor_acl, ac_check_method=assignment_venue_matches_actor_preferred_venue)
         proctor = self.user_manager.create('proctor1', 'password', 'Dr', 'P', 'Roctor', '123-456-7890', 'p@roctor.org', 'active',
             {'groups' : {'add' : [proctor_group.id]}})
         proctor_token = facade.subsystems.Utils.get_auth_token_object(self.user_manager.login('proctor1', 'password')['auth_token'])
-        facade.subsystems.Authorizer._load_acls()
+        facade.subsystems.Authorizer.flush()
 
         # Create some users and enroll them in something
         learner1 = self.user_manager.create('learner_1', 'password', '', '', '', '', '', 'active')
@@ -3605,14 +3566,14 @@ class TestObjectManagerPermissions(RoleTestCase, CommonObjectManagerTests):
     # supplement common tests with a few specific additional checks
     def test_check_exists_with_create_perm_only(self):
         "checking if value exists with create permission only"
-        self.create_quick_user_role("Foo Role", {'User': {'c': True}})
+        self.create_role({'User': {'c': True}})
         check_exists = self.user_manager.check_exists
         self.assertTrue(check_exists('email', 'admin@admin.org'))
         self.assertFalse(check_exists('email', 'nonexistent@email.com'))
 
     def test_check_exists_with_update_perm_only(self):
         "checking if value exists with update permission only"
-        self.create_quick_user_role("Foo Role", {'User': {'u': set(('email', ))}})
+        self.create_role({'User': {'u': set(('email', ))}})
         check_exists = self.user_manager.check_exists
         self.assertTrue(check_exists('email', 'admin@admin.org'))
         self.assertFalse(check_exists('email', 'nonexistent@email.com'))

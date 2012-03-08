@@ -9,8 +9,8 @@ def setup(machine):
         return
 
     methods = [
-        {'name' : 'actor_is_member_of_actee_related_category_authorized_groups', 'params' : {}},
-        {'name' : 'actor_owns_assignment', 'params' : {}}
+        {'name' : 'membership.actor_is_member_of_actee_related_category_authorized_groups'},
+        {'name' : 'ownership.actor_owns_assignment'}
     ]
     crud = {
         'Assignment' : {

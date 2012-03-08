@@ -4,9 +4,10 @@ Class used as a shim for functions invoked via RPC
 
 # Python
 import datetime
+import functools
+import inspect
 import logging
 import traceback
-from inspect import getargspec
 
 # Django
 from django.conf import settings
@@ -17,26 +18,47 @@ import django.db.transaction
 from pr_services import exceptions
 from pr_services.utils import Utils
 from pr_services.middleware import set_auth_token
+
 import facade
 
 # Decorator module
-import decorator
+from decorator import decorator
 
 logger = logging.getLogger('pr_services.rpc')
 
 path = str(__file__) #: used to identify Power Reg instance in log messages
 
-__all__ = ['service_method', 'wrap_service_method', 'RpcService',
-    'create_rpc_service']
+__all__ = ('public_service_method', 'service_method', 'wrap_service_method',
+    'wrap_public_service_method', 'RpcService', 'create_rpc_service')
+
+def public_service_method(f):
+    """
+    Decorator for service methods which don't take an auth_token.
+    """
+    f._public_service_method = True
+    return f
 
 def service_method(f):
     """
     Decorator to mark a function as a service method.
     """
-    f._service_method = True
-    return f
+    argspec = inspect.getargspec(f)
+    assert argspec.args[0] == 'self'
+    assert argspec.args[1] == 'auth_token'
 
-@decorator.decorator
+    def wrapper(func, self, auth_token=None, *args, **kwargs):
+        bound_method = getattr(self, func.__name__)
+        self.authorizer.check_method_call(
+                auth_token=auth_token, manager=self, method=bound_method,
+                call_args=args, call_kwargs=kwargs)
+        return func(self, auth_token, *args, **kwargs)
+
+    d = decorator(wrapper, f)
+    setattr(d, '_service_method', True)
+    return d
+
+
+@decorator
 def _invoke_service_method(f, self, *args, **kwds):
     """
     Decorator for wrapping exposed RpcService methods with ShimInvoke.
@@ -49,6 +71,12 @@ def wrap_service_method(f):
     Decorator for exposing custom methods defined on an RpcService subclass.
     """
     return _invoke_service_method(service_method(f))
+
+def wrap_public_service_method(f):
+    """
+    Decorator for exposing custom methods defined on an RpcService subclass.
+    """
+    return _invoke_service_method(public_service_method(f))
 
 class RpcServiceMeta(type):
     """
@@ -74,13 +102,16 @@ class RpcServiceMeta(type):
                 continue
             # If attribute has not been marked as a service method, do not
             # expose it.
-            if not getattr(attr, '_service_method', False):
+            if not (getattr(attr, '_service_method', False) or
+                    getattr(attr, '_public_service_method', False)):
                 continue
             # If the class has already defined an attribute with the same name,
             # and that attribute has not been marked as a service method, do
             # not replace it.
             if hasattr(cls, name):
-                if not getattr(getattr(cls, name), '_service_method', False):
+                obj = getattr(cls, name)
+                if not (getattr(obj, '_service_method', False) or
+                        getattr(obj, '_public_service_method', False)):
                     continue
             # Finally, wrap the action_class method's function so it can be
             # invoked as a service method.
@@ -145,6 +176,8 @@ class RpcService(object):
         for name in dir(cls):
             if hasattr(getattr(cls, name), '_service_method'):
                 yield name
+            if hasattr(getattr(cls, name), '_public_service_method'):
+                yield name
 
     # For backwards compatibility with MethodIntrospection interface.
     def _get_method_list(self):
@@ -204,9 +237,8 @@ class ShimInvoke:
 
         parameters = list(parameters)
 
-        if (len(parameters) > 0 and getargspec(self.method).args[1] == 'auth_token' and
+        if (parameters and inspect.getargspec(self.method).args[1] == 'auth_token' and
             isinstance(parameters[0], basestring) and parameters[0]):
-
             try:
                 auth_token = Utils.get_auth_token_object(parameters[0], start_time)
             except exceptions.PrException, e:

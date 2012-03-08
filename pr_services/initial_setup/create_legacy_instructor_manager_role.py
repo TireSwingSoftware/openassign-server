@@ -3,7 +3,7 @@ from decorators import authz
 @authz
 def setup(machine):
     methods = [
-        {'name' : 'actor_is_instructor_manager_of_actee', 'params' : {}},
+        {'name' : 'constraint.actor_is_instructor_manager_of_actee', 'params' : {}},
     ]
     crud = {
         'User' : {

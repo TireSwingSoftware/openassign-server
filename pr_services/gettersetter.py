@@ -33,8 +33,6 @@ def is_for_derived_attribute(func):
     func.is_for_derived_attribute = True
     return func
 
-_DEFAULT_AUTHORIZER = facade.subsystems.Authorizer()
-
 class Getter(object):
     logger = logging.getLogger('pr_services.getter')
 
@@ -43,8 +41,8 @@ class Getter(object):
         self.cache = {}
         self.getters = {}
         self.results = []
+        self.authorizer = facade.subsystems.Authorizer()
         self.object_manager = object_manager
-        self.authorizer = _DEFAULT_AUTHORIZER
 
         # if 'id' isn't in the requested fields, it really should be!
         requested_fields = set(requested_fields)
@@ -71,7 +69,7 @@ class Getter(object):
         get_authorized_attributes = self.authorizer.get_authorized_attributes
         for item in django_query:
             # get attributes the user is authorized to read
-            attributes = get_authorized_attributes(auth_token, item, requested_fields, 'r')
+            attributes = get_authorized_attributes('r', auth_token, item, requested_fields)
             if attributes:
                 row = dict((f, self.getters[f](item, f)) for f in attributes)
                 self.results.append(row)
@@ -400,28 +398,24 @@ class Setter(object):
 
     def __init__(self, auth_token, object_manager, django_object, setter_dict):
         self.object_manager = object_manager
+        self.authorizer = facade.subsystems.Authorizer()
         self.django_object = django_object
         self.setter_dict = setter_dict
         self.setters = {}
+        self.auth_token = auth_token
+        if not setter_dict:
+            return
         for field in setter_dict:
             if field not in object_manager.SETTERS:
                 raise exceptions.FieldNameNotFoundException(field)
-        self.authorizer = _DEFAULT_AUTHORIZER
-        self.auth_token = auth_token
         self.authorizer.check_update_permissions(auth_token, django_object, setter_dict)
-        for field in setter_dict:
-            try:
-                self.setters[field] = getattr(self, self.object_manager.SETTERS[field])
-            except KeyError:
-                raise exceptions.FieldNameNotFoundException(field)
-            except AttributeError:
+        for field, value in setter_dict.iteritems():
+            setter_name = object_manager.SETTERS[field]
+            if not hasattr(self, setter_name):
                 raise exceptions.SetterNotFoundException(self.object_manager.SETTERS[field])
-
-        self.process()
-
-    def process(self):
-        for field in self.setter_dict:
-            self.setters[field](field, self.setter_dict[field])
+            setter = getattr(self, object_manager.SETTERS[field])
+            self.setters[field] = setter
+            setter(field, value)
 
     def set_address(self, field_name, address_value_dictionary):
         if hasattr(self.django_object, field_name):
@@ -579,18 +573,19 @@ class Setter(object):
                     if isinstance(item, dict):
                         extras = item.copy()
                         del extras['id']
-                        self.authorizer.check_update_permissions(
-                            self.auth_token, through_model_instance, extras)
-                        for extra_attribute, extra_value in extras.iteritems():
-                            if extra_attribute not in dir(through_model_instance):
-                                raise exceptions.AttributeNotFoundException(extra_attribute)
-                            field = through_model_instance._meta.get_field(extra_attribute)
-                            # handle the case where we are updating a foreign key relationship and have a primary key
-                            if isinstance(field, django.db.models.related.ForeignKey) and isinstance(extra_value, (int,long)):
-                                setattr(through_model_instance, field.attname, extra_value)
-                            # This handles most general types of relationships, plus a ForeignKey if the value we have is a Model instance
-                            else:
-                                setattr(through_model_instance, extra_attribute, extra_value)
+                        if extras:
+                            self.authorizer.check_update_permissions(
+                                self.auth_token, through_model_instance, extras)
+                            for extra_attribute, extra_value in extras.iteritems():
+                                if extra_attribute not in dir(through_model_instance):
+                                    raise exceptions.AttributeNotFoundException(extra_attribute)
+                                field = through_model_instance._meta.get_field(extra_attribute)
+                                # handle the case where we are updating a foreign key relationship and have a primary key
+                                if isinstance(field, django.db.models.related.ForeignKey) and isinstance(extra_value, (int,long)):
+                                    setattr(through_model_instance, field.attname, extra_value)
+                                # This handles most general types of relationships, plus a ForeignKey if the value we have is a Model instance
+                                else:
+                                    setattr(through_model_instance, extra_attribute, extra_value)
                     through_model_instance.save()
                     self.authorizer.check_create_permissions(self.auth_token,
                         through_model_instance)

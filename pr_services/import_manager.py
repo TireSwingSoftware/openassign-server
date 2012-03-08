@@ -478,26 +478,5 @@ class ImportManager(object):
 
     def import_exam(self, auth_token, exam_xml):
         return self.exam_manager.create_from_xml(auth_token, exam_xml)
-
-    def _import_ac_check_methods(self, xml_text):
-        """
-        Import the list of ac_check_methods with attributes that will be stored in
-        the database for frontend use
-
-        @param        xml_text    A string containing the XML in question
-        """
-
-        try:
-            tree = ElementTree.XML(xml_text)
-            for method in tree:
-                m = facade.models.ACCheckMethod()
-                m.name = method.attrib['name']
-                m.title = method.attrib['title']
-                m.description = method.attrib['description']
-                m.save()
-        except expat.ExpatError:
-            raise exceptions.InvalidDataException("xml input is not valid")
-        except KeyError:
-            raise exceptions.InvalidDataException("xml input is not valid")
-
+#
 # vim:tabstop=4 shiftwidth=4 expandtab

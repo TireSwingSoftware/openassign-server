@@ -4,9 +4,9 @@ import settings
 
 from pr_services.object_manager import ObjectManager
 
-__all__ = ['admin_crud']
+__all__ = ['admin_privs']
 
-def _make_admin_crud():
+def _make_admin_privs():
     # use the following imports to initialize the facade managers
     if 'file_tasks' in settings.INSTALLED_APPS:
         import file_tasks
@@ -15,7 +15,7 @@ def _make_admin_crud():
     if 'forum' in settings.INSTALLED_APPS:
         import forum
 
-    admin_crud = {}
+    admin_privs = {}
     manager_classes = map(lambda n: getattr(facade.managers, n), facade.managers)
     for manager_class in manager_classes:
         manager = manager_class()
@@ -27,9 +27,9 @@ def _make_admin_crud():
                 'd': True
             }
             model_name = manager.my_django_model._meta.object_name
-            admin_crud[model_name] = crud
+            admin_privs[model_name] = crud
 
-    admin_crud.update({
+    admin_privs.update({
         # objects not explicitly owned by a manager
         'CSVData': {
             'c': True,
@@ -69,7 +69,13 @@ def _make_admin_crud():
             'u' : set(),
             'd' : False,
             },
-    })
-    return admin_crud
 
-admin_crud = _make_admin_crud()
+        ##
+        # Method Privileges
+        'AssignmentManager': {
+            'methods': set(('email_task_assignees', ))
+        }
+    })
+    return admin_privs
+
+admin_privs = _make_admin_privs()

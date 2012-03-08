@@ -8,7 +8,7 @@ import subprocess
 import time
 
 from django.conf import settings
-from pr_services.rpc.service import service_method
+from pr_services.rpc.service import public_service_method
 
 class LocalTimezone(datetime.tzinfo):
     """
@@ -46,34 +46,34 @@ class BackendInfo(object):
     date/time settings. Implements #280 and #1850.
     """
 
-    @service_method
+    @public_service_method
     def get_time_zone(self):
         """
         This method can be used by the front end to fetch the current server
         TIME_ZONE setting.
-        
+
         @return current TIME_ZONE setting
         @rtype  str
         """
         return str(settings.TIME_ZONE)
 
-    @service_method
+    @public_service_method
     def get_current_timestamp(self):
         """
         This method can be used by the front end to fetch the current server
         date and time.
-        
+
         @return ISO8601 formatted date and time string with timezone offset
         @rtype  str
         """
         return datetime.datetime.now(local_timezone).isoformat()
 
-    @service_method
+    @public_service_method
     def get_revision(self):
         """
         This method can be used by the front end to fetch the Subversion
         revision number of the backend software.
-        
+
         @return revision number of backend code
         @rtype  str
         """

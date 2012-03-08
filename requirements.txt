@@ -26,6 +26,7 @@ docutils==0.8.1
 # importlib only needed on python2.6 and earlier
 importlib==1.0.2
 kombu==1.5.1
+mock==0.8.0
 ordereddict==1.1
 psycopg2==2.4.1
 pycurl==7.19.0

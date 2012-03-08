@@ -3,8 +3,8 @@ from decorators import authz
 @authz
 def setup(machine):
     methods = [
-        {'name' : 'actor_owns_assignment', 'params' : {}},
-        {'name' : 'actor_owns_assignment_for_task', 'params' : {}},
+        {'name' : 'ownership.actor_owns_assignment'},
+        {'name' : 'ownership.actor_owns_assignment_for_task'},
     ]
     crud = {
         'Assignment' : {
