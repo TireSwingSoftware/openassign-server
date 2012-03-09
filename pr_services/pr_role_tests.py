@@ -150,9 +150,10 @@ class TestOrganizationAdminRole(RoleTestCase, GeneralTestCase,
     # check that the following tests fail because of
     # a PermissionDenied exception
     CHECK_PERMISSION_DENIED = [
-        'test_create_resource',
         'test_create_curriculum',
-        'test_user_add_second_organization'
+        'test_create_resource',
+        'test_read_users_in_other_org',
+        'test_user_add_second_organization',
     ]
 
     def setUp(self):
@@ -229,3 +230,65 @@ class TestOrganizationAdminRole(RoleTestCase, GeneralTestCase,
         create_exam('Foo Exam', organization_id=self.organization1.id)
         with self.assertRaises(PermissionDeniedException):
             create_exam('Bad Exam', organization_id=badorg.id)
+
+
+    def test_role_required_for_noorg_user(self):
+        # check that the admin role is required to update a user with no org
+        UserOrgRole.objects.all().delete()
+        user, user_dict = self.create_user(compare=False, as_admin=True)
+        self.assertEquals(user.organizations.count(), 0)
+        with self.assertRaises(PermissionDeniedException):
+            self.user_manager.update(user.id, {'status': 'active'})
+
+
+
+class TestOwnerManagerRole(RoleTestCase, GeneralTestCase,
+                           common.EnrollmentTests,
+                           common.ExamTests,
+                           common.EventTests,
+                           common.UserTests,
+                           common.VenueTests):
+    """
+    Verifies the privileges for the "Owner Manager" authorizer role which
+    implies that the user has the "Owner Manager" OrgRole for an organization.
+    """
+
+    fixtures = [
+        'initial_setup_precor',
+        'legacy_objects',
+        'precor_org_roles',
+    ]
+
+    # check that the following tests fail because of
+    # a PermissionDenied exception
+    CHECK_PERMISSION_DENIED = [
+        'test_change_curriculum_enrollment_status',
+        'test_create_curriculum',
+        'test_enroll_users_in_curriculum',
+        'test_user_add_initial_organization',
+        'test_user_add_organization_role',
+        'test_user_add_second_organization',
+        'test_user_batch_create',
+        'test_user_change_status_active',
+        'test_user_change_status_inactive',
+        'test_user_change_status_suspended',
+        'test_user_create_basic',
+        'test_user_update_basic',
+        'test_read_users_in_other_org',
+    ]
+
+    def setUp(self):
+        super(TestOwnerManagerRole, self).setUp()
+        update_user = self.admin_user_manager.update
+        # put user2 in organization1
+        org_dict = {'organizations': {'add': [{'id': self.organization1.id}]}}
+        update_user(self.user2.id, org_dict)
+
+        # make user1 an owner manager
+        orgrole = OrgRole.objects.get(name='Owner Manager')
+        new_role = {'id': orgrole.id, 'organization': self.organization1.id}
+        role_dict = {'roles': {'add': [new_role]}}
+        update_user(self.user1.id, role_dict)
+
+        # use auth token from user1 for all subsequent tests
+        self.auth_token = self.user1_auth_token

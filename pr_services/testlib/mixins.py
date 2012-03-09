@@ -252,7 +252,7 @@ class UserTestMixin:
 
         if as_admin:
             create_user = partial(self.admin_user_manager.create,
-                optional_attribute=opt_dict, **create_dict)
+                optional_attributes=opt_dict, **create_dict)
         else:
             create_user = partial(self.user_manager.create,
                 optional_attributes=opt_dict, **create_dict)

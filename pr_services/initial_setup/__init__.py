@@ -60,6 +60,7 @@ class InitialSetupMachine(object):
               'create_precor_default_group',
               'create_session_participant_role',
               'create_organization_admin_role',
+              'create_owner_manager_role',
             ],
         }
 

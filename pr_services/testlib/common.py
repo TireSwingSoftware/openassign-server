@@ -25,9 +25,10 @@ from functools import partial
 from operator import attrgetter, itemgetter
 
 import facade
-import mixins
 
-from pr_services import pr_time
+from pr_services import pr_time, exceptions
+from pr_services.testlib import mixins
+from pr_services.testlib.helpers import object_dict
 
 facade.import_models(locals())
 
@@ -258,16 +259,13 @@ class UserTests(mixins.UserTestMixin):
     def _get_user_by_id(self, user_id):
         return facade.models.User.objects.get(id=user_id)
 
-    def _test_user_update(self, changes):
-        """Helper for testing an update to a user."""
+    def _test_user_update(self, changes, user=None):
         assert isinstance(changes, dict)
-        user, create_dict, expected_dict = self.create_user(compare=True)
+        if not user:
+            user, create_dict, = self.create_user(compare=False)
         self.user_manager.update(user.id, changes)
-        expected_dict.update(changes)
         user = self._get_user_by_id(user.id)
-        user_dict = self.user_as_dict(user)
-        self.assertDictEqual(user_dict, expected_dict)
-        return user, user_dict, create_dict, expected_dict
+        self.assertDictEqual(object_dict(user, changes.keys()), changes)
 
     def test_user_create_basic(self):
         """creating a user"""
@@ -284,6 +282,15 @@ class UserTests(mixins.UserTestMixin):
             'phone': '123.456.7789',
         }
         self._test_user_update(changes)
+
+    def test_user_update_self(self):
+        changes = {
+            'first_name': 'I Changed My Name',
+            'phone': '123.456.7789',
+            'phone2': '456.789.1011',
+        }
+        assert self.user1 == self.auth_token.user
+        self._test_user_update(changes, self.user1)
 
     def test_user_change_status_active(self):
         """changing user status to active"""
@@ -342,30 +349,55 @@ class UserTests(mixins.UserTestMixin):
         self.assertEquals(self.organization1, user.organizations.get())
 
     def test_user_batch_create(self):
-        """creating multiple users"""
         users, compare_dicts = self.create_users(n=5)
         user_dicts = map(self.user_as_dict, users)
         self.assertSequenceEqual(user_dicts, compare_dicts)
         for user in users:
             self.assertEquals(user.blame.user, self.auth_token.user)
 
-    def test_get_filtered(self):
-        """reading users"""
-        expected_users, compare_dicts = self.create_users(n=2)
+    def test_read_users_in_org(self):
+        users, compare_dicts = self.create_users(n=2,
+                as_admin=True)
+        for i, user in enumerate(users):
+            compare_dicts[i].update(id=user.id)
+            self.admin_user_manager.update(user.id,
+                value_map={'organizations': {'add': [self.organization1.id]}})
+
         compare_keys = compare_dicts[0].keys()
-        user_ids = map(attrgetter('id'), expected_users)
-        user_filter = {'member': {'id': user_ids}}
-
-        # XXX: hack to include id in the compare dict despite it not being in
-        # `compare_keys` get_filtered returns it anyways
-        for user_id, user_dict in zip(user_ids, compare_dicts):
-            user_dict.update(id=user_id)
-
+        user_filter = {'member': {'id': [u.id for u in users]}}
         users = self.user_manager.get_filtered(user_filter, compare_keys)
+        self.assertEquals(len(users), len(compare_dicts))
+        if len(users[0]) != len(compare_dicts[0]):
+            raise exceptions.PermissionDeniedException()
         self.assertSequenceEqual(users, compare_dicts)
 
-        # make sure we didnt get more columns than requested
-        self.assertNotIn('organizations', users[0])
+    def test_read_users_in_other_org(self):
+        users, compare_dicts = self.create_users(n=2, as_admin=True)
+        otherorg = Organization.objects.create(name='Some other Org')
+        for i, user in enumerate(users):
+            compare_dicts[i].update(id=user.id)
+            self.admin_user_manager.update(user.id,
+                    value_map={'organizations': {'add': [otherorg.id]}})
+
+        compare_keys = compare_dicts[0].keys()
+        user_filter = {'member': {'id': [u.id for u in users]}}
+        users = self.user_manager.get_filtered(user_filter, compare_keys)
+        self.assertEquals(len(users), len(compare_dicts))
+        if len(users[0]) != len(compare_dicts[0]):
+            raise exceptions.PermissionDeniedException()
+        self.assertSequenceEqual(users, compare_dicts)
+
+    def test_read_users_in_no_org(self):
+        users, compare_dicts = self.create_users(n=2, as_admin=True)
+        for i, user in enumerate(users):
+            compare_dicts[i].update(id=user.id)
+        compare_keys = compare_dicts[0].keys()
+        user_filter = {'member': {'id': [u.id for u in users]}}
+        users = self.user_manager.get_filtered(user_filter, compare_keys)
+        self.assertEquals(len(users), len(compare_dicts))
+        if len(users[0]) != len(compare_dicts[0]):
+            raise exceptions.PermissionDeniedException()
+        self.assertSequenceEqual(users, compare_dicts)
 
 
 class VenueTests(mixins.EventTestMixin):
