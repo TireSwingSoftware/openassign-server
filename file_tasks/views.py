@@ -90,7 +90,8 @@ def upload_file_for_download(request, auth_token=None, pk=None):
             else:
                 file_download = file_download_manager.create(at,
                     form.cleaned_data['name'],
-                    form.cleaned_data['description'])
+                    form.cleaned_data['description'],
+                    form.cleaned_data['organization'].id)
             file_download.file_size = form.files['file_data'].size
             file_download.save()
             transaction.commit()

@@ -817,6 +817,7 @@ class Task(OwnedPRModel, Versionable):
 
     """
     users = models.ManyToManyField('User', through='Assignment', related_name='tasks')
+    organization = models.ForeignKey('Organization', related_name='tasks')
     description = models.TextField()
     name = models.CharField(max_length=255)
     title = models.CharField(max_length=191, null=True)

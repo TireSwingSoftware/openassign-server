@@ -25,7 +25,7 @@ class FileDownloadForm(FileTaskForm):
 
     class Meta:
         model = FileDownload
-        fields = ('file_data', 'name', 'description')
+        fields = ('file_data', 'name', 'description', 'organization')
 
 class FileUploadAttemptForm(FileTaskForm):
     """Form for uploading a file to complete a FileUploadAttempt."""

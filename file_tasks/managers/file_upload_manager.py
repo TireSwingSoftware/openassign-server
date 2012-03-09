@@ -16,7 +16,8 @@ class FileUploadManager(TaskManager):
         self.my_django_model = facade.models.FileUpload
 
     @service_method
-    def create(self, auth_token, name, description, optional_attributes=None):
+    def create(self, auth_token, name, description, organization=None,
+            optional_attributes=None):
         """
         Create a new FileUpload task.
 
@@ -31,9 +32,11 @@ class FileUploadManager(TaskManager):
         :type optional_attributes:  dict
         :return:                    The new FileUpload instance.
         """
-        if optional_attributes is None:
-            optional_attributes = {}
-        file_upload = self.my_django_model(name=name, description=description)
+        org = self._infer_task_organization(auth_token, organization)
+        file_upload = self.my_django_model(
+                name=name,
+                description=description,
+                organization=org)
         if isinstance(auth_token, facade.models.AuthToken):
             file_upload.owner = auth_token.user
         file_upload.save()

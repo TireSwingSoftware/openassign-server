@@ -8,15 +8,19 @@ except ImportError:
 
 from django.core.exceptions import ObjectDoesNotExist
 
-facade.import_models(locals(), globals())
+facade.import_models(locals())
 
 class ExamTestMixin:
-    def _create_exam(self, name=None, title=None, opts=None, **kwargs):
+    def _create_exam(self, name=None, title=None, organization_id=None,
+            opts=None, **kwargs):
         name = name or kwargs.pop('name')
         title = title or kwargs.pop('title')
         opts = opts or {}
         opts.update(kwargs)
-        return self.exam_manager.create(self.admin_token, name, title, opts)
+        if not organization_id:
+            organization_id = self.organization1.id
+        return self.exam_manager.create(self.admin_token, name, title,
+                organization_id, opts)
 
     def _create_question_pool(self, exam=None, title=None, opts=None, **kwargs):
         exam = exam or kwargs.pop('exam')

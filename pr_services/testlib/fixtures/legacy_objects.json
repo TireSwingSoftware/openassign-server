@@ -389,5 +389,109 @@
       },
     "model" : "pr_services.blame",
     "pk" : 1
-  }
+  },
+    {
+        "pk": 1,
+        "model": "pr_services.userorgrole",
+        "fields": {
+            "save_timestamp": "2012-03-05 14:44:52",
+            "final_type": [
+                "pr_services",
+                "userorgrole"
+            ],
+            "parent": null,
+            "title": null,
+            "persistent": false,
+            "role": 5,
+            "create_timestamp": "2012-03-05 14:44:21",
+            "owner": 1,
+            "organization": 1
+        }
+    },
+    {
+        "pk": 2,
+        "model": "pr_services.userorgrole",
+        "fields": {
+            "save_timestamp": "2012-03-05 14:44:52",
+            "final_type": [
+                "pr_services",
+                "userorgrole"
+            ],
+            "parent": null,
+            "title": null,
+            "persistent": false,
+            "role": 5,
+            "create_timestamp": "2012-03-05 14:44:21",
+            "owner": 2,
+            "organization": 1
+        }
+    },
+    {
+        "pk": 3,
+        "model": "pr_services.userorgrole",
+        "fields": {
+            "save_timestamp": "2012-03-05 14:44:52",
+            "final_type": [
+                "pr_services",
+                "userorgrole"
+            ],
+            "parent": null,
+            "title": null,
+            "persistent": false,
+            "role": 5,
+            "create_timestamp": "2012-03-05 14:44:21",
+            "owner": 3,
+            "organization": 1
+        }
+    },
+    {
+        "pk": 4,
+        "model": "pr_services.userorgrole",
+        "fields": {
+            "save_timestamp": "2012-03-05 14:44:52",
+            "final_type": [
+                "pr_services",
+                "userorgrole"
+            ],
+            "parent": null,
+            "title": null,
+            "persistent": false,
+            "role": 5,
+            "create_timestamp": "2012-03-05 14:44:21",
+            "owner": 4,
+            "organization": 1
+        }
+    },
+    {
+        "pk": 5,
+        "model": "pr_services.userorgrole",
+        "fields": {
+            "save_timestamp": "2012-03-05 14:44:52",
+            "final_type": [
+                "pr_services",
+                "userorgrole"
+            ],
+            "parent": null,
+            "title": null,
+            "persistent": false,
+            "role": 5,
+            "create_timestamp": "2012-03-05 14:44:21",
+            "owner": 5,
+            "organization": 1
+        }
+    },
+    {
+        "pk": 5,
+        "model": "pr_services.orgrole",
+        "fields": {
+            "default": true,
+            "save_timestamp": "2012-03-05 14:44:04",
+            "final_type": [
+                "pr_services",
+                "orgrole"
+            ],
+            "name": "User",
+            "create_timestamp": "2012-03-05 14:44:04"
+        }
+    }
 ]

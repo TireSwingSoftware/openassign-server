@@ -57,6 +57,7 @@ class TestFileDownload(FileTaskTestCase):
                 'auth_token': auth_token.session_id,
                 'name': name,
                 'description': description,
+                'organization': self.organization1.id,
                 'file_data': f,
             }
             if use_form:
@@ -78,6 +79,7 @@ class TestFileDownload(FileTaskTestCase):
         self.assertTrue(file_download)
         self.assertTrue(file_download.file_data.name)
         self.assertTrue(file_download.file_url)
+        self.assertEqual(file_download.organization, self.organization1)
         self.assertEqual(facade.models.FileDownload.objects.all().count(), 1)
 
     def test_upload_file_as_admin_via_form(self):
@@ -185,7 +187,8 @@ class TestFileDownload(FileTaskTestCase):
     def test_download_when_file_is_not_ready(self):
         # this FileDownload does not have an actual file, similar to a case where
         # the asynchronous processing of an uploaded file hasn't taken place yet.
-        file_download = facade.models.FileDownload.objects.create(name='Test FD')
+        file_download = facade.models.FileDownload.objects.create(name='Test FD',
+                organization=self.organization1)
         assignment = self.assignment_manager.create(self.admin_token, file_download.id, self.user1.id)
         download_url = self.file_download_manager.get_download_url_for_assignment(self.user1_auth_token, assignment.pk)
         response = self.client.get(download_url)

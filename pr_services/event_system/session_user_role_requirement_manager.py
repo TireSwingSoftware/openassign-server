@@ -54,9 +54,18 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
         if credential_type_ids is None:
             credential_type_ids = []
 
-        session = self._find_by_id(session_id, facade.models.Session)
-        session_user_role = self._find_by_id(session_user_role_id, facade.models.SessionUserRole)
-        new_surr = self.my_django_model(session=session, session_user_role=session_user_role, min=min, max=max)
+        session = self._find_by_id(session_id,
+                facade.models.Session)
+        session_user_role = self._find_by_id(session_user_role_id,
+                facade.models.SessionUserRole)
+        org = self._infer_task_organization(auth_token,
+                session.event.organization.id)
+        new_surr = self.my_django_model(
+                organization=org,
+                session=session,
+                session_user_role=session_user_role,
+                min=min,
+                max=max)
         new_surr.save()
         if credential_type_ids:
             facade.subsystems.Setter(auth_token, self, new_surr,

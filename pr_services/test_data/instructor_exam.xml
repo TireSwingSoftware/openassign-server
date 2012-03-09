@@ -3,6 +3,7 @@
 <exam xmlns="http://americanri.com/2009/poweru/exam/1.0"
       id="instructor_exam"
       title="XYZ Final Exam"
+      organization="Organization 1"
       passing_score = "90">
 
     <question_pool title="Getting to Know XYZ">

@@ -32,7 +32,8 @@ class TestExamModels(GeneralTestCase):
 
     def _create_exam(self, **kwargs):
         """Helper method to create an exam."""
-        return self._create_any(facade.models.Exam, **kwargs)
+        return self._create_any(facade.models.Exam,
+                organization_id=self.organization1.id, **kwargs)
 
     def _create_question_pool(self, exam, **kwargs):
         """Helper method to create a question pool."""
@@ -1103,7 +1104,7 @@ class TestExamManagers(GeneralTestCase, CommonExamTests):
 class TestEvaluations(GeneralTestCase):
     def test_all(self):
         evaluation = facade.models.Exam.objects.create(name='eval',
-            title='Eval')
+            title='Eval', organization=self.organization1)
         qp = facade.models.QuestionPool.objects.create(exam=evaluation,
             title='Evaluation')
         q1 = facade.models.Question.objects.create(question_pool=qp,
