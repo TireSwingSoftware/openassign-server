@@ -226,7 +226,6 @@ class TestTask(TestCase):
         exam3 = Exam.objects.create(name='my_exam', organization=org)
         self.assertEqual(exam3.name, 'my_exam')
 
-
 class TestAssignment(GeneralTestCase):
 
     @skip('broken')

@@ -59,6 +59,7 @@ class InitialSetupMachine(object):
               'create_exam_taker_role',
               'create_precor_default_group',
               'create_session_participant_role',
+              'create_organization_admin_role',
             ],
         }
 
