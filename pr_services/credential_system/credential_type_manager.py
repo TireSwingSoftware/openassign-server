@@ -4,8 +4,11 @@ credential_type manager class
 
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
-import facade
 from pr_services.utils import Utils
+
+import facade
+facade.import_models(locals())
+
 
 class CredentialTypeManager(ObjectManager):
     """
@@ -42,7 +45,7 @@ class CredentialTypeManager(ObjectManager):
         self.my_django_model = facade.models.CredentialType
 
     @service_method
-    def create(self, auth_token, name, description):
+    def create(self, auth_token, name, description, optional_parameters=None):
         """
         Create a new credential_type
 
@@ -51,8 +54,33 @@ class CredentialTypeManager(ObjectManager):
         @return                    a reference to the newly created credential_type
                                    struct with new primary key indexed as 'id'
         """
-
         c = self.my_django_model(name=name, description=description)
+        c.save()
+
+        if not optional_parameters:
+            c.save()
+            self.authorizer.check_create_permissions(auth_token, c)
+            return c
+
+        ## XXX: Set the following parameters manually to avoid requiring update
+        # permission to create an object with optional parameters.
+        achievements = optional_parameters.pop('required_achievements', None)
+        if achievements:
+            achievements = [Achievement.objects.get(id=x) for x in achievements]
+            c.required_achievements.add(*achievements)
+
+        min_required_tasks = optional_parameters.pop('min_required_tasks', None)
+        if min_required_tasks:
+            c.min_required_tasks = min_required_tasks
+
+        prereqs = optional_parameters.pop('prerequisite_credential_types', None)
+        if prereqs:
+            prereqs = [CredentialType.objects.get(id=x) for x in prereqs]
+            c.prerequisite_credential_types.add(*prereqs)
+
+        if optional_parameters:
+            raise ValueError("unsupported optional parameters")
+
         c.save()
         self.authorizer.check_create_permissions(auth_token, c)
         return c
