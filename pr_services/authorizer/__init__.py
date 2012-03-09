@@ -140,6 +140,12 @@ class ACLWrapper(namedtuple('_ACLWrapper', 'object privs methods')):
     efficient interface for the type of access required by the authorizer.
     """
 
+    def __eq__(self, other):
+        return self.object == other.object
+
+    def __hash__(self):
+        return hash(self.object)
+
     def check(self, auth_token=None, actee=None, *args, **kwargs):
         """
         Execute the check methods for the acl structure `self` represents using
@@ -275,7 +281,7 @@ class ACLCache(object):
 
     def collect(self, op, key):
         """
-        Return a list of acls relevant for `op` given `key`.
+        Return a set of acls relevant for `op` given `key`.
 
         For create, read, update, or delete operations the key is the actee
         object and this method runs with worst-case O(m) complexity where m is
@@ -294,7 +300,7 @@ class ACLCache(object):
                   For arbitrary permissions, the permission name.
 
         Returns:
-            A list of cached ACL objects (See `ACLWrapper` above)
+            A set of cached ACL objects (See `ACLWrapper` above)
         """
         if op in (METHOD, ARBITRARY):
             return self._acls[op].get(key, ())
@@ -303,17 +309,16 @@ class ACLCache(object):
             acls = self._acls[op]
             typeobj = key if isinstance(key, type) else type(key) # key is actee
             name = typeobj.__name__
+            collected = set()
             if name in acls:
-                return acls[name]
-            else:
-                for basetype in inspect.getmro(typeobj):
-                    name = basetype.__name__
-                    if name in acls:
-                        return acls[name]
-                else:
-                    return ()
-        else:
-            assert False
+                collected.update(acls[name])
+            for basetype in inspect.getmro(typeobj):
+                name = basetype.__name__
+                if name in acls:
+                    collected.update(acls[name])
+            return collected
+
+        assert False
 
 
 class Authorizer(object):
