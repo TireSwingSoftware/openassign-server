@@ -109,13 +109,13 @@ class FixtureTestCase(test.TransactionTestCase):
         for db in cls._databases():
             if hasattr(cls, 'fixtures'):
                 if getattr(cls, '_fb_should_setup_fixtures', True):
-                    call_command('syncdb')
+                    call_command('syncdb', verbosity=0, interactive=False)
                     call_command('flush', verbosity=0, interactive=False,
                             database=db)
                     call_command('loaddata', *cls.fixtures, verbosity=0,
                             commit=False, database=db)
             elif not hasattr(cls, '_fb_should_setup_fixtures'):
-                call_command('syncdb')
+                call_command('syncdb', verbosity=0, interactive=False)
                 call_command('flush', verbosity=0, interactive=False,
                         database=db)
             transaction.commit(using=db)
