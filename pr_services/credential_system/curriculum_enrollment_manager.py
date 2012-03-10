@@ -61,9 +61,10 @@ class CurriculumEnrollmentManager(ObjectManager):
         return c
 
     @service_method
-    def curriculum_enrollments_view(self, auth_token, pks=None):
-        filters = {} if pks == None else {'member' : {'id' : pks}}
-        ret = self.get_filtered(auth_token, filters, ['curriculum_name', 'start', 'end', 'users'])
+    def user_detail_view(self, auth_token, filters=None, field_names=None):
+        default_fields = set(['curriculum_name', 'start', 'end', 'users'])
+        fields = list(set(field_names or []) or default_fields)
+        ret = self.get_filtered(auth_token, filters or {}, fields)
 
         return Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['first_name', 'last_name', 'email'], 'users')
 
