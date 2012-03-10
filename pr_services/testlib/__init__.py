@@ -6,15 +6,12 @@ import re
 import inspect
 
 from datetime import datetime, timedelta
-from operator import itemgetter
-
-import django.utils.unittest
 
 from django import test
 from django.conf import settings
 from django.core import cache, mail
 from django.core.management import call_command
-from django.db import transaction, connection, connections, DEFAULT_DB_ALIAS
+from django.db import transaction, connections, DEFAULT_DB_ALIAS
 from celery import conf
 
 from pr_services import pr_time
