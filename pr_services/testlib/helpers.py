@@ -6,8 +6,15 @@ import functools
 
 from django.core.management import call_command
 
+from pr_services import pr_time
 from pr_services.exceptions import PermissionDeniedException
 
+__all__ = (
+    'datestring',
+    'expectPermissionDenied',
+    'load_fixtures',
+    'object_dict',
+    )
 
 def expectPermissionDenied(func):
     """
@@ -79,3 +86,9 @@ def object_dict(obj, attributes):
     for key in d:
         d[key] = getattr(obj, key)
     return d
+
+
+def datestring(d):
+    """Convert date to string format using UTC tzinfo"""
+    return d.replace(tzinfo=pr_time.UTC()).isoformat()
+

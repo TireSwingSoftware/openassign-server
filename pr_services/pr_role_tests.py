@@ -129,6 +129,7 @@ class TestSessionParticipantRole(TestCase):
 
 
 class TestOrganizationAdminRole(RoleTestCase, GeneralTestCase,
+                                common.AssignmentViewTests,
                                 common.CredentialTests,
                                 common.EnrollmentTests,
                                 common.ExamTests,
@@ -243,6 +244,7 @@ class TestOrganizationAdminRole(RoleTestCase, GeneralTestCase,
 
 
 class TestOwnerManagerRole(RoleTestCase, GeneralTestCase,
+                           common.AssignmentViewTests,
                            common.EnrollmentTests,
                            common.ExamTests,
                            common.EventTests,
