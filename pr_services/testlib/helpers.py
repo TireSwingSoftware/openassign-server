@@ -25,10 +25,6 @@ def expectPermissionDenied(func):
     def wrapper(self, *args, **kwargs):
         self.assertRaises(PermissionDeniedException,
                 func, self, *args, **kwargs)
-
-    wrapper.__doc__ = "check permission denied for %s" % (
-            func.__doc__ or func.__name__)
-
     return wrapper
 
 

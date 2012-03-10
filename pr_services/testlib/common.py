@@ -124,12 +124,10 @@ class EnrollmentTests(mixins.UserTestMixin, mixins.EventTestMixin):
             self.assertEquals(len(test_incomplete), num_incomplete)
 
     def test_create_curriculum(self):
-        "creating a curriculum"
         self._setup_curriculum(False)
         self.assertEquals(self.curriculum.name, self.CURRICULUM_NAME)
 
     def test_enroll_users_in_curriculum(self):
-        """enrolling multiple users in curriculum with exams"""
         _enrollment = self._setup_curriculum_enrollment(True)
 
         enrollment = self._get_curriculum_enrollment(_enrollment.id)
@@ -144,7 +142,6 @@ class EnrollmentTests(mixins.UserTestMixin, mixins.EventTestMixin):
         self._check_user_curriculum_enrollments(users, 0, 1)
 
     def test_change_curriculum_enrollment_status(self):
-        """changing curriculum enrollment status for a user"""
         enrollment = self._setup_curriculum_enrollment(True)
         mark_assignment_completed = partial(self.assignment_manager.update,
                 value_map={'status': 'completed'})
@@ -164,7 +161,6 @@ class EnrollmentTests(mixins.UserTestMixin, mixins.EventTestMixin):
         self._check_user_curriculum_enrollments(users, 1, 0)
 
     def test_enroll_user_in_event(self):
-        """enrolling a user in an event"""
         event, event_dict = self._create_event()
         session, session_dict = self._create_session(event)
         create_surr = self.session_user_role_requirement_manager.create
@@ -184,13 +180,11 @@ class EnrollmentTests(mixins.UserTestMixin, mixins.EventTestMixin):
 
 class EventTests(mixins.EventTestMixin):
     def test_create_event(self):
-        """creating an event"""
         event, event_dict = self._create_event(as_admin=False)
         for k, v in event_dict.iteritems():
             self.assertEquals(getattr(event, k), v)
 
     def test_update_event(self):
-        """updating an event"""
         event, event_dict = self._create_event()
         # as it turns out... the event will be delayed
         oneweek = timedelta(weeks=1)
@@ -268,14 +262,12 @@ class UserTests(mixins.UserTestMixin):
         self.assertDictEqual(object_dict(user, changes.keys()), changes)
 
     def test_user_create_basic(self):
-        """creating a user"""
         user, create_dict, expected_dict = self.create_user(compare=True)
         user_dict = self.user_as_dict(user)
         self.assertDictEqual(user_dict, expected_dict)
         self.assertEquals(user.username, 'local:%s' % create_dict['username'])
 
     def test_user_update_basic(self):
-        """updating a user"""
         changes = {
             'first_name': 'last_name',
             'last_name': 'first_name',
@@ -293,19 +285,15 @@ class UserTests(mixins.UserTestMixin):
         self._test_user_update(changes, self.user1)
 
     def test_user_change_status_active(self):
-        """changing user status to active"""
         self._test_user_update({'status': 'active'})
 
     def test_user_change_status_inactive(self):
-        """changing a user status to inactive"""
         self._test_user_update({'status': 'inactive'})
 
     def test_user_change_status_suspended(self):
-        """changing a user status to suspended"""
         self._test_user_update({'status': 'suspended'})
 
     def test_user_add_initial_organization(self):
-        """adding an initial user organization"""
         user, create_dict = self.create_user(compare=False)
         changes = {
             'status': 'active',
@@ -316,7 +304,6 @@ class UserTests(mixins.UserTestMixin):
         self.assertEquals(self.organization1, user.organizations.get())
 
     def test_user_add_second_organization(self):
-        """adding a second user organization"""
         user, create_dict = self.create_user(compare=False)
         other_org = Organization.objects.create(name='Foo Org')
         changes = {
@@ -334,7 +321,6 @@ class UserTests(mixins.UserTestMixin):
                 user.organizations.all().order_by('id'))
 
     def test_user_add_organization_role(self):
-        """adding a user organization role"""
         user, create_dict = self.create_user(compare=False)
         user_role, created = facade.models.OrgRole.objects.get_or_create(name="User")
         changes = {'roles':
