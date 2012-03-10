@@ -259,7 +259,9 @@ class ACLCache(object):
                     # handle manager method permissions
                     for method_name in priv['methods']:
                         manager_class = getattr(facade.managers, actee_type)
-                        assert hasattr(manager_class, method_name)
+                        if not hasattr(manager_class, method_name):
+                            raise AttributeError('no method "%s" in %s' % (
+                                method_name, manager_class.__name__))
                         # (manager name, method_name)
                         m[(actee_type, method_name)].append(cached_acl)
                 else:
