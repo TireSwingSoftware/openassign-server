@@ -99,10 +99,6 @@ class ExamManager(TaskManager):
         :type xml_data:     string
         :return:            Reference to the newly created exam.
         """
-
-        self.authorizer.check_arbitrary_permissions(auth_token,
-                'import_exam_from_xml')
-
         def add_attribute(element, xml_attribute_name, django_model_instance,
                           attribute_name, attribute_type_func=lambda x: x):
             if element.attrib.has_key(xml_attribute_name):
@@ -219,10 +215,6 @@ class ExamManager(TaskManager):
         :return:            a string containing an XML document that represents the given exam
         :rtype:             unicode
         """
-
-        self.authorizer.check_arbitrary_permissions(auth_token,
-            'export_exam_to_xml')
-
         exam_obj = self._find_by_id(exam_id, self.my_django_model)
 
         def add_attribute(xml_element, xml_attribute_name, django_object,

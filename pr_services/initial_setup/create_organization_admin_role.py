@@ -46,7 +46,16 @@ def setup(machine):
         else:
             privs[name] = dict(r=read_privs)
 
-    # Allow only create and read for CredentialType
-    privs['CredentialType']['c'] = True
+    privs.update({
+        'CredentialType': {
+            'c': True
+        },
+        'AssignmentManager': {
+            'methods': set(('email_task_assignees', ))
+        },
+        'ExamManager': {
+            'methods': set(('export_to_xml', 'create_from_xml'))
+        },
+    })
 
     machine.add_acl_to_role('Organization Administrator', checks, privs)
