@@ -10,19 +10,14 @@ def setup(machine):
     ]
     crud_1 = {
         'Sco' : {
-            'c' : False,
             'r' : set(('course', 'description', 'name',
                    'prerequisite_tasks', 'type',
                    'version_id', 'version_label')),
-            'u' : set(),
-            'd' : False,
         },
         'Task' : {
-            'c' : False,
-            'r' : set(('description', 'name', 'prerequisite_tasks',
-                   'type', 'version_id', 'version_label')),
-            'u' : set(),
-            'd' : False,
+            'r' : set(('description', 'name', 'prerequisite_achievements',
+                       'prerequisite_tasks', 'type', 'version_id',
+                       'version_label')),
         },
     }
     machine.add_acl_to_role('Student', methods_1, crud_1)
@@ -32,10 +27,7 @@ def setup(machine):
     ]
     crud_2 = {
         'Sco' : {
-            'c' : False,
             'r' : set(('url', )),
-            'u' : set(),
-            'd' : False,
         },
     }
     machine.add_acl_to_role('Student', methods_2, crud_2)
