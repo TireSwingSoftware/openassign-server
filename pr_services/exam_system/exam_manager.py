@@ -4,18 +4,21 @@ Exam Manager class.
 
 __docformat__ = "restructuredtext en"
 
-# Python
 import codecs
-from decimal import Decimal
-from cStringIO import StringIO
 import xml.dom.minidom
 import xml.etree.cElementTree as elementtree
+
+from cStringIO import StringIO
+from decimal import Decimal
 
 # PowerReg
 from pr_services.credential_system.task_manager import TaskManager
 from pr_services.rpc.service import service_method
-import facade
 from pr_services.utils import Utils
+
+import facade
+facade.import_models(locals())
+
 
 class ExamManager(TaskManager):
     """
@@ -45,7 +48,8 @@ class ExamManager(TaskManager):
         self.my_django_model = facade.models.Exam
 
     @service_method
-    def create(self, auth_token, name, title=None, optional_parameters=None):
+    def create(self, auth_token, name, title=None, organization=None,
+            optional_parameters=None):
         """
         Create a new exam.
 
@@ -67,7 +71,11 @@ class ExamManager(TaskManager):
         if optional_parameters is None:
             optional_parameters = {}
 
-        e = self.my_django_model(name=name, title=title)
+        organization = self._infer_task_organization(auth_token, organization)
+        e = self.my_django_model(
+                name=name,
+                title=title,
+                organization=organization)
         e.save()
         if optional_parameters:
             facade.subsystems.Setter(auth_token, self, e, optional_parameters)
@@ -118,7 +126,9 @@ class ExamManager(TaskManager):
         exam = elementtree.fromstring(raw_text)
         assert exam.tag == namespace_prefix + 'exam'
         assert exam.attrib.has_key('id')
-        new_exam = self.my_django_model.objects.create(name=exam.attrib['id'])
+        organization = Organization.objects.get(name=exam.attrib['organization'])
+        new_exam = self.my_django_model.objects.create(name=exam.attrib['id'],
+                organization=organization)
         exam.attrib['pk'] = str(new_exam.pk)
         add_attribute(exam, 'title', new_exam, 'title')
         add_attribute(exam, 'passing_score', new_exam, 'passing_score', int_or_none)
@@ -240,6 +250,7 @@ class ExamManager(TaskManager):
         if include_pk:
             add_attribute(exam, 'pk', exam_obj, 'id')
         add_attribute(exam, 'id', exam_obj, 'name')
+        add_attribute(exam, 'organization', exam_obj, 'organization', lambda o: o.name)
         add_attribute(exam, 'title', exam_obj, 'title')
         add_attribute(exam, 'passing_score', exam_obj, 'passing_score')
         add_attribute(exam, 'version_id', exam_obj, 'version_id')

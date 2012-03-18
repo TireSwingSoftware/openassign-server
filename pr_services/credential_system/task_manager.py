@@ -19,6 +19,7 @@ class TaskManager(ObjectManager):
         'min': 'get_general',
         'max': 'get_general',
         'name': 'get_general',
+        'organization': 'get_foreign_key',
         'prerequisite_tasks': 'get_many_to_many',
         'prevent_duplicate_assignments': 'get_general',
         'remaining_capacity': 'get_general',
@@ -37,6 +38,7 @@ class TaskManager(ObjectManager):
         'min': 'set_general',
         'max': 'set_general',
         'name': 'set_general',
+        'organization': 'set_foreign_key',
         'prerequisite_tasks': 'set_many',
         'prevent_duplicate_assignments': 'set_general',
         'remaining_capacity': 'set_general',
@@ -55,7 +57,8 @@ class TaskManager(ObjectManager):
         self.my_django_model = facade.models.Task
 
     @service_method
-    def create(self, auth_token, name, description, prerequisite_tasks=None):
+    def create(self, auth_token, name, description, organization,
+            prerequisite_tasks=None):
         """
         Create a new task
 
@@ -87,5 +90,16 @@ class TaskManager(ObjectManager):
             if attr in optional_attributes:
                 setattr(task, attr, optional_attributes[attr])
         return task
+
+    def _infer_task_organization(self, auth_token, organization_id=None):
+        if not organization_id:
+            user_orgs = auth_token.user.organizations.all()
+            if len(user_orgs) != 1:
+                raise ValueError("Task creator must specify an "
+                        "organization_id for an organization to which "
+                        "he belongs")
+            return user_orgs[0]
+
+        return self._find_by_id(organization_id, facade.models.Organization)
 
 # vim:tabstop=4 shiftwidth=4 expandtab

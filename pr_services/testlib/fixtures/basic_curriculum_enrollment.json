@@ -9,6 +9,34 @@
             "prerequisite_achievements": []
         }
     },
+      { "fields" : { "active" : true,
+        "address" : null,
+        "create_timestamp" : "2012-01-11 21:09:07",
+        "department" : null,
+        "description" : "",
+        "email" : "",
+        "fax" : null,
+        "final_type" : [ "pr_services",
+            "organization"
+          ],
+        "name" : "Organization 1",
+        "notes" : [  ],
+        "owner" : null,
+        "parent" : null,
+        "phone" : null,
+        "photo" : "",
+        "primary_contact_cell_phone" : null,
+        "primary_contact_email" : "",
+        "primary_contact_first_name" : "",
+        "primary_contact_last_name" : "",
+        "primary_contact_office_phone" : null,
+        "primary_contact_other_phone" : null,
+        "save_timestamp" : "2012-01-11 21:09:07",
+        "url" : null
+      },
+    "model" : "pr_services.organization",
+    "pk" : 1
+  },
     {
         "pk": 1,
         "model": "pr_services.task",
@@ -21,6 +49,7 @@
                 "exam"
             ],
             "title": null,
+            "organization": 1,
             "max": null,
             "min": 0,
             "version_id": null,

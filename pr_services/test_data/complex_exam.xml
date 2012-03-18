@@ -3,7 +3,7 @@
 <exam xmlns="http://americanri.com/2009/poweru/exam/1.0"
       id="student_screen"
       title="Student Screen Questionnaire"
-      version_id="1" version_label="1.0" version_comment="from Subversion rxyz">
+      organization="Organization 1" version_id="1" version_label="1.0" version_comment="from Subversion rxyz">
 
 	<question_pool id="initial_screening" title="Initial Screening Questions">
 		<question id="degree_or_continuing_ed" type="bool" widget="RadioSelect">

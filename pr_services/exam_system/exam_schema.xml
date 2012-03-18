@@ -7,6 +7,11 @@
 			<param name="maxLength">255</param>
 		</data>
 	</attribute>
+	<attribute name="organization">
+		<data type="string">
+			<param name="maxLength">127</param>
+		</data>
+	</attribute>
 	<zeroOrMore>
 		<element name="question_pool">
 			<zeroOrMore>
