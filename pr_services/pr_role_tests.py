@@ -228,9 +228,9 @@ class TestOrganizationAdminRole(RoleTestCase, GeneralTestCase,
     def test_task_with_bad_organization(self):
         badorg = Organization.objects.create(name="Bar")
         create_exam = self.exam_manager.create
-        create_exam('Foo Exam', organization_id=self.organization1.id)
+        create_exam('Foo Exam', organization=self.organization1.id)
         with self.assertRaises(PermissionDeniedException):
-            create_exam('Bad Exam', organization_id=badorg.id)
+            create_exam('Bad Exam', organization=badorg.id)
 
 
     def test_role_required_for_noorg_user(self):

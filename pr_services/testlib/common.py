@@ -194,7 +194,7 @@ class EnrollmentTests(mixins.UserTestMixin, mixins.EventTestMixin):
 
         # create exams
         exams = [create_exam('%s: Exam %d' % (self.__class__.__name__, i),
-            organization_id=self.organization1.id)
+            organization=self.organization1.id)
                      for i in range(self.NUM_EXAMS)]
 
         # add exams to curriculum
@@ -278,8 +278,7 @@ class EnrollmentTests(mixins.UserTestMixin, mixins.EventTestMixin):
         create_assignment = self.assignment_manager.create
 
         student_role = facade.models.SessionUserRole.objects.get(name="Student")
-        surr = create_surr(session.id, student_role.id, 1, 3,
-                self.organization1.id, False)
+        surr = create_surr(session.id, student_role.id, 1, 3, False)
         create_assignment(surr.id, self.user2.id)
 
         sessions = self.session_manager.get_user_filtered(self.auth_token,
