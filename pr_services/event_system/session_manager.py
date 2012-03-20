@@ -340,19 +340,19 @@ class SessionManager(ObjectManager):
         return evals
 
     @service_method
-    def detailed_surr_view(self, auth_token, filters=None, fields=None):
-        """
-        Adds details about room and SURRs. May not perform well if fetching lots of
-        results at once, because fetching room and venue names might cause extra
-        database queries.
-        """
-        if filters is None:
-            filters = {}
-        ret = self.get_filtered(auth_token, filters, ['start', 'end', 'status', 'confirmed', 'event', 'fullname', 'room', 'shortname', 'title', 'url', 'description', 'session_user_role_requirements', 'lead_time'])
-
-        ret = Utils.merge_queries(ret, facade.managers.RoomManager(), auth_token, ['name', 'venue_name', 'venue_address'], 'room')
-
-        return Utils.merge_queries(ret, facade.managers.SessionUserRoleRequirementManager(), auth_token, ['session', 'session_user_role', 'role_name', 'min', 'max', 'credential_types'], 'session_user_role_requirements')
+    def detailed_surr_view(self, auth_token, *args, **kwargs):
+        "Adds details about room and SURRs."
+        view = self.build_view(
+                fields=('start', 'end', 'status', 'confirmed', 'event',
+                        'fullname', 'room', 'shortname', 'title', 'url',
+                        'description', 'lead_time'),
+                merges=(
+                    ('room',
+                        ('name', 'venue_name', 'venue_address')),
+                    ('session_user_role_requirements',
+                        ('session', 'session_user_role', 'role_name', 'min',
+                         'max', 'credential_types'))))
+        return view(auth_token, *args, **kwargs)
 
 
 # vim:tabstop=4 shiftwidth=4 expandtab
