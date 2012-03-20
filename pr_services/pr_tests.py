@@ -20,6 +20,7 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 from functools import partial
 from operator import attrgetter, itemgetter
+from mock import Mock, patch
 
 import django.test.client
 import django.utils.dateformat
@@ -616,7 +617,9 @@ class TestAssignmentManagerViews(BasicTestCase):
         self.auth_token = self._get_auth_token('user1')
 
     def test_exam_view(self):
-        view = partial(self.manager.exam_view, user_id=self.user.id)
+        view = partial(self.manager.exam_view,
+            filters={'exact': {'user': self.user.id}},
+            auth_token=self.auth_token)
         assignment, exam = self.assignments[0], self.exams[0]
         expected = {
             'id': assignment.id,
@@ -635,7 +638,9 @@ class TestAssignmentManagerViews(BasicTestCase):
         self.assertDictEqual(result[0], expected)
 
     def test_detailed_exam_view(self):
-        view = partial(self.manager.detailed_exam_view, user_id=self.user.id)
+        view = partial(self.manager.detailed_exam_view,
+            filters={'exact': {'user': self.user.id}},
+            auth_token=self.auth_token)
         assignment, exam = self.assignments[0], self.exams[0]
         expected = {
             'id': assignment.id,
@@ -666,7 +671,8 @@ class TestAssignmentManagerViews(BasicTestCase):
         self.assertEquals(len(result), 1)
 
     def test_transcript_view(self):
-        view = partial(self.manager.transcript_view, user_id=self.user.id)
+        view = partial(self.manager.transcript_view,
+            {'exact': {'user': self.user.id}}, auth_token=self.auth_token)
         # start the first 8 assignments
         for a in self.assignments[:8]:
             a.date_started = (self.right_now - self.one_day)
@@ -734,7 +740,7 @@ class TestAssignmentManagerSessionView(BasicTestCase):
 
     def session_view(self, *args, **kwargs):
         if not (args or kwargs):
-            kwargs = {'user_id': self.user.id}
+            kwargs = {'filters': {'exact': {'user': self.user.id}}}
         result = self.assignment_manager.session_view(*args, **kwargs)
         return sorted(result, key=_id)
 
@@ -2193,11 +2199,9 @@ class TestSessionUserRoleRequirementManager(GeneralTestCase):
                 1, 2, [])
         self.create_surr(self.session.id, self.student_role.id, 1, 2, [])
         ret = self.surr_view()
-        self.assertEquals(type(ret), list)
         self.assertEquals(len(ret), 2)
 
-        ret = self.surr_view({'exact' : {'id' : surr1.id}})
-        self.assertEquals(type(ret), list)
+        ret = self.surr_view(filters={'exact' : {'id' : surr1.id}})
         self.assertEquals(len(ret), 1)
         self.assertIn('id', ret[0])
         self.assertEquals(ret[0]['id'], surr1.id)
@@ -2357,7 +2361,8 @@ class TestOrganizationManager(BasicTestCase):
                 self.assertEquals(org['parent'], org1.id)
 
         # make sure we can read the users
-        ret = self.user_org_role_manager.user_org_role_detail_view({'exact' : {'organization' : org1.id}})
+        ret = self.user_org_role_manager.user_org_role_detail_view(
+                filters={'exact' : {'organization' : org1.id}})
 
         self.assertEquals(len(ret), 1)
         user = ret[0]
@@ -3143,7 +3148,8 @@ class TestUserManager(GeneralTestCase):
                 self.assertTrue('organization_name' in user['owned_userorgroles'][0])
                 self.assertEqual(user['owned_userorgroles'][0]['organization_name'], org1.name)
 
-        ret = self.user_manager.admin_users_view({'exact': {'id' :jerk.id}})
+        ret = self.user_manager.admin_users_view(self.admin_token,
+                {'exact': {'id' :jerk.id}})
         self.assertEquals(len(ret), 1)
         self.assertTrue('groups' in ret[0])
 
@@ -3761,8 +3767,7 @@ class TestTaskBundleManager(BasicTestCase):
             result = self.task_bundle_manager.task_detail_view(*args, **kwargs)
             for row in result:
                 row['tasks'].sort(key=_id)
-            result.sort(key=_id)
-            return result
+            return sorted(result, key=_id)
 
         expected = []
         # build expected output
@@ -4348,5 +4353,358 @@ class TestOrgSlots(GeneralTestCase):
         slot1reload = UserOrgRole.objects.get(id=slot1.id)
         self.assertEquals(slot1.persistent, True)
         self.assertEquals(slot1.persistent, slot1reload.persistent)
+
+
+class TestViewBuilder(TestCase):
+
+    fixtures = ['unprivileged_user', 'exams_and_achievements']
+
+    def setUp(self):
+        super(TestViewBuilder, self).setUp()
+        self.assignments = Assignment.objects.all().order_by('id')
+        self.build_view = partial(self.assignment_manager.build_view,
+                filtered=False)
+
+    def test_no_filters_or_fields(self):
+        view = self.build_view()
+        result = sorted(view(), key=_id)
+        expected = self.assignments.values('id')
+        self.assertSequenceEqual(result, expected)
+
+    def test_default_fields(self):
+        fields = ('user', 'status', 'date_completed', 'task')
+        expected = list(self.assignments.values(*(fields + ('id',))))
+        view = self.build_view(fields=fields)
+        result = sorted(view(), key=_id)
+        self.assertSequenceEqual(result, expected)
+
+        view = self.build_view(fields=set(fields))
+        result = sorted(view(), key=_id)
+        self.assertSequenceEqual(result, expected)
+
+    def test_caller_fields(self):
+        fields = ('user', 'status', 'task')
+        caller_fields = ('date_completed', 'date_started')
+        view = self.build_view(fields=fields)
+        expected = self.assignments.values(*(fields + caller_fields + ('id',)))
+        result = sorted(view(fields=caller_fields), key=_id)
+        self.assertSequenceEqual(result, expected)
+
+    def test_default_filters(self):
+        fields = ('user', 'status', 'task')
+        filters = {'exact': {'id': self.assignments[0].id}}
+        view = self.build_view(filters=filters, fields=fields)
+        expected = Assignment.objects.filter(
+            id=self.assignments[0].id).values(*(fields + ('id',)))
+        result = view()
+        self.assertSequenceEqual(result, expected)
+
+    def test_caller_filters(self):
+        fields = ('user', 'status', 'task')
+        filters = {'exact': {'id': self.assignments[0].id}}
+        view = self.build_view(filters=filters, fields=fields)
+
+        caller_filters = {'exact': {'id': self.assignments[1].id}}
+        expected = Assignment.objects.filter(
+            id=self.assignments[1].id).values(*(fields + ('id',)))
+        result = view(filters=caller_filters)
+        self.assertSequenceEqual(result, expected)
+
+    def test_flat_merge(self):
+        view = self.build_view(
+            merges=(
+                ('task',
+                    ('name', 'title', 'organization')),
+                ('user',
+                    ('first_name', 'last_name', 'status')),
+            ))
+        result = sorted(view(), key=_id)
+        expected = [{
+            'id': a.id,
+            'task': {
+                'id': a.task.id,
+                'name': a.task.name,
+                'title': a.task.title,
+                'organization': a.task.organization.id
+            },
+            'user': {
+                'id': a.user.id,
+                'status': a.user.status,
+                'first_name': a.user.first_name,
+                'last_name': a.user.last_name,
+            }
+        } for a in self.assignments]
+        self.assertSequenceEqual(result, expected)
+
+    def test_flat_merge_with_type(self):
+        view = self.build_view(
+                merges=(
+                    ('task:exam',
+                        ('name', 'passing_score')),
+                ))
+        result = sorted(view(), key=_id)
+        expected = [{
+            'id': a.id,
+            'task': {
+                'id': a.task.id,
+                'name': a.task.name,
+                'passing_score': a.task.exam.passing_score,
+            }
+        } for a in self.assignments]
+        self.assertSequenceEqual(result, expected)
+
+    def test_nested_merge(self):
+        view = self.build_view(
+            merges=(
+                ('task.organization',
+                    ('name', )),
+                ('task.users',
+                    ('first_name', 'last_name')),
+                ('task.achievements',
+                    ('name', 'description')),
+            ))
+        result = sorted(view(), key=_id)
+        expected = [{
+            'id': a.id,
+            'task': {
+                'id': a.task.id,
+                'organization': {
+                    'id': a.task.organization.id,
+                    'name': a.task.organization.name
+                },
+                'users': [{
+                    'id': u.id,
+                    'first_name': u.first_name,
+                    'last_name': u.last_name
+                } for u in a.task.users.all()],
+                'achievements': [{
+                    'id': ac.id,
+                    'name': ac.name,
+                    'description': ac.description,
+                } for ac in a.task.achievements.all()],
+            },
+        } for a in self.assignments]
+        self.assertSequenceEqual(result, expected)
+
+    @load_fixtures('precor_org_roles', 'session_participant_role')
+    def test_nested_merge_with_type(self):
+        view = self.build_view(
+            merges=(
+                ('task:sessionuserrolerequirement.session',
+                    ('room', 'start', 'end')),
+                ('task:sessionuserrolerequirement.credential_types',
+                    ('name', 'description'))
+            ))
+        result = sorted(view(), key=_id)
+        expected = []
+        for a in self.assignments:
+            try:
+                surr = a.task.sessionuserrolerequirement
+            except SessionUserRoleRequirement.DoesNotExist:
+                continue
+            expected.append({
+                'id': a.id,
+                'task': {
+                    'id': surr.id,
+                    'session': {
+                        'id': surr.session.id,
+                        'room': surr.session.room.id,
+                        'start': datestring(surr.session.start),
+                        'end': datestring(surr.session.end)
+                    },
+                    'credential_types': [{
+                        'id': c.id,
+                        'name': c.name,
+                        'descrption': c.descrption,
+                    } for c in surr.credential_types.all()]
+                }
+            })
+
+        self.assertSequenceEqual(result, expected)
+
+    def test_optimize_merge(self):
+        view = self.build_view(
+                merges=(
+                    ('task',
+                        ('name', )),
+                    ('task',
+                        ('title', )),
+                    ('task',
+                        ('min', 'max'))))
+        result = view()
+        result._build_and_optimize_merges()
+        self.assertEquals(len(result._merges), 1)
+
+        view = self.build_view(
+                merges=(
+                    ('task',
+                        ('name')),
+                ))
+        view.merge('task:exam', ('passing_score', ))
+        result = view()
+        result._build_and_optimize_merges()
+        self.assertEquals(len(result._merges), 1)
+
+        view = self.build_view(
+                merges=(
+                    ('task.organization',
+                        ('name', )),
+                ))
+        result = view()
+        result._build_and_optimize_merges()
+        self.assertEquals(len(result._merges), 2)
+
+    def test_ordering(self):
+        view = self.build_view(order=('-id',))
+        result = view()
+        expected = [{'id': a.id} for a in Assignment.objects.order_by('-id')]
+        self.assertSequenceEqual(result, expected)
+
+        result = view(order=('task__name',))
+        expected = [{'id': a.id} for a in Assignment.objects.order_by('task__name')]
+        self.assertSequenceEqual(result, expected)
+
+        result = view(order=('-task__name',))
+        expected = [{'id': a.id} for a in Assignment.objects.order_by('-task__name')]
+        self.assertSequenceEqual(result, expected)
+
+    def test_limit(self):
+        view = self.build_view(limit=2, order=('id', ))
+        result = view()
+        expected = [{'id': a.id} for a in self.assignments[:2]]
+        self.assertSequenceEqual(result, expected)
+
+        result = view(limit=4)
+        expected = [{'id': a.id} for a in self.assignments[:4]]
+        self.assertSequenceEqual(result, expected)
+
+        view = self.build_view(limit=(1, 2), order=('id', ))
+        result = view()
+        expected = [{'id': a.id} for a in self.assignments[:2]]
+        self.assertSequenceEqual(result, expected)
+
+        result = view(limit=(2,2))
+        expected = [{'id': a.id} for a in self.assignments[2:4]]
+        self.assertSequenceEqual(result, expected)
+
+        result = view(limit=settings.MAX_QUERY_RESULTS * 100)
+        self.assertEquals(result.limit, slice(0, settings.MAX_QUERY_RESULTS))
+
+    def test_iter(self):
+        view = self.build_view(order=('id',))
+        result = view()
+        expected = [{'id': a.id} for a in self.assignments]
+        self.assertSequenceEqual(list(result), expected)
+
+    def test_get_item(self):
+        view = self.build_view(order=('id',))
+        result = view()
+        for i, a in enumerate(self.assignments):
+            self.assertEquals(result[i], {'id': a.id})
+
+    def test_len(self):
+        view = self.build_view()
+        result = view()
+        self.assertEquals(len(result), len(self.assignments))
+
+
+@patch('facade.subsystems.Getter')
+class TestFilteredView(TestCase):
+    class MockGetter(Mock):
+          def __init__(self, results):
+              super(TestFilteredView.MockGetter, self).__init__()
+              self._results = list(results)
+
+          @property
+          def results(self):
+              return self._results.pop(0)
+
+    def setUp(self):
+        super(TestFilteredView, self).setUp()
+        self.build_view = partial(self.assignment_manager.build_view,
+                filtered=True)
+
+    def test_filtered_view(self, getter_class):
+        expected = [{'id': 1}, {'id': 2}]
+        getter_class.return_value = self.MockGetter([expected])
+        view = self.build_view()
+        result = view(auth_token=None)
+        self.assertSequenceEqual(result, expected)
+
+    def test_filtered_merge(self, getter_class):
+        getter_class.return_value = self.MockGetter([
+            [{'id': 1, 'task': 1}, {'id': 2, 'task': 2}, {'id': 3, 'task': 3}],
+            [{'id': 1, 'name': 'Foo'}, {'id': 2, 'name': 'Bar'}]])
+        view = self.build_view(filtered=True,
+                merges=(
+                    ('task',
+                        ('name', )),
+                ))
+        result = view(auth_token=None)
+        expected = [
+            {'id': 1, 'task': {'id': 1, 'name': 'Foo'}},
+            {'id': 2, 'task': {'id': 2, 'name': 'Bar'}},
+            {'id': 3, 'task': {'id': 3}},
+        ]
+        self.assertSequenceEqual(result, expected)
+
+    def test_filtered_nested_merge(self, getter_class):
+        getter_class.return_value = self.MockGetter([
+            # initial result
+            [{'id': 1, 'task': 1}, {'id': 2, 'task': 2}, {'id': 3, 'task': 3}],
+            # merge query for task organizations
+            [{'id': 1, 'organization': 1},
+             {'id': 2, 'organization': 2},
+             {'id': 3}],
+            # merge query for organization names
+            [{'id': 1, 'name': 'Foo'},
+             {'id': 2}]])
+
+        view = self.build_view(
+                merges=(
+                    ('task.organization',
+                        ('name', )),
+                ))
+        result = view(auth_token=None)
+        expected = [
+            {'id': 1, 'task': {'id': 1, 'organization': {'id': 1, 'name': 'Foo'}}},
+            {'id': 2, 'task': {'id': 2, 'organization': {'id': 2}}},
+            {'id': 3, 'task': {'id': 3}},
+        ]
+        self.assertSequenceEqual(result, expected)
+
+    def test_filtered_empty_merge(self, getter_class):
+        getter_class.return_value = self.MockGetter([
+            [{'id': 1, 'task': 1}, {'id': 2, 'task': 2}],
+            [],
+        ])
+        view = self.build_view(merges=(
+            ('task',
+                ('name',)),
+            ))
+        result = view(auth_token=None)
+        expected = [
+            {'id': 1, 'task': {'id': 1}},
+            {'id': 2, 'task': {'id': 2}}
+        ]
+        self.assertSequenceEqual(result, expected)
+
+    def test_filtered_empty_nested_merge(self, getter_class):
+        getter_class.return_value = self.MockGetter([
+            [{'id': 1, 'task': 1}, {'id': 2, 'task': 2}],
+            [{'id': 1, 'organization': 1}, {'id': 2}],
+            [],
+        ])
+        view = self.build_view(merges=(
+            ('task.organization',
+                ('name', )),
+            ))
+        result = view(auth_token=None)
+        expected = [
+            {'id': 1, 'task': {'id': 1, 'organization': {'id': 1}}},
+            {'id': 2, 'task': {'id': 2}},
+        ]
+        self.assertSequenceEqual(result, expected)
+
 
 # vim:tabstop=4 shiftwidth=4 expandtab

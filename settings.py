@@ -165,6 +165,9 @@ logging.setLoggerClass(Logger)
 LOGLEVEL = 'INFO'
 LOGFILE_LOCATION = None
 
+# The maximum number of rows that can be returned by a single query
+MAX_QUERY_RESULTS = 1000
+
 ## The following USER_PHOTO_* options should not be left to the whim of the
 ## local administrator.
 # extension for one of PIL's writable formats, generally one of
