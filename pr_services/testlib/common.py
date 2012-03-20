@@ -59,6 +59,7 @@ class AssignmentViewTests:
                 'title': unicode(exam.title),
                 'type': u'pr_services.exam',
                 'description': unicode(exam.description),
+                'passing_score': exam.passing_score,
             }
         }
         result = sorted(view(), key=_id)
