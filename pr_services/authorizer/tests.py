@@ -19,6 +19,9 @@ from pr_services.testlib import mixins, TestCase, GeneralTestCase, BasicTestCase
 import facade
 facade.import_models(locals(), globals())
 
+RIGHT_NOW = datetime.now()
+ONE_DAY = timedelta(days=1)
+
 class TestAuthorizer(GeneralTestCase, mixins.RoleTestMixin):
 
     def test_flush(self):
@@ -363,7 +366,7 @@ class TestOrgRoleChecks(TestCase):
     def test_enrollment(self):
         curr = Curriculum.objects.create(name='Foo', organization=self.org)
         enroll = CurriculumEnrollment.objects.create(curriculum=curr,
-                start=datetime.now(), end=datetime.now() + timedelta(days=1))
+                start=RIGHT_NOW, end=RIGHT_NOW + ONE_DAY)
 
         check = Mock(return_value=True)
         with patch.dict(self.CHECKS, CurriculumEnrollment=[check]):
@@ -371,11 +374,10 @@ class TestOrgRoleChecks(TestCase):
         assert check.called
 
     def test_session(self):
-        event = Event.objects.create(start=datetime.now(), end=datetime.now() +
-                timedelta(days=1), name='Foo Event', organization=self.org)
-        sess = Session.objects.create(start=datetime.now(), end=datetime.now() +
-                timedelta(days=1), title='Foo', shortname='Foo', event=event,
-                default_price=100)
+        event = Event.objects.create(start=RIGHT_NOW, end=RIGHT_NOW + ONE_DAY,
+                name='Foo Event', organization=self.org)
+        sess = Session.objects.create(start=RIGHT_NOW, end=RIGHT_NOW + ONE_DAY,
+                title='Foo', shortname='Foo', event=event, default_price=100)
 
         check = Mock(return_value=True)
         with patch.dict(self.CHECKS, Session=[check]):
@@ -384,8 +386,8 @@ class TestOrgRoleChecks(TestCase):
 
 
     def test_event(self):
-        event = Event.objects.create(start=datetime.now(), end=datetime.now() +
-                timedelta(days=1), name='Foo Event', organization=self.org)
+        event = Event.objects.create(start=RIGHT_NOW, end=RIGHT_NOW + ONE_DAY,
+                name='Foo Event', organization=self.org)
 
         check = Mock(return_value=True)
         with patch.dict(self.CHECKS, Event=[check]):

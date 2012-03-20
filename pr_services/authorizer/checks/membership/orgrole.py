@@ -85,7 +85,7 @@ def actor_role_in_actee_org(auth_token, actee, role, *args, **kwargs):
     """
     # check that the actor at least has the role
     if not UserOrgRole.objects.filter(role__name=role,
-            owner=auth_token.user_id).exists():
+            owner__id=auth_token.user_id).exists():
         return False
 
     t = type(actee)
@@ -99,8 +99,8 @@ def actor_role_in_actee_org(auth_token, actee, role, *args, **kwargs):
             if checks:
                 break
         else:
-            # XXX: no specialized checks found for type
-            # actee must have an organization attribute or
+            # XXX: No specialized checks found for type.
+            # Actee must have an organization attribute or
             # else we dont know about it
             assert not isinstance(actee, UserOrgRole)
             try:
@@ -119,25 +119,8 @@ def actor_orgrole_for_assignment(auth_token, actee, role, *args, **kwargs):
     organization to which the actee (an `Assignment` object) belongs.
     False otherwise.
     """
-    if (actor_orgrole_for_task(auth_token, actee.task, role, *args, **kwargs) and
-        actor_orgrole_for_user(auth_token, actee.user, role, *args, **kwargs)):
+    if (actor_orgrole_for_user(auth_token, actee.user, role, *args, **kwargs)):
         return True
-
-    try:
-        # check for curriculum assignments
-        organization = actee.curriculum_enrollment.curriculum.organization
-    except AttributeError:
-        pass
-    else:
-        return check_orgrole(auth_token, role, organization)
-
-    try:
-        # check for event assignments
-        surr = actee.task.sessionuserrolerequirement
-    except SessionUserRoleRequirement.DoesNotExist:
-        return False
-    else:
-        return actor_orgrole_for_surr(auth_token, surr, role, *args, **kwargs)
 
 
 @check(Credential)
@@ -146,10 +129,11 @@ def actor_orgrole_for_credential(auth_token, actee, role, *args, **kwargs):
     Returns True if the actor has the specified OrgRole for the organization to
     which the actee (a `Credential` object) belongs. False Otherwise.
     """
-    if actee.user.organizations.count() == 0:
+    actee_orgs = actee.user.organizations.all()
+    if not actee_orgs:
         return False
 
-    return actor_orgrole_for_user(auth_token, actee.user, role, *args, **kwargs)
+    return check_orgrole_with_orgs(auth_token, role, actee_orgs)
 
 
 @check(CredentialType)
@@ -248,7 +232,9 @@ def actor_orgrole_for_userorgrole(auth_token, actee, role, *args, **kwargs):
     organization as the actee (a `UserOrgRole` object) and the actee does not
     belong to other organizations.
     """
-    if actee.owner.organizations.count() == 0:
+    # XXX: Allow adding a user to an organization when the user has
+    # no previous organization affiliations.
+    if not actee.owner.organizations.exists():
         return True
 
     return check_orgrole(auth_token, role, actee.organization_id)
