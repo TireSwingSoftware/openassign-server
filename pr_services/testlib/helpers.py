@@ -6,8 +6,15 @@ import functools
 
 from django.core.management import call_command
 
+from pr_services import pr_time
 from pr_services.exceptions import PermissionDeniedException
 
+__all__ = (
+    'datestring',
+    'expectPermissionDenied',
+    'load_fixtures',
+    'object_dict',
+    )
 
 def expectPermissionDenied(func):
     """
@@ -25,10 +32,6 @@ def expectPermissionDenied(func):
     def wrapper(self, *args, **kwargs):
         self.assertRaises(PermissionDeniedException,
                 func, self, *args, **kwargs)
-
-    wrapper.__doc__ = "check permission denied for %s" % (
-            func.__doc__ or func.__name__)
-
     return wrapper
 
 
@@ -51,12 +54,13 @@ def load_fixtures(*fixtures):
     """
     def decorator(func):
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            # 'commit = False' tells the loaddata command to not use its own
-            # transaction management
-            call_command('loaddata', *fixtures,
+        def wrapper(self, *args, **kwargs):
+            # 'commit = False' tells the loaddata command to not use its
+            # own transaction management
+            call_command('loaddata',
+                    *[f for f in fixtures if not f in self.fixtures],
                     **{'verbosity': 0, 'commit': False})
-            return func(*args, **kwargs)
+            return func(self, *args, **kwargs)
         return wrapper
     return decorator
 
@@ -83,3 +87,9 @@ def object_dict(obj, attributes):
     for key in d:
         d[key] = getattr(obj, key)
     return d
+
+
+def datestring(d):
+    """Convert date to string format using UTC tzinfo"""
+    return d.replace(tzinfo=pr_time.UTC()).isoformat()
+

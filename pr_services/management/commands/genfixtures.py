@@ -5,13 +5,19 @@ from contextlib import contextmanager
 from os import path
 
 from django.core.management import call_command
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 
 from settings import PROJECT_ROOT
 
+from pr_services.initial_setup import (InitialSetupMachine,
+        create_default_domains,
+        create_organization_admin_role)
+
+import facade
+facade.import_models(locals())
+
 
 _stdout = sys.stdout
-
 # XXX: some magic to get around django
 # dumpdata stupidly writing *only* to standard out.
 @contextmanager
@@ -23,20 +29,31 @@ def catch_stdout(stream=None):
     sys.stdout = _stdout
 
 
-class Command(NoArgsCommand):
+def fixture(func):
+    setattr(func, '_fixture', True)
+    return func
+
+class Command(BaseCommand):
+    args = '<fixture names...>'
     requires_model_validation = False
 
     FIXTURE_DIR = 'pr_services/testlib/fixtures'
 
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
         self.fixture_dir = path.join(PROJECT_ROOT, self.FIXTURE_DIR)
         print("Writing fixtures to %s" % self.FIXTURE_DIR)
-        for create_fixture in (self._initial_setup_default,
-                               self._initial_setup_precor):
+        fixture_names = set(args)
+        for name in dir(self):
+            if name.startswith('_'):
+                continue
+            if fixture_names and name not in fixture_names:
+                continue
+            func = getattr(self, name)
+            if not hasattr(func, '_fixture'):
+                continue
             with catch_stdout(None):
                 call_command('resetdb')
-
-            create_fixture()
+            func()
 
     def _dumpdata(self, models, filename):
         print("Writing %s" % filename)
@@ -48,7 +65,8 @@ class Command(NoArgsCommand):
         with open(filepath, 'w') as f:
             f.write(buf.getvalue())
 
-    def _initial_setup_default(self):
+    @fixture
+    def initial_setup_default(self):
         with catch_stdout(None):
             call_command('setup', 'base', 'legacy')
 
@@ -58,7 +76,6 @@ class Command(NoArgsCommand):
            'pr_services.ACL',
            'pr_services.ACMethodCall',
            'pr_services.Address',
-           'pr_services.AuthToken',
            'pr_services.Blame',
            'pr_services.Domain',
            'pr_services.DomainAffiliation',
@@ -70,7 +87,8 @@ class Command(NoArgsCommand):
         self._dumpdata(models, 'initial_setup_default.json')
 
 
-    def _initial_setup_precor(self):
+    @fixture
+    def initial_setup_precor(self):
         with catch_stdout(None):
             call_command('setup', 'base', 'legacy', 'precor')
 
@@ -80,7 +98,6 @@ class Command(NoArgsCommand):
            'pr_services.ACL',
            'pr_services.ACMethodCall',
            'pr_services.Address',
-           'pr_services.AuthToken',
            'pr_services.Blame',
            'pr_services.Domain',
            'pr_services.DomainAffiliation',
@@ -90,3 +107,49 @@ class Command(NoArgsCommand):
            'pr_services.User',
            ]
         self._dumpdata(models, 'initial_setup_precor.json')
+
+    def _pr_services(self, model):
+        return 'pr_services.' + model
+
+#    @fixture
+#    def barebones(self):
+#        from pr_services.authorizer.checks import import_authorizer_checks
+#        machine = InitialSetupMachine()
+#        import_authorizer_checks()
+#        create_default_domains.setup(machine)
+#        models = map(self._pr_services, [
+#           'ACCheckMethod',
+#           'ACL',
+#           'ACMethodCall',
+#           'Domain',
+#           'DomainAffiliation',
+#        ])
+#        self._dumpdata(models, 'barebones.json')
+
+    @fixture
+    def barebones_orgrole(self):
+        from pr_services.authorizer.checks import import_authorizer_checks
+        machine = InitialSetupMachine()
+        import_authorizer_checks()
+        create_default_domains.setup(machine)
+        create_organization_admin_role.setup(machine)
+        with catch_stdout(None):
+            call_command('loaddata', 'unprivileged_user', 'precor_org_roles')
+        user = User.objects.get(id=2)
+        org = Organization.objects.create(name='Foo')
+        role = OrgRole.objects.get(name='Administrator')
+        UserOrgRole.objects.create(owner=user, organization=org, role=role)
+        models = map(self._pr_services, [
+           'ACCheckMethod',
+           'ACL',
+           'ACMethodCall',
+           'Blame',
+           'Domain',
+           'DomainAffiliation',
+           'OrgRole',
+           'Organization',
+           'Role',
+           'User',
+           'UserOrgRole',
+        ])
+        self._dumpdata(models, 'barebones_orgrole.json')

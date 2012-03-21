@@ -6,11 +6,12 @@ of common tests in testlib.
 import facade
 
 from functools import partial
-from datetime import timedelta
 
 from pr_services import pr_time
-from pr_services.testlib import TestCase, BasicTestCase
-from pr_services.testlib.helpers import expectPermissionDenied
+from pr_services.exceptions import PermissionDeniedException
+from pr_services.testlib import (TestCase, BasicTestCase, RoleTestCase,
+        GeneralTestCase, common)
+from pr_services.testlib.helpers import expectPermissionDenied, object_dict
 
 facade.import_models(locals(), globals())
 
@@ -125,3 +126,171 @@ class TestSessionParticipantRole(TestCase):
         events = get_events({'exact': {'id': e.id}}, list(expected))
         self.assertEquals(len(events), 1)
         self.assertDictEqual(events[0], expected)
+
+
+class TestOrganizationAdminRole(RoleTestCase, GeneralTestCase,
+                                common.AssignmentViewTests,
+                                common.CredentialTests,
+                                common.EnrollmentTests,
+                                common.ExamTests,
+                                common.EventTests,
+                                common.ResourceTests,
+                                common.UserTests,
+                                common.VenueTests):
+    """
+    Verifies the privileges for the "Organization Administrator" role which
+    implies that the user has the "Administrator" OrgRole for an organization.
+    """
+
+    fixtures = [
+        'initial_setup_precor',
+        'legacy_objects',
+        'precor_org_roles',
+    ]
+
+    # check that the following tests fail because of
+    # a PermissionDenied exception
+    CHECK_PERMISSION_DENIED = [
+        'test_create_curriculum',
+        'test_create_resource',
+        'test_read_users_in_other_org',
+        'test_user_add_second_organization',
+    ]
+
+    def setUp(self):
+        super(TestOrganizationAdminRole, self).setUp()
+        update_user = self.admin_user_manager.update
+        # put user1 and 2 in organization1
+        org_dict = {'organizations': {'add': [{'id': self.organization1.id}]}}
+        update_user(self.user2.id, org_dict)
+        # make user1 an organization admin
+        admin_role = OrgRole.objects.get(name='Administrator')
+        new_role = {'id': admin_role.id, 'organization': self.organization1.id}
+        role_dict = {'roles': {'add': [new_role]}}
+        update_user(self.user1.id, role_dict)
+        # use auth token from user1 for all subsequent tests
+        self.auth_token = self.user1_auth_token
+
+    @expectPermissionDenied
+    def test_modify_user_in_different_org(self):
+        """modifying user in a different organization"""
+        user, create_dict = self.create_user(compare=False)
+        other_org = Organization.objects.create(name='Foo Org')
+        # put user in another org
+        self.admin_user_manager.update(user.id,
+            {'organizations': {'add': [{'id': other_org.id}]}})
+        # hope for denied permissions
+        self.user_manager.update(user.id, {'status': 'inactive'})
+
+    def test_create_credential_type(self):
+        create = self.credential_type_manager.create
+        expected = {
+            'name': 'B.S. Software Engineering',
+            'description': 'Nice to have'
+        }
+        test = create(expected['name'], expected['description'])
+        self.assertDictEqual(object_dict(test, expected.keys()), expected)
+        expected = {
+            'name': 'M.S. Software Engineering',
+            'description': 'Waste of time'
+        }
+        test = create(expected['name'], expected['description'])
+        self.assertDictEqual(object_dict(test, expected.keys()), expected)
+
+    def test_grant_credential(self):
+        credentials = self.user1.credentials
+        self.assertEquals(credentials.count(), 0)
+        degree = self.admin_credential_type_manager.create(
+            'B.S. Software Engineering', 'Nice to have')
+        cred = self.credential_manager.create(self.user1.id, degree.id)
+        has_credential = credentials.filter(credential_type__id=degree.id).exists()
+        self.assertTrue(has_credential)
+
+    @expectPermissionDenied
+    def test_grant_credential_to_no_org_user(self):
+        user, create_dict = self.create_user(compare=False)
+        degree = self.admin_credential_type_manager.create(
+            'B.S. Software Engineering', 'Nice to have')
+        self.credential_manager.create(user.id, degree.id)
+
+    @expectPermissionDenied
+    def test_grant_credential_to_wrong_org_user(self):
+        # make a user and put them in a different org
+        user, create_dict = self.create_user(compare=False)
+        org = Organization.objects.create(name='The "Org" Organization')
+        self.admin_user_manager.update(user.id,
+                {'organizations': {'add': [org.id]}})
+
+        degree = self.admin_credential_type_manager.create(
+            'B.S. Software Engineering', 'Nice to have')
+        self.credential_manager.create(user.id, degree.id)
+
+    def test_task_with_bad_organization(self):
+        badorg = Organization.objects.create(name="Bar")
+        create_exam = self.exam_manager.create
+        create_exam('Foo Exam', organization=self.organization1.id)
+        with self.assertRaises(PermissionDeniedException):
+            create_exam('Bad Exam', organization=badorg.id)
+
+
+    def test_role_required_for_noorg_user(self):
+        # check that the admin role is required to update a user with no org
+        UserOrgRole.objects.all().delete()
+        user, user_dict = self.create_user(compare=False, as_admin=True)
+        self.assertEquals(user.organizations.count(), 0)
+        with self.assertRaises(PermissionDeniedException):
+            self.user_manager.update(user.id, {'status': 'active'})
+
+
+
+class TestOwnerManagerRole(RoleTestCase, GeneralTestCase,
+                           common.AssignmentViewTests,
+                           common.EnrollmentTests,
+                           common.ExamTests,
+                           common.EventTests,
+                           common.UserTests,
+                           common.VenueTests):
+    """
+    Verifies the privileges for the "Owner Manager" authorizer role which
+    implies that the user has the "Owner Manager" OrgRole for an organization.
+    """
+
+    fixtures = [
+        'initial_setup_precor',
+        'legacy_objects',
+        'precor_org_roles',
+    ]
+
+    # check that the following tests fail because of
+    # a PermissionDenied exception
+    CHECK_PERMISSION_DENIED = [
+        'test_change_curriculum_enrollment_status',
+        'test_create_curriculum',
+        'test_enroll_users_in_curriculum',
+        'test_user_add_initial_organization',
+        'test_user_add_organization_role',
+        'test_user_add_second_organization',
+        'test_user_batch_create',
+        'test_user_change_status_active',
+        'test_user_change_status_inactive',
+        'test_user_change_status_suspended',
+        'test_user_create_basic',
+        'test_user_update_basic',
+        'test_read_users_in_other_org',
+    ]
+
+    def setUp(self):
+        super(TestOwnerManagerRole, self).setUp()
+        update_user = self.admin_user_manager.update
+        # put user2 in organization1
+        org_dict = {'organizations': {'add': [{'id': self.organization1.id}]}}
+        update_user(self.user2.id, org_dict)
+
+        # make user1 an owner manager
+        orgrole = OrgRole.objects.get(name='Owner Manager')
+        new_role = {'id': orgrole.id, 'organization': self.organization1.id}
+        role_dict = {'roles': {'add': [new_role]}}
+        update_user(self.user1.id, role_dict)
+
+        # use auth token from user1 for all subsequent tests
+        self.auth_token = self.user1_auth_token

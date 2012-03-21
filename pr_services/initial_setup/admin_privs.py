@@ -69,12 +69,6 @@ def _make_admin_privs():
             'u' : set(),
             'd' : False,
             },
-
-        ##
-        # Method Privileges
-        'AssignmentManager': {
-            'methods': set(('email_task_assignees', ))
-        }
     })
     return admin_privs
 

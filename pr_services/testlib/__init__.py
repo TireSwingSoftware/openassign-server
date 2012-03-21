@@ -6,15 +6,12 @@ import re
 import inspect
 
 from datetime import datetime, timedelta
-from operator import itemgetter
-
-import django.utils.unittest
 
 from django import test
 from django.conf import settings
 from django.core import cache, mail
 from django.core.management import call_command
-from django.db import transaction, connection, connections, DEFAULT_DB_ALIAS
+from django.db import transaction, connections, DEFAULT_DB_ALIAS
 from celery import conf
 
 from pr_services import pr_time
@@ -298,6 +295,22 @@ class RoleTestCaseMetaclass(type):
             if not callable(func):
                 raise ValueError("attribute '%s' not callable" % func_name)
             attrs[func_name] = helpers.expectPermissionDenied(func)
+
+        # remove excluded tests
+        # XXX: this could probably be moved to TestCase
+        for attr_name in attrs.keys():
+            if not attr_name.startswith('test_'):
+                continue
+            obj = attrs[attr_name]
+            if obj is not None:
+                continue
+            for base in bases:
+                if hasattr(base, attr_name):
+                    func = getattr(base, attr_name)
+                    if callable(func):
+                        delattr(base, attr_name)
+            del attrs[attr_name]
+
         return type.__new__(cls, name, bases, attrs)
 
 

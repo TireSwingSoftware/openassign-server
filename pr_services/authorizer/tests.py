@@ -5,6 +5,7 @@ except ImportError:
     import pickle
 
 from functools import partial
+from datetime import datetime, timedelta
 from mock import Mock, patch
 
 from django.db import models
@@ -13,10 +14,13 @@ from pr_services.exceptions import PermissionDeniedException
 from pr_services.object_manager import ObjectManager
 from pr_services.pr_models import PRModel
 from pr_services.rpc.service import service_method, public_service_method
-from pr_services.testlib import mixins, GeneralTestCase, BasicTestCase
+from pr_services.testlib import mixins, TestCase, GeneralTestCase, BasicTestCase
 
 import facade
 facade.import_models(locals(), globals())
+
+RIGHT_NOW = datetime.now()
+ONE_DAY = timedelta(days=1)
 
 class TestAuthorizer(GeneralTestCase, mixins.RoleTestMixin):
 
@@ -327,3 +331,84 @@ class TestMethodCheckPermissions(TestMethodCheck, mixins.RoleTestMixin):
             self.assertEquals(self.check_method_call.call_count, 3)
             self.authorizer.flush()
 
+
+class TestOrgRoleChecks(TestCase):
+
+    fixtures = [
+        'barebones_orgrole'
+    ]
+
+    CHECKS = 'pr_services.authorizer.checks.membership.orgrole.ORGROLE_CHECKS'
+
+    def setUp(self):
+        super(TestOrgRoleChecks, self).setUp()
+        self.user = User.objects.get(id=2)
+        self.org = Organization.objects.get(name='Foo')
+        self.auth_token = self._get_auth_token('user1')
+
+    def test_assignment(self):
+        task = Task.objects.create(organization=self.org, name='Foo')
+        assignment = Assignment.objects.create(user=self.user, task=task)
+
+        check = Mock(return_value=True)
+        with patch.dict(self.CHECKS, Assignment=[check]):
+            self.authorizer.check_create_permissions(self.auth_token, assignment)
+        assert check.called
+
+    def test_exam(self):
+        exam = Exam.objects.create(organization=self.org, name='Foo')
+
+        check = Mock(return_value=True)
+        with patch.dict(self.CHECKS, Exam=[check]):
+            self.authorizer.check_create_permissions(self.auth_token, exam)
+        assert check.called
+
+    def test_enrollment(self):
+        curr = Curriculum.objects.create(name='Foo', organization=self.org)
+        enroll = CurriculumEnrollment.objects.create(curriculum=curr,
+                start=RIGHT_NOW, end=RIGHT_NOW + ONE_DAY)
+
+        check = Mock(return_value=True)
+        with patch.dict(self.CHECKS, CurriculumEnrollment=[check]):
+            self.authorizer.check_create_permissions(self.auth_token, enroll)
+        assert check.called
+
+    def test_session(self):
+        event = Event.objects.create(start=RIGHT_NOW, end=RIGHT_NOW + ONE_DAY,
+                name='Foo Event', organization=self.org)
+        sess = Session.objects.create(start=RIGHT_NOW, end=RIGHT_NOW + ONE_DAY,
+                title='Foo', shortname='Foo', event=event, default_price=100)
+
+        check = Mock(return_value=True)
+        with patch.dict(self.CHECKS, Session=[check]):
+            self.authorizer.check_create_permissions(self.auth_token, sess)
+        assert check.called
+
+
+    def test_event(self):
+        event = Event.objects.create(start=RIGHT_NOW, end=RIGHT_NOW + ONE_DAY,
+                name='Foo Event', organization=self.org)
+
+        check = Mock(return_value=True)
+        with patch.dict(self.CHECKS, Event=[check]):
+            self.authorizer.check_create_permissions(self.auth_token, event)
+        assert check.called
+
+    def test_user(self):
+        user = User.objects.create(title='Mr.', first_name='John',
+                last_name='Doe', email='john@doe.com')
+
+        check = Mock(return_value=True)
+        with patch.dict(self.CHECKS, User=[check]):
+            self.authorizer.check_create_permissions(self.auth_token, user)
+        assert check.called
+
+    def test_userorgrole(self):
+        uorgrole = UserOrgRole.objects.create(owner=self.user,
+                organization=self.org,
+                role=OrgRole.objects.create(name='Foo Role'))
+
+        check = Mock(return_value=True)
+        with patch.dict(self.CHECKS, UserOrgRole=[check]):
+            self.authorizer.check_create_permissions(self.auth_token, uorgrole)
+        assert check.called

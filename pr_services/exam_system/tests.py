@@ -12,8 +12,7 @@ from decimal import Decimal
 
 # PowerReg
 from pr_services import exceptions
-from pr_services.testlib import GeneralTestCase
-from pr_services.testlib.common import CommonExamTests
+from pr_services.testlib import GeneralTestCase, common
 import facade
 
 _default = object() # dummy object used as default for optional keyword args.
@@ -699,7 +698,7 @@ class TestExamModels(GeneralTestCase):
                                         text_response_test_cases)
             self._test_response_options(qt, {}, text_test_cases)
 
-class TestExamManagers(GeneralTestCase, CommonExamTests):
+class TestExamManagers(GeneralTestCase, common.ExamTests):
 
     def _take_exam(self, auth_token, assignment, answer_key, score=_default, passed=_default,
                    resume=False):

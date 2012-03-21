@@ -34,8 +34,6 @@ def setup(machine):
         'change_password_of_other_users',
         'check_usernames',
         'exceed_enrollment_capacity',
-        'export_exam_to_xml',
-        'import_exam_from_xml',
         'logging',
         'read_reports',
         'regenerate_payment_confirmations',
@@ -43,8 +41,18 @@ def setup(machine):
         'send_email',
         'upload_scorm_course',
     ]
-
-    machine.add_acl_to_role('Admin', methods, admin_privs, arb_perm_list)
+    privs = admin_privs.copy()
+    privs.update({
+        ##
+        # Method Privileges
+        'AssignmentManager': {
+            'methods': set(('email_task_assignees', ))
+        },
+        'ExamManager': {
+            'methods': set(('export_to_xml', 'create_from_xml'))
+        },
+    })
+    machine.add_acl_to_role('Admin', methods, privs, arb_perm_list)
 
     if not machine.options['authz_only']:
         # we need to reload ACLs that were just modified before using them to login
