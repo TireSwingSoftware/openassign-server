@@ -14,7 +14,7 @@ from pr_services.exceptions import InvalidActeeTypeException
 
 VALID_MODULE_NAME = re.compile(r'[_a-z]\w*\.py$', re.IGNORECASE)
 
-def check(*args):
+def check(*args, **kwargs):
     """Decorator for authorizer check functions to reduce boilerplate
     operations and provide filtering by actee types while raising
     InvalidActeeTypeException when appropriate.
@@ -25,6 +25,8 @@ def check(*args):
             # this is only called when the actee is a Foo or Bar object
             pass
     """
+    pre_hooks = kwargs.get('pre_hooks', None)
+    post_hooks = kwargs.get('post_hooks', None)
     if len(args) == 1 and isinstance(args[0], types.FunctionType):
         func = args[0]
         setattr(func, '_authorizer_check', True)
@@ -41,8 +43,13 @@ def check(*args):
                 actee = args[actee_argpos]
             if not isinstance(actee, check_types):
                 raise InvalidActeeTypeException(actee)
+            if pre_hooks:
+                if not all(h(func, *args, **kwargs) for h in pre_hooks):
+                    return False
             result = func(*args, **kwargs)
-#               logger.trace('%s: %s' % (func.__name__, repr(result)))
+            if post_hooks:
+                if not all(h(func, result, *args, **kwargs) for h in post_hooks):
+                    return False
             return result
         func = decorator(inner, func)
         setattr(func, '_authorizer_check', True)
