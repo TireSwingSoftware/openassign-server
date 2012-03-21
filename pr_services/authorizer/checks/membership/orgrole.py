@@ -1,4 +1,19 @@
+"""
+This module contains checks for each model type to ensure that an actor has
+a specific role within an organization to which the actee belongs.
 
+The most common entry point is the function `actor_has_role_in_actee_org`. This
+function should be used in any role which needs to verify all object types. If
+a role only needs a check for one specific object type, the function that checks
+only that type can be used directly.
+
+The checks themselves are straight forward but there are a few less obvious
+implementation details specific to this module. The @check decorator is used for
+all check functions to populate ORGROLE_CHECKS, which is a mapping from actee
+type to the check function. The check decorator also attaches a hook which
+runs before the function being decorated to ensure that the actor actually
+has the role in question.
+"""
 import inspect
 import logging
 import types
