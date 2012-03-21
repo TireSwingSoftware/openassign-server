@@ -24,6 +24,15 @@ def check(*args, **kwargs):
         def some_check_function(auth_token, actee, *args, **kwargs):
             # this is only called when the actee is a Foo or Bar object
             pass
+
+    Keyword Arguments:
+        pre_hooks: A sequence of functions which will be executed before the
+                   check function being decorated. If any hook returns False,
+                   the check will short-circuit and return False.
+
+        post_hooks: A sequence of functions which will be executed after the
+                    check function being decorated. If any function returns
+                    False, the check will return False.
     """
     pre_hooks = kwargs.get('pre_hooks', None)
     post_hooks = kwargs.get('post_hooks', None)
