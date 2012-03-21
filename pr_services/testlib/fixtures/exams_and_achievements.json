@@ -27,21 +27,6 @@
     "model" : "pr_services.organization",
     "pk" : 1
   },
-    { 
-        "pk" : 1,
-        "model" : "pr_services.blame",
-        "fields" : {
-            "create_timestamp" : "2012-01-11 21:01:10",
-            "final_type" : [ "pr_services",
-                "blame"
-              ],
-            "ip" : "0.0.0.0",
-            "owner" : null,
-            "save_timestamp" : "2012-01-11 21:01:10",
-            "time" : "2012-01-11 21:01:10",
-            "user" : 1
-        }
-    },
     {
         "pk": 1,
         "model": "pr_services.exam",
@@ -349,7 +334,7 @@
             "product_claim": null,
             "sent_confirmation": false,
             "authority": null,
-            "blame": 1,
+            "blame": null,
             "effective_date_assigned": null,
             "status_change_log": "Object created by <User: Mr. Primo Uomo Sr.> (IP=127.0.0.1), with initial status 'assigned'",
             "user": 2,
@@ -378,7 +363,7 @@
             "product_claim": null,
             "sent_confirmation": false,
             "authority": null,
-            "blame": 1,
+            "blame": null,
             "effective_date_assigned": null,
             "status_change_log": "Object created by <User: Mr. Primo Uomo Sr.> (IP=127.0.0.1), with initial status 'assigned'",
             "user": 2,
@@ -407,7 +392,7 @@
             "product_claim": null,
             "sent_confirmation": false,
             "authority": null,
-            "blame": 1,
+            "blame": null,
             "effective_date_assigned": null,
             "status_change_log": "Object created by <User: Mr. Primo Uomo Sr.> (IP=127.0.0.1), with initial status 'assigned'",
             "user": 2,
@@ -436,7 +421,7 @@
             "product_claim": null,
             "sent_confirmation": false,
             "authority": null,
-            "blame": 1,
+            "blame": null,
             "effective_date_assigned": null,
             "status_change_log": "Object created by <User: Mr. Primo Uomo Sr.> (IP=127.0.0.1), with initial status 'assigned'",
             "user": 2,
@@ -465,7 +450,7 @@
             "product_claim": null,
             "sent_confirmation": false,
             "authority": null,
-            "blame": 1,
+            "blame": null,
             "effective_date_assigned": null,
             "status_change_log": "Object created by <User: Mr. Primo Uomo Sr.> (IP=127.0.0.1), with initial status 'assigned'",
             "user": 2,
