@@ -3,19 +3,23 @@ Getters and setters for use in the object_manager
 """
 __docformat__ = "restructuredtext en"
 
-from datetime import datetime, date
 import decimal
 import logging
 import cPickle
 import urllib
 import warnings
-from django.conf import settings
-from django.db import connection
-from django.db.models.fields import FieldDoesNotExist
+
+from datetime import datetime, date
+
 import django.db
 import django.db.backends.util
 import django.db.models
 import django.db.models.related
+
+from django.conf import settings
+from django.db import connection
+from django.db.models.fields import FieldDoesNotExist
+
 import exceptions
 import facade
 import pr_models
@@ -37,7 +41,7 @@ class Getter(object):
     logger = logging.getLogger('pr_services.getter')
 
     def __init__(self, auth_token, object_manager, django_query,
-            requested_fields=()):
+            requested_fields=(), censored=True):
         self.cache = {}
         self.getters = {}
         self.results = []
@@ -66,12 +70,18 @@ class Getter(object):
         if foreign_keys:
             django_query = django_query.select_related(*foreign_keys)
 
-        get_authorized_attributes = self.authorizer.get_authorized_attributes
-        for item in django_query:
-            # get attributes the user is authorized to read
-            attributes = get_authorized_attributes('r', auth_token, item, requested_fields)
-            if attributes:
-                row = dict((f, self.getters[f](item, f)) for f in attributes)
+        if censored:
+            for item in django_query:
+                # get attributes the user is authorized to read
+                attributes = self.authorizer.get_authorized_attributes(
+                        'r', auth_token, item, requested_fields)
+                if attributes:
+                    row = dict((f, self.getters[f](item, f)) for f in attributes)
+                    self.results.append(row)
+        else:
+            for item in django_query:
+                row = dict((f, self.getters[f](item, f)) for f in
+                        requested_fields)
                 self.results.append(row)
 
     def get_general(self, result_object, field_name):

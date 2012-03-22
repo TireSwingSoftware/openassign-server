@@ -45,7 +45,9 @@ class AssignmentViewTests:
 
     def test_exam_view(self):
         user, exams, assignments = self.__setup_assignment_view_test()
-        view = partial(self.assignment_manager.exam_view, user_id=user.id)
+        view = partial(self.assignment_manager.exam_view,
+            filters={'exact': {'user': user.id}},
+            auth_token=self.auth_token)
         assignment, exam = assignments[0], exams[0]
         expected = {
             'id': assignment.id,
@@ -66,7 +68,8 @@ class AssignmentViewTests:
     def test_detailed_exam_view(self):
         user, exams, assignments = self.__setup_assignment_view_test()
         view = partial(self.assignment_manager.detailed_exam_view,
-                user_id=user.id)
+            filters={'exact': {'user': user.id}},
+            auth_token=self.auth_token)
         assignment, exam = assignments[0], exams[0]
         expected = {
             'id': assignment.id,
@@ -98,7 +101,8 @@ class AssignmentViewTests:
 
     def test_transcript_view(self):
         user, exams, assignments = self.__setup_assignment_view_test()
-        view = partial(self.assignment_manager.transcript_view, user_id=user.id)
+        view = partial(self.assignment_manager.transcript_view,
+            {'exact': {'user': user.id}}, auth_token=self.auth_token)
         # start the first 8 assignments
         for a in assignments[:8]:
             a.date_started = (self.right_now - self.one_day)

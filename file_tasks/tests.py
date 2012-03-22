@@ -144,7 +144,9 @@ class TestFileDownload(FileTaskTestCase):
 
     def test_assignment_details(self):
         am = self.assignment_manager
-        view = partial(am.detailed_file_download_view, user_id=self.user1.id)
+        view = partial(am.detailed_file_download_view,
+                filters={'exact': {'user': self.user1.id}},
+                auth_token=self.auth_token)
         fd = self._upload_file()
         u = self.user1
         a = am.create(fd.id, u.id)
