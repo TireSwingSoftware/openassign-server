@@ -1,4 +1,19 @@
+"""
+This module contains checks for each model type to ensure that an actor has
+a specific role within an organization to which the actee belongs.
 
+The most common entry point is the function `actor_has_role_in_actee_org`. This
+function should be used in any role which needs to verify all object types. If
+a role only needs a check for one specific object type, the function that checks
+only that type can be used directly.
+
+The checks themselves are straight forward but there are a few less obvious
+implementation details specific to this module. The @check decorator is used for
+all check functions to populate ORGROLE_CHECKS, which is a mapping from actee
+type to the check function. The check decorator also attaches a hook which
+runs before the function being decorated to ensure that the actor actually
+has the role in question.
+"""
 import inspect
 import logging
 import types
@@ -14,19 +29,29 @@ import facade
 
 facade.import_models(locals())
 
-logger = logging.getLogger('pr_services.authorizer.checks.membership.orgrole')
-
 # A mapping between actee_type and corresponding check functions
 ORGROLE_CHECKS = defaultdict(list)
 
-# redefine check decorator to populate ORGROLE_CHECKS mapping
-def check(*args):
-    if len(args) == 1 and isinstance(args[0], types.FunctionType):
-        return _check(*args)
+def ensure_actor_has_orgrole_hook(func, auth_token, actee, role, *args, **kwargs):
+    """A pre-check hook that will ensure that the actor has the role in question
+    before continuing the rest of check."""
+    query = Q(role__name=role, owner__id=auth_token.user_id)
+    return UserOrgRole.objects.filter(query).exists()
 
+# The following defines hooks which will run before every check in this module.
+ORGROLE_CHECK_HOOKS = (ensure_actor_has_orgrole_hook, )
+
+# Redefine the check decorator to populate the ORGROLE_CHECKS mapping
+# and attach the pre-check hooks.
+def check(*args):
+    # decorating a function directly
+    if len(args) == 1 and isinstance(args[0], types.FunctionType):
+        func = _check(*args, pre_hooks=ORGROLE_CHECK_HOOKS)
+        return func
+
+    # caller passed a list of acceptable types
     def wrapper(func):
-        decorator = _check(*args)
-        func = decorator(func)
+        func = _check(*args, pre_hooks=ORGROLE_CHECK_HOOKS)(func)
         for t in args:
             typename = t.__name__ if isinstance(t, type) else str(t)
             ORGROLE_CHECKS[typename].append(func)
@@ -83,11 +108,6 @@ def actor_role_in_actee_org(auth_token, actee, role, *args, **kwargs):
 
     This check supports ALL authorizable actee types for OrgRole privileges.
     """
-    # check that the actor at least has the role
-    if not UserOrgRole.objects.filter(role__name=role,
-            owner__id=auth_token.user_id).exists():
-        return False
-
     t = type(actee)
     typename = t.__name__
     checks = ORGROLE_CHECKS.get(typename, None)
