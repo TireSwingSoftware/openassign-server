@@ -565,7 +565,7 @@ class Merge(ViewTransformation):
         for value in ids:
             if isinstance(value, (int, long)):
                 result.add(value)
-            else:
+            elif value:
                 result.update(value)
         return result
 
