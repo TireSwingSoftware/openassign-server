@@ -66,7 +66,7 @@ class CurriculumEnrollmentManager(ObjectManager):
                 fields=('curriculum_name', 'start', 'end'),
                 merges=(
                     ('users',
-                        ('first_name', 'last_name', 'email'))))
+                        ('first_name', 'last_name', 'email')),))
         return view(auth_token, *args, **kwargs)
 
 # vim:tabstop=4 shiftwidth=4 expandtab
