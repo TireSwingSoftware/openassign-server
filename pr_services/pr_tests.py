@@ -4363,7 +4363,7 @@ class TestViewBuilder(TestCase):
         super(TestViewBuilder, self).setUp()
         self.assignments = Assignment.objects.all().order_by('id')
         self.build_view = partial(self.assignment_manager.build_view,
-                filtered=False)
+                censored=False)
 
     def test_no_filters_or_fields(self):
         view = self.build_view()
@@ -4609,10 +4609,10 @@ class TestViewBuilder(TestCase):
 
 
 @patch('facade.subsystems.Getter')
-class TestFilteredView(TestCase):
+class TestCensoredView(TestCase):
     class MockGetter(Mock):
           def __init__(self, results):
-              super(TestFilteredView.MockGetter, self).__init__()
+              super(TestCensoredView.MockGetter, self).__init__()
               self._results = list(results)
 
           @property
@@ -4620,22 +4620,22 @@ class TestFilteredView(TestCase):
               return self._results.pop(0)
 
     def setUp(self):
-        super(TestFilteredView, self).setUp()
+        super(TestCensoredView, self).setUp()
         self.build_view = partial(self.assignment_manager.build_view,
-                filtered=True)
+                censored=True)
 
-    def test_filtered_view(self, getter_class):
+    def test_censored_view(self, getter_class):
         expected = [{'id': 1}, {'id': 2}]
         getter_class.return_value = self.MockGetter([expected])
         view = self.build_view()
         result = view(auth_token=None)
         self.assertSequenceEqual(result, expected)
 
-    def test_filtered_merge(self, getter_class):
+    def test_censored_merge(self, getter_class):
         getter_class.return_value = self.MockGetter([
             [{'id': 1, 'task': 1}, {'id': 2, 'task': 2}, {'id': 3, 'task': 3}],
             [{'id': 1, 'name': 'Foo'}, {'id': 2, 'name': 'Bar'}]])
-        view = self.build_view(filtered=True,
+        view = self.build_view(censored=True,
                 merges=(
                     ('task',
                         ('name', )),
@@ -4648,7 +4648,7 @@ class TestFilteredView(TestCase):
         ]
         self.assertSequenceEqual(result, expected)
 
-    def test_filtered_nested_merge(self, getter_class):
+    def test_censored_nested_merge(self, getter_class):
         getter_class.return_value = self.MockGetter([
             # initial result
             [{'id': 1, 'task': 1}, {'id': 2, 'task': 2}, {'id': 3, 'task': 3}],
@@ -4673,7 +4673,7 @@ class TestFilteredView(TestCase):
         ]
         self.assertSequenceEqual(result, expected)
 
-    def test_filtered_empty_merge(self, getter_class):
+    def test_censored_empty_merge(self, getter_class):
         getter_class.return_value = self.MockGetter([
             [{'id': 1, 'task': 1}, {'id': 2, 'task': 2}],
             [],
@@ -4689,7 +4689,7 @@ class TestFilteredView(TestCase):
         ]
         self.assertSequenceEqual(result, expected)
 
-    def test_filtered_empty_nested_merge(self, getter_class):
+    def test_censored_empty_nested_merge(self, getter_class):
         getter_class.return_value = self.MockGetter([
             [{'id': 1, 'task': 1}, {'id': 2, 'task': 2}],
             [{'id': 1, 'organization': 1}, {'id': 2}],

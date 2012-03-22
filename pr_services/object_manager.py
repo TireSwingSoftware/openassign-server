@@ -484,7 +484,7 @@ class ObjectManager(object):
 
         return self.my_django_model.objects.filter(**params).exists()
 
-    def build_view(self, filtered=True, *args, **kwargs):
+    def build_view(self, censored=True, *args, **kwargs):
         """
         Helper for subclasses to create consistent views using a
         micro view building API. This method transparently passes arguments
@@ -514,7 +514,7 @@ class ObjectManager(object):
                       using the authorizer (similar to
                       ObjectManager.get_filtered). False otherwise.
         """
-        view_impl = FilteredView if filtered else UnfilteredView
+        view_impl = CensoredView if censored else UncensoredView
         return view_impl(self, *args, **kwargs)
 
 
@@ -997,7 +997,7 @@ class View(Sequence):
         return self
 
 
-class UnfilteredView(View):
+class UncensoredView(View):
     """Helps facilitate creating more complex unfiltered views which completely
     bypass the authorizer for cases where the proper access has already been
     authorized and no result filtering is required."""
@@ -1005,11 +1005,11 @@ class UnfilteredView(View):
     def _query(self, manager, query, fields, order=None, limit=None):
         result = self._raw_query(manager, query, fields, order, limit)
         getter = facade.subsystems.Getter(None,
-                manager, result, fields, filtered=False)
+                manager, result, fields, censored=False)
         return getter.results
 
 
-class FilteredView(View):
+class CensoredView(View):
     """Helps facilitate creating more complex filtered views for ObjectManager
     view methods. Particularly those that call ObjectManager.get_filtered and
     require multiple subsequent, optionally nested, merges to complete the
@@ -1018,14 +1018,14 @@ class FilteredView(View):
 
     def __call__(self, auth_token, filters=None, fields=(),
             order=None, limit=None):
-        view = super(FilteredView, self).__call__(filters, fields, order, limit)
+        view = super(CensoredView, self).__call__(filters, fields, order, limit)
         view.auth_token = auth_token
         return view
 
     def _query(self, manager, query, fields, order=None, limit=None):
         result = self._raw_query(manager, query, fields, order, limit)
         getter = facade.subsystems.Getter(self.auth_token,
-                manager, result, fields, filtered=True)
+                manager, result, fields, censored=True)
         return getter.results
 
 

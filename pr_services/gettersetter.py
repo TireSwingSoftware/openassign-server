@@ -41,7 +41,7 @@ class Getter(object):
     logger = logging.getLogger('pr_services.getter')
 
     def __init__(self, auth_token, object_manager, django_query,
-            requested_fields=(), filtered=True):
+            requested_fields=(), censored=True):
         self.cache = {}
         self.getters = {}
         self.results = []
@@ -70,7 +70,7 @@ class Getter(object):
         if foreign_keys:
             django_query = django_query.select_related(*foreign_keys)
 
-        if filtered:
+        if censored:
             for item in django_query:
                 # get attributes the user is authorized to read
                 attributes = self.authorizer.get_authorized_attributes(
