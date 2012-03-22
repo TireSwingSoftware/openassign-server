@@ -31,6 +31,8 @@ import logging
 import pr_time
 import settings
 import tagging.models
+import pyamf
+from pyamf.adapters import util
 
 from pr_services.rpc.service import service_method
 from utils import Utils
@@ -1034,5 +1036,6 @@ class CensoredView(View):
                 manager, result, fields, censored=True)
         return getter.results
 
+pyamf.add_type(View, util.to_list)
 
 # vim:tabstop=5 shiftwidth=4 expandtab
