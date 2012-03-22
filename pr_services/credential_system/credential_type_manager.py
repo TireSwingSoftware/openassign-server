@@ -86,14 +86,12 @@ class CredentialTypeManager(ObjectManager):
         return c
 
     @service_method
-    def achievement_detail_view(self, auth_token, filters=None, fields=None):
-        if not filters:
-            filters = {}
-        # apply our fields even if the passed fields is empty
-        if not fields:
-            fields = ['name', 'description', 'required_achievements']
-        ret = self.get_filtered(auth_token, filters, fields)
-
-        return Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name', 'description'], 'required_achievements')
+    def achievement_detail_view(self, auth_token, *args, **kwargs):
+        view = self.build_view(
+            fields=('name', 'description'),
+            merges=(
+                ('required_achievements',
+                    ('name', 'description'))))
+        return view(auth_token, *args, **kwargs)
 
 # vim:tabstop=4 shiftwidth=4 expandtab

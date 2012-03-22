@@ -79,21 +79,19 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
         return new_surr
 
     @service_method
-    def surr_view(self, auth_token, filters=None, fields=None):
-        if filters is None:
-            filters = {}
-        default_fields = set(['achievements', 'session',
-            'session_user_role', 'min', 'max', 'credential_types',
-            'task_fees', 'prerequisite_tasks'])
-        fields = list(set(fields or []) or default_fields)
-        ret = self.get_filtered(auth_token, filters, fields)
-
-        ret = Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name'], 'achievements')
-
-        ret = Utils.merge_queries(ret, facade.managers.TaskManager(), auth_token, ['name', 'description', 'title', 'type'], 'prerequisite_tasks')
-
-        ret = Utils.merge_queries(ret, facade.managers.TaskFeeManager(), auth_token, ['name', 'price'], 'task_fees')
-
-        return Utils.merge_queries(ret, facade.managers.SessionUserRoleManager(), auth_token, ['name'], 'session_user_role')
+    def surr_view(self, auth_token, *args, **kwargs):
+        view = self.build_view(
+                fields=('session', 'min', 'max', 'credential_types'),
+                merges=(
+                    ('achievements',
+                        ('name', )),
+                    ('prerequisite_tasks',
+                        ('name', 'description', 'title', 'type')),
+                    ('task_fees',
+                        ('name', 'price')),
+                    ('session_user_role',
+                        ('name', ))
+                ))
+        return view(auth_token, *args, **kwargs)
 
 # vim:tabstop=4 shiftwidth=4 expandtab

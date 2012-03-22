@@ -62,15 +62,15 @@ class UserOrgRoleManager(ObjectManager):
         return user_org_role
 
     @service_method
-    def user_org_role_detail_view(self, auth_token, filters=None, fields=None):
-        """
-        Ignores the "fields" argument.
-        """
-        filters = filters or {}
-        ret = self.get_filtered(auth_token, filters, ['role', 'owner', 'persistent', 'title'])
-
-        ret = Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['first_name', 'last_name', 'email'], 'owner')
-
-        return Utils.merge_queries(ret, facade.managers.OrgRoleManager(), auth_token, ['name'], 'role')
+    def user_org_role_detail_view(self, auth_token, *args, **kwargs):
+        view = self.build_view(
+                fields=('persistent', 'title'),
+                merges=(
+                    ('owner',
+                        ('first_name', 'last_name', 'email')),
+                    ('role',
+                        ('name', ))
+                ))
+        return view(auth_token, *args, **kwargs)
 
 # vim:tabstop=4 shiftwidth=4 expandtab

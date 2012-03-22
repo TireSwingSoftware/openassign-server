@@ -107,11 +107,15 @@ class OrganizationManager(ObjectManager):
         return upload._upload_photo(request, self, 'organization_id', storage.OrganizationPhotoStorage())
 
     @service_method
-    def admin_org_view(self, auth_token):
-        orgs = self.get_filtered(auth_token, {}, ['name', 'parent', 'user_org_roles', 'org_email_domains', 'external_uid', 'use_external_uid'])
-
-        ret = Utils.merge_queries(orgs, facade.managers.OrgEmailDomainManager(), auth_token, ['email_domain', 'effective_role', 'effective_role_name'], 'org_email_domains')
-
-        return Utils.merge_queries(ret, facade.managers.UserOrgRoleManager(), auth_token, ['role_name', 'role', 'owner'], 'user_org_roles')
+    def admin_org_view(self, auth_token, *args, **kwargs):
+        view = self.build_view(
+            fields=('name', 'parent', 'external_uid', 'use_external_uid'),
+            merges=(
+                ('org_email_domains',
+                    ('email_domain', 'effective_role', 'effective_role_name')),
+                ('user_org_roles',
+                    ('role', 'role_name', 'owner'))
+            ))
+        return view(auth_token, *args, **kwargs)
 
 # vim:tabstop=4 shiftwidth=4 expandtab

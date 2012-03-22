@@ -61,11 +61,12 @@ class CurriculumEnrollmentManager(ObjectManager):
         return c
 
     @service_method
-    def user_detail_view(self, auth_token, filters=None, field_names=None):
-        default_fields = set(['curriculum_name', 'start', 'end', 'users'])
-        fields = list(set(field_names or []) or default_fields)
-        ret = self.get_filtered(auth_token, filters or {}, fields)
-
-        return Utils.merge_queries(ret, facade.managers.UserManager(), auth_token, ['first_name', 'last_name', 'email'], 'users')
+    def user_detail_view(self, auth_token, *args, **kwargs):
+        view = self.build_view(
+                fields=('curriculum_name', 'start', 'end'),
+                merges=(
+                    ('users',
+                        ('first_name', 'last_name', 'email'))))
+        return view(auth_token, *args, **kwargs)
 
 # vim:tabstop=4 shiftwidth=4 expandtab

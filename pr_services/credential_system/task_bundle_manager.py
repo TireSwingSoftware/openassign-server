@@ -56,15 +56,12 @@ class TaskBundleManager(ObjectManager):
         return task_bundle
 
     @service_method
-    def task_detail_view(self, auth_token, filters=None, fields=None):
-        default_fields = set(('name', 'description', 'tasks'))
-        # apply view specific fields along with those specified by the caller
-        fields = (set(fields) | default_fields) if fields else default_fields
-
-        ret = self.get_filtered(auth_token, filters, fields)
-
-        task_manager = facade.managers.TaskManager()
-        return Utils.merge_queries(ret, task_manager, auth_token,
-                ('name', 'description', 'title', 'type'), 'tasks')
+    def task_detail_view(self, auth_token, *args, **kwargs):
+        view = self.build_view(
+                fields=('name', 'description'),
+                merges=(
+                    ('tasks', ('name', 'description', 'title', 'type')),
+                ))
+        return view(auth_token, *args, **kwargs)
 
 # vim:tabstop=4 shiftwidth=4 expandtab

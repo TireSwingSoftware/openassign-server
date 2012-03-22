@@ -49,12 +49,13 @@ class CurriculumManager(ObjectManager):
         return c
 
     @service_method
-    def admin_curriculums_view(self, auth_token):
-        ret = self.get_filtered(auth_token, {}, ['name', 'curriculum_task_associations', 'achievements', 'organization'])
-
-        ret = Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name'], 'achievements')
-
-        return Utils.merge_queries(ret, facade.managers.CurriculumTaskAssociationManager(), auth_token, ['task', 'task_name'], 'curriculum_task_associations')
+    def admin_curriculums_view(self, auth_token, *args, **kwargs):
+        view = self.build_view(
+                fields=('name', 'organization'),
+                merges=(
+                    ('achievements', ('name', )),
+                    ('curriculum_task_associations', ('task', 'task_name'))))
+        return view(auth_token, *args, **kwargs)
 
 
 # vim:tabstop=4 shiftwidth=4 expandtab

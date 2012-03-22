@@ -52,10 +52,13 @@ class GroupManager(ObjectManager):
         return new_group
 
     @service_method
-    def vod_admin_groups_view(self, auth_token):
-        groups = self.get_filtered(auth_token, {}, ['name', 'categories'])
-
-        return Utils.merge_queries(groups, facade.managers.CategoryManager(), auth_token,
-            ['name'], 'categories')
+    def vod_admin_groups_view(self, auth_token, *args, **kwargs):
+        self.build_view(
+                fields=('name', 'categories'),
+                merges=(
+                    ('categories',
+                        ('name', )),
+                ))
+        return view(auth_token, *args, **kwargs)
 
 # vim:tabstop=4 shiftwidth=4 expandtab
