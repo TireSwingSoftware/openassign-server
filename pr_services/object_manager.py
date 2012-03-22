@@ -517,8 +517,8 @@ class ObjectManager(object):
             )
             return view(auth_token, *args, **kwargs)
 
-        Args:
-            filtered: True if the returned view should filter the result rows
+        Arguments:
+            censored: True if the returned view should censor the result rows
                       using the authorizer (similar to
                       ObjectManager.get_filtered). False otherwise.
         """
@@ -527,7 +527,16 @@ class ObjectManager(object):
 
 
 class ViewTransformation(object):
-    """Abstract class representing a view result transformation."""
+    """Abstract class representing a view result transformation.
+
+    This class represents the abstract form of an algorithm which applies
+    some transformation to a view result such as a merge. The result is a
+    list of dictionaries.
+
+    Transformation classes work using a strategy-pattern where each
+    class defines its tranformation algorithm using __call__ which accepts
+    a result list as an argument.
+    """
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, view):
@@ -535,12 +544,27 @@ class ViewTransformation(object):
 
     @abstractmethod
     def __call__(self, result):
+        """
+        An abstract method which is implemented by subclasses to define the
+        tranformation algorithm applied to the view result.
+
+        Arguments:
+            result: The view result which is a list of dictionaries
+                    as returned by `Getter`.
+
+        Returns:
+            The view result, a list of dictionaries.
+        """
         pass
 
 
 class Merge(ViewTransformation):
-    "Abstract class representing a merge implementation for views"
+    """Abstract class representing a merge tranformation for view results.
 
+    A merge replaces foreign keys in a view result with a dictionary of values
+    from the foreign object. A 'final type' implies that the foreign object must
+    be downcasted before accessing the object's fields.
+    """
     def __init__(self, view, foreign_key, final_type, fields):
         super(Merge, self).__init__(view)
         self.foreign_key = foreign_key
@@ -554,11 +578,17 @@ class Merge(ViewTransformation):
 
     @property
     def foreign_model(self):
+        """Returns the Django model object that corresponds to the foreign_key
+        being merged. The foreign_key is relative to the model object for the
+        view's manager.
+        """
         model = self._get_related_model(self.foreign_key)
         if self.final_type:
             model = getattr(model, self.final_type).related.model
         return model
 
+    ##
+    # helper methods
     @staticmethod
     def _get_distinct_ids(ids):
         # constructs a distinct set of ids given a list of ids
@@ -573,6 +603,8 @@ class Merge(ViewTransformation):
 
     @staticmethod
     def _get_result_by_id_dict(result):
+        # convert a list of result rows where each row is a dictionary to a
+        # dictionary of rows keyed by the row id
         d = {}
         for row in result:
             d[row['id']] = row
@@ -580,39 +612,44 @@ class Merge(ViewTransformation):
 
     @staticmethod
     def _get_model_manager(model_object):
+        # infer the manager from a model object and return the manager class
         manager_name = '%sManager' % model_object.__name__
         return getattr(facade.managers, manager_name)
 
-    def _get_related_model(self, field_name):
+    def _get_related_model(self, foreign_key):
+        # takes the name of a field which exists on the
+        # view manager object and returns the model object for the field.
         model = self.view.manager.my_django_model
-        field = model._meta.get_field_by_name(field_name)[0]
+        field = model._meta.get_field_by_name(foreign_key)[0]
         if isinstance(field, RelatedObject):
             return field.model
         if isinstance(field, RelatedField):
             return field.rel.to
         else:
-            raise ValueError("merge field %s must be a relation" % field_name)
+            raise ValueError("merge field %s must be a relation" % foreign_key)
 
 
 class FlatMerge(Merge):
     """
-    A basic merge algorithm which replaces an integer foreign key in every row
-    with a dictionary of key-value pairs representing the foreign object's
-    fields.
+    A basic merge algorithm which operates on every row of a view result by
+    replacing an integer or list of integers (representing foreign keys)
+    with a dictionary of key-value pairs of the foreign object's fields.
 
     See Utils.merge_queries for similar functionality.
     """
     def __call__(self, result):
-        if not result:
-            return []
-
+        # rebind common value
         foreign_key = self.foreign_key
+        # grab a list of ids for the foreign objects
         ids = self._get_distinct_ids(map(itemgetter(foreign_key), result))
+        # get the manager for the foreign object
         manager = self._get_model_manager(self.foreign_model)()
+        # execute the query for the objects and construct a dict of rows by id
         merge_result = self.view._query(manager, Q(id__in=ids), self.fields)
         merge_dict = self._get_result_by_id_dict(merge_result)
-        del merge_result, ids
-
+        del merge_result, ids # memory friendly for huge results
+        # iterate through the initial result replacing foreign_keys with a
+        # dictionary of fields.
         for row in result:
             id = row.get(foreign_key, None)
             if not id:
@@ -635,11 +672,11 @@ class FlatMerge(Merge):
 
 class NestedMerge(Merge):
     """
-    A nested merge algorithm which follows a second foreign key relationship. A
-    FlatMerge must first be performed on the foreign_key before the nested merge
-    can happen on the inner key. This means the foreign key has already been
-    replaced with a dictionary. The nested merge takes it a step further and
-    replaces foreign keys from this dictionary with their respective objects.
+    A nested merge algorithm which works similarly to FlatMerge but operates
+    within a dictionary created by a FlatMerge. This means that a FlatMerge
+    must be performed first on the foreign_key after which the nested merge
+    can happen on the inner key.
+
     A nested merge is useful for efficiently getting fields from an object when
     two levels of indirection are invovled.
     """
@@ -648,18 +685,13 @@ class NestedMerge(Merge):
         self.inner_key = inner_key
 
     def __call__(self, result):
-        if not result:
-            return []
-
         # rebind some common values
         foreign_key, inner_key = self.foreign_key, self.inner_key
-
         # determine the model for the nested foreign key
         inner_field = self.foreign_model._meta.get_field_by_name(inner_key)[0]
         assert isinstance(inner_field, RelatedField)
         inner_model = inner_field.rel.to
-
-        # compute a set of inner foreign_key ids and tolerate missing values
+        # compute a set of nested foreign_key ids
         ids = set()
         for row in result:
             outer = row.get(foreign_key, None)
@@ -673,12 +705,16 @@ class NestedMerge(Merge):
             else:
                 ids.update(id)
 
+        # get the manager for the nested foreign object model
         manager = self._get_model_manager(inner_model)()
+        # query for the objects and create a dict of rows keyed by id
         merge_result = self.view._query(manager, Q(id__in=ids), self.fields)
         merge_dict = self._get_result_by_id_dict(merge_result)
-        del merge_result, ids
+        del merge_result, ids # memory friendly for huge results
 
-        # iterate over initial result set and merge additional fields by id
+        # iterate over the view result which at this point has been
+        # processed by the requisite FlatMerge. Then we merge each inner object
+        # into the existing dictionary (created by the previous FlatMerge).
         for row in result:
             outer = row.get(foreign_key, None)
             if not outer:
@@ -707,6 +743,30 @@ class NestedMerge(Merge):
         return result
 
 
+def limit_slice(limit):
+    """Create a Python slice object from an integer or tuple representing the
+    bound of a query result. If `limit` is an integer, it represents the maximum
+    number of results to return. If `limit` is a tuple, it represents a page
+    number and the number of results per page."""
+    if isinstance(limit, slice):
+        return limit
+
+    if not limit or isinstance(limit, (int, long)):
+        page, results_per_page = 1, limit or settings.MAX_QUERY_RESULTS
+    else:
+        page, results_per_page = limit
+
+    if results_per_page > settings.MAX_QUERY_RESULTS:
+        results_per_page = settings.MAX_QUERY_RESULTS
+
+    page -= 1
+    if page < 0:
+        raise ValueError("page number must be greater than 0")
+
+    pos = page * results_per_page
+    return slice(pos, pos + results_per_page)
+
+
 class View(Sequence):
     """Abstract Base class for creating PR object views.
 
@@ -714,71 +774,56 @@ class View(Sequence):
     by passing a foreign key, using a special format, along with fields that
     should be present in merged dictionary representing the foreign object.
 
-    The foreign key is specified as a string. It represents the attribute name
-    on the model object that corresponds to the view's manager. For downcasting
-    an object due to inheritence, a `final_type` can be specified by adding
-    a colon ':' character, followed by the model object's final type name. This
-    is useful for merging fields when the fields are only present on a subclass.
+    When creating a merge, the foreign key is specified as a string. It
+    represents the attribute name for a foreign key field on the model object
+    for the view. For downcasting a foreign object due to inheritence, a
+    `final_type` can be specified by adding a colon ':' character, followed
+    by the model object's final type name. This is useful for merging fields
+    when the fields are only present on a subclass.
 
     Example:
-        v = FilteredView(assignment_manager,
-            merges=(
-                ('task:filedownload',
-                    ('file_size', 'name')),
-            ))
+    v = CensoredView(assignment_manager,
+        merges=(
+            ('task:filedownload', # cast to file download to access file_size
+                ('file_size', 'name')),
+        ))
 
-    For a nested merge, the above can be followed by a period and the name of an
-    attribute which represents a foreign key (inner_key) on the object pointed
-    to by the foreign key.
+    For a nested merge, the foreign key can be followed by a period and the
+    name of an attribute on the foreign object which represents a second
+    foreign key (the inner or nested key).
 
-        v = FilteredView(assignment_manager,
-            merges=(
-                ('task:filedownload.achievements',
-                    ('name', 'description')),
-            ))
+    The following example will merge in the name and description for task
+    achievements for assignments with file download task objects.
+
+    v = CensoredView(assignment_manager,
+        merges=(
+            ('task:filedownload.achievements',
+                ('name', 'description')),
+        ))
     """
     __metaclass__ = abc.ABCMeta
-    _foreign_key_info = itemgetter('foreign_key', 'final_type', 'inner_key')
-    _foreign_key_pattern = re.compile('''
+
+    _merge_key_info = itemgetter('foreign_key', 'final_type', 'inner_key')
+    _merge_key_pattern = re.compile('''
     ^(?P<foreign_key>[a-z_]+)
     (:(?P<final_type>[a-z _-]+))?
     (\.(?P<inner_key>[a-z_]+))?
     $''', re.IGNORECASE | re.VERBOSE)
 
     @classmethod
-    def _parse_foreign_key(cls, foreign_key):
-        foreign_key = foreign_key.strip().lower()
-        m = cls._foreign_key_pattern.match(foreign_key)
+    def _parse_merge_key(cls, key):
+        # This is a helper which parses the custom string format used when
+        # specifying a foreign key to merge. It returns a 3-tuple of strings for
+        # the foreign_key, final_type and inner_key
+        key = key.strip().lower()
+        m = cls._merge_key_pattern.match(key)
         if not m:
-            raise ValueError("invalid glue field %s" % foreign_key)
+            raise ValueError("invalid merge key '%s'" % key)
         d = m.groupdict()
         final_type = d['final_type']
         if final_type:
             d['final_type'] = final_type.translate(None, ' -_')
-        return cls._foreign_key_info(d)
-
-    @classmethod
-    def _limit_slice(cls, limit):
-        if isinstance(limit, slice):
-            return limit
-
-        if not limit or isinstance(limit, (int, long)):
-            page, results_per_page = 1, limit or settings.MAX_QUERY_RESULTS
-        else:
-            page, results_per_page = limit
-
-        if results_per_page > settings.MAX_QUERY_RESULTS:
-            results_per_page = settings.MAX_QUERY_RESULTS
-
-        page -= 1
-        if page < 0:
-            raise ValueError("page number must be greater than 0")
-        pos = page * results_per_page
-        return slice(pos, pos + results_per_page)
-
-    @abstractmethod
-    def _query(self, manager, query, fields, order=None, limit=None):
-        pass
+        return cls._merge_key_info(d)
 
     def __init__(self, manager, filters=None, fields=(), merges=(),
             order=None, limit=None):
@@ -804,12 +849,12 @@ class View(Sequence):
         self.filters = filters or {}
         self.merges = list(merges)
         self.order = order
-        self.limit = self._limit_slice(limit)
+        self.limit = limit_slice(limit)
 
         self._result = None # cached result
         self._merges = None # compiled merge strategy
 
-    #
+    ##
     # Sequence API
     def __iter__(self):
         return iter(self.result)
@@ -825,7 +870,7 @@ class View(Sequence):
 
     def __call__(self, filters=None, fields=(), order=None, limit=None):
         """
-        Return a new view caller parameters bound to the original view.
+        Return a new view with caller parameters bound to the original view.
 
         Args:
             filters: a mapping of filters which may override the default filters
@@ -867,31 +912,16 @@ class View(Sequence):
             view._merges = self._merges
         return view
 
-    def _raw_query(self, manager, query, fields, order=None, limit=None):
-        if isinstance(query, dict):
-            qfilter = ObjectManager.Filter(manager)
-            query = qfilter.construct_query(query)
-        if not isinstance(limit, slice):
-            limit = self._limit_slice(limit)
-        model = manager.my_django_model
-        result = model.objects.all()
-        if query:
-            result = result.filter(query)
-        if order:
-            result = result.order_by(*order)
-        if limit:
-            result = result[limit]
-        return result
-
     def _build_and_optimize_merges(self):
-        # this basically combines merges with the same foreign key and ensures
-        # that the proper requisite merges and fields exist in the view
+        # this method basically combines merges with the same foreign key
+        # and ensures that the proper requisite merges and fields
+        # exist in the view
         if self._merges:
             return self._merges
 
         merges = OrderedDict()
         for keyspec, fields in self.merges:
-            foreign_key, final_type, inner_key = self._parse_foreign_key(keyspec)
+            foreign_key, final_type, inner_key = self._parse_merge_key(keyspec)
             # check if we already have an equivalent merge
             key = (foreign_key, inner_key)
             merge = merges.get(key, None)
@@ -939,21 +969,22 @@ class View(Sequence):
         return self._merges
 
     def _reset(self):
+        # clears cached results and compiled merges
         self._merges = None
         self._result = None
 
     @property
     def result(self):
+        """Returns the result of the view with all filtering and
+        transformations performed."""
         if self._result:
             return self._result
 
         qfilter = ObjectManager.Filter(self.manager)
         query = qfilter.construct_query(self.filters)
-
         merges = self._build_and_optimize_merges().values()
-
         # this is an a bit of a hack//optimization
-        # to filter the initial result set for subsequent merges which
+        # to filter the initial result set when subsequent merges
         # require a foreign key to be downcasted
         for merge in merges:
             if merge.final_type and isinstance(merge, FlatMerge):
@@ -984,15 +1015,15 @@ class View(Sequence):
         As an example, say you want to create a view over users and their
         organizations with additional information about the organization.
 
-        view = FilteredView(user_manager, fields=('first_name', 'last_name'))
+        view = CensoredView(user_manager,
+            fields=('first_name', 'last_name'))
         view.merge('organizations', ('name', 'email'))
 
         This can also be done in the constructor:
 
-        view = FilteredView(user_manager,
+        view = CensoredView(user_manager,
             fields=('first_name', 'last_name'),
             merges=(('organizations', ('name', 'email')),))
-
         """
         assert args
         if isinstance(args[0], basestring):
@@ -1000,42 +1031,72 @@ class View(Sequence):
         else:
             for item in args:
                 self.merges.append(item)
-
         self._reset()
         return self
 
+    @abstractmethod
+    def _query(self, manager, query, fields, order=None, limit=None):
+        """Defines how the view will perform a query. It can be overriden
+        in subclasses to modify the results which are returned.
+
+        All tranformations perform queries through the view so this applies
+        not only the the initial view query, but all queries performed in the
+        process of building the view."""
+        if isinstance(query, dict):
+            qfilter = ObjectManager.Filter(manager)
+            query = qfilter.construct_query(query)
+        if not isinstance(limit, slice):
+            limit = limit_slice(limit)
+        model = manager.my_django_model
+        result = model.objects.all()
+        if query:
+            result = result.filter(query)
+        if order:
+            result = result.order_by(*order)
+        if limit:
+            result = result[limit]
+        return result
+
 
 class UncensoredView(View):
-    """Helps facilitate creating more complex unfiltered views which completely
+    """Helps facilitate creating more complex uncensored views which completely
     bypass the authorizer for cases where the proper access has already been
     authorized and no result filtering is required."""
 
     def _query(self, manager, query, fields, order=None, limit=None):
-        result = self._raw_query(manager, query, fields, order, limit)
+        # Disable censoring for all queries performed as part of the view.
+        result = super(UncensoredView, self)._query(manager,
+                query, fields, order, limit)
         getter = facade.subsystems.Getter(None,
                 manager, result, fields, censored=False)
         return getter.results
 
 
 class CensoredView(View):
-    """Helps facilitate creating more complex filtered views for ObjectManager
-    view methods. Particularly those that call ObjectManager.get_filtered and
-    require multiple subsequent, optionally nested, merges to complete the
-    result set.
-    """
+    """Helps facilitate creating more complex censored views for ObjectManager
+    view methods. Particularly those that would otherwise call
+    ObjectManager.get_filtered and require multiple subsequent, optionally
+    nested, merges to complete the result.
 
+    All queries performed as part of the view are verified by the authorizer.
+    This includes queries performed as part of a result transformation.
+    """
     def __call__(self, auth_token, filters=None, fields=(),
             order=None, limit=None):
+        # override signiture to bind an auth token to the view
         view = super(CensoredView, self).__call__(filters, fields, order, limit)
         view.auth_token = auth_token
         return view
 
     def _query(self, manager, query, fields, order=None, limit=None):
-        result = self._raw_query(manager, query, fields, order, limit)
+        result = super(CensoredView, self)._query(manager,
+                query, fields, order, limit)
         getter = facade.subsystems.Getter(self.auth_token,
                 manager, result, fields, censored=True)
         return getter.results
 
+
+# Ensure that pyamf knows how to marshall a View object
 pyamf.add_type(View, util.to_list)
 
 # vim:tabstop=5 shiftwidth=4 expandtab
