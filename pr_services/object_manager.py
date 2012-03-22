@@ -1,5 +1,9 @@
 """
-abstract base class for classes that manage persistent objects in the Power Reg 2 system
+This module contains an abstract base class for classes that manage persistent
+objects in the Power Reg 2 system, also known as object managers.
+
+It also includes 2 classes for building views over object manager data. These
+are CensoredView and UncensoredView.
 """
 __docformat__ = "restructuredtext en"
 
@@ -30,6 +34,8 @@ import tagging.models
 
 from pr_services.rpc.service import service_method
 from utils import Utils
+
+__all__ = ('ObjectManager', 'CensoredView', 'UncensoredView')
 
 class ObjectManagerMetaclass(abc.ABCMeta):
     """
