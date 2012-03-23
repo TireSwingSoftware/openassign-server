@@ -127,5 +127,3 @@ class RpcTestCase(TransactionTestCase):
     def tearDown(self):
         conf.ALWAYS_EAGER = self._always_eager
         self.server_thread.join()
-
-from tests_svc import *

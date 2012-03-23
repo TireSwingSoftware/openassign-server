@@ -35,8 +35,6 @@ from django.utils.unittest import skip
 import facade
 import pr_services.pr_time
 
-
-
 # make stdout and stderr use UTF-8 encoding so that printing out
 # UTF-8 data while debugging doesn't choke
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
@@ -83,51 +81,55 @@ class TestCase(BaseTestCase):
         super(TestCase, self).tearDown()
 
     def setup_managers(self):
-        self.achievement_manager = self.svcGateway.getService('AchievementManager')
-        self.answer_manager = self.svcGateway.getService('AnswerManager')
-        self.assignment_manager = self.svcGateway.getService('AssignmentManager')
-        self.backend_info = self.svcGateway.getService('BackendInfo')
-        self.credential_manager = self.svcGateway.getService('CredentialManager')
-        self.credential_type_manager = self.svcGateway.getService('CredentialTypeManager')
-        self.domain_affiliation_manager = self.svcGateway.getService('DomainAffiliationManager')
-        self.domain_manager = self.svcGateway.getService('DomainManager')
-        self.encoded_video_manager = self.svcGateway.getService('EncodedVideoManager')
-        self.event_manager = self.svcGateway.getService('EventManager')
-        self.exam_manager = self.svcGateway.getService('ExamManager')
-        self.exam_session_manager = self.svcGateway.getService('ExamSessionManager')
-        self.group_manager = self.svcGateway.getService('GroupManager')
-        self.note_manager = self.svcGateway.getService('NoteManager')
-        self.organization_manager = self.svcGateway.getService('OrganizationManager')
-        self.payment_manager = self.svcGateway.getService('PaymentManager')
-        self.product_line_manager = self.svcGateway.getService('ProductLineManager')
-        self.purchase_order_manager = self.svcGateway.getService('PurchaseOrderManager')
-        self.question_manager = self.svcGateway.getService('QuestionManager')
-        self.question_pool_manager = self.svcGateway.getService('QuestionPoolManager')
-        self.rating_manager = self.svcGateway.getService('RatingManager')
-        self.region_manager = self.svcGateway.getService('RegionManager')
-        self.report_generator = self.svcGateway.getService('ReportGenerator')
-        self.role_manager = self.svcGateway.getService('RoleManager')
-        self.room_manager = self.svcGateway.getService('RoomManager')
-        self.sco_manager = self.svcGateway.getService('ScoManager')
-        self.sco_session_manager = self.svcGateway.getService('ScoSessionManager')
-        self.resource_manager = self.svcGateway.getService('ResourceManager')
-        self.resource_type_manager = self.svcGateway.getService('ResourceTypeManager')
-        self.session_manager = self.svcGateway.getService('SessionManager')
-        self.session_reminder_chg_cfg_manager = self.svcGateway.getService('SessionReminderChgCfgManager')
-        self.session_template_manager = self.svcGateway.getService('SessionTemplateManager')
-        self.session_template_user_role_requirement_manager = self.svcGateway.getService('SessionTemplateUserRoleRequirementManager')
-        self.session_template_resource_type_requirement_manager = self.svcGateway.getService('SessionTemplateResourceTypeRequirementManager')
-        self.session_user_role_manager = self.svcGateway.getService('SessionUserRoleManager')
-        self.session_user_role_requirement_manager = self.svcGateway.getService('SessionUserRoleRequirementManager')
-        self.session_resource_type_manager = self.svcGateway.getService('SessionResourceTypeManager')
-        self.session_resource_type_requirement_manager = self.svcGateway.getService('SessionResourceTypeRequirementManager')
-        self.task_manager = self.svcGateway.getService('TaskManager')
-        self.user_manager = self.svcGateway.getService('UserManager')
-        self.utils_manager = self.svcGateway.getService('UtilsManager')
-        self.venue_manager = self.svcGateway.getService('VenueManager')
-        self.blackout_period_manager = self.svcGateway.getService('BlackoutPeriodManager')
-        self.video_manager = self.svcGateway.getService('VideoManager')
-        self.video_session_manager = self.svcGateway.getService('VideoSessionManager')
+        getService = self.svcGateway.getService
+        self.achievement_manager = getService('AchievementManager')
+        self.answer_manager = getService('AnswerManager')
+        self.assignment_manager = getService('AssignmentManager')
+        self.backend_info = getService('BackendInfo')
+        self.blackout_period_manager = getService('BlackoutPeriodManager')
+        self.credential_manager = getService('CredentialManager')
+        self.credential_type_manager = getService('CredentialTypeManager')
+        self.curriculum_enrollment_manager = getService('CurriculumEnrollmentManager')
+        self.curriculum_manager = getService('CurriculumManager')
+        self.domain_affiliation_manager = getService('DomainAffiliationManager')
+        self.domain_manager = getService('DomainManager')
+        self.encoded_video_manager = getService('EncodedVideoManager')
+        self.event_manager = getService('EventManager')
+        self.exam_manager = getService('ExamManager')
+        self.exam_session_manager = getService('ExamSessionManager')
+        self.group_manager = getService('GroupManager')
+        self.note_manager = getService('NoteManager')
+        self.organization_manager = getService('OrganizationManager')
+        self.payment_manager = getService('PaymentManager')
+        self.product_line_manager = getService('ProductLineManager')
+        self.purchase_order_manager = getService('PurchaseOrderManager')
+        self.question_manager = getService('QuestionManager')
+        self.question_pool_manager = getService('QuestionPoolManager')
+        self.rating_manager = getService('RatingManager')
+        self.region_manager = getService('RegionManager')
+        self.report_generator = getService('ReportGenerator')
+        self.resource_manager = getService('ResourceManager')
+        self.resource_type_manager = getService('ResourceTypeManager')
+        self.role_manager = getService('RoleManager')
+        self.room_manager = getService('RoomManager')
+        self.sco_manager = getService('ScoManager')
+        self.sco_session_manager = getService('ScoSessionManager')
+        self.session_manager = getService('SessionManager')
+        self.session_reminder_chg_cfg_manager = getService('SessionReminderChgCfgManager')
+        self.session_resource_type_manager = getService('SessionResourceTypeManager')
+        self.session_resource_type_requirement_manager = getService('SessionResourceTypeRequirementManager')
+        self.session_template_manager = getService('SessionTemplateManager')
+        self.session_template_resource_type_requirement_manager = getService('SessionTemplateResourceTypeRequirementManager')
+        self.session_template_user_role_requirement_manager = getService('SessionTemplateUserRoleRequirementManager')
+        self.session_user_role_manager = getService('SessionUserRoleManager')
+        self.session_user_role_requirement_manager = getService('SessionUserRoleRequirementManager')
+        self.task_manager = getService('TaskManager')
+        self.user_manager = getService('UserManager')
+        self.user_org_role_manager = getService('UserOrgRoleManager')
+        self.utils_manager = getService('UtilsManager')
+        self.venue_manager = getService('VenueManager')
+        self.video_manager = getService('VideoManager')
+        self.video_session_manager = getService('VideoSessionManager')
 
     def create_instructor(self, username='instructor', title='Ms.', first_name='Teaching', last_name='Instructor', label='1234 Test Address Lane', locality='Testville',
             region='NC', postal_code='12345', country='US', phone='378-478-3845'):
@@ -274,11 +276,11 @@ class TestCase(BaseTestCase):
             'v2_room2_id' : v2_room2_id,
         }
 
-################################################################################################################################################
+############################################################################
 #
 # Let the unit tests begin!
 #
-################################################################################################################################################
+############################################################################
 
 class TestAssignmentManagerSvc(TestCase):
     def test_get_filtered(self):
