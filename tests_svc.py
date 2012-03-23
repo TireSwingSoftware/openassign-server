@@ -21,6 +21,7 @@ for attr in dir(tests_svc_settings):
 
 # Import RPC tests from pr_svc_tests app.
 from pr_svc_tests.tests_svc import *
+from pr_svc_tests.tests_svc_views import *
 
 if __name__=='__main__':
     unittest.main()
