@@ -4596,5 +4596,36 @@ class TestCensoredView(TestCase):
         ]
         self.assertSequenceEqual(result, expected)
 
+    def test_non_iterable_foreign_key(self, getter_class):
+        getter_class.return_value = self.MockGetter([
+            [{'id': 1, 'task': 1}, {'id': 2, 'task': None}],
+            [{'id': 1, 'name': 'Foo'}]
+        ])
+        view = self.build_view(merges=(
+            ('task',
+                ('name', )),
+            ))
+        result = view(auth_token=None)
+        expected = [
+            {'id': 1, 'task': {'id': 1, 'name': 'Foo'}},
+            {'id': 2, 'task': None}
+        ]
+        self.assertSequenceEqual(result, expected)
+        getter_class.return_value = self.MockGetter([
+            [{'id': 1, 'task': 1}, {'id': 2, 'task': 2}, {'id': 3, 'task': None}],
+            [{'id': 1, 'organization': 1}, {'id': 2, 'organization': None}],
+            [{'id': 1, 'name': 'Foo'}]
+        ])
+        view = self.build_view(merges=(
+            ('task.organization',
+                ('name', )),
+            ))
+        result = view(auth_token=None)
+        expected = [
+            {'id': 1, 'task': {'id': 1, 'organization': {'id': 1, 'name': 'Foo'}}},
+            {'id': 2, 'task': {'id': 2, 'organization': None}},
+            {'id': 3, 'task': None}
+        ]
+        self.assertSequenceEqual(result, expected)
 
 # vim:tabstop=4 shiftwidth=4 expandtab
