@@ -53,8 +53,11 @@ class CurriculumManager(ObjectManager):
         view = self.build_view(
                 fields=('name', 'organization'),
                 merges=(
-                    ('achievements', ('name', )),
-                    ('curriculum_task_associations', ('task', 'task_name'))))
+                    ('achievements',
+                        ('name', )),
+                    ('curriculum_task_associations',
+                        ('task', 'task_name'))
+                ))
         return view(auth_token, *args, **kwargs)
 
 
