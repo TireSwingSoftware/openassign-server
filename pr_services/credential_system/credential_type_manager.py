@@ -91,7 +91,8 @@ class CredentialTypeManager(ObjectManager):
             fields=('name', 'description'),
             merges=(
                 ('required_achievements',
-                    ('name', 'description'))))
+                    ('name', 'description')),
+            ))
         return view(auth_token, *args, **kwargs)
 
 # vim:tabstop=4 shiftwidth=4 expandtab
