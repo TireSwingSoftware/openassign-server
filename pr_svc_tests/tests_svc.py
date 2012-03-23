@@ -2436,9 +2436,11 @@ def initialize_db():
         # output to the database like we used to so that the post_syncdb hook
         # on the contenttypes app gets invoked, clearing the content type cache.
         call_command('flush', verbosity=0, interactive=False)
-        call_command('setup')
+        call_command('loaddata', 'initial_setup_default',
+                verbosity=0)
     else:
-        call_command('setup')
+        call_command('loaddata', 'initial_setup_default',
+                verbosity=0)
         transaction.commit()
 
 def refresh_db():
