@@ -219,7 +219,7 @@ class TestFileDownload(FileTaskTestCase):
                 'id': tf.id,
                 'name': tf.name,
                 'price': float(tf.price),
-            } for tf in f.task_fees.all()],
+            } for tf in f.task_fees.all().order_by('id')],
             'organization': {
                 'id': f.organization.id,
                 'name': f.organization.name,
