@@ -9,11 +9,16 @@ import codecs
 import random
 
 from decimal import Decimal
+from functools import partial
 
 # PowerReg
 from pr_services import exceptions
-from pr_services.testlib import GeneralTestCase, common
+from pr_services.testlib import BasicTestCase, GeneralTestCase, common
+from pr_services.testlib.helpers import *
+
 import facade
+
+facade.import_models(locals())
 
 _default = object() # dummy object used as default for optional keyword args.
 
@@ -1153,5 +1158,51 @@ class TestEvaluations(GeneralTestCase):
         self.assertEquals(response['questions'][1]['response']['text'], 'four')
         self.assertEquals(response['questions'][1]['question']['label'], 'Pick a number')
         self.assertEquals(response['questions'][1]['question']['id'], r1.id)
+
+class TestExamViews(BasicTestCase):
+
+    @load_fixtures('exams_and_achievements')
+    def test_achievement_detail_view(self):
+        view = partial(self.exam_manager.achievement_detail_view,
+                self.auth_token)
+        create_task_fee = self.task_fee_manager.create
+        e1, e2, e3 = Exam.objects.all()[:3]
+        e1.achievements.add(Achievement.objects.get(id=1))
+        e1.prerequisite_tasks.add(e2, e3)
+        e2.achievements.add(Achievement.objects.get(id=2))
+        create_task_fee('1', 'Foo', '', 123.50, e1.id)
+        create_task_fee('2', 'Bar', '', 1234, e1.id)
+        create_task_fee('3', 'Bar', '', 1235, e2.id)
+        expected = [{
+            'id': e.id,
+            'name': e.name,
+            'title': e.title,
+            'description': e.description,
+            'passing_score': e.passing_score,
+            'prerequisite_tasks': [{
+                'id': t.id,
+                'name': t.name,
+                'description': t.description,
+                'title': t.title,
+                'type': 'pr_services.exam',
+            } for t in e.prerequisite_tasks.all().order_by('id')],
+            'task_fees': [{
+                'id': tf.id,
+                'name': tf.name,
+                'price': float(tf.price),
+            } for tf in e.task_fees.all().order_by('id')],
+            'organization': {
+                'id': e.organization.id,
+                'name': e.organization.name,
+            },
+            'achievements': list(e.achievements.values('id', 'name',
+                'description').order_by('id'))
+        } for e in (e1, e2, e3)]
+        result = view(order=('id', ), limit=3)
+        for i, row in enumerate(result):
+            row['prerequisite_tasks'] = sorted_id(row['prerequisite_tasks'])
+            row['achievements'] = sorted_id(row['achievements'])
+            row['task_fees'] = sorted_id(row['task_fees'])
+            self.assertDictEqual(row, expected[i])
 
 # vim:tabstop=4 shiftwidth=4 expandtab
