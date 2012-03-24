@@ -15,6 +15,9 @@ from django.core.urlresolvers import reverse
 # PowerReg
 import facade
 from pr_services import testlib
+from pr_services.testlib.helpers import *
+
+facade.import_models(locals())
 
 class FileTaskTestCase(testlib.GeneralTestCase):
     fixtures = [
@@ -185,6 +188,51 @@ class TestFileDownload(FileTaskTestCase):
         result = view(fields=('due_date', ))
         self.assertEquals(len(result), 1)
         self.assertDictEqual(result[0], expected)
+
+    @load_fixtures('exams_and_achievements')
+    def test_achievement_detail_view(self):
+        view = partial(self.file_download_manager.achievement_detail_view,
+                self.auth_token)
+        create_task_fee = self.task_fee_manager.create
+        f1, f2, f3 = self._upload_file(), self._upload_file(), self._upload_file()
+        f1.achievements.add(Achievement.objects.get(id=1))
+        f1.prerequisite_tasks.add(f2, f3)
+        f2.achievements.add(Achievement.objects.get(id=2))
+        create_task_fee('1', 'Foo', '', 123.50, f1.id)
+        create_task_fee('2', 'Bar', '', 1234, f1.id)
+        create_task_fee('3', 'Bar', '', 1235, f2.id)
+        expected = [{
+            'id': f.id,
+            'name': f.name,
+            'title': f.title,
+            'description': f.description,
+            'file_size': f.file_size,
+            'file_url': f.file_url,
+            'prerequisite_tasks': [{
+                'id': t.id,
+                'name': t.name,
+                'description': t.description,
+                'title': t.title,
+                'type': 'file_tasks.file download',
+            } for t in f.prerequisite_tasks.all().order_by('id')],
+            'task_fees': [{
+                'id': tf.id,
+                'name': tf.name,
+                'price': float(tf.price),
+            } for tf in f.task_fees.all()],
+            'organization': {
+                'id': f.organization.id,
+                'name': f.organization.name,
+            },
+            'achievements': list(f.achievements.values('id', 'name',
+                'description').order_by('id'))
+        } for f in (f1, f2, f3)]
+        result = view(order=('id', ))
+        for i, row in enumerate(result):
+            row['prerequisite_tasks'] = sorted_id(row['prerequisite_tasks'])
+            row['achievements'] = sorted_id(row['achievements'])
+            row['task_fees'] = sorted_id(row['task_fees'])
+            self.assertDictEqual(row, expected[i])
 
     def test_download_when_file_is_not_ready(self):
         # this FileDownload does not have an actual file, similar to a case where

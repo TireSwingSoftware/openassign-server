@@ -1,4 +1,5 @@
 
+import settings
 import tests_svc
 
 class TestCase(tests_svc.TestCase):
@@ -197,3 +198,16 @@ class TestUserOrgRoleViews(TestCase):
     def test_user_org_role_detail_view(self):
         result = self.user_org_role_detail_view()
         self.assertEquals(result, [])
+
+
+if 'file_tasks' in settings.INSTALLED_APPS:
+    class TestFileDownloadViews(TestCase):
+        def setUp(self):
+            super(TestFileDownloadViews, self).setUp()
+
+            self.achievement_detail_view = self.check_call(
+                    self.file_download_manager.achievement_detail_view)
+
+        def test_achievement_detail_view(self):
+            result = self.achievement_detail_view()
+            self.assertEquals(result, [])

@@ -112,18 +112,17 @@ class FileDownloadManager(TaskManager):
         file_download.save()
 
     @service_method
-    def achievement_detail_view(self, auth_token, filters=None, fields=None):
-        if not filters:
-            filters = {}
-        # apply our fields even if the passed fields is empty
-        default_fields = set(['name', 'title', 'description', 'file_size', 'file_url', 'achievements', 'prerequisite_tasks', 'task_fees', 'organization'])
-        fields = list(set(fields or []) or default_fields)
-        ret = self.get_filtered(auth_token, filters, fields)
-
-        ret = Utils.merge_queries(ret, facade.managers.TaskManager(), auth_token, ['name', 'description', 'title', 'type'], 'prerequisite_tasks')
-
-        ret = Utils.merge_queries(ret, facade.managers.TaskFeeManager(), auth_token, ['name', 'price'], 'task_fees')
-
-        ret = Utils.merge_queries(ret, facade.managers.OrganizationManager(), auth_token, ['name'], 'organization')
-
-        return Utils.merge_queries(ret, facade.managers.AchievementManager(), auth_token, ['name', 'description'], 'achievements')
+    def achievement_detail_view(self, auth_token, *args, **kwargs):
+        view = self.build_view(
+                fields=('name', 'title', 'description', 'file_size', 'file_url'),
+                merges=(
+                    ('prerequisite_tasks',
+                        ('name', 'description', 'title', 'type')),
+                    ('task_fees',
+                        ('name', 'price')),
+                    ('organization',
+                        ('name', )),
+                    ('achievements',
+                        ('name', 'description')),
+                ))
+        return view(auth_token, *args, **kwargs)

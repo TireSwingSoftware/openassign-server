@@ -4,6 +4,8 @@ Convenient routines for facilitating common test operations.
 
 import functools
 
+from operator import itemgetter
+
 from django.core.management import call_command
 
 from pr_services import pr_time
@@ -14,6 +16,7 @@ __all__ = (
     'expectPermissionDenied',
     'load_fixtures',
     'object_dict',
+    'sorted_id',
     )
 
 def expectPermissionDenied(func):
@@ -93,3 +96,5 @@ def datestring(d):
     """Convert date to string format using UTC tzinfo"""
     return d.replace(tzinfo=pr_time.UTC()).isoformat()
 
+
+sorted_id = functools.partial(sorted, key=itemgetter('id'))

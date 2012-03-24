@@ -131,6 +131,9 @@ class TestCase(BaseTestCase):
         self.video_manager = getService('VideoManager')
         self.video_session_manager = getService('VideoSessionManager')
 
+        if 'file_tasks' in settings.INSTALLED_APPS:
+            self.file_download_manager = getService('FileDownloadManager')
+
     def create_instructor(self, username='instructor', title='Ms.', first_name='Teaching', last_name='Instructor', label='1234 Test Address Lane', locality='Testville',
             region='NC', postal_code='12345', country='US', phone='378-478-3845'):
         username = self.user_manager.generate_username('', first_name, last_name)['value']
