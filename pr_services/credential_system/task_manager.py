@@ -79,6 +79,14 @@ class TaskManager(ObjectManager):
             'to create your Task!')
 
     def _set_optional_attributes(self, task, optional_attributes):
+        for a in optional_attributes.get('achievements', ()):
+            a = self._find_by_id(a, facade.models.Achievement)
+            task.achievements.add(a)
+
+        for t in optional_attributes.get('prerequisite_tasks', ()):
+            t = self._find_by_id(t, facade.models.Task)
+            task.prerequisite_tasks.add(t)
+
         for attr in [   'prevent_duplicate_assignments',
                         'description',
                         'name',
