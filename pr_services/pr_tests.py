@@ -44,8 +44,7 @@ from pr_services.rpc.service import (public_service_method,
         wrap_public_service_method, RpcService, create_rpc_service)
 from pr_services.testlib import (GeneralTestCase, RoleTestCase, BasicTestCase,
         TestCase, common)
-from pr_services.testlib.helpers import (expectPermissionDenied, load_fixtures,
-        object_dict, datestring)
+from pr_services.testlib.helpers import *
 from pr_services.utils import UnicodeCsvWriter
 
 import facade
@@ -638,6 +637,40 @@ class TestCurriculumEnrollmentViews(BasicTestCase):
         result = view()
         self.assertEquals(len(result), 1)
         self.assertDictEqual(result[0], expected)
+
+
+class TestCredentialTypeViews(BasicTestCase):
+
+    fixtures = BasicTestCase.fixtures + [
+        'unprivileged_user',
+        'exams_and_achievements',
+        'credential_types'
+    ]
+
+    def test_achievement_detail_view(self):
+        view = self.credential_type_manager.achievement_detail_view
+        creds = CredentialType.objects.order_by('id')
+        achievements = Achievement.objects.order_by('id')
+        c1, c2, c3 = creds[:3]
+        a1, a2, a3 = achievements[:3]
+        c1.required_achievements.add(a1)
+        c1.required_achievements.add(a2)
+        c2.required_achievements.add(a3)
+        expected = [{
+            'id': c.id,
+            'name': c.name,
+            'description': c.description,
+            'required_achievements': [{
+                'id': a.id,
+                'name': a.name,
+                'description': a.description,
+            } for a in c.required_achievements.order_by('id')]
+        } for c in creds]
+        result = view(order=('id',))
+        self.assertEquals(len(result), len(expected))
+        for i, row in enumerate(result):
+            row['required_achievements'] = sorted_id(row['required_achievements'])
+            self.assertDictEqual(row, expected[i])
 
 
 class TestAssignmentManagerSessionView(BasicTestCase):
