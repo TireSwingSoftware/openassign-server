@@ -266,186 +266,133 @@ class AssignmentManager(ObjectManager):
             late_assignment.save()
 
     @service_method
-    def view(self, auth_token, filters=None, fields=None,
-            user_id=None, task_manager=None, task_type_name=None,
-            task_fields=None):
-        """
-        A generic helper for returning information about a users assignments.
-        Assignments are filtered by the current user id unless otherwise
-        specified by `user_id`.
-
-        Args:
-            auth_token: The auth token for the current user.
-            filters: django query filters to use instead of the defaults.
-            fields: additional fields to include in the result.
-            user_id: a user id used to filter assignments.
-            task_manager: the task manager for expected resulting tasks.
-            task_type_name: the final type name of the resulting tasks.
-            task_fields: extra fields to return for resulting tasks.
-
-        Returns:
-            A merged queryset including fields optionally specified by `fields`
-            for each assignment with information about the associated task.
-            The assignments can be filtered by `filters` and additional fields
-            to retrieve can be specified with `fields`.
-        """
-        if not filters:
-            filters = {'exact': {'user': user_id or auth_token.user_id}}
-            if task_type_name:
-                filters['exact']['task__final_type__name'] = task_type_name
-
-        default_fields = frozenset(('user', 'status', 'task'))
-        if not fields:
-            fields = set()
-        elif not isinstance(fields, collections.Set):
-            fields = set(fields)
-
-        fields.update(default_fields)
-
-        results = self.get_filtered(auth_token, filters, fields)
-        if not results:
-            return []
-
-        default_task_fields = frozenset(('name', 'title', 'type',
-                                         'description'))
-        if not task_fields:
-            task_fields = set()
-        elif not isinstance(task_fields, collections.Set):
-            task_fields = set(task_fields)
-
-        task_fields.update(default_task_fields)
-
-        if not task_manager:
-            task_manager = facade.managers.TaskManager()
-
-        return merge_queries(results, task_manager, auth_token, task_fields, 'task')
+    def view(self, auth_token, *args, **kwargs):
+        view = self.build_view(
+                filters={'exact': {'user': auth_token.user_id}},
+                fields=('user', 'status'),
+                merges=(
+                    ('task',
+                        ('name', 'title', 'type', 'description')),
+                ))
+        return view(auth_token, *args, **kwargs)
 
     @service_method
     def detailed_view(self, auth_token, *args, **kwargs):
-        results = self.view(auth_token, *args, **kwargs)
-        user_manager = facade.managers.UserManager()
-        return merge_queries(results, user_manager , auth_token,
-                ('username', 'first_name', 'last_name', 'email'), 'user')
+        return self.view(auth_token, *args, **kwargs).merge(
+            'user', ('first_name', 'last_name', 'email'))
 
     if 'file_tasks' in settings.INSTALLED_APPS:
         @service_method
         def file_download_view(self, auth_token, *args, **kwargs):
-            manager = facade.managers.FileDownloadManager()
-            return self.view(auth_token, task_type_name='file download',
-                    task_manager=manager, task_fields=('file_size', 'file_url'),
-                    *args, **kwargs)
+            view = self.build_view(
+                filters={
+                    'exact': {
+                        'user': auth_token.user_id,
+                        'task__final_type__name': 'file download'
+                }},
+                fields=('user', 'status'),
+                merges=(
+                    ('task:file download',
+                        ('name', 'title', 'type', 'description',
+                         'file_size', 'file_url')),
+                ))
+            return view(auth_token, *args, **kwargs)
 
         @service_method
         def detailed_file_download_view(self, auth_token, *args, **kwargs):
-            manager = facade.managers.FileDownloadManager()
-            result = self.view(auth_token,
-                    task_type_name='file download',
-                    task_manager=manager, *args, **kwargs)
-            user_manager = facade.managers.UserManager()
-            # XXX: if this is ever changed to include the username and email
-            # address this routine should instead call AssignmentManager.detailed_view
-            # above.
-            return merge_queries(result, user_manager, auth_token,
-                    ('first_name', 'last_name'), 'user')
+            view = self.build_view(
+                filters={
+                    'exact': {
+                        'user': auth_token.user_id,
+                        'task__final_type__name': 'file download'
+                }},
+                fields=('user', 'status'),
+                merges=(
+                    # XXX: this should probably expose at least as much
+                    # information as file_download_view.
+                    # ie. file_size and file_url
+                    ('task:file download',
+                        ('name', 'title', 'type', 'description')),
+                    ('user',
+                        ('first_name', 'last_name'))
+                ))
+            return view(auth_token, *args, **kwargs)
 
         @service_method
         def file_upload_view(self, auth_token, *args, **kwargs):
-            manager = facade.managers.FileUploadManager()
-            return self.view(auth_token, task_type_name='file upload',
-                    task_manager=manager, *args, **kwargs)
+            view = self.build_view(
+                filters={
+                    'exact': {
+                        'user': auth_token.user_id,
+                        'task__final_type__name': 'file upload'
+                }},
+                fields=('user', 'status'),
+                merges=(
+                    ('task:file upload',
+                        ('name', 'title', 'type', 'description')),
+                ))
+            return view(auth_token, *args, **kwargs)
 
     @service_method
     def exam_view(self, auth_token, *args, **kwargs):
-        manager = facade.managers.ExamManager()
-        return self.view(auth_token, task_type_name='exam', task_manager=manager,
-                *args, **kwargs)
+        view = self.build_view(
+            filters={
+                'exact': {
+                    'user': auth_token.user_id,
+                    'task__final_type__name': 'exam'
+            }},
+            fields=('user', 'status', 'task'),
+            merges=(
+                ('task:exam',
+                    ('name', 'title', 'type', 'description', 'passing_score')),
+            ))
+        return view(auth_token, *args, **kwargs)
 
     @service_method
     def detailed_exam_view(self, auth_token, *args, **kwargs):
-        results = self.exam_view(auth_token,
-                task_fields=('passing_score',), *args, **kwargs)
-        user_manager = facade.managers.UserManager()
-        return merge_queries(results, user_manager, auth_token,
-                ('first_name', 'last_name'), 'user')
+        return self.exam_view(auth_token, *args, **kwargs).merge(
+                'user', ('first_name', 'last_name'))
 
     @service_method
     def session_view(self, auth_token, *args, **kwargs):
-        manager = facade.managers.SessionUserRoleRequirementManager()
-        results = self.view(auth_token, task_manager=manager,
-                task_type_name='session user role requirement',
-                task_fields=('session', ), *args, **kwargs)
-
-        if results and ('task' in results[0] and
-                        'session' in results[0]['task']):
-            # merge in session details
-            session_ids = set(assignment['task']['session'] for assignment in results)
-            session_query = Session.objects.filter(id__in=session_ids)
-            session_manager = facade.managers.SessionManager()
-            sessions = facade.subsystems.Getter(auth_token, session_manager,
-                    session_query, ('start', 'end')).results
-            session_dict = {}
-            for session in sessions:
-                session_dict[session['id']] = session
-            for assignment in results:
-                if not isinstance(assignment['task']['session'], dict):
-                    # XXX: if there are duplicate assignments for the same session
-                    # it is possible for assignment['task']['session'] to
-                    # already be a dict. (see github issue #94)
-                    assignment['task']['session'] = session_dict[assignment['task']['session']]
-
-        return results
+        view = self.build_view(
+            filters={
+                'exact': {
+                    'user': auth_token.user_id,
+                    'task__final_type__name': 'session user role requirement'
+            }},
+            fields=('user', 'status', 'task'),
+            merges=(
+                ('task:sessionuserrolerequirement',
+                    ('name', 'title', 'type', 'description', 'session')),
+                ('task:sessionuserrolerequirement.session',
+                    ('start', 'end'))
+            ))
+        return view(auth_token, *args, **kwargs)
 
     @service_method
-    def transcript_view(self, auth_token, filters=None, fields=None,
-            user_id=None, *args, **kwargs):
+    def transcript_view(self, auth_token, *args, **kwargs):
         """
-        A convenient view over a user's transcript. The contents of which is a
-        list of assignments for the user specified by `user_id` or the current
-        authenticated user.
+        A convenient view over a user's transcript.
 
-        The transcript includes general information about each task for
-        'completed' assignments and details of any associated achievements and awards.
-
-        Args:
-            See arguments for AssignmentManager.view
+        By default, the transcript includes general information about each
+        task for 'completed' assignments and details of any associated
+        achievements and awards.
         """
-        # fields needed to complete the view
-        default_fields = set(('date_started', 'date_completed', 'achievement_awards'))
-
-        # union with any fields the user specified
-        if fields:
-            fields = set(fields) | default_fields
-        else:
-            fields = default_fields
-
-        # default filter for completed status
-        if not filters:
-            filters = {
-                'exact': {
+        view = self.build_view(
+                filters={'exact': {
                     'status': 'completed',
-                    'user': user_id or auth_token.user_id
-                }
-            }
-        # grab completed assignments and return early if there are none
-        assignments = self.view(auth_token, filters=filters, fields=fields,
-                task_fields=('achievements',), *args, **kwargs)
-
-        if (assignments and
-            'task' in assignments[0] and
-            'achievements' in assignments[0]['task']):
-            # merge in achievement details; hit the database only once
-            # TODO: this could be done pretty easily in merge_queries
-            manager = facade.managers.AchievementManager()
-            ids = set(flatten(a['task']['achievements'] for a in assignments))
-            query = Achievement.objects.filter(id__in=ids)
-            results = facade.subsystems.Getter(auth_token, manager, query,
-                    ('name', 'description')).results
-            achievements = {}
-            for row in results:
-                achievements[row['id']] = row
-            for task in map(itemgetter('task'), assignments):
-                task['achievements'] = map(achievements.get, task['achievements'])
-
-        return assignments
+                    'user': auth_token.user_id
+                    }},
+                fields=('user', 'status', 'date_started', 'date_completed',
+                        'achievement_awards'),
+                merges=(
+                    ('task',
+                        ('name', 'title', 'type', 'description',
+                         'achievements')),
+                    ('task.achievements',
+                        ('name', 'description')),
+                ))
+        return view(auth_token, *args, **kwargs)
 
 # vim:tabstop=4 shiftwidth=4 expandtab
