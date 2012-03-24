@@ -381,7 +381,6 @@ class AssignmentManager(ObjectManager):
         """
         view = self.build_view(
                 filters={'exact': {
-                    'status': 'completed',
                     'user': auth_token.user_id
                     }},
                 fields=('user', 'status', 'date_started', 'date_completed',
