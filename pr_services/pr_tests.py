@@ -673,6 +673,82 @@ class TestCredentialTypeViews(BasicTestCase):
             self.assertDictEqual(row, expected[i])
 
 
+class TestSURRViews(BasicTestCase):
+
+    fixtures = BasicTestCase.fixtures + [
+        'unprivileged_user',
+        'session_and_event',
+        'credential_types',
+        'exams_and_achievements',
+    ]
+
+    def setUp(self):
+        super(TestSURRViews, self).setUp()
+        self.session = Session.objects.get(id=1)
+        self.event = Event.objects.get(id=1)
+        self.achievements = Achievement.objects.order_by('id')
+        self.exams = Exam.objects.order_by('id')
+        self.creds = CredentialType.objects.order_by('id')
+
+        self.create_surr = self.session_user_role_requirement_manager.create
+        self.create_sur = self.session_user_role_manager.create
+        self.create_task_fee = self.task_fee_manager.create
+
+    def test_surr_view(self):
+        sur = self.create_sur('Foo Master')
+        surr = self.create_surr(self.session.id, sur.id, 1, 5)
+        self.create_surr(self.session.id, sur.id, 1, 15,
+                credential_type_ids=[c.id for c in self.creds],
+                optional_attributes={
+                    'achievements': [a.id for a in self.achievements[2:]],
+                })
+        self.create_surr(self.session.id, sur.id, 1, 50,
+                credential_type_ids=[c.id for c in self.creds],
+                optional_attributes={
+                    'prerequisite_tasks': [e.id for e in self.exams[:3]],
+                    'achievements': [a.id for a in self.achievements[:3]],
+                })
+        self.create_task_fee('123', 'Foo', '', 100, surr.id)
+        self.create_task_fee('321', 'Bar', '', 1000, surr.id)
+        view = self.session_user_role_requirement_manager.surr_view
+        expected = [{
+            'id': s.id,
+            'session': s.session.id,
+            'min': s.min,
+            'max': s.max,
+            'credential_types': list(
+                s.credential_types.values_list('id', flat=True).order_by('id')
+            ),
+            'achievements': list(
+                s.achievements.values('id', 'name').order_by('id')
+            ),
+            'prerequisite_tasks': [{
+                'id': t.id,
+                'name': t.name,
+                'description': t.description,
+                'title': t.title,
+                'type': 'pr_services.exam',
+            } for t in s.prerequisite_tasks.order_by('id')],
+            'task_fees': [{
+                'id': tf.id,
+                'name': tf.name,
+                'price': float(tf.price),
+            } for tf in s.task_fees.order_by('id')],
+            'session_user_role': {
+                'id': s.session_user_role.id,
+                'name': s.session_user_role.name
+            }
+        } for s in SessionUserRoleRequirement.objects.order_by('id')]
+        result = view(order=('id',))
+        self.assertEquals(len(result), len(expected))
+        for i, row in enumerate(result):
+            row['credential_types'] = sorted(row['credential_types'])
+            row['achievements'] = sorted_id(row['achievements'])
+            row['prerequisite_tasks'] = sorted_id(row['prerequisite_tasks'])
+            row['task_fees'] = sorted_id(row['task_fees'])
+            self.assertDictEqual(row, expected[i])
+
+
 class TestAssignmentManagerSessionView(BasicTestCase):
     fixtures = BasicTestCase.fixtures + ['unprivileged_user', 'session_and_event']
 
@@ -2138,7 +2214,6 @@ class TestSessionUserRoleRequirementManager(GeneralTestCase):
 
         manager = self.session_user_role_requirement_manager
         self.create_surr = manager.create
-        self.surr_view = manager.surr_view
         self.get_filtered = manager.get_filtered
 
     def test_creation(self):
@@ -2147,22 +2222,6 @@ class TestSessionUserRoleRequirementManager(GeneralTestCase):
         self.assertEquals(type(ret), list)
         self.assertEquals(ret[0]['id'], surr.id)
         self.assertEquals(ret[0]['max'], 2)
-
-    def test_view(self):
-        surr1 = self.create_surr(self.session.id, self.instructor_role.id,
-                1, 2, [])
-        self.create_surr(self.session.id, self.student_role.id, 1, 2, [])
-        ret = self.surr_view()
-        self.assertEquals(len(ret), 2)
-
-        ret = self.surr_view(filters={'exact' : {'id' : surr1.id}})
-        self.assertEquals(len(ret), 1)
-        self.assertIn('id', ret[0])
-        self.assertEquals(ret[0]['id'], surr1.id)
-
-        # test viewing achievements
-        self.assertIn('achievements', ret[0])
-        self.assertEquals(len(ret[0]['achievements']), 0)
 
 
 class TestDomainManagement(GeneralTestCase):
