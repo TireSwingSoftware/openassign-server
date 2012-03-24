@@ -609,6 +609,37 @@ class TestAssignmentManagerViews(BasicTestCase, common.AssignmentViewTests):
         self.auth_token = self._get_auth_token('user1')
 
 
+class TestCurriculumEnrollmentViews(BasicTestCase):
+
+    fixtures = BasicTestCase.fixtures + [
+        'basic_curriculum_enrollment'
+    ]
+
+    def setUp(self):
+        super(TestCurriculumEnrollmentViews, self).setUp()
+        self.enrollment = CurriculumEnrollment.objects.get(id=1)
+        self.user = User.objects.get(id=2)
+
+    def test_user_detail_view(self):
+        view = self.curriculum_enrollment_manager.user_detail_view
+        e, u = self.enrollment, self.user
+        expected = {
+            'id': e.id,
+            'curriculum_name': e.curriculum.name,
+            'start': e.start.isoformat(),
+            'end': e.end.isoformat(),
+            'users': [{
+                'id': u.id,
+                'first_name': u.first_name,
+                'last_name': u.last_name,
+                'email': u.email,
+            }]
+        }
+        result = view()
+        self.assertEquals(len(result), 1)
+        self.assertDictEqual(result[0], expected)
+
+
 class TestAssignmentManagerSessionView(BasicTestCase):
     fixtures = BasicTestCase.fixtures + ['unprivileged_user', 'session_and_event']
 
