@@ -9,6 +9,8 @@ Note: You may not need to use the mixins directly as they are already
 implemented within the test cases in the `common` suites.
 """
 
+import uuid
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -18,10 +20,10 @@ from datetime import datetime, timedelta
 from functools import partial
 from operator import attrgetter
 
-import facade
-import uuid
-
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
+
+import facade
 
 facade.import_models(locals())
 
@@ -197,6 +199,7 @@ class EventTestMixin:
         # build a venue schedule with sessions spread out lasting an hour each
             from datetime import time
             start = datetime.combine(event.start, time())
+            start = timezone.make_aware(start, timezone.utc)
             schedule = [(start + timedelta(hours=i), start + timedelta(hours=i+1))
                             for i in range(1, 8, 3)]
 

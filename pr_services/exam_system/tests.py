@@ -605,7 +605,7 @@ class TestExamModels(GeneralTestCase):
                 {},
                 [],
                 [None],
-                ['2009-12-23 01:23:45'],
+                ['2009-12-23 01:23:45Z'],
             ),
             # FIXME
         ]

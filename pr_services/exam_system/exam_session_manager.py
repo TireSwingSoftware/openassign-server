@@ -4,14 +4,12 @@ Exam Session Manager class.
 
 __docformat__ = "restructuredtext en"
 
-# Python
-from datetime import datetime
+from django.utils import timezone
 
-# PowerReg
-from pr_services import exceptions
-from pr_services import pr_time
+from pr_services import exceptions, pr_time
 from pr_services.credential_system.assignment_attempt_manager import AssignmentAttemptManager
 from pr_services.rpc.service import service_method
+
 import facade
 
 class ExamSessionManager(AssignmentAttemptManager):
@@ -207,7 +205,7 @@ class ExamSessionManager(AssignmentAttemptManager):
             # questions (in other words, starting to take the exam) and it has
             # not been previously set.
             if es.date_started is None:
-                es.date_started = datetime.utcnow()
+                es.date_started = timezone.now()
                 es.save()
             return self._get_next_questions(auth_token, es, False)
         else:
@@ -417,7 +415,7 @@ class ExamSessionManager(AssignmentAttemptManager):
             return next_questions
 
         # Update the date completed and calculate the score.
-        exam_session.date_completed = datetime.utcnow().replace(microsecond=0)
+        exam_session.date_completed = timezone.now().replace(microsecond=0)
         self.authorizer.check_update_permissions(auth_token, exam_session,
                                                  {'date_completed':
                                                  exam_session.date_completed})

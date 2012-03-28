@@ -16,6 +16,7 @@ import urllib2
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 
 if getattr(settings, 'LDAP_AUTHENTICATION', False):
     import ldap
@@ -475,7 +476,7 @@ class UserManager(ObjectManager):
         user_confirmation_days = getattr(settings, 'USER_CONFIRMATION_DAYS', 7)
         if u.status != 'pending':
             raise exceptions.UserConfirmationException(msg='user is already confirmed')
-        elif (datetime.now() - timedelta(days=user_confirmation_days)) > u.create_timestamp:
+        elif (timezone.now() - timedelta(days=user_confirmation_days)) > u.create_timestamp:
             raise exceptions.UserConfirmationException(msg='confirmation code has expired')
         else:
             u.change_status('active')
@@ -615,7 +616,7 @@ class UserManager(ObjectManager):
         authenticated_session.session_id = self._generate_session_id()
 
         # record relevant timestamps
-        authenticated_session.issue_timestamp = datetime.utcnow()
+        authenticated_session.issue_timestamp = timezone.now()
         authenticated_session.number_of_renewals = 0
         authenticated_session.time_of_expiration = authenticated_session.issue_timestamp + timedelta(minutes=settings.AUTH_TOKEN_EXPIRATION_INTERVAL)
 
@@ -645,7 +646,7 @@ class UserManager(ObjectManager):
         except facade.models.AuthTokenVoucher.DoesNotExist:
             raise exceptions.ObjectNotFoundException('AuthTokenVoucher')
 
-        now = datetime.utcnow()
+        now = timezone.now()
         if at_voucher.time_of_expiration < now:
             # It would be nice to delete the voucher here. But, the exception that is about to be raised
             # will roll back any data changes we make.
@@ -713,7 +714,7 @@ class UserManager(ObjectManager):
                 domain_object.name, username))
             self._fail_authentication('', domain_object.name)
 
-        now = datetime.utcnow().replace(microsecond=0)
+        now = timezone.now().replace(microsecond=0)
         atv = facade.models.AuthTokenVoucher.objects.create(session_id=self._generate_session_id(),
             domain_affiliation=da, issue_timestamp=now, time_of_expiration=(now+timedelta(seconds=settings.AUTH_TOKEN_VOUCHER_LIFE)))
 
@@ -742,12 +743,12 @@ class UserManager(ObjectManager):
             raise exceptions.UserInactiveException
         if u.status == 'suspended':
             raise exceptions.UserSuspendedException
-        if auth_token.time_of_expiration < datetime.utcnow():
+        if auth_token.time_of_expiration < timezone.now():
             self._fail_authentication('')
 
         auth_token.session_id = self._generate_session_id()
         auth_token.number_of_renewals += 1
-        auth_token.renewal_timestamp = datetime.utcnow()
+        auth_token.renewal_timestamp = timezone.now()
         auth_token.time_of_expiration = auth_token.renewal_timestamp + timedelta(minutes=settings.AUTH_TOKEN_EXPIRATION_INTERVAL)
         auth_token.save()
 
@@ -766,10 +767,10 @@ class UserManager(ObjectManager):
             raise exceptions.UserInactiveException
         if u.status == 'suspended':
             raise exceptions.UserSuspendedException
-        if auth_token.time_of_expiration < datetime.utcnow():
+        if auth_token.time_of_expiration < timezone.now():
             self._fail_authentication('')
 
-        now = datetime.utcnow()
+        now = timezone.now()
         kwargs = {
             'domain_affiliation' : auth_token.domain_affiliation,
             'session_id' : self._generate_session_id(),

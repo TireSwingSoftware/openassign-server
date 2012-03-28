@@ -4,20 +4,16 @@ Data model for Power Reg exam system.
 
 __docformat__ = "restructuredtext en"
 
-# Python
-import datetime
-from decimal import Decimal, ROUND_UP
 import itertools
 import re
 
-# Django
+from decimal import Decimal, ROUND_UP
+
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
-# PowerReg
-from pr_services import pr_models
-import exceptions
-from pr_services import storage
+from pr_services import exceptions, pr_models, storage
 
 __all__ = ['Exam', 'QuestionPool', 'Question', 'Answer', 'ExamSession',
            'Response', 'FormPage', 'FormWidget']
@@ -299,7 +295,7 @@ class Question(pr_models.OwnedPRModel):
     def validate(self, validation_errors=None, related=False):
         validation_errors = super(Question, self).validate(validation_errors)
         validation_errors = validation_errors or {}
-        
+
         # make sure that the name of this question is unique among all of the
         # name attributes for the question's Exam, and QuestionPools,
         # Questions, and Answers also belonging to the question's exam
@@ -471,7 +467,7 @@ class ExamSession(pr_models.AssignmentAttempt):
 
     #: We store these two values instead of calculating them on the fly in case
     #: the exam changes over time.
-    
+
     #: Percentage of questions for which there is a correct answer which were
     #: answered correctly, to 2 decimal places.
     score = models.DecimalField(max_digits=5, decimal_places=2, default=None,
@@ -488,7 +484,7 @@ class ExamSession(pr_models.AssignmentAttempt):
 
         # if completed and passed, mark the assignment completed
         if self.date_completed is not None and self.passed:
-            self.date_completed = datetime.datetime.utcnow()
+            self.date_completed = timezone.now()
             self.assignment.mark_completed()
         super(ExamSession, self).save(*args, **kwargs)
 
@@ -791,7 +787,7 @@ class Response(pr_models.OwnedPRModel):
                 raise ValueError, 'at least %s answers must be selected' % \
                                   self.question.min_answers
             elif self.question.max_answers != None and self.answers.count() > self.question.max_answers:
-                raise ValueError, (u'question (id: %d, name: %s): no more than %s answers may be selected' % 
+                raise ValueError, (u'question (id: %d, name: %s): no more than %s answers may be selected' %
                     (self.question.id, unicode(self.question.name), self.question.max_answers))
 
     def _check_choice_answer(self, answer):

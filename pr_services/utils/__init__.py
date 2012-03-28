@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
 
+import cStringIO
 import codecs
 import csv
-import cStringIO
 import datetime
 import hashlib
 import logging
 import unicodedata
+
 from django.db import transaction
-from pr_services import exceptions
+from django.utils import timezone
+
 import facade
+
+from pr_services import exceptions
 
 LOGGER_NAME = 'pr_services.utils'
 
@@ -170,7 +174,7 @@ class Utils(object):
 
 
         if now is None:
-            now = datetime.datetime.utcnow()
+            now = timezone.now()
 
         try:
             at = facade.models.AuthToken.objects.get(session_id=auth_token_session_id)

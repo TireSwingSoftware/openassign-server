@@ -1,11 +1,11 @@
 # Python
-import datetime
 import logging
 import traceback
 
 # Django
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.utils import timezone
 
 # Decorator
 from decorator import decorator
@@ -138,7 +138,7 @@ def download_file_for_assignment(request, auth_token, pk):
             assignment.mark_completed() # Sets date_completed and saves.
             file_download_attempt.date_completed = assignment.date_completed
         else:
-            file_download_attempt.date_completed = datetime.datetime.utcnow()
+            file_download_attempt.date_completed = timezone.now()
         file_download_attempt.save()
         return HttpResponseRedirect(file_download.file_url)
     except (IndexError, KeyError):

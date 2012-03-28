@@ -32,7 +32,7 @@ from django.core import mail
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
-from django.utils import simplejson as json
+from django.utils import simplejson as json, timezone
 from django.utils.unittest import skipIf, skipUnless, skip
 
 from cookiecache import CookieCache
@@ -147,7 +147,7 @@ class TestBackendInfo(TestCase):
         ts = self.backend_info.get_current_timestamp()
         from pr_services.iso8601 import parse
         t1 = parse(ts)
-        t2 = time.mktime(datetime.now().timetuple())
+        t2 = time.mktime(timezone.now().timetuple())
         self.assertTrue((t2 - t1) < 10.0)
         rev = self.backend_info.get_revision()
         self.assertTrue(rev)
@@ -273,19 +273,28 @@ class TestAssignment(GeneralTestCase):
         self.assertEquals(session[0]['status'], 'active')
 
     def test_assignment_related_dates(self):
-        right_now = datetime.utcnow().replace(microsecond = 0, tzinfo = pr_time.UTC())
         learner1, l1_token = self.user1, self.user1_auth_token
         exam1 = self.exam_manager.create('Exam 1')
         exam2 = self.exam_manager.create('Exam 2')
         curriculum = self.curriculum_manager.create('Curriculum 1')
-        self.curriculum_task_association_manager.create(curriculum.id, exam1.id, {'days_before_start' : 2, 'days_to_complete' : 3})
-        self.curriculum_task_association_manager.create(curriculum.id, exam2.id, {'days_before_start' : 0, 'days_to_complete' : 3})
-        self.curriculum_enrollment_manager.create(curriculum.id, right_now.isoformat(), (right_now + timedelta(days=10)).isoformat(), [learner1.id])
-        assignment1 = self.assignment_manager.get_filtered(l1_token, {'exact' : {'user' : learner1.id, 'task' : exam1.id}}, ['id'])[0]['id']
-        assignment2 = self.assignment_manager.get_filtered(l1_token, {'exact' : {'user' : learner1.id, 'task' : exam2.id}}, ['id'])[0]['id']
+        self.curriculum_task_association_manager.create(curriculum.id,
+                exam1.id, {'days_before_start' : 2, 'days_to_complete' : 3})
+        self.curriculum_task_association_manager.create(curriculum.id,
+                exam2.id, {'days_before_start' : 0, 'days_to_complete' : 3})
+        self.curriculum_enrollment_manager.create(curriculum.id,
+                self.right_now.isoformat(),
+                (self.right_now + timedelta(days=10)).isoformat(),
+                [learner1.id])
+        assignment1 = self.assignment_manager.get_filtered(l1_token,
+                {'exact' : {'user' : learner1.id, 'task' : exam1.id}},
+                ['id'])[0]['id']
+        assignment2 = self.assignment_manager.get_filtered(l1_token,
+                {'exact' : {'user' : learner1.id, 'task' : exam2.id}},
+                ['id'])[0]['id']
         # cannot attempt this Assignment yet because of the "days_before_start"
         # specification above
-        self.assertRaises(exceptions.PermissionDeniedException, self.exam_session_manager.create, l1_token, assignment1)
+        self.assertRaises(exceptions.PermissionDeniedException,
+                self.exam_session_manager.create, l1_token, assignment1)
         # but this one should work
         self.exam_session_manager.create(l1_token, assignment2)
 
@@ -1321,36 +1330,57 @@ class TestLogging(BasicTestCase):
         self.log_manager.error(None, 'this is a guest auth token test')
 
 class TestModels(GeneralTestCase):
+
     def test_room_get_surrs_by_time(self):
-        self.e1 = self.event_manager.create('Event 1', 'Event 1', 'Event 1', self.right_now.isoformat(),
-            (self.right_now+self.one_day*3).isoformat(), self.organization1.id, {'venue' : self.venue1.id})
-        session1 = self.session_manager.create(self.right_now.isoformat(),
-            (self.right_now + self.one_day).isoformat(), 'active', True, 10000, self.e1.id, 'Short Name 1', 'Full Name 1')
+        e1 = self.event_manager.create(
+                'Event 1', 'Event 1', 'Event 1',
+                self.right_now.isoformat(),
+                (self.right_now + self.one_day * 3).isoformat(),
+                self.organization1.id,
+                {'venue' : self.venue1.id})
+        session1 = self.session_manager.create(
+                self.right_now.isoformat(),
+                (self.right_now + self.one_day).isoformat(),
+                'active', True, 10000, e1.id,
+                'Short Name 1', 'Full Name 1')
         student_role = SessionUserRole.objects.get(name__exact='Student')
-        role_req1 = self.session_user_role_requirement_manager.create(str(session1.id), str(student_role.id), 1, 3, False)
-        session2 = self.session_manager.create((self.right_now+self.one_day*2).isoformat(),
-            (self.right_now+self.one_day*3).isoformat(), 'active', True, 10000, self.e1.id, 'Short Name 1', 'Full Name 1')
-        role_req2 = self.session_user_role_requirement_manager.create(str(session2.id), str(student_role.id), 1, 3, False)
+        role_req1 = self.session_user_role_requirement_manager.create(
+                str(session1.id), str(student_role.id), 1, 3, False)
+        session2 = self.session_manager.create(
+                (self.right_now + self.one_day * 2).isoformat(),
+                (self.right_now + self.one_day * 3).isoformat(),
+                'active', True, 10000, e1.id,
+                'Short Name 1', 'Full Name 1')
+        role_req2 = self.session_user_role_requirement_manager.create(
+                str(session2.id), str(student_role.id), 1, 3, False)
         session1.room = self.room1
         session2.room = self.room1
         session1.save()
         session2.save()
 
-        ret = self.room1.get_surrs_by_time(self.right_now.replace(tzinfo=None), (self.right_now+3*self.one_day).replace(tzinfo=None))
+        ret = self.room1.get_surrs_by_time(
+                self.right_now,
+                self.right_now + 3 * self.one_day)
         self.assertEquals(ret.count(), 2)
-        self.assertTrue(role_req1 in ret)
-        self.assertTrue(role_req2 in ret)
+        self.assertIn(role_req1, ret)
+        self.assertIn(role_req2, ret)
 
-        ret = self.room1.get_surrs_by_time((self.right_now-self.one_day).replace(tzinfo=None), (self.right_now+3*self.one_day).replace(tzinfo=None))
+        ret = self.room1.get_surrs_by_time(
+                self.right_now - self.one_day,
+                self.right_now + 3 * self.one_day)
         self.assertEquals(ret.count(), 2)
-        self.assertTrue(role_req1 in ret)
-        self.assertTrue(role_req2 in ret)
+        self.assertIn(role_req1, ret)
+        self.assertIn(role_req2, ret)
 
-        ret = self.room1.get_surrs_by_time((self.right_now+self.one_day).replace(tzinfo=None), (self.right_now+3*self.one_day).replace(tzinfo=None))
+        ret = self.room1.get_surrs_by_time(
+                self.right_now + self.one_day,
+                self.right_now + 3 * self.one_day)
         self.assertEquals(ret.count(), 1)
-        self.assertTrue(role_req2 in ret)
+        self.assertIn(role_req2, ret)
 
-        ret = self.room1.get_surrs_by_time((self.right_now-self.one_day).replace(tzinfo=None), (self.right_now).replace(tzinfo=None))
+        ret = self.room1.get_surrs_by_time(
+                self.right_now - self.one_day,
+                self.right_now)
         self.assertEquals(ret.count(), 0)
 
     def test_user_full_name_derived_field(self):
@@ -1722,8 +1752,11 @@ class TestEventManager(GeneralTestCase):
         ]
 
         e1 = self.event_manager.create('Event 1',
-            'First Event of My Unit Test', 'Event 1', self.right_now.isoformat(), (self.right_now+self.one_day).isoformat(),
-            self.organization1.id, {'venue' : self.venue1.id, 'sessions' : sessions})
+            'First Event of My Unit Test', 'Event 1',
+            self.right_now.isoformat(),
+            (self.right_now+self.one_day).isoformat(),
+            self.organization1.id,
+            {'venue' : self.venue1.id, 'sessions' : sessions})
 
         # verify results
         event = Event.objects.get(id=e1.pk)
@@ -2926,7 +2959,7 @@ class TestUserManager(GeneralTestCase):
         self.assertRaises(exceptions.AuthenticationFailureException,
             self.user_manager.relogin, 'this_is_not_a_valid_auth_token')
 
-        auth_token2.time_of_expiration = datetime.utcnow() - timedelta(hours=1)
+        auth_token2.time_of_expiration = timezone.now() - timedelta(hours=1)
         auth_token2.save()
         self.assertRaises(exceptions.AuthenticationFailureException,
             self.user_manager.relogin, auth_token2)
@@ -3516,29 +3549,29 @@ class TestObjectManager(GeneralTestCase, CommonObjectManagerTests):
         self.tu = LegacyUtils()
 
     def test_query_on_related_objects(self):
-        self.failUnless(ProductLine.objects.count() > 0)
-        self.failUnless(Organization.objects.count() > 0)
-        organization = Organization.objects.all()[0]
+        self.assertTrue(ProductLine.objects.count() > 0)
+        self.assertTrue(Organization.objects.count() > 0)
 
+        organization = Organization.objects.all()[0]
         suitable_venues = Venue.objects.filter(address__isnull=False).exclude(address__postal_code__isnull=True).exclude(address__postal_code='')
-        self.failUnless(len(suitable_venues) > 0)
+        self.assertTrue(len(suitable_venues) > 0)
         venue = suitable_venues[0]
 
-        now = datetime.utcnow()
+        now = timezone.now()
         event_start = now.replace(microsecond=0, second=0, minute=0, hour=0)
-        event_end = (now + timedelta(days=5)).replace(microsecond=0, second=0, minute=0, hour=0)
+        event_end = event_start + timedelta(days=5)
 
         e1 = self.event_manager.create('Evt', 'Event Title', 'an event',
-            event_start.isoformat() + 'Z', event_end.isoformat()  + 'Z',
+            event_start.isoformat(), event_end.isoformat(),
             organization.id, {'venue': venue.id})
         s1_start = event_start
         s1_end = event_start + timedelta(hours=1)
-        self.session_manager.create(s1_start.isoformat() + 'Z',
-            s1_end.isoformat() + 'Z', 'active', True, 0, e1.id, 'short name 1', 'long name 1')
+        self.session_manager.create(s1_start.isoformat(),
+            s1_end.isoformat(), 'active', True, 0, e1.id, 'short name 1', 'long name 1')
         s2_start = s1_end + timedelta(hours=1)
         s2_end = s2_start + timedelta(hours=1)
-        self.session_manager.create(s2_start.isoformat() + 'Z',
-            s2_end.isoformat() + 'Z', 'active', True, 0, e1.id, 'short name 1', 'long name 1')
+        self.session_manager.create(s2_start.isoformat(),
+            s2_end.isoformat(), 'active', True, 0, e1.id, 'short name 1', 'long name 1')
 
         direct_query = Event.objects.filter(
             venue__address__postal_code__exact=venue.address.postal_code)
@@ -3554,13 +3587,13 @@ class TestObjectManager(GeneralTestCase, CommonObjectManagerTests):
         self.failUnless(found_e1_in_ret)
 
         e2 = self.event_manager.create('Evt', 'Event Title 2', 'another event',
-            event_start.isoformat() + 'Z', event_end.isoformat()  + 'Z',
+            event_start.isoformat(), event_end.isoformat(),
             organization.id, {'venue': venue.id})
         s3_start = event_end - timedelta(hours=10)
         s3_end = s3_start + timedelta(hours=1)
 
-        self.session_manager.create(s3_start.isoformat() + 'Z',
-            s3_end.isoformat() + 'Z', 'active', True, 0, e2.id, 'short name 1', 'full name 1')
+        self.session_manager.create(s3_start.isoformat(),
+            s3_end.isoformat(), 'active', True, 0, e2.id, 'short name 1', 'full name 1')
 
         direct_query = Event.objects.filter(sessions__start__exact=s3_start)
         self.assertEquals(len(direct_query), 1)
@@ -4029,7 +4062,7 @@ class LegacyUtils(object):
         (this method isn't treated as a unit test because its name doesn't begin with 'test')
         """
 
-        now = datetime.utcnow()
+        now = timezone.now()
         now = now.replace(microsecond=0, tzinfo=pr_time.UTC()) # we don't want microseconds in our ISO time strings
         # and we need a timezone specified to make valid ISO 8601 format timestamps
 

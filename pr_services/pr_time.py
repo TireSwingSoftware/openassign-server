@@ -2,21 +2,14 @@
 This modules deals with time and date conversion
 """
 
+from django.utils import timezone
+
 import datetime
 import iso8601
 import exceptions
 
-class UTC(datetime.tzinfo):
-    """
-    time zone (tzinfo) class for UTC
-    """
-
-    def utcoffset(self, dt):
-        return datetime.timedelta(0)
-    def tzname(self, dt):
-        return "UTC"
-    def dst(self, dt):
-        return datetime.timedelta(0)
+def UTC():
+    return timezone.utc
 
 def iso8601_to_datetime(time):
     """
@@ -30,8 +23,9 @@ def iso8601_to_datetime(time):
         time_stamp = iso8601.parse(time)
     except ValueError:
         raise exceptions.DatetimeConversionError()
-    else:
-       return datetime.datetime.utcfromtimestamp(time_stamp)
+
+    d = datetime.datetime.utcfromtimestamp(time_stamp)
+    return timezone.make_aware(d, timezone.utc)
 
 def is_iso8601(time):
     """
@@ -45,7 +39,7 @@ def is_iso8601(time):
         iso8601.parse(time)
     except ValueError:
         return False
-    else:
-        return True
+
+    return True
 
 # vim:tabstop=4 shiftwidth=4 expandtab

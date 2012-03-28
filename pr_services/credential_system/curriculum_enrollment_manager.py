@@ -2,11 +2,13 @@
 curriculum_enrollment manager class
 """
 
+import facade
+
+from pr_services import pr_time
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
-import facade
-from pr_services import pr_time
 from pr_services.utils import Utils
+
 
 class CurriculumEnrollmentManager(ObjectManager):
     """
@@ -46,10 +48,10 @@ class CurriculumEnrollmentManager(ObjectManager):
         :return:                a reference to the newly created curriculum_enrollment
         """
 
-        start_date = pr_time.iso8601_to_datetime(start).replace(microsecond=0, second=0,
-            minute=0, hour=0)
-        end_date = pr_time.iso8601_to_datetime(end).replace(microsecond=0, second=0,
-            minute=0, hour=0)
+        start_date = pr_time.iso8601_to_datetime(start).replace(
+                microsecond=0, second=0, minute=0, hour=0)
+        end_date = pr_time.iso8601_to_datetime(end).replace(
+                microsecond=0, second=0, minute=0, hour=0)
 
         c = self.my_django_model(start=start_date, end=end_date)
         c.curriculum = self._find_by_id(curriculum, facade.models.Curriculum)
