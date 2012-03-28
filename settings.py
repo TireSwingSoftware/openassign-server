@@ -28,6 +28,8 @@ DATABASES = {
     }
 }
 
+USE_TZ = True
+
 # Local time zone for this installation. Choices can be found here:
 # http://www.postgresql.org/docs/8.1/static/datetime-keywords.html#DATETIME-TIMEZONE-SET-TABLE
 # although not all variations may be possible on all operating systems.
