@@ -525,7 +525,7 @@ class TestEmailUsers(BasicTestCase):
 
 class TestEmailTaskAssignees(BasicTestCase):
 
-    fixtures = ['initial_setup_precor', 'unprivileged_user', 'exams_and_achievements']
+    fixtures = ['initial_setup_precor', 'exams_and_achievements']
 
     def setUp(self):
         super(TestEmailTaskAssignees, self).setUp()
@@ -598,7 +598,6 @@ class TestEmailTaskAssignees(BasicTestCase):
 class TestAssignmentManagerViews(BasicTestCase, common.AssignmentViewTests):
 
     fixtures = BasicTestCase.fixtures + [
-        'unprivileged_user',
         'exams_and_achievements'
     ]
 
@@ -642,7 +641,6 @@ class TestCurriculumEnrollmentViews(BasicTestCase):
 class TestCredentialTypeViews(BasicTestCase):
 
     fixtures = BasicTestCase.fixtures + [
-        'unprivileged_user',
         'exams_and_achievements',
         'credential_types'
     ]
@@ -676,7 +674,6 @@ class TestCredentialTypeViews(BasicTestCase):
 class TestSURRViews(BasicTestCase):
 
     fixtures = BasicTestCase.fixtures + [
-        'unprivileged_user',
         'session_and_event',
         'credential_types',
         'exams_and_achievements',
@@ -3379,7 +3376,7 @@ class TestExternalUID(BasicTestCase):
 
 class TestUserManagerGetters(BasicTestCase):
 
-    fixtures = BasicTestCase.fixtures + ['unprivileged_user', 'exams_and_achievements']
+    fixtures = BasicTestCase.fixtures + ['exams_and_achievements']
 
     def setUp(self):
         super(TestUserManagerGetters, self).setUp()
@@ -3576,7 +3573,7 @@ class TestObjectManager(GeneralTestCase, CommonObjectManagerTests):
 
 
 class TestGetFiltered(BasicTestCase):
-    fixtures = BasicTestCase.fixtures + ['unprivileged_user', 'exams_and_achievements']
+    fixtures = BasicTestCase.fixtures + ['exams_and_achievements']
 
     def test_get_filtered_dates(self):
         # create a bunch of exams due on different days
@@ -4370,7 +4367,7 @@ class TestOrgSlots(GeneralTestCase):
 
 class TestViewBuilder(TestCase):
 
-    fixtures = ['unprivileged_user', 'exams_and_achievements']
+    fixtures = ['exams_and_achievements']
 
     def setUp(self):
         super(TestViewBuilder, self).setUp()

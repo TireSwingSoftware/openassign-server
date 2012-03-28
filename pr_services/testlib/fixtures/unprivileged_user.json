@@ -3,13 +3,13 @@
         "pk": 1,
         "model": "pr_services.domain",
         "fields": {
-            "save_timestamp": "2012-03-09 18:47:15",
+            "save_timestamp": "2012-03-09T18:47:15Z",
             "final_type": [
                 "pr_services",
                 "domain"
             ],
             "password_hash_type": "SHA-512",
-            "create_timestamp": "2012-03-09 18:47:15",
+            "create_timestamp": "2012-03-09T18:47:15Z",
             "authentication_ip": null,
             "authentication_password_hash": "",
             "name": "local"
@@ -17,13 +17,33 @@
     },
     {
         "pk": 2,
+        "model": "pr_services.domainaffiliation",
+        "fields": {
+            "username": "user1",
+            "domain": 1,
+            "save_timestamp": "2012-01-11T21:01:10Z",
+            "final_type": [
+                "pr_services",
+                "domainaffiliation"
+            ],
+            "password_salt": "",
+            "default": true,
+            "user": 2,
+            "password_hash_type": "SHA-512",
+            "create_timestamp": "2012-01-11T21:01:10Z",
+            "may_log_me_in": false,
+            "password_hash": "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86"
+        }
+    },
+    {
+        "pk": 2,
         "model": "pr_services.user",
         "fields": {
             "last_name": "Uomo",
-            "save_timestamp": "2012-01-11 21:01:10",
+            "save_timestamp": "2012-01-11T21:01:10Z",
             "photo": "",
             "is_staff": false,
-            "create_timestamp": "2012-01-11 21:01:10",
+            "create_timestamp": "2012-01-11T21:01:10Z",
             "owner": 2,
             "email2": null,
             "biography": null,
@@ -53,26 +73,6 @@
             "alleged_organization": null,
             "paypal_address": null,
             "shipping_address": null
-        }
-    },
-    {
-        "pk": 2,
-        "model": "pr_services.domainaffiliation",
-        "fields": {
-            "username": "user1",
-            "domain": 1,
-            "save_timestamp": "2012-01-11 21:01:10",
-            "final_type": [
-                "pr_services",
-                "domainaffiliation"
-            ],
-            "password_salt": "",
-            "default": true,
-            "user": 2,
-            "password_hash_type": "SHA-512",
-            "create_timestamp": "2012-01-11 21:01:10",
-            "may_log_me_in": false,
-            "password_hash": "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86"
         }
     }
 ]

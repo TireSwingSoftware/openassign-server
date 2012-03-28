@@ -1,90 +1,196 @@
 [
-  { "fields" : { "active" : true,
-        "address" : null,
-        "create_timestamp" : "2012-01-11 21:09:07",
-        "department" : null,
-        "description" : "",
-        "email" : "",
-        "fax" : null,
-        "final_type" : [ "pr_services",
-            "organization"
-          ],
-        "name" : "Organization 1",
-        "notes" : [  ],
-        "owner" : null,
-        "parent" : null,
-        "phone" : null,
-        "photo" : "",
-        "primary_contact_cell_phone" : null,
-        "primary_contact_email" : "",
-        "primary_contact_first_name" : "",
-        "primary_contact_last_name" : "",
-        "primary_contact_office_phone" : null,
-        "primary_contact_other_phone" : null,
-        "save_timestamp" : "2012-01-11 21:09:07",
-        "url" : null
-      },
-    "model" : "pr_services.organization",
-    "pk" : 1
-  },
     {
         "pk": 1,
-        "model": "pr_services.exam",
+        "model": "pr_services.domain",
         "fields": {
-            "achievements": [
-                1
+            "save_timestamp": "2012-03-09T18:47:15Z",
+            "final_type": [
+                "pr_services",
+                "domain"
             ],
-            "prerequisite_tasks": [],
-            "passing_score": 70,
-            "prerequisite_achievements": []
+            "password_hash_type": "SHA-512",
+            "create_timestamp": "2012-03-09T18:47:15Z",
+            "authentication_ip": null,
+            "authentication_password_hash": "",
+            "name": "local"
         }
     },
     {
         "pk": 2,
-        "model": "pr_services.exam",
+        "model": "pr_services.domainaffiliation",
         "fields": {
-            "achievements": [
-                2
+            "username": "user1",
+            "domain": 1,
+            "save_timestamp": "2012-01-11T21:01:10Z",
+            "final_type": [
+                "pr_services",
+                "domainaffiliation"
             ],
-            "prerequisite_tasks": [],
-            "passing_score": 70,
-            "prerequisite_achievements": []
+            "password_salt": "",
+            "default": true,
+            "user": 2,
+            "password_hash_type": "SHA-512",
+            "create_timestamp": "2012-01-11T21:01:10Z",
+            "may_log_me_in": false,
+            "password_hash": "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "pr_services.user",
+        "fields": {
+            "last_name": "Uomo",
+            "save_timestamp": "2012-01-11T21:01:10Z",
+            "photo": "",
+            "is_staff": false,
+            "create_timestamp": "2012-01-11T21:01:10Z",
+            "owner": 2,
+            "email2": null,
+            "biography": null,
+            "first_name": "Primo",
+            "middle_name": "",
+            "title": "Mr.",
+            "confirmation_code": null,
+            "enable_paypal": false,
+            "email": "user1@acme-u.com",
+            "status": "active",
+            "billing_address": null,
+            "color_code": null,
+            "phone2": null,
+            "phone3": null,
+            "blame": null,
+            "phone": "555.555.5555",
+            "groups": [],
+            "preferred_venues": [],
+            "final_type": [
+                "pr_services",
+                "user"
+            ],
+            "url": null,
+            "notes": [],
+            "name_suffix": "Sr.",
+            "suppress_emails": false,
+            "alleged_organization": null,
+            "paypal_address": null,
+            "shipping_address": null
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.organization",
+        "fields": {
+            "save_timestamp": "2012-01-11T21:09:07Z",
+            "photo": "",
+            "create_timestamp": "2012-01-11T21:09:07Z",
+            "owner": null,
+            "primary_contact_first_name": "",
+            "use_external_uid": false,
+            "external_uid": null,
+            "primary_contact_email": "",
+            "primary_contact_cell_phone": null,
+            "department": null,
+            "email": "",
+            "fax": null,
+            "description": "",
+            "parent": null,
+            "primary_contact_other_phone": null,
+            "phone": null,
+            "address": null,
+            "active": true,
+            "name": "Organization 1",
+            "final_type": [
+                "pr_services",
+                "organization"
+            ],
+            "primary_contact_office_phone": null,
+            "url": null,
+            "notes": [],
+            "primary_contact_last_name": ""
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.achievement",
+        "fields": {
+            "save_timestamp": "2012-01-22T04:00:48Z",
+            "description": "Award for people who are super stars",
+            "component_achievements": [],
+            "name": "Super star award for Exam 1",
+            "create_timestamp": "2012-01-22T04:00:48Z",
+            "owner": null,
+            "organization": null,
+            "final_type": [
+                "pr_services",
+                "achievement"
+            ]
+        }
+    },
+    {
+        "pk": 2,
+        "model": "pr_services.achievement",
+        "fields": {
+            "save_timestamp": "2012-01-22T04:00:48Z",
+            "description": "Award for people who are super stars",
+            "component_achievements": [],
+            "name": "Super star award for Exam 2",
+            "create_timestamp": "2012-01-22T04:00:48Z",
+            "owner": null,
+            "organization": null,
+            "final_type": [
+                "pr_services",
+                "achievement"
+            ]
         }
     },
     {
         "pk": 3,
-        "model": "pr_services.exam",
+        "model": "pr_services.achievement",
         "fields": {
-            "achievements": [
-                3
-            ],
-            "prerequisite_tasks": [],
-            "passing_score": 70,
-            "prerequisite_achievements": []
+            "save_timestamp": "2012-01-22T04:00:48Z",
+            "description": "Award for people who are super stars",
+            "component_achievements": [],
+            "name": "Super star award for Exam 3",
+            "create_timestamp": "2012-01-22T04:00:48Z",
+            "owner": null,
+            "organization": null,
+            "final_type": [
+                "pr_services",
+                "achievement"
+            ]
         }
     },
     {
         "pk": 4,
-        "model": "pr_services.exam",
+        "model": "pr_services.achievement",
         "fields": {
-            "achievements": [
-                4
-            ],
-            "prerequisite_tasks": [],
-            "passing_score": 70,
-            "prerequisite_achievements": []
+            "save_timestamp": "2012-01-22T04:00:48Z",
+            "description": "Award for people who are super stars",
+            "component_achievements": [],
+            "name": "Super star award for Exam 4",
+            "create_timestamp": "2012-01-22T04:00:48Z",
+            "owner": null,
+            "organization": null,
+            "final_type": [
+                "pr_services",
+                "achievement"
+            ]
         }
     },
     {
         "pk": 5,
-        "model": "pr_services.exam",
+        "model": "pr_services.achievement",
         "fields": {
-            "achievements": [
-                5
-            ],
-            "prerequisite_tasks": [],
-            "passing_score": 70,
-            "prerequisite_achievements": []
+            "save_timestamp": "2012-01-22T04:00:48Z",
+            "description": "Award for people who are super stars",
+            "component_achievements": [],
+            "name": "Super star award for Exam 5",
+            "create_timestamp": "2012-01-22T04:00:48Z",
+            "owner": null,
+            "organization": null,
+            "final_type": [
+                "pr_services",
+                "achievement"
+            ]
         }
     },
     {
@@ -95,21 +201,21 @@
                 1
             ],
             "prerequisite_tasks": [],
-            "save_timestamp": "2012-01-22 04:00:48",
+            "save_timestamp": "2012-01-22T04:00:48Z",
             "final_type": [
                 "pr_services",
                 "exam"
             ],
             "title": "Exam 1",
-            "organization": 1,
             "max": null,
             "min": 0,
             "version_id": null,
             "name": "Exam 1",
             "version_comment": "",
-            "create_timestamp": "2012-01-22 04:00:48",
+            "create_timestamp": "2012-01-22T04:00:48Z",
             "version_label": "",
             "owner": null,
+            "organization": 1,
             "prerequisite_achievements": [],
             "public": false,
             "prevent_duplicate_assignments": false,
@@ -124,21 +230,21 @@
                 2
             ],
             "prerequisite_tasks": [],
-            "save_timestamp": "2012-01-22 04:00:48",
+            "save_timestamp": "2012-01-22T04:00:48Z",
             "final_type": [
                 "pr_services",
                 "exam"
             ],
             "title": "Exam 2",
-            "organization": 1,
             "max": null,
             "min": 0,
             "version_id": null,
             "name": "Exam 2",
             "version_comment": "",
-            "create_timestamp": "2012-01-22 04:00:48",
+            "create_timestamp": "2012-01-22T04:00:48Z",
             "version_label": "",
             "owner": null,
+            "organization": 1,
             "prerequisite_achievements": [],
             "public": false,
             "prevent_duplicate_assignments": false,
@@ -153,21 +259,21 @@
                 3
             ],
             "prerequisite_tasks": [],
-            "save_timestamp": "2012-01-22 04:00:48",
+            "save_timestamp": "2012-01-22T04:00:48Z",
             "final_type": [
                 "pr_services",
                 "exam"
             ],
             "title": "Exam 3",
-            "organization": 1,
             "max": null,
             "min": 0,
             "version_id": null,
             "name": "Exam 3",
             "version_comment": "",
-            "create_timestamp": "2012-01-22 04:00:48",
+            "create_timestamp": "2012-01-22T04:00:48Z",
             "version_label": "",
             "owner": null,
+            "organization": 1,
             "prerequisite_achievements": [],
             "public": false,
             "prevent_duplicate_assignments": false,
@@ -182,21 +288,21 @@
                 4
             ],
             "prerequisite_tasks": [],
-            "save_timestamp": "2012-01-22 04:00:48",
+            "save_timestamp": "2012-01-22T04:00:48Z",
             "final_type": [
                 "pr_services",
                 "exam"
             ],
             "title": "Exam 4",
-            "organization": 1,
             "max": null,
             "min": 0,
             "version_id": null,
             "name": "Exam 4",
             "version_comment": "",
-            "create_timestamp": "2012-01-22 04:00:48",
+            "create_timestamp": "2012-01-22T04:00:48Z",
             "version_label": "",
             "owner": null,
+            "organization": 1,
             "prerequisite_achievements": [],
             "public": false,
             "prevent_duplicate_assignments": false,
@@ -211,110 +317,25 @@
                 5
             ],
             "prerequisite_tasks": [],
-            "save_timestamp": "2012-01-22 04:00:48",
+            "save_timestamp": "2012-01-22T04:00:48Z",
             "final_type": [
                 "pr_services",
                 "exam"
             ],
             "title": "Exam 5",
-            "organization": 1,
             "max": null,
             "min": 0,
             "version_id": null,
             "name": "Exam 5",
             "version_comment": "",
-            "create_timestamp": "2012-01-22 04:00:48",
+            "create_timestamp": "2012-01-22T04:00:48Z",
             "version_label": "",
             "owner": null,
+            "organization": 1,
             "prerequisite_achievements": [],
             "public": false,
             "prevent_duplicate_assignments": false,
             "description": ""
-        }
-    },
-    {
-        "pk": 1,
-        "model": "pr_services.achievement",
-        "fields": {
-            "save_timestamp": "2012-01-22 04:00:48",
-            "description": "Award for people who are super stars",
-            "component_achievements": [],
-            "name": "Super star award for Exam 1",
-            "create_timestamp": "2012-01-22 04:00:48",
-            "owner": null,
-            "organization": null,
-            "final_type": [
-                "pr_services",
-                "achievement"
-            ]
-        }
-    },
-    {
-        "pk": 2,
-        "model": "pr_services.achievement",
-        "fields": {
-            "save_timestamp": "2012-01-22 04:00:48",
-            "description": "Award for people who are super stars",
-            "component_achievements": [],
-            "name": "Super star award for Exam 2",
-            "create_timestamp": "2012-01-22 04:00:48",
-            "owner": null,
-            "organization": null,
-            "final_type": [
-                "pr_services",
-                "achievement"
-            ]
-        }
-    },
-    {
-        "pk": 3,
-        "model": "pr_services.achievement",
-        "fields": {
-            "save_timestamp": "2012-01-22 04:00:48",
-            "description": "Award for people who are super stars",
-            "component_achievements": [],
-            "name": "Super star award for Exam 3",
-            "create_timestamp": "2012-01-22 04:00:48",
-            "owner": null,
-            "organization": null,
-            "final_type": [
-                "pr_services",
-                "achievement"
-            ]
-        }
-    },
-    {
-        "pk": 4,
-        "model": "pr_services.achievement",
-        "fields": {
-            "save_timestamp": "2012-01-22 04:00:48",
-            "description": "Award for people who are super stars",
-            "component_achievements": [],
-            "name": "Super star award for Exam 4",
-            "create_timestamp": "2012-01-22 04:00:48",
-            "owner": null,
-            "organization": null,
-            "final_type": [
-                "pr_services",
-                "achievement"
-            ]
-        }
-    },
-    {
-        "pk": 5,
-        "model": "pr_services.achievement",
-        "fields": {
-            "save_timestamp": "2012-01-22 04:00:48",
-            "description": "Award for people who are super stars",
-            "component_achievements": [],
-            "name": "Super star award for Exam 5",
-            "create_timestamp": "2012-01-22 04:00:48",
-            "owner": null,
-            "organization": null,
-            "final_type": [
-                "pr_services",
-                "achievement"
-            ]
         }
     },
     {
@@ -324,7 +345,7 @@
             "status": "assigned",
             "due_date": null,
             "task": 1,
-            "save_timestamp": "2012-01-22 04:00:48",
+            "save_timestamp": "2012-01-22T04:00:48Z",
             "final_type": [
                 "pr_services",
                 "assignment"
@@ -343,7 +364,7 @@
             "date_completed": null,
             "date_started": null,
             "sent_late_notice": false,
-            "create_timestamp": "2012-01-22 04:00:48"
+            "create_timestamp": "2012-01-22T04:00:48Z"
         }
     },
     {
@@ -353,7 +374,7 @@
             "status": "assigned",
             "due_date": null,
             "task": 2,
-            "save_timestamp": "2012-01-22 04:00:48",
+            "save_timestamp": "2012-01-22T04:00:48Z",
             "final_type": [
                 "pr_services",
                 "assignment"
@@ -372,7 +393,7 @@
             "date_completed": null,
             "date_started": null,
             "sent_late_notice": false,
-            "create_timestamp": "2012-01-22 04:00:48"
+            "create_timestamp": "2012-01-22T04:00:48Z"
         }
     },
     {
@@ -382,7 +403,7 @@
             "status": "assigned",
             "due_date": null,
             "task": 3,
-            "save_timestamp": "2012-01-22 04:00:48",
+            "save_timestamp": "2012-01-22T04:00:48Z",
             "final_type": [
                 "pr_services",
                 "assignment"
@@ -401,7 +422,7 @@
             "date_completed": null,
             "date_started": null,
             "sent_late_notice": false,
-            "create_timestamp": "2012-01-22 04:00:48"
+            "create_timestamp": "2012-01-22T04:00:48Z"
         }
     },
     {
@@ -411,7 +432,7 @@
             "status": "assigned",
             "due_date": null,
             "task": 4,
-            "save_timestamp": "2012-01-22 04:00:48",
+            "save_timestamp": "2012-01-22T04:00:48Z",
             "final_type": [
                 "pr_services",
                 "assignment"
@@ -430,7 +451,7 @@
             "date_completed": null,
             "date_started": null,
             "sent_late_notice": false,
-            "create_timestamp": "2012-01-22 04:00:48"
+            "create_timestamp": "2012-01-22T04:00:48Z"
         }
     },
     {
@@ -440,7 +461,7 @@
             "status": "assigned",
             "due_date": null,
             "task": 5,
-            "save_timestamp": "2012-01-22 04:00:48",
+            "save_timestamp": "2012-01-22T04:00:48Z",
             "final_type": [
                 "pr_services",
                 "assignment"
@@ -459,7 +480,67 @@
             "date_completed": null,
             "date_started": null,
             "sent_late_notice": false,
-            "create_timestamp": "2012-01-22 04:00:48"
+            "create_timestamp": "2012-01-22T04:00:48Z"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.exam",
+        "fields": {
+            "achievements": [
+                1
+            ],
+            "prerequisite_tasks": [],
+            "passing_score": 70,
+            "prerequisite_achievements": []
+        }
+    },
+    {
+        "pk": 2,
+        "model": "pr_services.exam",
+        "fields": {
+            "achievements": [
+                2
+            ],
+            "prerequisite_tasks": [],
+            "passing_score": 70,
+            "prerequisite_achievements": []
+        }
+    },
+    {
+        "pk": 3,
+        "model": "pr_services.exam",
+        "fields": {
+            "achievements": [
+                3
+            ],
+            "prerequisite_tasks": [],
+            "passing_score": 70,
+            "prerequisite_achievements": []
+        }
+    },
+    {
+        "pk": 4,
+        "model": "pr_services.exam",
+        "fields": {
+            "achievements": [
+                4
+            ],
+            "prerequisite_tasks": [],
+            "passing_score": 70,
+            "prerequisite_achievements": []
+        }
+    },
+    {
+        "pk": 5,
+        "model": "pr_services.exam",
+        "fields": {
+            "achievements": [
+                5
+            ],
+            "prerequisite_tasks": [],
+            "passing_score": 70,
+            "prerequisite_achievements": []
         }
     }
- ]
+]
