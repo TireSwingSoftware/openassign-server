@@ -200,7 +200,7 @@ class Getter(object):
             if not field: # If neither approach worked, the relationship doesn't exist as stated, and
                           # we're out of here!
                 raise exceptions.FieldNameNotFoundException(field_name)
-            if settings.DATABASE_ENGINE == 'oracle':
+            if settings.DATABASES['default']['ENGINE'] == 'oracle':
                 # We need to make the column names upper case
                 my_column = my_column.upper()
                 foreign_column = foreign_column.upper()

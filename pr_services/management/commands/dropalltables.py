@@ -1,14 +1,15 @@
-import django.db
 
 from django.core.management.base import NoArgsCommand
 from django.db import connection, transaction, backend
+
+import settings
 
 class Command(NoArgsCommand):
     requires_model_validation = False
 
     def handle_noargs(self, **options):
         cursor = connection.cursor()
-        engine = django.db.database['ENGINE']
+        engine = settings.DATABASES['default']['ENGINE']
 
         if engine == 'django.db.backends.postgresql_psycopg2':
             handler = _PostgresEngineHandler(cursor)
