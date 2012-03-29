@@ -1056,7 +1056,7 @@ class TestCredentialTypeManager(GeneralTestCase):
         self.assertEquals(len(ret), 2)
         self.assertEquals(type(ret[0]), dict)
         self.assertEquals(type(ret[1]), dict)
-        self.failUnless(type(ret[1]['id']) in [int, long])
+        self.assertTrue(type(ret[1]['id']) in [int, long])
         for credential_type in ret:
             if credential_type['id'] == ct_1.id:
                 self.assertEquals(credential_type['name'], 'a name')
@@ -1110,7 +1110,7 @@ class TestCsvExport(TestCase):
         unicode_string = u"東西"
         encoded_and_decoded_string = json.loads(json.dumps(unicode_string))
         self.assertEquals(encoded_and_decoded_string, unicode_string)
-        self.failUnless(isinstance(encoded_and_decoded_string, unicode))
+        self.assertTrue(isinstance(encoded_and_decoded_string, unicode))
 
     def test_valid_data(self):
         c = django.test.client.Client()
@@ -1262,11 +1262,11 @@ class TestGroupManager(GeneralTestCase):
         self.assertTrue(len(ret) >= 5)
         self.assertEquals(type(ret[0]), dict)
         self.assertEquals(type(ret[1]), dict)
-        self.failUnless(type(ret[1]['id']) in [int, long])
+        self.assertTrue(type(ret[1]['id']) in [int, long])
         ret = self.group_manager.get_filtered({}, ['id'])
-        self.failUnless('id' in ret[0])
+        self.assertTrue('id' in ret[0])
         # we didn't ask for the 'name' value, make sure it's not present
-        self.failUnless('name' not in ret[1])
+        self.assertTrue('name' not in ret[1])
 
     def test_delete(self):
         g1 = self.group_manager.create('name')
@@ -1535,8 +1535,8 @@ class TestPurchaseOrderManager(GeneralTestCase):
         self.product_claim_manager.create(self.user1_auth_token, self.prod1.id, po1.id, 7)
 
         ret = self.purchase_order_manager.retrieve_receipt(po1.id)
-        self.failUnless(ret.has_key('subject') and ret['subject'])
-        self.failUnless(ret.has_key('body') and ret['body'])
+        self.assertTrue(ret.has_key('subject') and ret['subject'])
+        self.assertTrue(ret.has_key('body') and ret['body'])
 
 class TestRoleManager(GeneralTestCase):
     def test_create(self):
@@ -1569,12 +1569,12 @@ class TestRoleManager(GeneralTestCase):
         self.assertEquals(len(ret), 2)
         self.assertEquals(type(ret[0]), dict)
         self.assertEquals(type(ret[1]), dict)
-        self.failUnless(type(ret[1]['id']) in [int, long])
-        self.failUnless(ret[1]['name'] == 'role2' or ret[0]['name'] == 'role2')
+        self.assertTrue(type(ret[1]['id']) in [int, long])
+        self.assertTrue(ret[1]['name'] == 'role2' or ret[0]['name'] == 'role2')
         ret = self.role_manager.get_filtered({'member' : {'id' : [role1.id, role2.id]}}, ['id'])
         # we asked for the 'id' value, make sure it's correct
-        self.failUnless(ret[0]['id'] in (role1.id, role2.id))
-        self.failUnless(ret[0]['id'] in (role1.id, role2.id))
+        self.assertTrue(ret[0]['id'] in (role1.id, role2.id))
+        self.assertTrue(ret[0]['id'] in (role1.id, role2.id))
         self.assertNotEqual(ret[0]['id'], ret[1]['id'])
         # we didn't ask for the 'name' value, make sure it's not present
         self.assertEquals('name' not in ret[1], True)
@@ -1598,8 +1598,8 @@ class TestRoomManager(GeneralTestCase):
             self.room_manager.create('Hemingway',
                 self.venue1.id, 120)
         except ModelDataValidationError, e:
-            self.failUnless(e.validation_errors.has_key('name'))
-            self.failUnless(e.validation_errors['name'][0].find('conflicts') != -1)
+            self.assertTrue(e.validation_errors.has_key('name'))
+            self.assertTrue(e.validation_errors['name'][0].find('conflicts') != -1)
         except Exception, e:
             self.fail(u'The wrong type of exception was raised: %s' %\
                 unicode(e))
@@ -2017,9 +2017,9 @@ class TestSessionManager(GeneralTestCase):
         events = self.event_manager.get_filtered({'icontains': {'title': 'vENt'}},
             ['id', 'title'])
         self.assertEquals(len(events), 2)
-        self.failUnless(events[0]['id'] != events[1]['id'])
-        self.failUnless(events[0]['id'] == e1.id or events[1]['id'] == e1.id)
-        self.failUnless(events[0]['id'] == e2.id or events[1]['id'] == e2.id)
+        self.assertTrue(events[0]['id'] != events[1]['id'])
+        self.assertTrue(events[0]['id'] == e1.id or events[1]['id'] == e1.id)
+        self.assertTrue(events[0]['id'] == e2.id or events[1]['id'] == e2.id)
         events = self.event_manager.get_filtered({'ibegins': {'title': 'eVeNt 1'}},
             ['id', 'name'])
         self.assertEquals(len(events), 1)
@@ -2052,8 +2052,8 @@ class TestSessionManager(GeneralTestCase):
         self.assertEquals(len(sessions), 2)
         session2 = Session.objects.get(pk=tu.s2.id)
         session3 = Session.objects.get(pk=tu.s3.id)
-        self.failUnless(session2 in sessions)
-        self.failUnless(session3 in sessions)
+        self.assertTrue(session2 in sessions)
+        self.assertTrue(session3 in sessions)
 
     def test_enrollment_auth_by_venue(self):
         # Create a proctor role with a user
@@ -2155,7 +2155,7 @@ class TestSessionTemplateManager(GeneralTestCase):
         self.assertEquals(len(ret), 2)
         self.assertEquals(type(ret[0]), dict)
         self.assertEquals(type(ret[1]), dict)
-        self.failUnless(type(ret[1]['id']) in [int, long])
+        self.assertTrue(type(ret[1]['id']) in [int, long])
 
         for session_template in ret:
             if session_template['id'] == session_template_1.id:
@@ -3579,12 +3579,12 @@ class TestObjectManager(GeneralTestCase, CommonObjectManagerTests):
         ret = self.event_manager.get_filtered(
             {'exact': {'venue__address__postal_code': venue.address.postal_code}}, ['id'])
 
-        self.failUnless(len(ret) == len(direct_query))
+        self.assertTrue(len(ret) == len(direct_query))
         found_e1_in_ret = False
         for result in ret:
             if result['id'] == e1.id:
                 found_e1_in_ret = True
-        self.failUnless(found_e1_in_ret)
+        self.assertTrue(found_e1_in_ret)
 
         e2 = self.event_manager.create('Evt', 'Event Title 2', 'another event',
             event_start.isoformat(), event_end.isoformat(),
