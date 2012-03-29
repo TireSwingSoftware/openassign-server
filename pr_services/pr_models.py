@@ -783,6 +783,10 @@ class AchievementAward(PRModel):
     assignment = PRForeignKey('Assignment', related_name='achievement_awards', null=True)
     date = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def achievement_name(self):
+        return self.achievement.name
+
     def save(self, *args, **kwargs):
         """
         Looks for credentials that can be granted if that time has come.

@@ -13,6 +13,7 @@ class AchievementAwardManager(ObjectManager):
 
     GETTERS = {
         'achievement': 'get_foreign_key',
+        'achievement_name': 'get_general',
         'assignment': 'get_foreign_key',
         'date': 'get_time',
         'user': 'get_foreign_key',

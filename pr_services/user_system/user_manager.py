@@ -1129,7 +1129,9 @@ class UserManager(ObjectManager):
                 ('owned_userorgroles',
                     ('role', 'role_name', 'organization', 'organization_name')),
                 ('groups',
-                    ('name', ))
+                    ('name', )),
+                ('achievement_awards',
+                    ('achievement_name', 'date' ))
             ))
         return view(auth_token, *args, **kwargs)
 
