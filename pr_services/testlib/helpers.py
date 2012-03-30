@@ -4,6 +4,7 @@ Convenient routines for facilitating common test operations.
 
 import functools
 
+from decorator import decorator
 from operator import itemgetter
 
 from django.core.management import call_command
@@ -55,17 +56,16 @@ def load_fixtures(*fixtures):
                 # do something testy
                 ...
     """
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(self, *args, **kwargs):
-            # 'commit = False' tells the loaddata command to not use its
-            # own transaction management
-            call_command('loaddata',
-                    *[f for f in fixtures if not f in self.fixtures],
+    @decorator
+    def wrapper(func, self, *args, **kwargs):
+        # 'commit = False' tells the loaddata command to not use its
+        # own transaction management
+        extra_fixtures = [f for f in fixtures if not f in self.fixtures]
+        if extra_fixtures:
+            call_command('loaddata', *extra_fixtures,
                     **{'verbosity': 0, 'commit': False})
-            return func(self, *args, **kwargs)
-        return wrapper
-    return decorator
+        return func(self, *args, **kwargs)
+    return wrapper
 
 
 def object_dict(obj, attributes):
