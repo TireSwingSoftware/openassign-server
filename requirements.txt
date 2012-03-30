@@ -30,6 +30,7 @@ mock==0.8.0
 ordereddict==1.1
 psycopg2==2.4.1
 pycurl==7.19.0
+pytz==2012b
 pyparsing==1.5.6
 python-dateutil==2.0
 python-memcached==1.48
