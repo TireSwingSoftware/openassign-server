@@ -1,10 +1,11 @@
+{% load url from future %}
 {% extends "base_site.html" %}
 
 {% block title %}CSV File Upload{% endblock %} 
 
 {% block content %}
 
-<form enctype="multipart/form-data" action="{% url upload_csv_form auth_token model_name %}" method="POST">
+<form enctype="multipart/form-data" action="{% url 'upload_csv_form' auth_token model_name %}" method="POST">
 {{ form.as_p }}
 <input type="submit" value="Submit" />
 </form>
