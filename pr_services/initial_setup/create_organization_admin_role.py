@@ -18,6 +18,7 @@ def setup(machine):
         'Assignment',
         'Credential',
         'CurriculumEnrollment',
+        'CurriculumEnrollmentUserAssociation',
         'CurriculumTaskAssociation',
         'Event',
         'Exam', # subclass of Task

@@ -198,8 +198,8 @@ class EnrollmentTests(mixins.UserTestMixin, mixins.EventTestMixin):
         self.curriculum = create_curr(self.CURRICULUM_NAME, self.organization1.id)
 
         # create exams
-        exams = [create_exam('%s: Exam %d' % (self.__class__.__name__, i),
-            organization=self.organization1.id)
+        exams = [create_exam(name='%s: Exam %d' % (self.__class__.__name__, i),
+                             organization=self.organization1.id)
                      for i in range(self.NUM_EXAMS)]
 
         # add exams to curriculum
@@ -208,23 +208,31 @@ class EnrollmentTests(mixins.UserTestMixin, mixins.EventTestMixin):
         for exam in exams:
             add_exam(exam.id)
 
-    def _setup_curriculum_enrollment(self, as_admin=False):
-        self._setup_curriculum(as_admin)
+    def _setup_curriculum_enrollment(self, as_admin=False, add_users=True):
+        self._setup_curriculum(as_admin=True)
 
-        create_enrollment = partial(self.curriculum_enrollment_manager.create,
-                self.curriculum.id)
-
-        # create some active users
-        learners = self.create_users(self.NUM_ENROLLED,
-                create_update_dict={'status': 'active'},
-                compare=False, as_admin=True)
-
-        # store the users' ids
-        self.learner_ids = map(attrgetter('id'), learners)
+        if as_admin:
+            create_enrollment = partial(self.admin_curriculum_enrollment_manager.create,
+                    self.curriculum.id)
+        else:
+            create_enrollment = partial(self.curriculum_enrollment_manager.create,
+                    self.curriculum.id)
 
         start = self.right_now.isoformat()
         end = (self.right_now + self.one_day).isoformat()
-        return create_enrollment(start, end, self.learner_ids)
+
+        if add_users:
+            # create some active users
+            learners = self.create_users(self.NUM_ENROLLED,
+                    create_update_dict={'status': 'pending'},
+                    opt_dict={'organizations': {'add': [self.organization1]} },
+                    compare=False, as_admin=True)
+
+            # store the users' ids
+            self.learner_ids = map(attrgetter('id'), learners)
+            return create_enrollment(start, end, self.learner_ids)
+
+        return create_enrollment(start, end)
 
     def _check_curriculum_enrollment_status(self, enrollment, expected_status):
         status = enrollment['user_completion_statuses']
@@ -240,11 +248,26 @@ class EnrollmentTests(mixins.UserTestMixin, mixins.EventTestMixin):
             self.assertEquals(len(test_incomplete), num_incomplete)
 
     def test_create_curriculum(self):
-        self._setup_curriculum(False)
+        self._setup_curriculum(as_admin=False)
         self.assertEquals(self.curriculum.name, self.CURRICULUM_NAME)
 
+    def test_create_curriculum_enrollment(self):
+        enrollment = self._setup_curriculum_enrollment()
+        self.assertEquals(enrollment.users.count(), self.NUM_ENROLLED)
+
     def test_enroll_users_in_curriculum(self):
-        _enrollment = self._setup_curriculum_enrollment(True)
+        _enrollment = self._setup_curriculum_enrollment(as_admin=True,
+                add_users=False)
+        # create some active users
+        users = self.create_users(self.NUM_ENROLLED,
+                create_update_dict={'status': 'pending'},
+                opt_dict={'organizations': {'add': [self.organization1]} },
+                compare=False, as_admin=True)
+        # store the users' ids
+        self.learner_ids = map(attrgetter('id'), users)
+
+        self.curriculum_enrollment_manager.update(_enrollment.id,
+                {'users': {'add': self.learner_ids}})
 
         enrollment = self._get_curriculum_enrollment(_enrollment.id)
         self._check_curriculum_enrollment_status(enrollment, expected_status=False)
@@ -258,7 +281,7 @@ class EnrollmentTests(mixins.UserTestMixin, mixins.EventTestMixin):
         self._check_user_curriculum_enrollments(users, 0, 1)
 
     def test_change_curriculum_enrollment_status(self):
-        enrollment = self._setup_curriculum_enrollment(True)
+        enrollment = self._setup_curriculum_enrollment(as_admin=True)
         mark_assignment_completed = partial(self.assignment_manager.update,
                 value_map={'status': 'completed'})
 
@@ -436,8 +459,8 @@ class UserTests(mixins.UserTestMixin):
                 user.organizations.all().order_by('id'))
 
     def test_user_add_organization_role(self):
-        user, create_dict = self.create_user(compare=False)
-        user_role, created = facade.models.OrgRole.objects.get_or_create(name="User")
+        user, create_dict = self.create_user(compare=False, as_admin=True)
+        user_role, created = OrgRole.objects.get_or_create(name="User")
         changes = {'roles':
             {'add': [{
                  'id': user_role.id,
@@ -458,11 +481,13 @@ class UserTests(mixins.UserTestMixin):
 
     def test_read_users_in_org(self):
         users, compare_dicts = self.create_users(n=2,
-                as_admin=True)
+                opt_dict={'status': 'active'}, as_admin=True)
         for i, user in enumerate(users):
             compare_dicts[i].update(id=user.id)
             self.admin_user_manager.update(user.id,
-                value_map={'organizations': {'add': [self.organization1.id]}})
+                    value_map={
+                        'organizations': {'add': [self.organization1.id]}
+                    })
 
         compare_keys = compare_dicts[0].keys()
         user_filter = {'member': {'id': [u.id for u in users]}}
@@ -499,6 +524,16 @@ class UserTests(mixins.UserTestMixin):
         if len(users[0]) != len(compare_dicts[0]):
             raise exceptions.PermissionDeniedException()
         self.assertSequenceEqual(users, compare_dicts)
+
+    def test_modify_user_in_different_org(self):
+        user, create_dict = self.create_user(compare=False)
+        other_org = Organization.objects.create(name='Foo Org')
+        # put user in another org
+        self.admin_user_manager.update(user.id,
+            {'organizations': {'add': [{'id': other_org.id}]}})
+
+        self.user_manager.update(user.id, {'status': 'inactive'})
+
 
 
 class VenueTests(mixins.EventTestMixin):
@@ -570,6 +605,47 @@ class ExamTests(mixins.ExamTestMixin):
 
 
 class CredentialTests:
+
+    def test_create_credential_type(self):
+        create = self.credential_type_manager.create
+        expected = {
+            'name': 'B.S. Software Engineering',
+            'description': 'Nice to have'
+        }
+        test = create(expected['name'], expected['description'])
+        self.assertDictEqual(object_dict(test, expected.keys()), expected)
+        expected = {
+            'name': 'M.S. Software Engineering',
+            'description': 'Waste of time'
+        }
+        test = create(expected['name'], expected['description'])
+        self.assertDictEqual(object_dict(test, expected.keys()), expected)
+
+    def test_grant_credential(self):
+        credentials = self.user1.credentials
+        self.assertEquals(credentials.count(), 0)
+        degree = self.admin_credential_type_manager.create(
+            'B.S. Software Engineering', 'Nice to have')
+        cred = self.credential_manager.create(self.user1.id, degree.id)
+        has_credential = credentials.filter(credential_type__id=degree.id).exists()
+        self.assertTrue(has_credential)
+
+    def test_grant_credential_to_no_org_user(self):
+        user, create_dict = self.create_user(compare=False)
+        degree = self.admin_credential_type_manager.create(
+            'B.S. Software Engineering', 'Nice to have')
+        self.credential_manager.create(user.id, degree.id)
+
+    def test_grant_credential_to_wrong_org_user(self):
+        # make a user and put them in a different org
+        user, create_dict = self.create_user(compare=False)
+        org = Organization.objects.create(name='The "Org" Organization')
+        self.admin_user_manager.update(user.id,
+                {'organizations': {'add': [org.id]}})
+
+        degree = self.admin_credential_type_manager.create(
+            'B.S. Software Engineering', 'Nice to have')
+        self.credential_manager.create(user.id, degree.id)
 
     def _create_achievement_cred_exam(self):
         achievement = self.admin_achievement_manager.create(
