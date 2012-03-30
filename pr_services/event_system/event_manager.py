@@ -4,12 +4,14 @@ Event manager class
 
 from datetime import date
 
+from django.conf import settings
+
 from pr_services import pr_time
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 
 import facade
-import settings
+
 
 class EventManager(ObjectManager):
     """

@@ -1,8 +1,8 @@
 
+from django.conf import settings
 from django.core.management.base import NoArgsCommand
 from django.db import connection, transaction, backend
 
-import settings
 
 class Command(NoArgsCommand):
     requires_model_validation = False
@@ -32,7 +32,7 @@ class Command(NoArgsCommand):
 
         transaction.commit()
 
-# Handler classes, 
+# Handler classes,
 class _BaseEngineHandler(object):
     # Should work with sqlite and the dummy backends, or anything else that
     # doesn't need special hand holding

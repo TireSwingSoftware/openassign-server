@@ -9,6 +9,7 @@ __docformat__ = "restructuredtext en"
 
 import abc
 import re
+import logging
 
 from abc import abstractmethod
 from operator import itemgetter
@@ -19,25 +20,25 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 
+import pyamf
 
+from django.conf import settings
 from django.db.models import Q
 from django.db.models.fields import FieldDoesNotExist
 from django.db.models.fields.related import RelatedField, RelatedObject
 from django.db.models.query import ValuesQuerySet
-
-import exceptions
-import facade
-import logging
-import pr_time
-import settings
-import tagging.models
-import pyamf
 from pyamf.adapters import util
 
+import facade
+import tagging.models
+
+from pr_services import exceptions, pr_time
 from pr_services.rpc.service import service_method
-from utils import Utils
+from pr_services.utils import Utils
+
 
 __all__ = ('ObjectManager', 'CensoredView', 'UncensoredView')
+
 
 class ObjectManagerMetaclass(abc.ABCMeta):
     """

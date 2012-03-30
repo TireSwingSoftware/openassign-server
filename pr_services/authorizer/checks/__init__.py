@@ -7,8 +7,9 @@ import types
 
 from decorator import decorator
 
+from django.conf import settings
+
 import facade
-import settings
 
 from pr_services.exceptions import InvalidActeeTypeException
 

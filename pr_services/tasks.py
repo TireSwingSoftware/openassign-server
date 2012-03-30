@@ -1,10 +1,9 @@
 
+from celery.decorators import task
+from django.conf import settings
 from django.utils import timezone
 
-from celery.decorators import task
-
 import facade
-import settings
 
 if 'ecommerce' in settings.INSTALLED_APPS:
     from ecommerce import paypal_tools

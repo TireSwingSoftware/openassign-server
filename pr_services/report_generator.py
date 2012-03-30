@@ -3,13 +3,16 @@
 """
 
 import base64
-import settings
 import urllib
-import urllib2
+import urllib2 # XXX: we should use one or the other
 import xml.dom.minidom
-import exceptions
+
+from django.conf import settings
+
+from pr_services import exceptions
 from pr_services.rpc.service import service_method
-    
+
+
 class ReportGenerator(object):
     """
     This class acts as an interface between the front end and
@@ -26,14 +29,14 @@ class ReportGenerator(object):
     def get_reports(self, auth_token):
         """
         This method can be used by the front end to fetch a list of reports available from pentaho.
-        
+
         @param auth_token         The authentication token of the requesting user
         @type auth_token models.auth_token
         @return  dictionary whose keys are the report names and whose values are dictionaries
                  of default and required parameters.
         @rtype dict
         """
-        
+
         return settings.PENTAHO_REPORTS
 
     @service_method
@@ -41,7 +44,7 @@ class ReportGenerator(object):
         """
         This method can be used by the front end to fetch a report from
         Pentaho in an XML format.
-        
+
         @param auth_token         The authentication token of the requesting user
         @type auth_token models.auth_token
         @param report_type        A string identifying the type of the report.  This
@@ -53,7 +56,7 @@ class ReportGenerator(object):
         @type report_parameters dict
         @return the response from the Pentaho server
         @rtype str
-        
+
         @raises InvalidReportTypeException
         @raises RequiredParameterMissingException
         @raises UnableToConnectToReportingServerException
@@ -109,14 +112,14 @@ class ReportGenerator(object):
         else:
             if dom.getElementsByTagName('SOAP-ENV:Fault'):
                 raise exceptions.XMLReportFailedException(result)
-            
+
         return result
 
     @service_method
     def email_pdf_report(self, auth_token, email_address, report_type, report_parameters=None):
         """
         This method can be used by the front end to email a report from pentaho in PDF format.
-        
+
         @param auth_token         The authentication token of the requesting user
         @type auth_token models.auth_token
         @param email_address email address to send the report to
@@ -127,16 +130,16 @@ class ReportGenerator(object):
         @param report_parameters  A dictionary of parameters and their values to be passed to the report.
         @type report_parameters dict
         @return None
-        
+
         @raises exceptions.InvalidReportTypeException
         @raises exceptions.RequiredParameterMissingException
         @raises exceptions.UnableToConnectToReportingServerExceptiona
         @raises exceptions.UnableToSendEmailReportException
         """
-        
+
         if report_parameters is None:
             report_parameters = {}
-        
+
         report_parameters['type'] = 'email'
         report_parameters['emailAddress'] = email_address
         try:
@@ -146,7 +149,7 @@ class ReportGenerator(object):
                 raise exceptions.UnableToSendEmailReportException(x.details['pentaho_result'])
             else:
                 raise exceptions.UnableToSendEmailReportException()
-        
+
         # If the result is invalid XML or contains a SOAP-ENV:Fault element, an error has occurred.
         try:
             dom = xml.dom.minidom.parseString(result)

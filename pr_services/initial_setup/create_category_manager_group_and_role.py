@@ -1,5 +1,7 @@
+
+from django.conf import settings
+
 import facade
-import settings
 
 from decorators import authz
 
