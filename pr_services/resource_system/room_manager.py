@@ -2,10 +2,12 @@
 Room manager class
 """
 
+import facade
+
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
-import facade
 from pr_services import pr_time
+
 
 class RoomManager(ObjectManager):
     """

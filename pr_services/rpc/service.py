@@ -2,27 +2,23 @@
 Class used as a shim for functions invoked via RPC
 """
 
-# Python
-import datetime
 import functools
 import inspect
 import logging
 import traceback
 
-# Django
-from django.conf import settings
 import django.db.models
 import django.db.transaction
 
-# Power Reg
+from decorator import decorator
+from django.conf import settings
+from django.utils import timezone
+
 from pr_services import exceptions
-from pr_services.utils import Utils
 from pr_services.middleware import set_auth_token
+from pr_services.utils import Utils
 
 import facade
-
-# Decorator module
-from decorator import decorator
 
 logger = logging.getLogger('pr_services.rpc')
 
@@ -233,7 +229,7 @@ class ShimInvoke:
                               successful.
         """
 
-        start_time = datetime.datetime.utcnow()
+        start_time = timezone.now()
 
         parameters = list(parameters)
 
@@ -242,7 +238,7 @@ class ShimInvoke:
             try:
                 auth_token = Utils.get_auth_token_object(parameters[0], start_time)
             except exceptions.PrException, e:
-                stop_time = datetime.datetime.utcnow()
+                stop_time = timezone.now()
                 rpc_ret = {'status': 'error',
                            'error': [e.get_error_code(), e.get_error_msg()]}
                 logger.info(self.format_trace_log_message(start_time, stop_time,
@@ -255,13 +251,13 @@ class ShimInvoke:
         try:
             ret = self._run_transaction_protected_method(self.method, *parameters)
         except exceptions.PrException, e:
-            stop_time = datetime.datetime.utcnow()
+            stop_time = timezone.now()
             rpc_ret['status'] = 'error'
             rpc_ret['error'] = [e.get_error_code(), e.get_error_msg(), e.get_details()]
             logger.info(self.format_trace_log_message(start_time, stop_time,
                 rpc_ret, *parameters))
         except facade.models.ModelDataValidationError, e:
-            stop_time = datetime.datetime.utcnow()
+            stop_time = timezone.now()
             rpc_ret['status'] = 'error'
             pr_exception = exceptions.ValidationException(e)
             rpc_ret['error'] = [pr_exception.get_error_code(), pr_exception.get_error_msg(),
@@ -269,7 +265,7 @@ class ShimInvoke:
             logger.info(self.format_trace_log_message(start_time, stop_time,
                 rpc_ret, *parameters))
         except Exception, e:
-            stop_time = datetime.datetime.utcnow()
+            stop_time = timezone.now()
             ie = exceptions.InternalErrorException(str(e))
             rpc_ret['status'] = 'error'
             rpc_ret['error'] = [ie.get_error_code(), ie.get_error_msg(), ie.get_details()]
@@ -278,7 +274,7 @@ class ShimInvoke:
                 self.format_trace_log_message(start_time, stop_time, rpc_ret, *parameters), stack_trace)
             logger.error(log_message)
         else:
-            stop_time = datetime.datetime.utcnow()
+            stop_time = timezone.now()
             rpc_ret['status'] = 'OK'
             if ret != None:
                 # If this is a Django model, return its primary key cast as a string instead

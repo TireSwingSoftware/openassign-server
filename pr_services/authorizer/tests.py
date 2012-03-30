@@ -5,10 +5,11 @@ except ImportError:
     import pickle
 
 from functools import partial
-from datetime import datetime, timedelta
+from datetime import timedelta
 from mock import Mock, patch
 
 from django.db import models
+from django.utils import timezone
 
 from pr_services.exceptions import PermissionDeniedException
 from pr_services.object_manager import ObjectManager
@@ -19,7 +20,7 @@ from pr_services.testlib import mixins, TestCase, GeneralTestCase, BasicTestCase
 import facade
 facade.import_models(locals(), globals())
 
-RIGHT_NOW = datetime.now()
+RIGHT_NOW = timezone.now()
 ONE_DAY = timedelta(days=1)
 
 class TestAuthorizer(GeneralTestCase, mixins.RoleTestMixin):

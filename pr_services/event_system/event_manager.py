@@ -4,12 +4,14 @@ Event manager class
 
 from datetime import date
 
+from django.conf import settings
+
 from pr_services import pr_time
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
 
 import facade
-import settings
+
 
 class EventManager(ObjectManager):
     """
@@ -93,12 +95,12 @@ class EventManager(ObjectManager):
         if optional_attributes is None:
             optional_attributes = {}
 
-        if not isinstance(start, date):
-            start = pr_time.iso8601_to_datetime(start).replace(microsecond=0,
-                    second=0, minute=0, hour=0)
-        if not isinstance(end, date):
-            end = pr_time.iso8601_to_datetime(end).replace(microsecond=0,
-                    second=0, minute=0, hour=0)
+        if isinstance(start, basestring):
+            start = pr_time.iso8601_to_datetime(start).replace(
+                    microsecond=0, second=0, minute=0, hour=0)
+        if isinstance(end, basestring):
+            end = pr_time.iso8601_to_datetime(end).replace(
+                    microsecond=0, second=0, minute=0, hour=0)
 
         e = self.my_django_model.objects.create(title=title,
                 description=description, start=start, end=end,

@@ -1,10 +1,6 @@
 # Many of these tests will fail unless your settings have
 # CELERY_ALWAYS_EAGER == True
 
-
-# Python
-from __future__ import with_statement
-
 import os
 
 from functools import partial

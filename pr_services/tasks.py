@@ -1,9 +1,9 @@
-from datetime import datetime
 
 from celery.decorators import task
+from django.conf import settings
+from django.utils import timezone
 
 import facade
-import settings
 
 if 'ecommerce' in settings.INSTALLED_APPS:
     from ecommerce import paypal_tools
@@ -22,8 +22,9 @@ def expire_old_credentials(*args, **kwargs):
     'expired'.
     """
     facade.models.Credential.objects.filter(
-        date_expires__lte=datetime.utcnow()).exclude(status='expired').update(
-            status='expired')
+        date_expires__lte=timezone.now()).exclude(
+                status='expired').update(
+                status='expired')
 
 
 @task(ignore_result=True)
@@ -32,7 +33,7 @@ def process_completed_sessions(*args, **kwargs):
     Finds Sessions with end date + event.lag_time in the past, and sets their
     status to 'completed'.
     """
-    right_now = datetime.utcnow()
+    right_now = timezone.now()
     active_past_sessions = facade.models.Session.objects.filter(
         end__lt=right_now, status='active')
     for session in active_past_sessions:
@@ -61,4 +62,4 @@ def remove_old_auth_tokens(*args, **kwargs):
     """
     facade.models.SingleUseAuthToken.objects.filter(used=True).delete()
     facade.models.AuthToken.objects.filter(
-        time_of_expiration__lte=datetime.utcnow()).delete()
+        time_of_expiration__lte=timezone.now()).delete()

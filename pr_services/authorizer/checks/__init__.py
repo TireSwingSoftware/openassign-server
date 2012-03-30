@@ -7,12 +7,17 @@ import types
 
 from decorator import decorator
 
+from django.conf import settings
+
 import facade
-import settings
 
 from pr_services.exceptions import InvalidActeeTypeException
 
+__all__ = ('check', 'import_authorizer_checks')
+
 VALID_MODULE_NAME = re.compile(r'[_a-z]\w*\.py$', re.IGNORECASE)
+
+facade.import_models(locals())
 
 def check(*args, **kwargs):
     """Decorator for authorizer check functions to reduce boilerplate
@@ -109,7 +114,7 @@ def discover_authorizer_checks(startpath=None):
 
 
 def import_authorizer_checks():
-    ACCheckMethod = facade.models.ACCheckMethod
+    ACMethodCall.objects.all().delete()
     ACCheckMethod.objects.all().delete()
     for name, check in discover_authorizer_checks():
         ACCheckMethod.objects.create(name=name,

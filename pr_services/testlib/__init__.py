@@ -5,13 +5,14 @@ import functools
 import re
 import inspect
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django import test
 from django.conf import settings
 from django.core import cache, mail
 from django.core.management import call_command
 from django.db import transaction, connections, DEFAULT_DB_ALIAS
+from django.utils import timezone
 from celery import conf
 
 from pr_services import pr_time
@@ -228,7 +229,7 @@ class BasicTestCase(TestCase):
         self._setup_admin_token()
 
         self.utils = facade.subsystems.Utils()
-        self.right_now = datetime.utcnow().replace(microsecond=0, tzinfo=pr_time.UTC())
+        self.right_now = timezone.now().replace(microsecond=0)
         self.one_day = _ONEDAY
 
     def _setup_admin_token(self):

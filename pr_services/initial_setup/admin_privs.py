@@ -1,6 +1,7 @@
 
+from django.conf import settings
+
 import facade
-import settings
 
 from pr_services.object_manager import ObjectManager
 

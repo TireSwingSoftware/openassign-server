@@ -1,14 +1,12 @@
-# Python
-import datetime
 
-# Django
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
-# PowerReg
 from pr_services import models as pr_models
 
-__all__ = ('FileDownload', 'FileDownloadAttempt', 'FileUpload', 'FileUploadAttempt')
+__all__ = ('FileDownload', 'FileDownloadAttempt',
+           'FileUpload', 'FileUploadAttempt')
 
 # Import Django storage backend as specified in settings.
 _storage_class_name = getattr(settings, 'FILE_TASKS_STORAGE_BACKEND',
@@ -122,7 +120,7 @@ class FileUploadAttempt(pr_models.AssignmentAttempt):
                     self.assignment.mark_completed()
                     self.date_completed = self.assignment.date_completed
                 else:
-                    self.date_completed = datetime.datetime.utcnow()
+                    self.date_completed = timezone.now()
         else:
             self.file_size = None
         super(FileUploadAttempt, self).save(*args, **kwargs)

@@ -1,14 +1,15 @@
-import django.db
 
+from django.conf import settings
 from django.core.management.base import NoArgsCommand
 from django.db import connection, transaction, backend
+
 
 class Command(NoArgsCommand):
     requires_model_validation = False
 
     def handle_noargs(self, **options):
         cursor = connection.cursor()
-        engine = django.db.database['ENGINE']
+        engine = settings.DATABASES['default']['ENGINE']
 
         if engine == 'django.db.backends.postgresql_psycopg2':
             handler = _PostgresEngineHandler(cursor)
@@ -31,7 +32,7 @@ class Command(NoArgsCommand):
 
         transaction.commit()
 
-# Handler classes, 
+# Handler classes,
 class _BaseEngineHandler(object):
     # Should work with sqlite and the dummy backends, or anything else that
     # doesn't need special hand holding

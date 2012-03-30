@@ -2,14 +2,19 @@
 Session manager class
 """
 
+import logging
+
 from datetime import datetime, timedelta
-from pr_services import pr_time
+
+from django.utils import timezone
+
+import facade
+
+from pr_messaging import send_message
 from pr_services import exceptions
+from pr_services import pr_time
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
-import facade
-import logging
-from pr_messaging import send_message
 from pr_services.utils import Utils
 
 class SessionManager(ObjectManager):
@@ -228,14 +233,14 @@ class SessionManager(ObjectManager):
         # search through all events where reminders haven't
         # been sent, sending our reminders for the ones where
         # the lead time has expired
-        current_time = datetime.utcnow()
+        current_time = timezone.now()
         sessions = self.my_django_model.objects.filter(sent_reminders=False,
                 start__gte=current_time)
         for session in sessions:
             if session.event.lead_time == None:
                 continue
-            expiration_time = datetime.fromordinal(session.start.toordinal()) -\
-                timedelta(seconds=session.event.lead_time)
+            lead_time = timedelta(seconds=session.event.lead_time)
+            expiration_time = session.start - lead_time
             if current_time >= expiration_time and session.status == 'active':
                 res.append(session)
 

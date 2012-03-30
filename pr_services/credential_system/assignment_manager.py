@@ -3,13 +3,14 @@ AssignmentManager class
 """
 
 import collections
-import datetime
 import logging
 
 from operator import itemgetter
 from itertools import chain
+from datetime import timedelta
 
 from django.conf import settings
+from django.utils import timezone
 
 import facade
 
@@ -176,10 +177,10 @@ class AssignmentManager(ObjectManager):
         # due date + late notice interval <= right now
         # due date <= right now - late notice interval
 
-        right_now = datetime.datetime.utcnow()
+        right_now = timezone.now()
         for late_assignment in facade.models.Assignment.objects.filter(
                 status='late', sent_late_notice=False,
-                due_date__lte=right_now - datetime.timedelta(
+                due_date__lte=right_now - timedelta(
                     seconds=settings.DEFAULT_ASSIGNMENT_LATE_NOTICE_INTERVAL)):
             send_message(message_type='assignment-late-notice',
                          context={'assignment': late_assignment},
@@ -188,7 +189,7 @@ class AssignmentManager(ObjectManager):
             late_assignment.save()
 
     def send_reminders(self):
-        right_now = datetime.datetime.utcnow()
+        right_now = timezone.now()
 
         # right now >= due date - reminder interval  ==>
         # due date - reminder interval <= right now ==>
@@ -198,7 +199,7 @@ class AssignmentManager(ObjectManager):
             for unfinished_assignment in self.my_django_model.objects.exclude(
                 status='completed').filter(
                 sent_pre_reminder=False).filter(
-                due_date__lte=right_now + datetime.timedelta(seconds=settings.DEFAULT_ASSIGNMENT_PRE_REMINDER_INTERVAL)):
+                due_date__lte=right_now + timedelta(seconds=settings.DEFAULT_ASSIGNMENT_PRE_REMINDER_INTERVAL)):
 
                 send_message(message_type='assignment-pre-reminder',
                              context={'assignment': unfinished_assignment},
@@ -209,7 +210,7 @@ class AssignmentManager(ObjectManager):
         for unfinished_assignment in self.my_django_model.objects.exclude(
             status='completed').filter(
             sent_reminder=False).filter(
-            due_date__lte=right_now + datetime.timedelta(seconds=settings.DEFAULT_ASSIGNMENT_REMINDER_INTERVAL)):
+            due_date__lte=right_now + timedelta(seconds=settings.DEFAULT_ASSIGNMENT_REMINDER_INTERVAL)):
 
             send_message(message_type='assignment-reminder',
                          context={'assignment': unfinished_assignment},
@@ -218,8 +219,8 @@ class AssignmentManager(ObjectManager):
             unfinished_assignment.save()
 
     def send_confirmations(self):
-        end_of_today = (datetime.datetime.utcnow() + datetime.timedelta(days=1)).replace(hour=0, minute=0,
-            second=0, microsecond=0)
+        end_of_today = (timezone.now() + timedelta(days=1)).replace(
+                hour=0, minute=0, second=0, microsecond=0)
         for assignment in facade.models.Assignment.objects.filter(
                 sent_confirmation=False).filter(
                 effective_date_assigned__lte=end_of_today):
@@ -256,8 +257,8 @@ class AssignmentManager(ObjectManager):
                     recipient=assignment.user.email)
 
     def mark_late_assignments(self):
-        end_of_today = (datetime.datetime.utcnow() + datetime.timedelta(days=1)).replace(hour=0, minute=0,
-            second=0, microsecond=0)
+        end_of_today = (timezone.now() + timedelta(days=1)).replace(
+                hour=0, minute=0, second=0, microsecond=0)
 
         for late_assignment in facade.models.Assignment.objects.filter(
                 due_date__lt=end_of_today).exclude(

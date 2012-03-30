@@ -12,6 +12,7 @@ import django.core.exceptions # for ValidationError
 import django.db
 import django.db.models.fields.related
 import django.forms.util # for ValidationError
+import memcache
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -20,11 +21,11 @@ from django.db import models
 from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
 from django.template import Template, Context
+from django.utils import timezone
 from django.utils.hashcompat import sha_constructor
 
 import exceptions
 import facade
-import memcache
 import pr_time
 import storage
 
@@ -750,7 +751,7 @@ class Credential(OwnedPRModel):
         """
 
         self.status = 'granted'
-        self.date_granted = datetime.utcnow()
+        self.date_granted = timezone.now()
         self.save()
 
 
@@ -1047,15 +1048,30 @@ class CurriculumEnrollmentUserAssociation(PRModel):
 
         # make assignments automatically if they don't already exist
         for task in self.curriculum_enrollment.curriculum.tasks.all():
-            assignment, created = Assignment.objects.get_or_create(user=self.user, task=task, curriculum_enrollment=self.curriculum_enrollment)
+            assignment, created = Assignment.objects.get_or_create(
+                    user=self.user,
+                    task=task,
+                    curriculum_enrollment=self.curriculum_enrollment)
+
             if created:
-                # set dates
-                cta = CurriculumTaskAssociation.objects.get(curriculum=self.curriculum_enrollment.curriculum, task=task)
-                assignment.effective_date_assigned = self.curriculum_enrollment.start + timedelta(days=cta.days_before_start)
+                enrollment = self.curriculum_enrollment
+                curriculum = enrollment.curriculum
+                cta = curriculum.curriculum_task_associations.get(task=task)
+
+                effective_date_assigned = datetime.combine(
+                        enrollment.start + timedelta(days=cta.days_before_start),
+                        time(0,0,0))
+
                 if cta.days_to_complete > 0:
-                    assignment.due_date = assignment.effective_date_assigned + timedelta(days=cta.days_to_complete)
+                    days_to_complete = timedelta(days=cta.days_to_complete)
+                    due_date = effective_date_assigned + days_to_complete
                 else:
-                    assignment.due_date = self.curriculum_enrollment.end
+                    due_date = datetime.combine(enrollment.end, time(0,0,0))
+
+                assignment.effective_date_assigned = timezone.make_aware(
+                        effective_date_assigned, timezone.utc)
+                assignment.due_date = timezone.make_aware(
+                        due_date, timezone.utc)
                 assignment.save()
         return ret
 
@@ -1135,7 +1151,7 @@ class Assignment(PRModel):
         """
 
         self.status = 'completed'
-        self.date_completed = datetime.utcnow().replace(microsecond=0,
+        self.date_completed = timezone.now().replace(microsecond=0,
                 tzinfo=pr_time.UTC())
         # We need to call the super class save here so that the change of
         # 'completed' will be detected in the Credential checks.
@@ -1203,7 +1219,7 @@ class Assignment(PRModel):
                 ## self.log_status_change(*args, **kwargs);
                 ## OR (assignment=self, oldStatus=old_status, newStatus=self.status );
                 self.status_change_log += u'\nStatus changed at %s by %s (IP=%s), from \'%s\' to \'%s\'' % \
-                    (datetime.utcnow(), repr(user), ip, old_status, self.status)
+                    (timezone.now(), repr(user), ip, old_status, self.status)
 
         super(Assignment, self).save(*args, **kwargs)
 
@@ -1244,7 +1260,7 @@ class AssignmentAttempt(OwnedPRModel):
         # Set default attributes on creation.
         if self.id is None:
             if self.date_started is None:
-                self.date_started = datetime.utcnow()
+                self.date_started = timezone.now()
         super(AssignmentAttempt, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -2134,10 +2150,10 @@ class Session(OwnedPRModel):
             add_validation_error(validation_errors, 'start',
                 u'Session start time must come before Session end time')
 
-        event_start = datetime.combine(self.event.start, time(0, 0, 0,
-            tzinfo=self.start.tzinfo))
-        event_end = datetime.combine(self.event.end, time(23, 59, 59,
-            tzinfo=self.end.tzinfo))
+        event_start = datetime.combine(self.event.start,
+                time(0, 0, 0, tzinfo=timezone.utc))
+        event_end = datetime.combine(self.event.end,
+                time(23, 59, 59, tzinfo=timezone.utc))
         grace_period = timedelta(hours=12)
 
         if not (self.start >= event_start or
@@ -3174,7 +3190,7 @@ class ConditionTest(PRModel):
             else:
                 return False
 
-        right_now = datetime.utcnow()
+        right_now = timezone.now()
         if isinstance(self.start, datetime):
             at_least_one_test_ran = True
             if self.start < right_now:

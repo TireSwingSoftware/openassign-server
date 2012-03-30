@@ -1,63 +1,58 @@
 [
     {
         "pk": 1,
-        "model": "pr_services.exam",
+        "model": "pr_services.organization",
         "fields": {
-            "achievements": [],
-            "prerequisite_tasks": [],
-            "passing_score": 0,
-            "prerequisite_achievements": []
+            "save_timestamp": "2012-01-11T21:09:07Z",
+            "photo": "",
+            "create_timestamp": "2012-01-11T21:09:07Z",
+            "owner": null,
+            "primary_contact_first_name": "",
+            "use_external_uid": false,
+            "external_uid": null,
+            "primary_contact_email": "",
+            "primary_contact_cell_phone": null,
+            "department": null,
+            "email": "",
+            "fax": null,
+            "description": "",
+            "parent": null,
+            "primary_contact_other_phone": null,
+            "phone": null,
+            "address": null,
+            "active": true,
+            "name": "Organization 1",
+            "final_type": [
+                "pr_services",
+                "organization"
+            ],
+            "primary_contact_office_phone": null,
+            "url": null,
+            "notes": [],
+            "primary_contact_last_name": ""
         }
     },
-      { "fields" : { "active" : true,
-        "address" : null,
-        "create_timestamp" : "2012-01-11 21:09:07",
-        "department" : null,
-        "description" : "",
-        "email" : "",
-        "fax" : null,
-        "final_type" : [ "pr_services",
-            "organization"
-          ],
-        "name" : "Organization 1",
-        "notes" : [  ],
-        "owner" : null,
-        "parent" : null,
-        "phone" : null,
-        "photo" : "",
-        "primary_contact_cell_phone" : null,
-        "primary_contact_email" : "",
-        "primary_contact_first_name" : "",
-        "primary_contact_last_name" : "",
-        "primary_contact_office_phone" : null,
-        "primary_contact_other_phone" : null,
-        "save_timestamp" : "2012-01-11 21:09:07",
-        "url" : null
-      },
-    "model" : "pr_services.organization",
-    "pk" : 1
-  },
     {
         "pk": 1,
         "model": "pr_services.task",
         "fields": {
             "achievements": [],
             "prerequisite_tasks": [],
-            "save_timestamp": "2012-01-22 08:08:50",
+            "save_timestamp": "2012-01-22T08:08:50Z",
             "final_type": [
                 "pr_services",
                 "exam"
             ],
             "title": null,
-            "organization": 1,
             "max": null,
             "min": 0,
             "version_id": null,
             "name": "Exam 1",
             "version_comment": "",
-            "create_timestamp": "2012-01-22 08:08:50",
+            "create_timestamp": "2012-01-22T08:08:50Z",
             "version_label": "",
             "owner": null,
+            "organization": 1,
             "prerequisite_achievements": [],
             "public": false,
             "prevent_duplicate_assignments": false,
@@ -69,14 +64,33 @@
         "model": "pr_services.curriculum",
         "fields": {
             "achievements": [],
-            "save_timestamp": "2012-01-22 08:08:50",
+            "save_timestamp": "2012-01-22T08:08:50Z",
             "final_type": [
                 "pr_services",
                 "curriculum"
             ],
-            "create_timestamp": "2012-01-22 08:08:50",
+            "create_timestamp": "2012-01-22T08:08:50Z",
             "organization": null,
             "name": "Curriculum 1"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.curriculumtaskassociation",
+        "fields": {
+            "task_bundle": null,
+            "task": 1,
+            "save_timestamp": "2012-01-22T08:08:50Z",
+            "final_type": [
+                "pr_services",
+                "curriculumtaskassociation"
+            ],
+            "presentation_order": 0,
+            "curriculum": 1,
+            "days_before_start": 0,
+            "continue_automatically": false,
+            "create_timestamp": "2012-01-22T08:08:50Z",
+            "days_to_complete": 0
         }
     },
     {
@@ -90,8 +104,8 @@
             ],
             "curriculum": 1,
             "start": "2012-01-22",
-            "create_timestamp": "2012-01-22 08:08:50",
-            "save_timestamp": "2012-01-22 08:08:50"
+            "create_timestamp": "2012-01-22T08:08:50Z",
+            "save_timestamp": "2012-01-22T08:08:50Z"
         }
     },
     {
@@ -100,31 +114,32 @@
         "fields": {
             "curriculum_enrollment": 1,
             "user": 2,
-            "save_timestamp": "2012-01-23 00:29:42",
+            "save_timestamp": "2012-01-23T00:29:42Z",
             "final_type": [
                 "pr_services",
                 "curriculumenrollmentuserassociation"
             ],
-            "create_timestamp": "2012-01-23 00:29:42"
+            "create_timestamp": "2012-01-23T00:29:42Z"
         }
     },
     {
-        "pk": 1,
-        "model": "pr_services.curriculumtaskassociation",
+        "pk": 2,
+        "model": "pr_services.domainaffiliation",
         "fields": {
-            "task_bundle": null,
-            "task": 1,
-            "save_timestamp": "2012-01-22 08:08:50",
+            "username": "user1",
+            "domain": 1,
+            "save_timestamp": "2012-01-11T21:01:10Z",
             "final_type": [
                 "pr_services",
-                "curriculumtaskassociation"
+                "domainaffiliation"
             ],
-            "presentation_order": 0,
-            "curriculum": 1,
-            "days_before_start": 0,
-            "continue_automatically": false,
-            "create_timestamp": "2012-01-22 08:08:50",
-            "days_to_complete": 0
+            "password_salt": "",
+            "default": true,
+            "user": 2,
+            "password_hash_type": "SHA-512",
+            "create_timestamp": "2012-01-11T21:01:10Z",
+            "may_log_me_in": false,
+            "password_hash": "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86"
         }
     },
     {
@@ -132,10 +147,10 @@
         "model": "pr_services.user",
         "fields": {
             "last_name": "Uomo",
-            "save_timestamp": "2012-01-11 21:01:10",
+            "save_timestamp": "2012-01-11T21:01:10Z",
             "photo": "",
             "is_staff": false,
-            "create_timestamp": "2012-01-11 21:01:10",
+            "create_timestamp": "2012-01-11T21:01:10Z",
             "owner": 2,
             "email2": null,
             "biography": null,
@@ -168,23 +183,13 @@
         }
     },
     {
-        "pk": 2,
-        "model": "pr_services.domainaffiliation",
+        "pk": 1,
+        "model": "pr_services.exam",
         "fields": {
-            "username": "user1",
-            "domain": 1,
-            "save_timestamp": "2012-01-11 21:01:10",
-            "final_type": [
-                "pr_services",
-                "domainaffiliation"
-            ],
-            "password_salt": "",
-            "default": true,
-            "user": 2,
-            "password_hash_type": "SHA-512",
-            "create_timestamp": "2012-01-11 21:01:10",
-            "may_log_me_in": false,
-            "password_hash": "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86"
+            "achievements": [],
+            "prerequisite_tasks": [],
+            "passing_score": 0,
+            "prerequisite_achievements": []
         }
     }
 ]

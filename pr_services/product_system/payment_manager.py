@@ -2,17 +2,20 @@
 Payment manager class
 """
 
+from django.conf import settings
+
+from pr_messaging import send_message
 from pr_services import exceptions
 from pr_services.object_manager import ObjectManager
 from pr_services.rpc.service import service_method
+
 import facade
-from pr_messaging import send_message
 
 # Only import ecommerce if this project is going to use it
-import settings
 if 'ecommerce' in settings.INSTALLED_APPS:
     from ecommerce.merchant_services import txn_data, process_txn
     from ecommerce.paypal import express_checkout
+
 
 class PaymentManager(ObjectManager):
     """

@@ -1,400 +1,56 @@
 [
-    { "fields" : {
-        "country": "us",
-        "region": "ohio",
-        "locality": "cleveland",
-        "postal_code": "12345",
-        "final_type": [ "pr_services",
-            "address"
+    {
+        "pk": 1,
+        "model": "pr_services.organization",
+        "fields": {
+            "save_timestamp": "2012-01-11T21:09:07Z",
+            "photo": "",
+            "create_timestamp": "2012-01-11T21:09:07Z",
+            "owner": null,
+            "primary_contact_first_name": "",
+            "use_external_uid": false,
+            "external_uid": null,
+            "primary_contact_email": "",
+            "primary_contact_cell_phone": null,
+            "department": null,
+            "email": "",
+            "fax": null,
+            "description": "",
+            "parent": null,
+            "primary_contact_other_phone": null,
+            "phone": null,
+            "address": null,
+            "active": true,
+            "name": "Organization 1",
+            "final_type": [
+                "pr_services",
+                "organization"
             ],
-        "label": "asdf",
-        "create_timestamp" : "2012-01-11 04:28:34",
-        "save_timestamp" : "2012-01-11 04:28:34",
-        "owner": 1
-       },
-       "model": "pr_services.address",
-       "pk": 1
-    },  
-    { "fields" : { "alleged_organization" : null,
-        "billing_address" : null,
-        "biography" : null,
-        "blame" : null,
-        "color_code" : null,
-        "confirmation_code" : null,
-        "create_timestamp" : "2012-01-11 04:28:34",
-        "email" : "admin@admin.org",
-        "email2" : null,
-        "enable_paypal" : false,
-        "final_type" : [ "pr_services",
-            "user"
-          ],
-        "first_name" : "admin",
-        "groups" : [ 1 ],
-        "is_staff" : false,
-        "last_name" : "user",
-        "middle_name" : "",
-        "name_suffix" : null,
-        "notes" : [  ],
-        "owner" : null,
-        "paypal_address" : null,
-        "phone" : null,
-        "phone2" : null,
-        "phone3" : null,
-        "photo" : "",
-        "preferred_venues" : [  ],
-        "save_timestamp" : "2012-01-11 04:28:34",
-        "shipping_address" : null,
-        "status" : "active",
-        "suppress_emails" : false,
-        "title" : null,
-        "url" : null
-      },
-    "model" : "pr_services.user",
-    "pk" : 1
-  },
-  { "fields" : { "alleged_organization" : null,
-        "billing_address" : null,
-        "biography" : null,
-        "blame" : 1,
-        "color_code" : null,
-        "confirmation_code" : null,
-        "create_timestamp" : "2012-01-11 21:01:10",
-        "email" : "user1@acme-u.com",
-        "email2" : null,
-        "enable_paypal" : false,
-        "final_type" : [ "pr_services",
-            "user"
-          ],
-        "first_name" : "Primo",
-        "groups" : [  ],
-        "is_staff" : false,
-        "last_name" : "Uomo",
-        "middle_name" : "",
-        "name_suffix" : "Sr.",
-        "notes" : [  ],
-        "owner" : 2,
-        "paypal_address" : null,
-        "phone" : "555.555.5555",
-        "phone2" : null,
-        "phone3" : null,
-        "photo" : "",
-        "preferred_venues" : [  ],
-        "save_timestamp" : "2012-01-11 21:01:10",
-        "shipping_address" : null,
-        "status" : "active",
-        "suppress_emails" : false,
-        "title" : "Mr.",
-        "url" : null
-      },
-    "model" : "pr_services.user",
-    "pk" : 2
-  },
-  { "fields" : { "alleged_organization" : null,
-        "billing_address" : null,
-        "biography" : null,
-        "blame" : 1,
-        "color_code" : null,
-        "confirmation_code" : null,
-        "create_timestamp" : "2012-01-11 21:02:04",
-        "email" : "user2@acme-u.com",
-        "email2" : null,
-        "enable_paypal" : false,
-        "final_type" : [ "pr_services",
-            "user"
-          ],
-        "first_name" : "Secundo",
-        "groups" : [  ],
-        "is_staff" : false,
-        "last_name" : "Duomo",
-        "middle_name" : "",
-        "name_suffix" : "Sr.",
-        "notes" : [  ],
-        "owner" : 3,
-        "paypal_address" : null,
-        "phone" : "666.666.6666",
-        "phone2" : null,
-        "phone3" : null,
-        "photo" : "",
-        "preferred_venues" : [  ],
-        "save_timestamp" : "2012-01-11 21:02:04",
-        "shipping_address" : null,
-        "status" : "active",
-        "suppress_emails" : false,
-        "title" : "Mr.",
-        "url" : null
-      },
-    "model" : "pr_services.user",
-    "pk" : 3
-  },
-  { "fields" : { "alleged_organization" : null,
-        "billing_address" : null,
-        "biography" : null,
-        "blame" : 1,
-        "color_code" : null,
-        "confirmation_code" : null,
-        "create_timestamp" : "2012-01-11 21:02:04",
-        "email" : "user3@acme-u.com",
-        "email2" : null,
-        "enable_paypal" : false,
-        "final_type" : [ "pr_services",
-            "user"
-          ],
-        "first_name" : "Secundo",
-        "groups" : [  ],
-        "is_staff" : false,
-        "last_name" : "Duomo",
-        "middle_name" : "",
-        "name_suffix" : "Sr.",
-        "notes" : [  ],
-        "owner" : 4,
-        "paypal_address" : null,
-        "phone" : "666.666.6666",
-        "phone2" : null,
-        "phone3" : null,
-        "photo" : "",
-        "preferred_venues" : [  ],
-        "save_timestamp" : "2012-01-11 21:02:04",
-        "shipping_address" : null,
-        "status" : "active",
-        "suppress_emails" : false,
-        "title" : "Mr.",
-        "url" : null
-      },
-    "model" : "pr_services.user",
-    "pk" : 4
-  },
-  { "fields" : { "alleged_organization" : null,
-        "billing_address" : null,
-        "biography" : null,
-        "blame" : 1,
-        "color_code" : null,
-        "confirmation_code" : null,
-        "create_timestamp" : "2012-01-11 21:02:04",
-        "email" : "user4@acme-u.com",
-        "email2" : null,
-        "enable_paypal" : false,
-        "final_type" : [ "pr_services",
-            "user"
-          ],
-        "first_name" : "Secundo",
-        "groups" : [  ],
-        "is_staff" : false,
-        "last_name" : "Duomo",
-        "middle_name" : "",
-        "name_suffix" : "Sr.",
-        "notes" : [  ],
-        "owner" : 5,
-        "paypal_address" : null,
-        "phone" : "666.666.6666",
-        "phone2" : null,
-        "phone3" : null,
-        "photo" : "",
-        "preferred_venues" : [  ],
-        "save_timestamp" : "2012-01-11 21:02:04",
-        "shipping_address" : null,
-        "status" : "active",
-        "suppress_emails" : false,
-        "title" : "Mr.",
-        "url" : null
-      },
-    "model" : "pr_services.user",
-    "pk" : 5
-  },
-  { "fields" : { "create_timestamp" : "2012-01-11 04:28:34",
-        "default" : true,
-        "domain" : 1,
-        "final_type" : [ "pr_services",
-            "domainaffiliation"
-          ],
-        "may_log_me_in" : false,
-        "password_hash" : "3616c2dbb10e777e9dbb88fc25652f550b6ec56e2b2dcaa918755c630158dd799c6d687b237240c402f942ee2e72951ab66e85eacc8168521b0fb474f8a324fb",
-        "password_hash_type" : "SHA-512",
-        "password_salt" : "YQJtNOCS",
-        "save_timestamp" : "2012-01-11 04:28:34",
-        "user" : 1,
-        "username" : "admin"
-      },
-    "model" : "pr_services.domainaffiliation",
-    "pk" : 1
-  },
-  { "fields" : { "create_timestamp" : "2012-01-11 21:01:10",
-        "default" : true,
-        "domain" : 1,
-        "final_type" : [ "pr_services",
-            "domainaffiliation"
-          ],
-        "may_log_me_in" : false,
-        "password_hash" : "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86",
-        "password_hash_type" : "SHA-512",
-        "password_salt" : "",
-        "save_timestamp" : "2012-01-11 21:01:10",
-        "user" : 2,
-        "username" : "user1"
-      },
-    "model" : "pr_services.domainaffiliation",
-    "pk" : 2
-  },
-  { "fields" : { "create_timestamp" : "2012-01-11 21:02:04",
-        "default" : true,
-        "domain" : 1,
-        "final_type" : [ "pr_services",
-            "domainaffiliation"
-          ],
-        "may_log_me_in" : false,
-        "password_hash" : "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86",
-        "password_hash_type" : "SHA-512",
-        "password_salt" : "",
-        "save_timestamp" : "2012-01-11 21:02:04",
-        "user" : 3,
-        "username" : "user2"
-      },
-    "model" : "pr_services.domainaffiliation",
-    "pk" : 3
-  },
-    { "fields" : { "create_timestamp" : "2012-01-11 21:02:04",
-        "default" : true,
-        "domain" : 1,
-        "final_type" : [ "pr_services",
-            "domainaffiliation"
-          ],
-        "may_log_me_in" : false,
-        "password_hash" : "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86",
-        "password_hash_type" : "SHA-512",
-        "password_salt" : "",
-        "save_timestamp" : "2012-01-11 21:02:04",
-        "user" : 4,
-        "username" : "user3"
-      },
-    "model" : "pr_services.domainaffiliation",
-    "pk" : 4
-  },
-      { "fields" : { "create_timestamp" : "2012-01-11 21:02:04",
-        "default" : true,
-        "domain" : 1,
-        "final_type" : [ "pr_services",
-            "domainaffiliation"
-          ],
-        "may_log_me_in" : false,
-        "password_hash" : "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86",
-        "password_hash_type" : "SHA-512",
-        "password_salt" : "",
-        "save_timestamp" : "2012-01-11 21:02:04",
-        "user" : 5,
-        "username" : "user4"
-      },
-    "model" : "pr_services.domainaffiliation",
-    "pk" : 5
-  },
-  { "fields" : { "active" : true,
-        "address" : null,
-        "create_timestamp" : "2012-01-11 21:09:07",
-        "department" : null,
-        "description" : "",
-        "email" : "",
-        "fax" : null,
-        "final_type" : [ "pr_services",
-            "organization"
-          ],
-        "name" : "Organization 1",
-        "notes" : [  ],
-        "owner" : null,
-        "parent" : null,
-        "phone" : null,
-        "photo" : "",
-        "primary_contact_cell_phone" : null,
-        "primary_contact_email" : "",
-        "primary_contact_first_name" : "",
-        "primary_contact_last_name" : "",
-        "primary_contact_office_phone" : null,
-        "primary_contact_other_phone" : null,
-        "save_timestamp" : "2012-01-11 21:09:07",
-        "url" : null
-      },
-    "model" : "pr_services.organization",
-    "pk" : 1
-  },
-  { "fields" : { "blame" : 1,
-        "capacity" : 100,
-        "create_timestamp" : "2012-01-11 21:07:10",
-        "final_type" : [ "pr_services",
-            "room"
-          ],
-        "name" : "Room 1",
-        "notes" : [  ],
-        "owner" : null,
-        "room_number" : "",
-        "save_timestamp" : "2012-01-11 21:07:10",
-        "venue" : 1
-      },
-    "model" : "pr_services.room",
-    "pk" : 1
-  },
-  { "fields" : { "active" : true,
-        "address" : 1,
-        "blame" : 1,
-        "contact" : null,
-        "create_timestamp" : "2012-01-11 21:06:48",
-        "final_type" : [ "pr_services",
-            "venue"
-          ],
-        "hours_of_operation" : "",
-        "name" : "Venue 1",
-        "notes" : [  ],
-        "owner" : 1,
-        "phone" : "1253462",
-        "region" : 1,
-        "save_timestamp" : "2012-01-11 21:06:48"
-      },
-    "model" : "pr_services.venue",
-    "pk" : 1
-  },
-  { "fields" : { "active" : true,
-        "create_timestamp" : "2012-01-11 21:08:10",
-        "final_type" : [ "pr_services",
-            "productline"
-          ],
-        "instructor_managers" : [  ],
-        "instructors" : [  ],
-        "managers" : [  ],
-        "name" : "Product Line 1",
-        "notes" : [  ],
-        "owner" : null,
-        "save_timestamp" : "2012-01-11 21:08:10"
-      },
-    "model" : "pr_services.productline",
-    "pk" : 1
-  },
-  { "fields" : { "active" : true,
-        "create_timestamp" : "2012-01-11 21:03:29",
-        "final_type" : [ "pr_services",
-            "region"
-          ],
-        "name" : "Region 1",
-        "notes" : [  ],
-        "owner" : null,
-        "save_timestamp" : "2012-01-11 21:03:29"
-      },
-    "model" : "pr_services.region",
-    "pk" : 1
-  },
-  { "fields" : { "create_timestamp" : "2012-01-11 21:01:10",
-        "final_type" : [ "pr_services",
-            "blame"
-          ],
-        "ip" : "0.0.0.0",
-        "owner" : null,
-        "save_timestamp" : "2012-01-11 21:01:10",
-        "time" : "2012-01-11 21:01:10",
-        "user" : 1
-      },
-    "model" : "pr_services.blame",
-    "pk" : 1
-  },
+            "primary_contact_office_phone": null,
+            "url": null,
+            "notes": [],
+            "primary_contact_last_name": ""
+        }
+    },
+    {
+        "pk": 5,
+        "model": "pr_services.orgrole",
+        "fields": {
+            "default": true,
+            "save_timestamp": "2012-03-05T14:44:04Z",
+            "final_type": [
+                "pr_services",
+                "orgrole"
+            ],
+            "name": "User",
+            "create_timestamp": "2012-03-05T14:44:04Z"
+        }
+    },
     {
         "pk": 1,
         "model": "pr_services.userorgrole",
         "fields": {
-            "save_timestamp": "2012-03-05 14:44:52",
+            "save_timestamp": "2012-03-05T14:44:52Z",
             "final_type": [
                 "pr_services",
                 "userorgrole"
@@ -403,7 +59,7 @@
             "title": null,
             "persistent": false,
             "role": 5,
-            "create_timestamp": "2012-03-05 14:44:21",
+            "create_timestamp": "2012-03-05T14:44:21Z",
             "owner": 1,
             "organization": 1
         }
@@ -412,7 +68,7 @@
         "pk": 2,
         "model": "pr_services.userorgrole",
         "fields": {
-            "save_timestamp": "2012-03-05 14:44:52",
+            "save_timestamp": "2012-03-05T14:44:52Z",
             "final_type": [
                 "pr_services",
                 "userorgrole"
@@ -421,7 +77,7 @@
             "title": null,
             "persistent": false,
             "role": 5,
-            "create_timestamp": "2012-03-05 14:44:21",
+            "create_timestamp": "2012-03-05T14:44:21Z",
             "owner": 2,
             "organization": 1
         }
@@ -430,7 +86,7 @@
         "pk": 3,
         "model": "pr_services.userorgrole",
         "fields": {
-            "save_timestamp": "2012-03-05 14:44:52",
+            "save_timestamp": "2012-03-05T14:44:52Z",
             "final_type": [
                 "pr_services",
                 "userorgrole"
@@ -439,7 +95,7 @@
             "title": null,
             "persistent": false,
             "role": 5,
-            "create_timestamp": "2012-03-05 14:44:21",
+            "create_timestamp": "2012-03-05T14:44:21Z",
             "owner": 3,
             "organization": 1
         }
@@ -448,7 +104,7 @@
         "pk": 4,
         "model": "pr_services.userorgrole",
         "fields": {
-            "save_timestamp": "2012-03-05 14:44:52",
+            "save_timestamp": "2012-03-05T14:44:52Z",
             "final_type": [
                 "pr_services",
                 "userorgrole"
@@ -457,7 +113,7 @@
             "title": null,
             "persistent": false,
             "role": 5,
-            "create_timestamp": "2012-03-05 14:44:21",
+            "create_timestamp": "2012-03-05T14:44:21Z",
             "owner": 4,
             "organization": 1
         }
@@ -466,7 +122,7 @@
         "pk": 5,
         "model": "pr_services.userorgrole",
         "fields": {
-            "save_timestamp": "2012-03-05 14:44:52",
+            "save_timestamp": "2012-03-05T14:44:52Z",
             "final_type": [
                 "pr_services",
                 "userorgrole"
@@ -475,23 +131,380 @@
             "title": null,
             "persistent": false,
             "role": 5,
-            "create_timestamp": "2012-03-05 14:44:21",
+            "create_timestamp": "2012-03-05T14:44:21Z",
             "owner": 5,
             "organization": 1
         }
     },
     {
-        "pk": 5,
-        "model": "pr_services.orgrole",
+        "pk": 1,
+        "model": "pr_services.productline",
         "fields": {
-            "default": true,
-            "save_timestamp": "2012-03-05 14:44:04",
+            "save_timestamp": "2012-01-11T21:08:10Z",
             "final_type": [
                 "pr_services",
-                "orgrole"
+                "productline"
             ],
-            "name": "User",
-            "create_timestamp": "2012-03-05 14:44:04"
+            "notes": [],
+            "instructors": [],
+            "active": true,
+            "create_timestamp": "2012-01-11T21:08:10Z",
+            "owner": null,
+            "managers": [],
+            "instructor_managers": [],
+            "name": "Product Line 1"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.region",
+        "fields": {
+            "save_timestamp": "2012-01-11T21:03:29Z",
+            "final_type": [
+                "pr_services",
+                "region"
+            ],
+            "notes": [],
+            "active": true,
+            "create_timestamp": "2012-01-11T21:03:29Z",
+            "owner": null,
+            "name": "Region 1"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.address",
+        "fields": {
+            "save_timestamp": "2012-01-11T04:28:34Z",
+            "final_type": [
+                "pr_services",
+                "address"
+            ],
+            "locality": "cleveland",
+            "country": "us",
+            "region": "ohio",
+            "label": "asdf",
+            "active": true,
+            "postal_code": "12345",
+            "create_timestamp": "2012-01-11T04:28:34Z",
+            "owner": 1
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.domainaffiliation",
+        "fields": {
+            "username": "admin",
+            "domain": 1,
+            "save_timestamp": "2012-01-11T04:28:34Z",
+            "final_type": [
+                "pr_services",
+                "domainaffiliation"
+            ],
+            "password_salt": "YQJtNOCS",
+            "default": true,
+            "user": 1,
+            "password_hash_type": "SHA-512",
+            "create_timestamp": "2012-01-11T04:28:34Z",
+            "may_log_me_in": false,
+            "password_hash": "3616c2dbb10e777e9dbb88fc25652f550b6ec56e2b2dcaa918755c630158dd799c6d687b237240c402f942ee2e72951ab66e85eacc8168521b0fb474f8a324fb"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "pr_services.domainaffiliation",
+        "fields": {
+            "username": "user1",
+            "domain": 1,
+            "save_timestamp": "2012-01-11T21:01:10Z",
+            "final_type": [
+                "pr_services",
+                "domainaffiliation"
+            ],
+            "password_salt": "",
+            "default": true,
+            "user": 2,
+            "password_hash_type": "SHA-512",
+            "create_timestamp": "2012-01-11T21:01:10Z",
+            "may_log_me_in": false,
+            "password_hash": "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "pr_services.domainaffiliation",
+        "fields": {
+            "username": "user2",
+            "domain": 1,
+            "save_timestamp": "2012-01-11T21:02:04Z",
+            "final_type": [
+                "pr_services",
+                "domainaffiliation"
+            ],
+            "password_salt": "",
+            "default": true,
+            "user": 3,
+            "password_hash_type": "SHA-512",
+            "create_timestamp": "2012-01-11T21:02:04Z",
+            "may_log_me_in": false,
+            "password_hash": "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "pr_services.domainaffiliation",
+        "fields": {
+            "username": "user3",
+            "domain": 1,
+            "save_timestamp": "2012-01-11T21:02:04Z",
+            "final_type": [
+                "pr_services",
+                "domainaffiliation"
+            ],
+            "password_salt": "",
+            "default": true,
+            "user": 4,
+            "password_hash_type": "SHA-512",
+            "create_timestamp": "2012-01-11T21:02:04Z",
+            "may_log_me_in": false,
+            "password_hash": "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86"
+        }
+    },
+    {
+        "pk": 5,
+        "model": "pr_services.domainaffiliation",
+        "fields": {
+            "username": "user4",
+            "domain": 1,
+            "save_timestamp": "2012-01-11T21:02:04Z",
+            "final_type": [
+                "pr_services",
+                "domainaffiliation"
+            ],
+            "password_salt": "",
+            "default": true,
+            "user": 5,
+            "password_hash_type": "SHA-512",
+            "create_timestamp": "2012-01-11T21:02:04Z",
+            "may_log_me_in": false,
+            "password_hash": "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "pr_services.user",
+        "fields": {
+            "last_name": "Uomo",
+            "save_timestamp": "2012-01-11T21:01:10Z",
+            "photo": "",
+            "is_staff": false,
+            "create_timestamp": "2012-01-11T21:01:10Z",
+            "owner": 2,
+            "email2": null,
+            "biography": null,
+            "first_name": "Primo",
+            "middle_name": "",
+            "title": "Mr.",
+            "confirmation_code": null,
+            "enable_paypal": false,
+            "email": "user1@acme-u.com",
+            "status": "active",
+            "billing_address": null,
+            "color_code": null,
+            "phone2": null,
+            "phone3": null,
+            "blame": 1,
+            "phone": "555.555.5555",
+            "groups": [],
+            "preferred_venues": [],
+            "final_type": [
+                "pr_services",
+                "user"
+            ],
+            "url": null,
+            "notes": [],
+            "name_suffix": "Sr.",
+            "suppress_emails": false,
+            "alleged_organization": null,
+            "paypal_address": null,
+            "shipping_address": null
+        }
+    },
+    {
+        "pk": 3,
+        "model": "pr_services.user",
+        "fields": {
+            "last_name": "Duomo",
+            "save_timestamp": "2012-01-11T21:02:04Z",
+            "photo": "",
+            "is_staff": false,
+            "create_timestamp": "2012-01-11T21:02:04Z",
+            "owner": 3,
+            "email2": null,
+            "biography": null,
+            "first_name": "Secundo",
+            "middle_name": "",
+            "title": "Mr.",
+            "confirmation_code": null,
+            "enable_paypal": false,
+            "email": "user2@acme-u.com",
+            "status": "active",
+            "billing_address": null,
+            "color_code": null,
+            "phone2": null,
+            "phone3": null,
+            "blame": 1,
+            "phone": "666.666.6666",
+            "groups": [],
+            "preferred_venues": [],
+            "final_type": [
+                "pr_services",
+                "user"
+            ],
+            "url": null,
+            "notes": [],
+            "name_suffix": "Sr.",
+            "suppress_emails": false,
+            "alleged_organization": null,
+            "paypal_address": null,
+            "shipping_address": null
+        }
+    },
+    {
+        "pk": 4,
+        "model": "pr_services.user",
+        "fields": {
+            "last_name": "Duomo",
+            "save_timestamp": "2012-01-11T21:02:04Z",
+            "photo": "",
+            "is_staff": false,
+            "create_timestamp": "2012-01-11T21:02:04Z",
+            "owner": 4,
+            "email2": null,
+            "biography": null,
+            "first_name": "Secundo",
+            "middle_name": "",
+            "title": "Mr.",
+            "confirmation_code": null,
+            "enable_paypal": false,
+            "email": "user3@acme-u.com",
+            "status": "active",
+            "billing_address": null,
+            "color_code": null,
+            "phone2": null,
+            "phone3": null,
+            "blame": 1,
+            "phone": "666.666.6666",
+            "groups": [],
+            "preferred_venues": [],
+            "final_type": [
+                "pr_services",
+                "user"
+            ],
+            "url": null,
+            "notes": [],
+            "name_suffix": "Sr.",
+            "suppress_emails": false,
+            "alleged_organization": null,
+            "paypal_address": null,
+            "shipping_address": null
+        }
+    },
+    {
+        "pk": 5,
+        "model": "pr_services.user",
+        "fields": {
+            "last_name": "Duomo",
+            "save_timestamp": "2012-01-11T21:02:04Z",
+            "photo": "",
+            "is_staff": false,
+            "create_timestamp": "2012-01-11T21:02:04Z",
+            "owner": 5,
+            "email2": null,
+            "biography": null,
+            "first_name": "Secundo",
+            "middle_name": "",
+            "title": "Mr.",
+            "confirmation_code": null,
+            "enable_paypal": false,
+            "email": "user4@acme-u.com",
+            "status": "active",
+            "billing_address": null,
+            "color_code": null,
+            "phone2": null,
+            "phone3": null,
+            "blame": 1,
+            "phone": "666.666.6666",
+            "groups": [],
+            "preferred_venues": [],
+            "final_type": [
+                "pr_services",
+                "user"
+            ],
+            "url": null,
+            "notes": [],
+            "name_suffix": "Sr.",
+            "suppress_emails": false,
+            "alleged_organization": null,
+            "paypal_address": null,
+            "shipping_address": null
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.blame",
+        "fields": {
+            "save_timestamp": "2012-01-11T21:01:10Z",
+            "final_type": [
+                "pr_services",
+                "blame"
+            ],
+            "ip": "0.0.0.0",
+            "user": 1,
+            "time": "2012-01-11T21:01:10Z",
+            "owner": null,
+            "create_timestamp": "2012-01-11T21:01:10Z"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.venue",
+        "fields": {
+            "save_timestamp": "2012-01-11T21:06:48Z",
+            "final_type": [
+                "pr_services",
+                "venue"
+            ],
+            "phone": "1253462",
+            "region": 1,
+            "hours_of_operation": "",
+            "blame": 1,
+            "active": true,
+            "contact": null,
+            "create_timestamp": "2012-01-11T21:06:48Z",
+            "address": 1,
+            "owner": 1,
+            "notes": [],
+            "name": "Venue 1"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.room",
+        "fields": {
+            "save_timestamp": "2012-01-11T21:07:10Z",
+            "final_type": [
+                "pr_services",
+                "room"
+            ],
+            "room_number": "",
+            "notes": [],
+            "venue": 1,
+            "blame": 1,
+            "create_timestamp": "2012-01-11T21:07:10Z",
+            "owner": null,
+            "capacity": 100,
+            "name": "Room 1"
         }
     }
 ]

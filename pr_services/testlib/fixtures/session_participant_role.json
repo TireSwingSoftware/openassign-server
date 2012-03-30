@@ -1,322 +1,381 @@
-[  { "fields" : { "active" : true,
-        "address" : null,
-        "create_timestamp" : "2012-01-11 21:09:07",
-        "department" : null,
-        "description" : "",
-        "email" : "",
-        "fax" : null,
-        "final_type" : [ "pr_services",
-            "organization"
-          ],
-        "name" : "Organization 1",
-        "notes" : [  ],
-        "owner" : null,
-        "parent" : null,
-        "phone" : null,
-        "photo" : "",
-        "primary_contact_cell_phone" : null,
-        "primary_contact_email" : "",
-        "primary_contact_first_name" : "",
-        "primary_contact_last_name" : "",
-        "primary_contact_office_phone" : null,
-        "primary_contact_other_phone" : null,
-        "save_timestamp" : "2012-01-11 21:09:07",
-        "url" : null
-      },
-    "model" : "pr_services.organization",
-    "pk" : 1
-  },
-  { "fields" : { "create_timestamp" : "2012-01-11 21:01:10",
-        "default" : true,
-        "domain" : 1,
-        "final_type" : [ "pr_services",
-            "domainaffiliation"
-          ],
-        "may_log_me_in" : false,
-        "password_hash" : "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86",
-        "password_hash_type" : "SHA-512",
-        "password_salt" : "",
-        "save_timestamp" : "2012-01-11 21:01:10",
-        "user" : 2,
-        "username" : "user1"
-      },
-    "model" : "pr_services.domainaffiliation",
-    "pk" : 2
-  },
-    { "fields" : { "create_timestamp" : "2012-01-11 21:01:10",
-        "default" : true,
-        "domain" : 1,
-        "final_type" : [ "pr_services",
-            "domainaffiliation"
-          ],
-        "may_log_me_in" : false,
-        "password_hash" : "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86",
-        "password_hash_type" : "SHA-512",
-        "password_salt" : "",
-        "save_timestamp" : "2012-01-11 21:01:10",
-        "user" : 3,
-        "username" : "user2"
-      },
-    "model" : "pr_services.domainaffiliation",
-    "pk" : 3
-  },
-    { "fields" : { "alleged_organization" : null,
-        "billing_address" : null,
-        "biography" : null,
-        "blame" : null,
-        "color_code" : null,
-        "confirmation_code" : null,
-        "create_timestamp" : "2012-01-11 21:01:10",
-        "email" : "user1@acme-u.com",
-        "email2" : null,
-        "enable_paypal" : false,
-        "final_type" : [ "pr_services",
-            "user"
-          ],
-        "first_name" : "Primo",
-        "groups" : [  ],
-        "is_staff" : false,
-        "last_name" : "Uomo",
-        "middle_name" : "",
-        "name_suffix" : "Sr.",
-        "notes" : [  ],
-        "owner" : 2,
-        "paypal_address" : null,
-        "phone" : "555.555.5555",
-        "phone2" : null,
-        "phone3" : null,
-        "photo" : "",
-        "preferred_venues" : [  ],
-        "save_timestamp" : "2012-01-11 21:01:10",
-        "shipping_address" : null,
-        "status" : "active",
-        "suppress_emails" : false,
-        "title" : "Mr.",
-        "url" : null
-      },
-    "model" : "pr_services.user",
-    "pk" : 2
-  },
-      { "fields" : { "alleged_organization" : null,
-        "billing_address" : null,
-        "biography" : null,
-        "blame" : null,
-        "color_code" : null,
-        "confirmation_code" : null,
-        "create_timestamp" : "2012-01-11 21:01:10",
-        "email" : "user2@acme-u.com",
-        "email2" : null,
-        "enable_paypal" : false,
-        "final_type" : [ "pr_services",
-            "user"
-          ],
-        "first_name" : "Joe",
-        "groups" : [  ],
-        "is_staff" : false,
-        "last_name" : "Instructor",
-        "middle_name" : "",
-        "name_suffix" : "Sr.",
-        "notes" : [  ],
-        "owner" : 3,
-        "paypal_address" : null,
-        "phone" : "555.555.5555",
-        "phone2" : null,
-        "phone3" : null,
-        "photo" : "",
-        "preferred_venues" : [  ],
-        "save_timestamp" : "2012-01-11 21:01:10",
-        "shipping_address" : null,
-        "status" : "active",
-        "suppress_emails" : false,
-        "title" : "Mr.",
-        "url" : null
-      },
-    "model" : "pr_services.user",
-    "pk" : 3
-  },
-  {
-    "pk": 1,
-    "model": "pr_services.task",
-    "fields": {
-      "achievements": [],
-      "prerequisite_tasks": [],
-      "save_timestamp": "2012-01-14 07:07:34",
-      "final_type": [
-        "pr_services",
-        "sessionuserrolerequirement"
-      ],
-      "title": "Session: Short Name as Student",
-      "organization": 1,
-      "max": 2,
-      "min": 1,
-      "version_id": null,
-      "name": "Short Name",
-      "version_comment": "",
-      "create_timestamp": "2012-01-14 07:07:34",
-      "version_label": "",
-      "owner": null,
-      "prerequisite_achievements": [],
-      "public": false,
-      "prevent_duplicate_assignments": false,
-      "description": "Start: Jan 14, 2012 07:07 AM, End: Jan 14, 2012 08:07 AM"
+[
+    {
+        "pk": 1,
+        "model": "pr_services.organization",
+        "fields": {
+            "save_timestamp": "2012-01-11T21:09:07Z",
+            "photo": "",
+            "create_timestamp": "2012-01-11T21:09:07Z",
+            "owner": null,
+            "primary_contact_first_name": "",
+            "use_external_uid": false,
+            "external_uid": null,
+            "primary_contact_email": "",
+            "primary_contact_cell_phone": null,
+            "department": null,
+            "email": "",
+            "fax": null,
+            "description": "",
+            "parent": null,
+            "primary_contact_other_phone": null,
+            "phone": null,
+            "address": null,
+            "active": true,
+            "name": "Organization 1",
+            "final_type": [
+                "pr_services",
+                "organization"
+            ],
+            "primary_contact_office_phone": null,
+            "url": null,
+            "notes": [],
+            "primary_contact_last_name": ""
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.task",
+        "fields": {
+            "achievements": [],
+            "prerequisite_tasks": [],
+            "save_timestamp": "2012-01-14T07:07:34Z",
+            "final_type": [
+                "pr_services",
+                "sessionuserrolerequirement"
+            ],
+            "title": "Session: Short Name as Student",
+            "max": 2,
+            "min": 1,
+            "version_id": null,
+            "name": "Short Name",
+            "version_comment": "",
+            "create_timestamp": "2012-01-14T07:07:34Z",
+            "version_label": "",
+            "owner": null,
+            "organization": 1,
+            "prerequisite_achievements": [],
+            "public": false,
+            "prevent_duplicate_assignments": false,
+            "description": "Start: Jan 14, 2012 07:07 AM, End: Jan 14, 2012 08:07 AM"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.assignment",
+        "fields": {
+            "status": "assigned",
+            "due_date": null,
+            "task": 1,
+            "save_timestamp": "2012-01-14T07:07:34Z",
+            "final_type": [
+                "pr_services",
+                "assignment"
+            ],
+            "sent_reminder": false,
+            "curriculum_enrollment": null,
+            "product_claim": null,
+            "sent_confirmation": false,
+            "authority": null,
+            "blame": null,
+            "effective_date_assigned": null,
+            "status_change_log": "Object created by <User: Mr. Primo Uomo Sr.> (IP=127.0.0.1), with initial status 'assigned'",
+            "user": 2,
+            "serial_number": null,
+            "sent_pre_reminder": false,
+            "date_completed": null,
+            "date_started": null,
+            "sent_late_notice": false,
+            "create_timestamp": "2012-01-14T07:07:34Z"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.region",
+        "fields": {
+            "save_timestamp": "2012-01-11T21:03:29Z",
+            "final_type": [
+                "pr_services",
+                "region"
+            ],
+            "notes": [],
+            "active": true,
+            "create_timestamp": "2012-01-11T21:03:29Z",
+            "owner": null,
+            "name": "Region 1"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "pr_services.domainaffiliation",
+        "fields": {
+            "username": "user1",
+            "domain": 1,
+            "save_timestamp": "2012-01-11T21:01:10Z",
+            "final_type": [
+                "pr_services",
+                "domainaffiliation"
+            ],
+            "password_salt": "",
+            "default": true,
+            "user": 2,
+            "password_hash_type": "SHA-512",
+            "create_timestamp": "2012-01-11T21:01:10Z",
+            "may_log_me_in": false,
+            "password_hash": "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "pr_services.domainaffiliation",
+        "fields": {
+            "username": "user2",
+            "domain": 1,
+            "save_timestamp": "2012-01-11T21:01:10Z",
+            "final_type": [
+                "pr_services",
+                "domainaffiliation"
+            ],
+            "password_salt": "",
+            "default": true,
+            "user": 3,
+            "password_hash_type": "SHA-512",
+            "create_timestamp": "2012-01-11T21:01:10Z",
+            "may_log_me_in": false,
+            "password_hash": "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "pr_services.user",
+        "fields": {
+            "last_name": "Uomo",
+            "save_timestamp": "2012-01-11T21:01:10Z",
+            "photo": "",
+            "is_staff": false,
+            "create_timestamp": "2012-01-11T21:01:10Z",
+            "owner": 2,
+            "email2": null,
+            "biography": null,
+            "first_name": "Primo",
+            "middle_name": "",
+            "title": "Mr.",
+            "confirmation_code": null,
+            "enable_paypal": false,
+            "email": "user1@acme-u.com",
+            "status": "active",
+            "billing_address": null,
+            "color_code": null,
+            "phone2": null,
+            "phone3": null,
+            "blame": null,
+            "phone": "555.555.5555",
+            "groups": [],
+            "preferred_venues": [],
+            "final_type": [
+                "pr_services",
+                "user"
+            ],
+            "url": null,
+            "notes": [],
+            "name_suffix": "Sr.",
+            "suppress_emails": false,
+            "alleged_organization": null,
+            "paypal_address": null,
+            "shipping_address": null
+        }
+    },
+    {
+        "pk": 3,
+        "model": "pr_services.user",
+        "fields": {
+            "last_name": "Instructor",
+            "save_timestamp": "2012-01-11T21:01:10Z",
+            "photo": "",
+            "is_staff": false,
+            "create_timestamp": "2012-01-11T21:01:10Z",
+            "owner": 3,
+            "email2": null,
+            "biography": null,
+            "first_name": "Joe",
+            "middle_name": "",
+            "title": "Mr.",
+            "confirmation_code": null,
+            "enable_paypal": false,
+            "email": "user2@acme-u.com",
+            "status": "active",
+            "billing_address": null,
+            "color_code": null,
+            "phone2": null,
+            "phone3": null,
+            "blame": null,
+            "phone": "555.555.5555",
+            "groups": [],
+            "preferred_venues": [],
+            "final_type": [
+                "pr_services",
+                "user"
+            ],
+            "url": null,
+            "notes": [],
+            "name_suffix": "Sr.",
+            "suppress_emails": false,
+            "alleged_organization": null,
+            "paypal_address": null,
+            "shipping_address": null
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.venue",
+        "fields": {
+            "save_timestamp": "2012-01-11T21:06:48Z",
+            "final_type": [
+                "pr_services",
+                "venue"
+            ],
+            "phone": "1253462",
+            "region": 1,
+            "hours_of_operation": "",
+            "blame": null,
+            "active": true,
+            "contact": null,
+            "create_timestamp": "2012-01-11T21:06:48Z",
+            "address": null,
+            "owner": null,
+            "notes": [],
+            "name": "Venue 1"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.room",
+        "fields": {
+            "save_timestamp": "2012-01-11T21:07:10Z",
+            "final_type": [
+                "pr_services",
+                "room"
+            ],
+            "room_number": "",
+            "notes": [],
+            "venue": 1,
+            "blame": null,
+            "create_timestamp": "2012-01-11T21:07:10Z",
+            "owner": null,
+            "capacity": 100,
+            "name": "Room 1"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.session",
+        "fields": {
+            "default_price": 123,
+            "save_timestamp": "2012-01-14T07:07:34Z",
+            "create_timestamp": "2012-01-14T07:07:34Z",
+            "owner": null,
+            "sent_reminders": false,
+            "modality": "Generic",
+            "confirmed": true,
+            "end": "2012-01-14T08:07:34Z",
+            "session_template": null,
+            "title": null,
+            "event": 1,
+            "start": "2012-01-14T07:07:34Z",
+            "shortname": "Short Name",
+            "evaluation": null,
+            "lead_time": null,
+            "status": "active",
+            "description": null,
+            "blame": null,
+            "active": true,
+            "final_type": [
+                "pr_services",
+                "session"
+            ],
+            "graphic": "",
+            "room": 1,
+            "url": null,
+            "notes": [],
+            "audience": null,
+            "fullname": "Full Name"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.event",
+        "fields": {
+            "product_line": null,
+            "save_timestamp": "2012-01-14T07:07:34Z",
+            "final_type": [
+                "pr_services",
+                "event"
+            ],
+            "twitter_template": "I just signed up for {{event}}! Join me! {{url}}",
+            "title": "Some Event",
+            "url": null,
+            "facebook_template": "I just signed up for {{event}}! Click the link to join me.",
+            "region": null,
+            "description": "An Event",
+            "venue": null,
+            "external_reference": null,
+            "start": "2012-01-14",
+            "event_template": null,
+            "lag_time": 300,
+            "create_timestamp": "2012-01-14T07:07:34Z",
+            "organization": 1,
+            "owner": null,
+            "end": "2012-01-15",
+            "lead_time": null,
+            "notes": [],
+            "name": "Foo1"
+        }
+    },
+        {
+        "pk": 1,
+        "model": "pr_services.sessionuserrole",
+        "fields": {
+            "save_timestamp": "2012-03-29T21:59:44.814Z",
+            "final_type": [
+                "pr_services",
+                "sessionuserrole"
+            ],
+            "notes": [],
+            "active": true,
+            "create_timestamp": "2012-03-29T21:59:44.814Z",
+            "owner": null,
+            "name": "Instructor"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "pr_services.sessionuserrole",
+        "fields": {
+            "save_timestamp": "2012-03-29T21:59:44.817Z",
+            "final_type": [
+                "pr_services",
+                "sessionuserrole"
+            ],
+            "notes": [],
+            "active": true,
+            "create_timestamp": "2012-03-29T21:59:44.817Z",
+            "owner": null,
+            "name": "Student"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "pr_services.sessionuserrolerequirement",
+        "fields": {
+            "achievements": [],
+            "notes": [],
+            "prerequisite_tasks": [],
+            "enrollment_status_test": null,
+            "session": 1,
+            "session_user_role": 2,
+            "active": true,
+            "credential_types": [],
+            "prerequisite_achievements": [],
+            "ignore_room_capacity": false
+        }
     }
-  },
-  {
-    "pk": 1,
-    "model": "pr_services.sessionuserrolerequirement",
-    "fields": {
-      "achievements": [],
-      "notes": [],
-      "prerequisite_tasks": [],
-      "enrollment_status_test": null,
-      "session": 1,
-      "session_user_role": 2,
-      "active": true,
-      "credential_types": [],
-      "prerequisite_achievements": [],
-      "ignore_room_capacity": false
-    }
-  },
-  {
-    "pk": 1,
-    "model": "pr_services.event",
-    "fields": {
-      "product_line": null,
-      "save_timestamp": "2012-01-14 07:07:34",
-      "final_type": [
-        "pr_services",
-        "event"
-      ],
-      "twitter_template": "I just signed up for {{event}}! Join me! {{url}}",
-      "title": "Some Event",
-      "url": null,
-      "facebook_template": "I just signed up for {{event}}! Click the link to join me.",
-      "region": null,
-      "description": "An Event",
-      "venue": null,
-      "external_reference": null,
-      "start": "2012-01-14",
-      "event_template": null,
-      "lag_time": 300,
-      "create_timestamp": "2012-01-14 07:07:34",
-      "organization": 1,
-      "owner": 1,
-      "end": "2012-01-15",
-      "lead_time": null,
-      "notes": [],
-      "name": "Foo1"
-    }
-  },
-   { "fields" : { "active" : true,
-        "create_timestamp" : "2012-01-11 21:03:29",
-        "final_type" : [ "pr_services",
-            "region"
-          ],
-        "name" : "Region 1",
-        "notes" : [  ],
-        "owner" : null,
-        "save_timestamp" : "2012-01-11 21:03:29"
-      },
-    "model" : "pr_services.region",
-    "pk" : 1
-  },
-    { "fields" : { "active" : true,
-        "address" : null,
-        "blame" : null,
-        "contact" : null,
-        "create_timestamp" : "2012-01-11 21:06:48",
-        "final_type" : [ "pr_services",
-            "venue"
-          ],
-        "hours_of_operation" : "",
-        "name" : "Venue 1",
-        "notes" : [  ],
-        "owner" : 1,
-        "phone" : "1253462",
-        "region" : 1,
-        "save_timestamp" : "2012-01-11 21:06:48"
-      },
-    "model" : "pr_services.venue",
-    "pk" : 1
-  },
-    { "fields" : { "blame" : null,
-        "capacity" : 100,
-        "create_timestamp" : "2012-01-11 21:07:10",
-        "final_type" : [ "pr_services",
-            "room"
-          ],
-        "name" : "Room 1",
-        "notes" : [  ],
-        "owner" : null,
-        "room_number" : "",
-        "save_timestamp" : "2012-01-11 21:07:10",
-        "venue" : 1
-      },
-    "model" : "pr_services.room",
-    "pk" : 1
-  },
-  {
-    "pk": 1,
-    "model": "pr_services.session",
-    "fields": {
-      "default_price": 123,
-      "save_timestamp": "2012-01-14 07:07:34",
-      "create_timestamp": "2012-01-14 07:07:34",
-      "owner": null,
-      "sent_reminders": false,
-      "modality": "Generic",
-      "confirmed": true,
-      "end": "2012-01-14 08:07:34",
-      "session_template": null,
-      "title": null,
-      "event": 1,
-      "start": "2012-01-14 07:07:34",
-      "shortname": "Short Name",
-      "evaluation": null,
-      "lead_time": null,
-      "status": "active",
-      "description": null,
-      "blame": null,
-      "active": true,
-      "final_type": [
-        "pr_services",
-        "session"
-      ],
-      "graphic": "",
-      "room": 1,
-      "url": null,
-      "notes": [],
-      "audience": null,
-      "fullname": "Full Name"
-    }
-  },
-  {
-    "pk": 1,
-    "model": "pr_services.assignment",
-    "fields": {
-      "status": "assigned",
-      "due_date": null,
-      "task": 1,
-      "save_timestamp": "2012-01-14 07:07:34",
-      "final_type": [
-        "pr_services",
-        "assignment"
-      ],
-      "sent_reminder": false,
-      "curriculum_enrollment": null,
-      "product_claim": null,
-      "sent_confirmation": false,
-      "authority": null,
-      "blame": null,
-      "effective_date_assigned": null,
-      "status_change_log": "Object created by <User: Mr. Primo Uomo Sr.> (IP=127.0.0.1), with initial status 'assigned'",
-      "user": 2,
-      "serial_number": null,
-      "sent_pre_reminder": false,
-      "date_completed": null,
-      "date_started": null,
-      "sent_late_notice": false,
-      "create_timestamp": "2012-01-14 07:07:34"
-    }
-  }
 ]
