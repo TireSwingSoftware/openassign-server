@@ -564,6 +564,12 @@ class VenueTests(mixins.EventTestMixin):
 
 
 class ExamTests(mixins.ExamTestMixin):
+    COMPLEX_EXAM = codecs.open('pr_services/test_data/complex_exam.xml', 'r',
+                               encoding='utf-8').read()
+
+    INSTRUCTOR_EXAM = codecs.open('pr_services/test_data/instructor_exam.xml', 'r',
+                               encoding='utf-8').read()
+
     def test_exam_creation_managers(self):
         e = self._create_exam('mother_exam', 'The Mother of All Exams',
                               passing_score=90)
@@ -572,36 +578,52 @@ class ExamTests(mixins.ExamTestMixin):
         self._create_answer(q, 'Yes', correct=True)
         self._create_answer(q, 'No')
 
+    def test_exam_create_from_xml(self):
+        exam = self.exam_manager.create_from_xml(self.auth_token,
+                self.COMPLEX_EXAM)
+
+    def test_exam_export_to_xml(self):
+        create_from_xml = partial(self.exam_manager.create_from_xml,
+                self.admin_token)
+        export_to_xml = partial(self.exam_manager.export_to_xml,
+                self.auth_token)
+
+        exam = create_from_xml(self.COMPLEX_EXAM)
+        xml = export_to_xml(exam.id)
+        exam.name = 'Foo'
+        exam.save()
+        exam = create_from_xml(xml)
+        self.assertEquals(export_to_xml(exam.id), xml)
+
     def test_exam_manager_xml(self):
-        # import a new exam
-        xml_data = codecs.open('pr_services/test_data/complex_exam.xml', 'r',
-                               encoding='utf-8').read()
-        exam = self.exam_manager.create_from_xml(self.admin_token, xml_data)
-        qs = facade.models.Answer.objects.all()
+        create_from_xml = partial(self.exam_manager.create_from_xml,
+                self.auth_token)
+        export_to_xml = partial(self.exam_manager.export_to_xml,
+                self.auth_token)
+
+        exam = create_from_xml(self.COMPLEX_EXAM)
+        qs = Answer.objects.all()
         qs = qs.filter(question__question_pool__exam=exam)
         qs = qs.filter(next_question_pool__isnull=False)
-        self.assertTrue(qs.count() > 0)
+        self.assertGreater(qs.count(), 0)
         for a in qs:
-            qs2 = facade.models.QuestionPool.objects.all()
+            qs2 = QuestionPool.objects.all()
             self.assertEquals(qs2.filter(randomize_questions=True).count(), 1)
             qs2 = qs2.filter(exam=exam)
             qs2 = qs2.filter(pk=a.next_question_pool.pk)
             self.assertEquals(qs2.count(), 1)
-        new_xml_data = self.exam_manager.export_to_xml(self.admin_token, exam.id)
+        new_xml_data = export_to_xml(exam.id)
 
         # Now rename the original exam, import the xml and export again, then
         # check to see if the XML matches.
         exam.name = 'renamed_exam'
         exam.save()
-        new_exam = self.exam_manager.create_from_xml(self.admin_token, new_xml_data)
-        new_xml_data2 = self.exam_manager.export_to_xml(self.admin_token, new_exam.id)
+        new_exam = create_from_xml(new_xml_data)
+        new_xml_data2 = export_to_xml(new_exam.id)
         self.assertEquals(new_xml_data, new_xml_data2)
 
-        # Try one other exam with correct answers listed.
-        xml_data = codecs.open('pr_services/test_data/instructor_exam.xml', 'r',
-                               encoding='utf-8').read()
-        exam = self.exam_manager.create_from_xml(self.admin_token, xml_data)
-        new_xml_data = self.exam_manager.export_to_xml(self.admin_token, exam.id)
+        exam = create_from_xml(self.INSTRUCTOR_EXAM)
+        new_xml_data = export_to_xml(exam.id)
 
 
 class CredentialTests:
