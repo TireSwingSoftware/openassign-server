@@ -3,11 +3,11 @@
         "pk": 1,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.392Z",
+            "save_timestamp": "2012-04-11T06:06:22.142Z",
             "description": "\n    This complicatedly name method exists to be a bit generically useful.\n    It will examine actee, ensuring that it is of type actee_model_name.\n    It will then ensure that attribute_name's value is equal to attribute_value.\n\n    ** Note: This depends on the model class's (or at least its parent class)\n    being in facade.models. **\n\n    @param auth_token       The authentication token of the acting user.\n                            Guests are allowed, and so this method does not\n                            use the auth_token\n    @type auth_token        facade.models.AuthToken\n    @param actee            The object in question\n    @type actee             pr_models.PRModel\n    @param actee_model_name The name of the type of the model that this check\n                             is supposed to be applied to\n    @type actee_model_name  str\n    @param attribute_name   The name of the attribute on actee that we want\n                            do perform a comparison on\n    @type attribute_name    str\n    @param attribute_value  The value that actee's attribute should be compared to\n    @type attribute_value   Many types are allowed (string, boolean, int, etc.)\n    ",
             "title": "constraint.actees_attribute_is_set_to",
             "name": "constraint.actees_attribute_is_set_to",
-            "create_timestamp": "2012-04-11T05:41:46.392Z",
+            "create_timestamp": "2012-04-11T06:06:22.142Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -19,11 +19,11 @@
         "pk": 2,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.411Z",
+            "save_timestamp": "2012-04-11T06:06:22.163Z",
             "description": "\n    This complicatedly name method exists to be a bit generically useful.\n    It will examine actee, ensuring that it is of type actee_model_name.\n    It will then follow a foreign key relationship,\n    actee.foreign_object_attribute_name, and ensure that that attribute's\n    value is equal to foreign_object_attribute_value.\n\n    ** Note: This depends on the model class's (or at least its parent class)\n    being in facade.models. **\n\n    @param auth_token                       The authentication token of the\n                                            acting user.  Guests are allowed,\n                                            and so this method does not use\n                                            the auth_token\n    @type auth_token                        facade.models.AuthToken\n    @param actee                            The object in question\n    @type actee                             pr_models.PRModel\n    @param actee_model_name                 The name of the type of the model\n                                            that this check is supposed to be\n                                            applied to\n    @type actee_model_name                  str\n    @param attribute_name                   The name of the attribute on actee\n                                            that we can use to retrieve the foreign\n                                            object\n    @type attribute_name                    str\n    @param foreign_object_attribute_name    The name of the attribute on actee\n                                            that will lead us to the foreign\n                                            object we care about\n    @type foreign_object_attribute_name     str\n    @param foreign_object_attribute_value   The value that the foriegn\n                                            object's attribute should be\n                                            compared to\n    @type foreign_object_attribute_value    Many types are allowed (string,\n                                            boolean, int, etc.)\n    ",
             "title": "constraint.actees_foreign_key_object_has_attribute_set_to",
             "name": "constraint.actees_foreign_key_object_has_attribute_set_to",
-            "create_timestamp": "2012-04-11T05:41:46.411Z",
+            "create_timestamp": "2012-04-11T06:06:22.163Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -35,11 +35,11 @@
         "pk": 3,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.432Z",
+            "save_timestamp": "2012-04-11T06:06:22.182Z",
             "description": "\n    Returns True if the actor and the actee are both enrolled in the same\n    session, for which actor is in the session_user_role actor_sur, and\n    actee is in the session_user_role actee_sur.  Returns False otherwise.\n\n    This method is only for use when the actee is a user.\n\n    @param actee      A user object that we are evaluation authorization for\n    @param actor_sur_id  The primary key of the session_user_role with which the\n            actor should be enrolled in the session\n    @param actee_sur_id  The primary key of the session_user_role with which\n            the actee should be enrolled in the session\n    ",
             "title": "constraint.actor_actee_enrolled_in_same_session",
             "name": "constraint.actor_actee_enrolled_in_same_session",
-            "create_timestamp": "2012-04-11T05:41:46.432Z",
+            "create_timestamp": "2012-04-11T06:06:22.182Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -51,11 +51,11 @@
         "pk": 4,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.452Z",
+            "save_timestamp": "2012-04-11T06:06:22.209Z",
             "description": "\n    Returns True if the actor is a valid authenticated user in\n    the system who is acting upon themselves.\n\n    @param actee  A user object that we wish to compare the actor to\n    ",
             "title": "constraint.actor_is_acting_upon_themselves",
             "name": "constraint.actor_is_acting_upon_themselves",
-            "create_timestamp": "2012-04-11T05:41:46.452Z",
+            "create_timestamp": "2012-04-11T06:06:22.209Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -67,11 +67,11 @@
         "pk": 5,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.469Z",
+            "save_timestamp": "2012-04-11T06:06:22.241Z",
             "description": "\n    This is a strange new breed of auth_check that concerns itcls with the\n    update_dict. It ensures that the update_dict is only attempting to add\n    items from the list of allowed primary keys to the attribute on the actee.\n    It will return false if any 'remove' operation is in the dict, or if any\n    primary key appears in the add list that is not in the allowed primary\n    key list.\n\n    @param auth_token       The authentication token of the acting user\n    @type auth_token        auth_token\n    @param actee            A user object that we are evaluation authorization for\n    @type actee             user\n    @param attribute_name   The attribute that we are authorizing the update\n                            call based on\n    @type attribute_name    string\n    @param allowed_pks      A list of primary keys that we will allow the actor\n                            to add to the actee's many ended attribute\n    @type allowed_pks       list\n    @param update_dict      The dictionary of changes that the actor is\n                            attempting to apply to actee\n    @type update_dict       dict\n    @return                 A boolean of whether or not the actor will be\n                            allowed to run the update call\n    @raises                 InvalidActeeTypeException, AttributeNotInUpdateDictException\n    ",
             "title": "constraint.actor_is_adding_allowed_many_ended_objects_to_user",
             "name": "constraint.actor_is_adding_allowed_many_ended_objects_to_user",
-            "create_timestamp": "2012-04-11T05:41:46.469Z",
+            "create_timestamp": "2012-04-11T06:06:22.241Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -83,11 +83,11 @@
         "pk": 6,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.497Z",
+            "save_timestamp": "2012-04-11T06:06:22.272Z",
             "description": "\n    Returns True if the actor is the instructor manager for a product\n    line in which the actee is an instructor.\n\n    @param actee      A user object that we are evaluation authorization for\n    ",
             "title": "constraint.actor_is_instructor_manager_of_actee",
             "name": "constraint.actor_is_instructor_manager_of_actee",
-            "create_timestamp": "2012-04-11T05:41:46.497Z",
+            "create_timestamp": "2012-04-11T06:06:22.272Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -99,11 +99,11 @@
         "pk": 7,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.517Z",
+            "save_timestamp": "2012-04-11T06:06:22.299Z",
             "description": "\n    Returns True if the actor is the user who created the venue, which is discovered by\n    examining the venue's blame\n    ",
             "title": "constraint.actor_is_venue_creator",
             "name": "constraint.actor_is_venue_creator",
-            "create_timestamp": "2012-04-11T05:41:46.517Z",
+            "create_timestamp": "2012-04-11T06:06:22.298Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -115,11 +115,11 @@
         "pk": 8,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.535Z",
+            "save_timestamp": "2012-04-11T06:06:22.335Z",
             "description": "\n    Returns True if the actor's status is equal to the specified status.\n\n    @param actee    Not used by this method\n    @type actee     user\n    @param status   The status value that we want to know if the user has or not\n    @type status    string\n    @return         True if the actor's status is equal to the specified status, false otherwise.\n    ",
             "title": "constraint.actor_status_check",
             "name": "constraint.actor_status_check",
-            "create_timestamp": "2012-04-11T05:41:46.534Z",
+            "create_timestamp": "2012-04-11T06:06:22.335Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -131,11 +131,11 @@
         "pk": 9,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.568Z",
+            "save_timestamp": "2012-04-11T06:06:22.372Z",
             "description": "\n    Does nothing if the ExamSession does not have any answered questions\n    or ratings.  That allows us to use the same ACL to allow creation of\n    an ExamSession and allow reading results.  Returns True if the\n    ExamSession has been finished, else False.\n\n    @param actee      Instance of ExamSession\n    ",
             "title": "constraint.populated_exam_session_is_finished",
             "name": "constraint.populated_exam_session_is_finished",
-            "create_timestamp": "2012-04-11T05:41:46.568Z",
+            "create_timestamp": "2012-04-11T06:06:22.372Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -147,11 +147,11 @@
         "pk": 10,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.601Z",
+            "save_timestamp": "2012-04-11T06:06:22.406Z",
             "description": "\n    Returns True iff the session_user_role associate with the actee is the same as the\n    session_user_role specified by the parameter session_user_role.\n    ",
             "title": "constraint.surr_is_of_a_particular_sur",
             "name": "constraint.surr_is_of_a_particular_sur",
-            "create_timestamp": "2012-04-11T05:41:46.601Z",
+            "create_timestamp": "2012-04-11T06:06:22.406Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -163,11 +163,11 @@
         "pk": 11,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.638Z",
+            "save_timestamp": "2012-04-11T06:06:22.430Z",
             "description": "\n    Returns True iff the actor is assigned to the CurriculumEnrollment\n    ",
             "title": "assignment.actor_assigned_to_curriculum_enrollment",
             "name": "assignment.actor_assigned_to_curriculum_enrollment",
-            "create_timestamp": "2012-04-11T05:41:46.638Z",
+            "create_timestamp": "2012-04-11T06:06:22.430Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -179,11 +179,11 @@
         "pk": 12,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.666Z",
+            "save_timestamp": "2012-04-11T06:06:22.463Z",
             "description": "\n    Returns True if the actor is assigned to a session for the\n    actee (an `Event` object).\n    ",
             "title": "assignment.actor_assigned_to_event_session",
             "name": "assignment.actor_assigned_to_event_session",
-            "create_timestamp": "2012-04-11T05:41:46.666Z",
+            "create_timestamp": "2012-04-11T06:06:22.463Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -195,11 +195,11 @@
         "pk": 13,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.693Z",
+            "save_timestamp": "2012-04-11T06:06:22.495Z",
             "description": "\n    Returns True iff the actor has an assignment for this session\n    ",
             "title": "assignment.actor_assigned_to_session",
             "name": "assignment.actor_assigned_to_session",
-            "create_timestamp": "2012-04-11T05:41:46.693Z",
+            "create_timestamp": "2012-04-11T06:06:22.495Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -211,11 +211,11 @@
         "pk": 14,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.718Z",
+            "save_timestamp": "2012-04-11T06:06:22.522Z",
             "description": "\n    Returns True iff the actor has completed all of the prerequisite tasks\n    for the task being queried.\n    ",
             "title": "assignment.actor_has_completed_assignment_prerequisites",
             "name": "assignment.actor_has_completed_assignment_prerequisites",
-            "create_timestamp": "2012-04-11T05:41:46.718Z",
+            "create_timestamp": "2012-04-11T06:06:22.522Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -227,11 +227,11 @@
         "pk": 15,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.744Z",
+            "save_timestamp": "2012-04-11T06:06:22.544Z",
             "description": "\n    Returns True iff the actor has completed all of the prerequisite tasks for the task being queried.\n    ",
             "title": "assignment.actor_has_completed_task_prerequisites",
             "name": "assignment.actor_has_completed_task_prerequisites",
-            "create_timestamp": "2012-04-11T05:41:46.744Z",
+            "create_timestamp": "2012-04-11T06:06:22.544Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -243,11 +243,11 @@
         "pk": 16,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.771Z",
+            "save_timestamp": "2012-04-11T06:06:22.567Z",
             "description": "\n    Returns True iff the assignment_attempt's dates meet the restrictions\n    defined on the Assignment\n    ",
             "title": "assignment.assignment_attempt_meets_date_restrictions",
             "name": "assignment.assignment_attempt_meets_date_restrictions",
-            "create_timestamp": "2012-04-11T05:41:46.771Z",
+            "create_timestamp": "2012-04-11T06:06:22.567Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -259,11 +259,11 @@
         "pk": 17,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.794Z",
+            "save_timestamp": "2012-04-11T06:06:22.589Z",
             "description": "\n    Returns True iff the assignment_attempt's prerequisites have been met\n    ",
             "title": "assignment.assignment_attempt_prerequisites_met",
             "name": "assignment.assignment_attempt_prerequisites_met",
-            "create_timestamp": "2012-04-11T05:41:46.794Z",
+            "create_timestamp": "2012-04-11T06:06:22.589Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -275,11 +275,11 @@
         "pk": 18,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.818Z",
+            "save_timestamp": "2012-04-11T06:06:22.607Z",
             "description": "\n    Returns True iff the assignment's prerequisites have been met\n    ",
             "title": "assignment.assignment_prerequisites_met",
             "name": "assignment.assignment_prerequisites_met",
-            "create_timestamp": "2012-04-11T05:41:46.818Z",
+            "create_timestamp": "2012-04-11T06:06:22.607Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -291,11 +291,11 @@
         "pk": 19,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.837Z",
+            "save_timestamp": "2012-04-11T06:06:22.630Z",
             "description": "\n    Returns true if the assignment is at a venue that matches the actor's\n    preferred venue\n\n    @param actee      Instance of Assignment\n    ",
             "title": "assignment.assignment_venue_matches_actor_preferred_venue",
             "name": "assignment.assignment_venue_matches_actor_preferred_venue",
-            "create_timestamp": "2012-04-11T05:41:46.837Z",
+            "create_timestamp": "2012-04-11T06:06:22.630Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -307,11 +307,11 @@
         "pk": 20,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.856Z",
+            "save_timestamp": "2012-04-11T06:06:22.652Z",
             "description": "\n    Returns true if the actor is a product line manager for the given product line.\n\n    @param actee      Instance of product_line\n    ",
             "title": "product_line.actor_is_product_line_manager_of_product_line",
             "name": "product_line.actor_is_product_line_manager_of_product_line",
-            "create_timestamp": "2012-04-11T05:41:46.856Z",
+            "create_timestamp": "2012-04-11T06:06:22.652Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -323,11 +323,11 @@
         "pk": 21,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.871Z",
+            "save_timestamp": "2012-04-11T06:06:22.675Z",
             "description": "\n    Returns true if the actor is a product line manager for the given session.\n\n    @param actee      Instance of session\n    ",
             "title": "product_line.actor_is_product_line_manager_of_session",
             "name": "product_line.actor_is_product_line_manager_of_session",
-            "create_timestamp": "2012-04-11T05:41:46.871Z",
+            "create_timestamp": "2012-04-11T06:06:22.675Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -339,11 +339,11 @@
         "pk": 22,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.886Z",
+            "save_timestamp": "2012-04-11T06:06:22.704Z",
             "description": "\n    Returns true if the actor is a product line manager for the given session_template\n\n    @param actee      Instance of session_template\n    ",
             "title": "product_line.actor_is_product_line_manager_of_session_template",
             "name": "product_line.actor_is_product_line_manager_of_session_template",
-            "create_timestamp": "2012-04-11T05:41:46.886Z",
+            "create_timestamp": "2012-04-11T06:06:22.704Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -355,11 +355,11 @@
         "pk": 23,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.900Z",
+            "save_timestamp": "2012-04-11T06:06:22.731Z",
             "description": "\n    Returns True if the actor is the product line manager for a\n    product line in which the actee is an instructor.\n\n    @param actee      A user object that we are evaluation authorization for\n    ",
             "title": "product_line.actor_is_product_line_manager_of_user",
             "name": "product_line.actor_is_product_line_manager_of_user",
-            "create_timestamp": "2012-04-11T05:41:46.900Z",
+            "create_timestamp": "2012-04-11T06:06:22.731Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -371,11 +371,11 @@
         "pk": 24,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.931Z",
+            "save_timestamp": "2012-04-11T06:06:22.758Z",
             "description": "method.actor_has_orgrole",
             "title": "method.actor_has_orgrole",
             "name": "method.actor_has_orgrole",
-            "create_timestamp": "2012-04-11T05:41:46.931Z",
+            "create_timestamp": "2012-04-11T06:06:22.757Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -387,11 +387,11 @@
         "pk": 25,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.948Z",
+            "save_timestamp": "2012-04-11T06:06:22.782Z",
             "description": "Returns True if the actor is an authenticated user.",
             "title": "method.actor_is_authenticated",
             "name": "method.actor_is_authenticated",
-            "create_timestamp": "2012-04-11T05:41:46.948Z",
+            "create_timestamp": "2012-04-11T06:06:22.782Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -403,11 +403,11 @@
         "pk": 26,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:46.975Z",
+            "save_timestamp": "2012-04-11T06:06:22.815Z",
             "description": "Check that the caller has an OrgRole named `role_name`.",
             "title": "method.caller_has_orgrole",
             "name": "method.caller_has_orgrole",
-            "create_timestamp": "2012-04-11T05:41:46.975Z",
+            "create_timestamp": "2012-04-11T06:06:22.815Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -419,11 +419,11 @@
         "pk": 27,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.008Z",
+            "save_timestamp": "2012-04-11T06:06:22.848Z",
             "description": "\n    Return True if a method call is being authorized and the user is\n    authenticated. Use this for allowing access to methods when the only\n    requirement is that the user of the role be logged in.\n    ",
             "title": "method.caller_is_authenticated",
             "name": "method.caller_is_authenticated",
-            "create_timestamp": "2012-04-11T05:41:47.008Z",
+            "create_timestamp": "2012-04-11T06:06:22.848Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -435,11 +435,11 @@
         "pk": 28,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.030Z",
+            "save_timestamp": "2012-04-11T06:06:22.879Z",
             "description": "Check that an instructor can send email to task assignees.\n\n    This authorizes a method call which has a `task_id` argument.\n    ",
             "title": "method.instructor_can_email_task_assignees",
             "name": "method.instructor_can_email_task_assignees",
-            "create_timestamp": "2012-04-11T05:41:47.030Z",
+            "create_timestamp": "2012-04-11T06:06:22.879Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -451,11 +451,11 @@
         "pk": 29,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.060Z",
+            "save_timestamp": "2012-04-11T06:06:22.910Z",
             "description": "auth.actor_is_anybody",
             "title": "auth.actor_is_anybody",
             "name": "auth.actor_is_anybody",
-            "create_timestamp": "2012-04-11T05:41:47.060Z",
+            "create_timestamp": "2012-04-11T06:06:22.910Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -467,11 +467,11 @@
         "pk": 30,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.094Z",
+            "save_timestamp": "2012-04-11T06:06:22.943Z",
             "description": "Returns True if the actor is an authenticated user.",
             "title": "auth.actor_is_authenticated",
             "name": "auth.actor_is_authenticated",
-            "create_timestamp": "2012-04-11T05:41:47.094Z",
+            "create_timestamp": "2012-04-11T06:06:22.943Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -483,11 +483,11 @@
         "pk": 31,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.126Z",
+            "save_timestamp": "2012-04-11T06:06:22.973Z",
             "description": "Returns True if the actor is a guest.",
             "title": "auth.actor_is_guest",
             "name": "auth.actor_is_guest",
-            "create_timestamp": "2012-04-11T05:41:47.126Z",
+            "create_timestamp": "2012-04-11T06:06:22.973Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -499,11 +499,11 @@
         "pk": 32,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.158Z",
+            "save_timestamp": "2012-04-11T06:06:23.000Z",
             "description": "Returns True iff the actor is the owner of the AchievementAward",
             "title": "ownership.actor_owns_achievement_award",
             "name": "ownership.actor_owns_achievement_award",
-            "create_timestamp": "2012-04-11T05:41:47.158Z",
+            "create_timestamp": "2012-04-11T06:06:23.000Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -515,11 +515,11 @@
         "pk": 33,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.181Z",
+            "save_timestamp": "2012-04-11T06:06:23.026Z",
             "description": "\n    Returns True iff the actor is the owner of an AchievementAward for the\n    Achievement.\n    ",
             "title": "ownership.actor_owns_achievement_award_for_achievement",
             "name": "ownership.actor_owns_achievement_award_for_achievement",
-            "create_timestamp": "2012-04-11T05:41:47.181Z",
+            "create_timestamp": "2012-04-11T06:06:23.026Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -531,11 +531,11 @@
         "pk": 34,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.205Z",
+            "save_timestamp": "2012-04-11T06:06:23.057Z",
             "description": "\n    Returns True if the address object is either the user's\n    shipping or billing address, False otherwise.\n\n    @param actee  The address object in question\n    ",
             "title": "ownership.actor_owns_address",
             "name": "ownership.actor_owns_address",
-            "create_timestamp": "2012-04-11T05:41:47.205Z",
+            "create_timestamp": "2012-04-11T06:06:23.057Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -547,11 +547,11 @@
         "pk": 35,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.229Z",
+            "save_timestamp": "2012-04-11T06:06:23.082Z",
             "description": "Returns True iff the actor is the owner of the Assignment.",
             "title": "ownership.actor_owns_assignment",
             "name": "ownership.actor_owns_assignment",
-            "create_timestamp": "2012-04-11T05:41:47.228Z",
+            "create_timestamp": "2012-04-11T06:06:23.081Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -563,11 +563,11 @@
         "pk": 36,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.252Z",
+            "save_timestamp": "2012-04-11T06:06:23.097Z",
             "description": "\n    Returns True iff the actor is the owner of the Assignment\n    ",
             "title": "ownership.actor_owns_assignment_attempt",
             "name": "ownership.actor_owns_assignment_attempt",
-            "create_timestamp": "2012-04-11T05:41:47.252Z",
+            "create_timestamp": "2012-04-11T06:06:23.097Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -579,11 +579,11 @@
         "pk": 37,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.277Z",
+            "save_timestamp": "2012-04-11T06:06:23.121Z",
             "description": "Returns True iff actor owns an assignment for the given task.",
             "title": "ownership.actor_owns_assignment_for_task",
             "name": "ownership.actor_owns_assignment_for_task",
-            "create_timestamp": "2012-04-11T05:41:47.277Z",
+            "create_timestamp": "2012-04-11T06:06:23.121Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -595,11 +595,11 @@
         "pk": 38,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.300Z",
+            "save_timestamp": "2012-04-11T06:06:23.144Z",
             "description": "\n    Returns True if the actor is the owner of the Assignment, or if the\n    actor is a guest and the Assignment doesn't have a user @check\ndefined.\n    ",
             "title": "ownership.actor_owns_assignment_or_is_guest",
             "name": "ownership.actor_owns_assignment_or_is_guest",
-            "create_timestamp": "2012-04-11T05:41:47.300Z",
+            "create_timestamp": "2012-04-11T06:06:23.144Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -611,11 +611,11 @@
         "pk": 39,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.319Z",
+            "save_timestamp": "2012-04-11T06:06:23.163Z",
             "description": "\n    Returns True iff the actor is the owner of the Credential\n    ",
             "title": "ownership.actor_owns_credential",
             "name": "ownership.actor_owns_credential",
-            "create_timestamp": "2012-04-11T05:41:47.319Z",
+            "create_timestamp": "2012-04-11T06:06:23.163Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -627,11 +627,11 @@
         "pk": 40,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.333Z",
+            "save_timestamp": "2012-04-11T06:06:23.181Z",
             "description": "\n    Returns true if the actor is the owner of an event.\n    ",
             "title": "ownership.actor_owns_event",
             "name": "ownership.actor_owns_event",
-            "create_timestamp": "2012-04-11T05:41:47.333Z",
+            "create_timestamp": "2012-04-11T06:06:23.181Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -643,11 +643,11 @@
         "pk": 41,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.352Z",
+            "save_timestamp": "2012-04-11T06:06:23.211Z",
             "description": "\n    Returns true if the actor owns the payment.\n\n    @param actee      Instance of a purchase_order\n    ",
             "title": "ownership.actor_owns_payment",
             "name": "ownership.actor_owns_payment",
-            "create_timestamp": "2012-04-11T05:41:47.352Z",
+            "create_timestamp": "2012-04-11T06:06:23.211Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -659,11 +659,11 @@
         "pk": 42,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.369Z",
+            "save_timestamp": "2012-04-11T06:06:23.243Z",
             "description": "\n    Returns True if the actor is the same User object as is listed in the\n    PRModel's owner field, or if the PRModel has None in its owner field.\n    ",
             "title": "ownership.actor_owns_prmodel",
             "name": "ownership.actor_owns_prmodel",
-            "create_timestamp": "2012-04-11T05:41:47.369Z",
+            "create_timestamp": "2012-04-11T06:06:23.243Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -675,11 +675,11 @@
         "pk": 43,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.394Z",
+            "save_timestamp": "2012-04-11T06:06:23.273Z",
             "description": "\n    Returns true if the actor owns the purchase order being accessed.\n\n    @param actee      Instance of a purchase_order\n    ",
             "title": "ownership.actor_owns_purchase_order",
             "name": "ownership.actor_owns_purchase_order",
-            "create_timestamp": "2012-04-11T05:41:47.394Z",
+            "create_timestamp": "2012-04-11T06:06:23.273Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -691,11 +691,11 @@
         "pk": 44,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.415Z",
+            "save_timestamp": "2012-04-11T06:06:23.300Z",
             "description": "\n    Returns True iff the QuestionResponse is for an ExamSession owned by the\n    actor.\n    ",
             "title": "ownership.actor_owns_question_response",
             "name": "ownership.actor_owns_question_response",
-            "create_timestamp": "2012-04-11T05:41:47.415Z",
+            "create_timestamp": "2012-04-11T06:06:23.300Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -707,11 +707,11 @@
         "pk": 45,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.447Z",
+            "save_timestamp": "2012-04-11T06:06:23.324Z",
             "description": "\n    Returns True if the actor owns the event associated with this session.\n    ",
             "title": "ownership.actor_owns_session",
             "name": "ownership.actor_owns_session",
-            "create_timestamp": "2012-04-11T05:41:47.447Z",
+            "create_timestamp": "2012-04-11T06:06:23.324Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -723,11 +723,11 @@
         "pk": 46,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.482Z",
+            "save_timestamp": "2012-04-11T06:06:23.349Z",
             "description": "\n    Returns True if the session associated with the session_user_role_requirement is owned\n    by the actor\n    ",
             "title": "ownership.actor_owns_session_user_role_requirement",
             "name": "ownership.actor_owns_session_user_role_requirement",
-            "create_timestamp": "2012-04-11T05:41:47.482Z",
+            "create_timestamp": "2012-04-11T06:06:23.349Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -739,11 +739,11 @@
         "pk": 47,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.509Z",
+            "save_timestamp": "2012-04-11T06:06:23.381Z",
             "description": "\n    Returns true if the actor owns the purchase order being accessed.\n\n    @param actee      Instance of a purchase_order\n    ",
             "title": "ownership.actor_owns_training_unit_authorization",
             "name": "ownership.actor_owns_training_unit_authorization",
-            "create_timestamp": "2012-04-11T05:41:47.509Z",
+            "create_timestamp": "2012-04-11T06:06:23.381Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -755,11 +755,11 @@
         "pk": 48,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.536Z",
+            "save_timestamp": "2012-04-11T06:06:23.415Z",
             "description": "\n    Returns true if the purchase order being accessed has no payments.\n\n    @param actee      Instance of a purchase_order\n    ",
             "title": "payment.purchase_order_has_no_payments",
             "name": "payment.purchase_order_has_no_payments",
-            "create_timestamp": "2012-04-11T05:41:47.536Z",
+            "create_timestamp": "2012-04-11T06:06:23.415Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -771,11 +771,11 @@
         "pk": 49,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.560Z",
+            "save_timestamp": "2012-04-11T06:06:23.446Z",
             "description": "\n    Returns true if the purchase order being accessed has at least one payment.\n\n    @param actee      Instance of a purchase_order\n    ",
             "title": "payment.purchase_order_has_payments",
             "name": "payment.purchase_order_has_payments",
-            "create_timestamp": "2012-04-11T05:41:47.560Z",
+            "create_timestamp": "2012-04-11T06:06:23.446Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -787,11 +787,11 @@
         "pk": 50,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.588Z",
+            "save_timestamp": "2012-04-11T06:06:23.476Z",
             "description": "\n    Returns true if the refund does not put the total amount of\n    refunds for a particular payment over the value of the payment.\n\n    @param actee      Instance of refund\n    ",
             "title": "payment.refund_does_not_exceed_payment",
             "name": "payment.refund_does_not_exceed_payment",
-            "create_timestamp": "2012-04-11T05:41:47.588Z",
+            "create_timestamp": "2012-04-11T06:06:23.476Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -803,11 +803,11 @@
         "pk": 51,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.628Z",
+            "save_timestamp": "2012-04-11T06:06:23.510Z",
             "description": "membership.orgrole.actor_has_orgrole",
             "title": "membership.orgrole.actor_has_orgrole",
             "name": "membership.orgrole.actor_has_orgrole",
-            "create_timestamp": "2012-04-11T05:41:47.628Z",
+            "create_timestamp": "2012-04-11T06:06:23.510Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -819,11 +819,11 @@
         "pk": 52,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.676Z",
+            "save_timestamp": "2012-04-11T06:06:23.536Z",
             "description": "\n    Returns True if the actor has the specified OrgRole for the\n    organization and the actee is an `Achievement` object. False otherwise.\n    ",
             "title": "membership.orgrole.actor_has_role_for_achievement",
             "name": "membership.orgrole.actor_has_role_for_achievement",
-            "create_timestamp": "2012-04-11T05:41:47.676Z",
+            "create_timestamp": "2012-04-11T06:06:23.536Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -835,11 +835,11 @@
         "pk": 53,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.706Z",
+            "save_timestamp": "2012-04-11T06:06:23.556Z",
             "description": "Returns True if the actor has the specified OrgRole named `role` for an\n    organization, and the actee is a member of the same organization or a\n    descendent organization.\n\n    This check supports ALL authorizable actee types for OrgRole privileges. It\n    may be desirable to exclude some specific types from this broad check. In\n    that case, such types can be specified in `excluded_types`.\n\n    Arguments:\n        auth_token: The user's auth token.\n        actee: The object being acted on.\n        role: The name of the OrgRole required for the actor.\n        excluded_types: A set of types that will NOT be checked by this method.\n        restricted_ops: A set of operations which will be checked by this\n                        method.\n    ",
             "title": "membership.orgrole.actor_has_role_for_actee",
             "name": "membership.orgrole.actor_has_role_for_actee",
-            "create_timestamp": "2012-04-11T05:41:47.706Z",
+            "create_timestamp": "2012-04-11T06:06:23.556Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -851,11 +851,11 @@
         "pk": 54,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.725Z",
+            "save_timestamp": "2012-04-11T06:06:23.575Z",
             "description": "\n    Returns True if the actor has the specified OrgRole for the\n    organization to which the actee (an `Assignment` object) belongs.\n    False otherwise.\n    ",
             "title": "membership.orgrole.actor_has_role_for_assignment",
             "name": "membership.orgrole.actor_has_role_for_assignment",
-            "create_timestamp": "2012-04-11T05:41:47.725Z",
+            "create_timestamp": "2012-04-11T06:06:23.575Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -867,11 +867,11 @@
         "pk": 55,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.743Z",
+            "save_timestamp": "2012-04-11T06:06:23.603Z",
             "description": "\n    Returns True if the actor has the specified OrgRole for the organization\n    to which the actee (a `Credential` object) belongs. False Otherwise.\n    ",
             "title": "membership.orgrole.actor_has_role_for_credential",
             "name": "membership.orgrole.actor_has_role_for_credential",
-            "create_timestamp": "2012-04-11T05:41:47.743Z",
+            "create_timestamp": "2012-04-11T06:06:23.603Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -883,11 +883,11 @@
         "pk": 56,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.764Z",
+            "save_timestamp": "2012-04-11T06:06:23.627Z",
             "description": "\n    Returns True if the actee is a `CredentialType` object and the actor has\n    the role in question. Support for differentiating Credential types by\n    Organization *may* be implemented in the future.\n    ",
             "title": "membership.orgrole.actor_has_role_for_credential_type",
             "name": "membership.orgrole.actor_has_role_for_credential_type",
-            "create_timestamp": "2012-04-11T05:41:47.764Z",
+            "create_timestamp": "2012-04-11T06:06:23.627Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -899,11 +899,11 @@
         "pk": 57,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.782Z",
+            "save_timestamp": "2012-04-11T06:06:23.645Z",
             "description": "\n    Returns True if the actor has the specified OrgRole for the\n    organization to which the actee (a `CurriculumTaskAssignment`\n    object) belongs. False otherwise\n    ",
             "title": "membership.orgrole.actor_has_role_for_curriculum_task_assoc",
             "name": "membership.orgrole.actor_has_role_for_curriculum_task_assoc",
-            "create_timestamp": "2012-04-11T05:41:47.782Z",
+            "create_timestamp": "2012-04-11T06:06:23.645Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -915,11 +915,11 @@
         "pk": 58,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.806Z",
+            "save_timestamp": "2012-04-11T06:06:23.669Z",
             "description": "\n    Returns True if the actor has the specified OrgRole for the\n    organization to which the actee (a `CurriculumEnrollment` object)\n    belongs. False otherwise.\n    ",
             "title": "membership.orgrole.actor_has_role_for_enrollment",
             "name": "membership.orgrole.actor_has_role_for_enrollment",
-            "create_timestamp": "2012-04-11T05:41:47.806Z",
+            "create_timestamp": "2012-04-11T06:06:23.669Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -931,11 +931,11 @@
         "pk": 59,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.828Z",
+            "save_timestamp": "2012-04-11T06:06:23.696Z",
             "description": "membership.orgrole.actor_has_role_for_enrollment_association",
             "title": "membership.orgrole.actor_has_role_for_enrollment_association",
             "name": "membership.orgrole.actor_has_role_for_enrollment_association",
-            "create_timestamp": "2012-04-11T05:41:47.828Z",
+            "create_timestamp": "2012-04-11T06:06:23.696Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -947,11 +947,11 @@
         "pk": 60,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.853Z",
+            "save_timestamp": "2012-04-11T06:06:23.719Z",
             "description": "\n    Returns True if the actor has the specified OrgRole for the\n    organization which owns the actee, an `Answer` object.\n    False otherwise.\n    ",
             "title": "membership.orgrole.actor_has_role_for_exam_answer",
             "name": "membership.orgrole.actor_has_role_for_exam_answer",
-            "create_timestamp": "2012-04-11T05:41:47.853Z",
+            "create_timestamp": "2012-04-11T06:06:23.719Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -963,11 +963,11 @@
         "pk": 61,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.886Z",
+            "save_timestamp": "2012-04-11T06:06:23.741Z",
             "description": "\n    Returns True if the actor has the specified OrgRole for the\n    organization which owns the actee (a `Question` or `QuestionPool`\n    object). False otherwise.\n    ",
             "title": "membership.orgrole.actor_has_role_for_exam_question",
             "name": "membership.orgrole.actor_has_role_for_exam_question",
-            "create_timestamp": "2012-04-11T05:41:47.886Z",
+            "create_timestamp": "2012-04-11T06:06:23.741Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -979,11 +979,11 @@
         "pk": 62,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.917Z",
+            "save_timestamp": "2012-04-11T06:06:23.767Z",
             "description": "\n    Returns True if the actor has the specified OrgRole for the\n    organization which owns the actee (a `Resource` object). False\n    otherwise.\n    ",
             "title": "membership.orgrole.actor_has_role_for_resource",
             "name": "membership.orgrole.actor_has_role_for_resource",
-            "create_timestamp": "2012-04-11T05:41:47.917Z",
+            "create_timestamp": "2012-04-11T06:06:23.767Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -995,11 +995,11 @@
         "pk": 63,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.949Z",
+            "save_timestamp": "2012-04-11T06:06:23.797Z",
             "description": "\n    Returns True if the actor has the specified OrgRole for the\n    organization to which the actee (a `Session` object) belongs. False\n    otherwise.\n    ",
             "title": "membership.orgrole.actor_has_role_for_session",
             "name": "membership.orgrole.actor_has_role_for_session",
-            "create_timestamp": "2012-04-11T05:41:47.949Z",
+            "create_timestamp": "2012-04-11T06:06:23.797Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -1011,11 +1011,11 @@
         "pk": 64,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.971Z",
+            "save_timestamp": "2012-04-11T06:06:23.827Z",
             "description": "\n    Returns True if the actor has the specified OrgRole for the\n    organization to which the actee (a `User` object) belongs. False\n    otherwise.\n    ",
             "title": "membership.orgrole.actor_has_role_for_user",
             "name": "membership.orgrole.actor_has_role_for_user",
-            "create_timestamp": "2012-04-11T05:41:47.971Z",
+            "create_timestamp": "2012-04-11T06:06:23.827Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -1027,11 +1027,11 @@
         "pk": 65,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:47.988Z",
+            "save_timestamp": "2012-04-11T06:06:23.857Z",
             "description": "\n    Returns True if the actor has the specified OrgRole for the same\n    organization as the actee (a `UserOrgRole` object) and the actee does not\n    belong to other organizations.\n    ",
             "title": "membership.orgrole.actor_has_role_for_userorgrole",
             "name": "membership.orgrole.actor_has_role_for_userorgrole",
-            "create_timestamp": "2012-04-11T05:41:47.988Z",
+            "create_timestamp": "2012-04-11T06:06:23.857Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -1043,11 +1043,11 @@
         "pk": 66,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:48.006Z",
+            "save_timestamp": "2012-04-11T06:06:23.888Z",
             "description": "\n    If the actee is in the group, the method returns True iff they are also\n    of the domain.  If they are not in the group, it will return False.\n\n    This is useful for making sure that participants who register themselves are\n    in a particular domain, such as 'constantcontact.com' for the Constant\n    Contact variant.\n\n    Note that returning False instead of True if the user is not a part of\n    the specified group is a different behavior from what the Constant\n    Contact variant does!\n\n    @param actee    The user object in question\n    @type actee     user\n    @param group_id The primary key of the group that the actee must be a member of\n    @param domain_id the primary key of the domain\n    ",
             "title": "membership.actee_is_in_group_and_domain",
             "name": "membership.actee_is_in_group_and_domain",
-            "create_timestamp": "2012-04-11T05:41:48.006Z",
+            "create_timestamp": "2012-04-11T06:06:23.888Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -1059,11 +1059,11 @@
         "pk": 67,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:48.038Z",
+            "save_timestamp": "2012-04-11T06:06:23.921Z",
             "description": "\n    Returns True if the actor is the manager of the group.\n\n    @param actee  Instance of a group\n    ",
             "title": "membership.actor_is_group_manager",
             "name": "membership.actor_is_group_manager",
-            "create_timestamp": "2012-04-11T05:41:48.038Z",
+            "create_timestamp": "2012-04-11T06:06:23.921Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -1075,11 +1075,11 @@
         "pk": 68,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:48.071Z",
+            "save_timestamp": "2012-04-11T06:06:23.957Z",
             "description": "Returns true if the actee is a group and the actor is a member thereof.",
             "title": "membership.actor_is_in_actee_which_is_a_group",
             "name": "membership.actor_is_in_actee_which_is_a_group",
-            "create_timestamp": "2012-04-11T05:41:48.070Z",
+            "create_timestamp": "2012-04-11T06:06:23.957Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -1091,11 +1091,11 @@
         "pk": 69,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:48.100Z",
+            "save_timestamp": "2012-04-11T06:06:23.984Z",
             "description": "\n    Returns True if the actee is an Organization and the actor belongs to that\n    organization.\n    ",
             "title": "membership.actor_is_in_actee_which_is_an_organization",
             "name": "membership.actor_is_in_actee_which_is_an_organization",
-            "create_timestamp": "2012-04-11T05:41:48.100Z",
+            "create_timestamp": "2012-04-11T06:06:23.984Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -1107,11 +1107,11 @@
         "pk": 70,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:48.128Z",
+            "save_timestamp": "2012-04-11T06:06:24.013Z",
             "description": "\n    Returns True if the actor is a member of the specified group, False otherwise.\n\n    @param actee      Not used by this method, but must be passed anyway as\n            per authorization system requirements\n    @param group_id   The primary key of the group we wish to test membership in\n    ",
             "title": "membership.actor_member_of_group",
             "name": "membership.actor_member_of_group",
-            "create_timestamp": "2012-04-11T05:41:48.128Z",
+            "create_timestamp": "2012-04-11T06:06:24.013Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -1123,11 +1123,11 @@
         "pk": 71,
         "model": "pr_services.accheckmethod",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:48.148Z",
+            "save_timestamp": "2012-04-11T06:06:24.040Z",
             "description": "\n    Returns True if the DomainAffiliation's 'user' attribute\n    references the actor\n\n    @param actee  The DomainAffiliation object in question\n    ",
             "title": "membership.actor_related_to_domain_affiliation",
             "name": "membership.actor_related_to_domain_affiliation",
-            "create_timestamp": "2012-04-11T05:41:48.148Z",
+            "create_timestamp": "2012-04-11T06:06:24.040Z",
             "owner": null,
             "final_type": [
                 "pr_services",
@@ -1139,7 +1139,7 @@
         "pk": 1,
         "model": "pr_services.acl",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:48.219Z",
+            "save_timestamp": "2012-04-11T06:06:24.148Z",
             "final_type": [
                 "pr_services",
                 "acl"
@@ -1147,7 +1147,7 @@
             "arbitrary_perm_list": "(l.",
             "acl": "(dp1\nS'FileDownload'\np2\n(dp3\nS'c'\nI01\nsS'r'\nc__builtin__\nset\np4\n((lp5\nS'achievements'\np6\naS'save_timestamp'\np7\naS'users'\np8\naS'deleted'\np9\naS'max'\np10\naS'prerequisite_tasks'\np11\naS'version_id'\np12\naS'create_timestamp'\np13\naS'version_label'\np14\naS'file_size'\np15\naS'task_fees'\np16\naS'id'\np17\naS'description'\np18\naS'yielded_tasks'\np19\naS'name'\np20\naS'min'\np21\naS'notes'\np22\naS'title'\np23\naS'file_url'\np24\naS'version_comment'\np25\naS'content_type'\np26\naS'organization'\np27\naS'remaining_capacity'\np28\naS'type'\np29\naS'prevent_duplicate_assignments'\np30\natRp31\nsS'u'\ng4\n((lp32\ng6\nag8\nag9\nag10\nag11\nag12\nag14\nag16\nag18\nag19\nag20\nag21\nag22\nag23\nag25\nag27\nag28\nag30\natRp33\nsS'd'\nI01\nssS'Question'\np34\n(dp35\nS'c'\nI01\nsS'r'\ng4\n((lp36\nS'rejoinder'\np37\naS'widget'\np38\nag7\naS'responses'\np39\naS'text_response_label'\np40\naS'max_value'\np41\naS'min_value'\np42\naS'max_answers'\np43\naS'answers'\np44\naS'question_pool'\np45\naS'min_answers'\np46\nag13\nag26\naS'help_text'\np47\nag17\naS'text_response'\np48\naS'min_length'\np49\nag20\nag22\naS'required'\np50\naS'label'\np51\naS'max_length'\np52\naS'question_type'\np53\naS'text_regex'\np54\naS'order'\np55\naS'user'\np56\natRp57\nsS'u'\ng4\n((lp58\ng37\nag38\nag39\nag40\nag41\nag42\nag43\nag44\nag45\nag46\nag56\nag47\nag48\nag49\nag20\nag22\nag50\nag51\nag52\nag53\nag54\nag55\natRp59\nsS'd'\nI01\nssS'CurriculumEnrollment'\np60\n(dp61\nS'c'\nI01\nsS'r'\ng4\n((lp62\ng7\nag8\naS'start'\np63\naS'curriculum_name'\np64\naS'curriculum'\np65\nag17\naS'assignments'\np66\nag13\nag26\naS'end'\np67\nag22\naS'user_completion_statuses'\np68\natRp69\nsS'u'\ng4\n((lp70\ng63\nag22\nag65\nag67\nag8\natRp71\nsS'd'\nI01\nssS'Task'\np72\n(dp73\nS'c'\nI00\nsS'r'\ng4\n((lp74\ng6\nag7\nag8\nag10\nag11\nag12\nag13\nag14\nag16\nag17\nag18\nag19\nag20\nag21\nag22\nag23\nag25\nag26\nag27\nag28\nag29\nag30\natRp75\nsS'u'\ng4\n((ltRp76\nsS'd'\nI00\nssS'Answer'\np77\n(dp78\nS'c'\nI01\nsS'r'\ng4\n((lp79\nS'correct'\np80\nag7\nag39\naS'end_question_pool'\np81\naS'next_question_pool'\np82\nag13\nag26\nag17\nag48\nag20\nag22\naS'end_exam'\np83\naS'question'\np84\naS'value'\np85\nag51\nag55\natRp86\nsS'u'\ng4\n((lp87\ng48\nag81\nag39\nag22\nag83\nag84\nag82\nag85\nag51\nag55\nag80\nag20\natRp88\nsS'd'\nI01\nssS'Credential'\np89\n(dp90\nS'c'\nI01\nsS'r'\ng4\n((lp91\nS'status'\np92\nag7\naS'credential_type'\np93\nag22\naS'authority'\np94\naS'date_expires'\np95\nag13\nag26\naS'serial_number'\np96\naS'date_started'\np97\naS'date_granted'\np98\nag17\naS'date_assigned'\np99\nag56\natRp100\nsS'u'\ng4\n((lp101\ng92\nag93\nag22\nag94\nag95\nag56\nag96\nag97\nag98\nag99\natRp102\nsS'd'\nI01\nssS'Exam'\np103\n(dp104\nS'c'\nI01\nsS'r'\ng4\n((lp105\ng6\naS'question_pools'\np106\nag7\nag8\nag10\nag11\nag12\nag13\nag14\nag16\nag17\nag18\nag19\nag20\nag21\nag22\nag23\nag25\naS'passing_score'\np107\nag26\nag27\nag28\nag29\nag30\natRp108\nsS'u'\ng4\n((lp109\ng6\nag106\nag8\nag10\nag11\nag12\nag14\nag16\nag18\nag19\nag20\nag21\nag22\nag23\nag25\nag107\nag27\nag28\nag30\natRp110\nsS'd'\nI01\nssS'SessionUserRoleRequirement'\np111\n(dp112\nS'c'\nI01\nsS'r'\ng4\n((lp113\ng6\nag7\nag8\nag10\nag11\nag12\naS'session'\np114\naS'session_user_role'\np115\nag13\nag14\naS'credential_types'\np116\nag16\nag17\nag18\nag19\nag20\nag21\nag22\nag23\nag25\naS'role_name'\np117\nag26\nag27\nag28\naS'ignore_room_capacity'\np118\nag29\nag30\natRp119\nsS'u'\ng4\n((lp120\ng6\nag8\nag10\nag11\nag12\nag114\nag115\nag14\nag116\nag16\nag18\nag19\nag20\nag21\nag22\nag23\nag25\nag27\nag28\nag118\nag30\natRp121\nsS'd'\nI01\nssS'Assignment'\np122\n(dp123\nS'c'\nI01\nsS'r'\ng4\n((lp124\ng92\naS'due_date'\np125\nag7\nag94\naS'prerequisites_met'\np126\nag13\nag26\nag56\nag17\naS'achievement_awards'\np127\naS'task'\np128\naS'date_completed'\np129\naS'task_content_type'\np130\nag22\naS'effective_date_assigned'\np131\naS'status_change_log'\np132\nag96\nag97\naS'assignment_attempts'\np133\natRp134\nsS'u'\ng4\n((lp135\ng92\nag125\nag128\nag129\nag22\nag94\nag131\nag56\nag127\nag96\nag97\nag133\natRp136\nsS'd'\nI01\nssS'CurriculumTaskAssociation'\np137\n(dp138\nS'c'\nI01\nsS'r'\ng4\n((lp139\nS'task_bundle'\np140\naS'continue_automatically'\np141\nag7\nag26\naS'presentation_order'\np142\nag22\nag65\naS'days_before_start'\np143\nag128\nag13\naS'task_name'\np144\naS'days_to_complete'\np145\nag17\natRp146\nsS'u'\ng4\n((lp147\ng140\nag128\nag142\nag22\nag65\nag143\nag141\nag145\natRp148\nsS'd'\nI01\nssS'User'\np149\n(dp150\nS'c'\nI01\nsS'r'\ng4\n((lp151\ng6\naS'product_lines_managed'\np152\naS'last_name'\np153\nag7\nag26\naS'is_staff'\np154\nag13\naS'full_name'\np155\naS'product_lines_instructor_manager_for'\np156\naS'email2'\np157\nag17\naS'biography'\np158\nag127\naS'alleged_organization'\np159\naS'first_name'\np160\naS'middle_name'\np161\naS'domain_affiliations'\np162\nag23\naS'enable_paypal'\np163\naS'product_lines_instructor_for'\np164\naS'email'\np165\nag92\naS'billing_address'\np166\naS'color_code'\np167\naS'default_username_and_domain'\np168\naS'phone3'\np169\naS'phone'\np170\naS'groups'\np171\naS'credentials'\np172\naS'owned_userorgroles'\np173\naS'preferred_venues'\np174\naS'photo_url'\np175\naS'username'\np176\naS'organizations'\np177\naS'roles'\np178\naS'session_user_role_requirements'\np179\naS'url'\np180\nag22\naS'name_suffix'\np181\naS'completed_curriculum_enrollments'\np182\naS'suppress_emails'\np183\naS'incomplete_curriculum_enrollments'\np184\naS'paypal_address'\np185\naS'shipping_address'\np186\naS'domains'\np187\naS'phone2'\np188\natRp189\nsS'u'\ng4\n((lp190\ng92\nag6\nag153\nag167\nag188\nag169\nag170\nag154\nag171\nag172\nag157\nag158\nag175\nag127\nag177\nag160\nag161\nag178\nag23\nag159\nag22\nag181\nag163\nag180\nag183\nag174\nag185\nag186\nag166\nag165\natRp191\nsS'd'\nI01\nssS'Response'\np192\n(dp193\nS'c'\nI00\nsS'r'\ng4\n((lp194\ng7\naS'exam_session'\np195\nag22\nag84\nag85\nag17\naS'valid'\np196\nag44\nag26\naS'text'\np197\nag80\nag13\natRp198\nsS'u'\ng4\n((ltRp199\nsS'd'\nI00\nssS'Achievement'\np200\n(dp201\nS'c'\nI01\nsS'r'\ng4\n((lp202\ng7\nag8\naS'component_achievements'\np203\nag20\nag13\nag26\nag17\naS'yielded_achievements'\np204\nag22\nag18\natRp205\nsS'u'\ng4\n((lp206\ng8\nag22\nag18\nag203\nag204\nag20\natRp207\nsS'd'\nI01\nssS'FileUpload'\np208\n(dp209\nS'c'\nI01\nsS'r'\ng4\n((lp210\ng6\nag7\nag8\nag10\nag11\nag12\nag13\nag14\nag16\nag17\nag18\nag19\nag20\nag21\nag22\nag23\nag25\nag26\nag27\nag28\nag29\nag30\natRp211\nsS'u'\ng4\n((lp212\ng6\nag8\nag10\nag11\nag12\nag14\nag16\nag18\nag19\nag20\nag21\nag22\nag23\nag25\nag27\nag28\nag30\natRp213\nsS'd'\nI01\nssS'Resource'\np214\n(dp215\nS'c'\nI00\nsS'r'\ng4\n((lp216\nS'session_resource_type_requirements'\np217\nag7\nag18\nag22\nag13\nag26\naS'resource_types'\np218\nag17\nag20\natRp219\nsS'u'\ng4\n((ltRp220\nsS'd'\nI00\nssS'Venue'\np221\n(dp222\nS'c'\nI00\nsS'r'\ng4\n((lp223\ng7\nag20\nag22\naS'hours_of_operation'\np224\naS'events'\np225\nag170\naS'contact'\np226\nag13\nag26\naS'address'\np227\naS'owner'\np228\naS'blackout_periods'\np229\naS'region'\np230\nag17\naS'rooms'\np231\natRp232\nsS'u'\ng4\n((ltRp233\nsS'd'\nI00\nssS'CredentialType'\np234\n(dp235\nS'c'\nI01\nsS'r'\ng4\n((lp236\ng7\naS'id'\np237\naS'content_type'\np238\nag13\natRp239\nsS'u'\ng4\n((ltRp240\nsS'd'\nI00\nssS'UserOrgRole'\np241\n(dp242\nS'c'\nI01\nsS'r'\ng4\n((lp243\ng7\naS'parent'\np244\nag23\nag22\naS'persistent'\np245\nag17\naS'organization_name'\np246\nag117\naS'role'\np247\nag13\nag26\nag228\nag27\naS'children'\np248\natRp249\nsS'u'\ng4\n((lp250\ng247\nag244\nag23\nag228\nag27\nag22\nag245\natRp251\nsS'd'\nI01\nssS'AssignmentManager'\np252\n(dp253\nS'methods'\np254\ng4\n((lp255\nS'email_task_assignees'\np256\natRp257\nssS'ExamManager'\np258\n(dp259\ng254\ng4\n((lp260\nS'create_from_xml'\np261\naS'export_to_xml'\np262\natRp263\nssS'Session'\np264\n(dp265\nS'c'\nI01\nsS'r'\ng4\n((lp266\nS'default_price'\np267\nag92\nag7\nag18\naS'modality'\np268\naS'paypal_url'\np269\nag13\nag26\nag17\naS'session_template'\np270\naS'confirmed'\np271\nag217\nag67\naS'room'\np272\nag179\nag23\nag180\nag22\naS'session_user_roles'\np273\naS'event'\np274\nag63\naS'audience'\np275\naS'shortname'\np276\naS'fullname'\np277\naS'evaluation'\np278\naS'lead_time'\np279\natRp280\nsS'u'\ng4\n((lp281\ng267\nag92\nag18\nag268\nag272\nag271\nag217\nag67\nag270\nag179\nag23\nag180\nag22\nag273\nag274\nag63\nag275\nag276\nag277\nag279\natRp282\nsS'd'\nI01\nssS'CurriculumEnrollmentUserAssociation'\np283\n(dp284\nS'c'\nI01\nsS'r'\ng4\n((lp285\ng7\nag237\nag238\nag13\natRp286\nsS'u'\ng4\n((ltRp287\nsS'd'\nI01\nssS'QuestionPool'\np288\n(dp289\nS'c'\nI01\nsS'r'\ng4\n((lp290\ng7\naS'exam'\np291\nag23\nag22\naS'randomize_questions'\np292\nag17\nag26\nag13\naS'questions'\np293\nag55\naS'number_to_answer'\np294\nag20\natRp295\nsS'u'\ng4\n((lp296\ng291\nag23\nag22\nag292\nag293\nag55\nag294\nag20\natRp297\nsS'd'\nI01\nssS'Event'\np298\n(dp299\nS'c'\nI01\nsS'r'\ng4\n((lp300\ng92\nag7\nag18\naS'sessions'\np301\naS'facebook_message'\np302\nag13\nag26\nag228\nag17\nag20\naS'product_line'\np303\nag67\naS'external_reference'\np304\naS'event_template'\np305\nag180\nag22\nag23\naS'venue'\np306\naS'notify_cfgs'\np307\nag63\naS'lag_time'\np308\nag27\naS'twitter_message'\np309\nag230\nag279\natRp310\nsS'u'\ng4\n((lp311\ng18\nag302\nag228\nag20\nag303\nag67\nag304\nag305\nag180\nag22\nag23\nag306\nag307\nag63\nag308\nag27\nag309\nag230\nag279\natRp312\nsS'd'\nI01\nss.",
             "role": 1,
-            "create_timestamp": "2012-04-11T05:41:48.219Z",
+            "create_timestamp": "2012-04-11T06:06:24.148Z",
             "owner": null
         }
     },
@@ -1161,9 +1161,9 @@
                 "acmethodcall"
             ],
             "acl": 1,
-            "create_timestamp": "2012-04-11T05:41:48.244Z",
+            "create_timestamp": "2012-04-11T06:06:24.177Z",
             "owner": null,
-            "save_timestamp": "2012-04-11T05:41:48.244Z",
+            "save_timestamp": "2012-04-11T06:06:24.177Z",
             "ac_check_parameters": "(dp1\nS'role_name'\np2\nS'Administrator'\np3\ns."
         }
     },
@@ -1177,9 +1177,9 @@
                 "acmethodcall"
             ],
             "acl": 1,
-            "create_timestamp": "2012-04-11T05:41:48.268Z",
+            "create_timestamp": "2012-04-11T06:06:24.198Z",
             "owner": null,
-            "save_timestamp": "2012-04-11T05:41:48.268Z",
+            "save_timestamp": "2012-04-11T06:06:24.198Z",
             "ac_check_parameters": "(dp1\nS'role_name'\np2\nS'Administrator'\np3\ns."
         }
     },
@@ -1203,13 +1203,13 @@
         "pk": 2,
         "model": "pr_services.domain",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:48.182Z",
+            "save_timestamp": "2012-04-11T06:06:24.091Z",
             "final_type": [
                 "pr_services",
                 "domain"
             ],
             "password_hash_type": "SHA-512",
-            "create_timestamp": "2012-04-11T05:41:48.182Z",
+            "create_timestamp": "2012-04-11T06:06:24.091Z",
             "authentication_ip": null,
             "authentication_password_hash": "",
             "name": "LDAP"
@@ -1365,9 +1365,9 @@
         "pk": 1,
         "model": "pr_services.organization",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:48.458Z",
+            "save_timestamp": "2012-04-11T06:06:24.377Z",
             "photo": "",
-            "create_timestamp": "2012-04-11T05:41:48.458Z",
+            "create_timestamp": "2012-04-11T06:06:24.377Z",
             "owner": null,
             "primary_contact_first_name": "",
             "use_external_uid": false,
@@ -1398,13 +1398,13 @@
         "pk": 1,
         "model": "pr_services.role",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:48.199Z",
+            "save_timestamp": "2012-04-11T06:06:24.118Z",
             "final_type": [
                 "pr_services",
                 "role"
             ],
             "notes": [],
-            "create_timestamp": "2012-04-11T05:41:48.199Z",
+            "create_timestamp": "2012-04-11T06:06:24.118Z",
             "owner": null,
             "name": "Organization Administrator"
         }
@@ -1453,7 +1453,7 @@
         "pk": 1,
         "model": "pr_services.userorgrole",
         "fields": {
-            "save_timestamp": "2012-04-11T05:41:48.493Z",
+            "save_timestamp": "2012-04-11T06:06:24.414Z",
             "final_type": [
                 "pr_services",
                 "userorgrole"
@@ -1462,7 +1462,7 @@
             "title": null,
             "persistent": false,
             "role": 1,
-            "create_timestamp": "2012-04-11T05:41:48.493Z",
+            "create_timestamp": "2012-04-11T06:06:24.414Z",
             "owner": 2,
             "organization": 1
         }

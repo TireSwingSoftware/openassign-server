@@ -290,3 +290,56 @@ class TestAdminAssistantRole(OrgRoleBase, OrgRoleTests,
         'test_user_add_second_organization',
         'test_user_update_basic',
     ]
+
+
+class TestServDealerAdminRole(OrgRoleBase, OrgRoleTests,
+                              common.AssignmentViewTests,
+                              common.EnrollmentTests,
+                              common.EventTests,
+                              common.ExamTests,
+                              common.UserTests):
+    """
+    Verifies the privileges for the "Serv Dealer Admin" authorizer role which
+    implies that the user has the "Serv Dealer Admin" OrgRole for an
+    organization.  (issue #133).
+    """
+
+    ORGROLE_NAME = 'Serv Dealer Admin'
+
+    # check that the following tests fail because of
+    # a PermissionDenied exception
+    CHECK_PERMISSION_DENIED = [
+        'test_change_curriculum_enrollment_status',
+        'test_create_curriculum',
+        'test_create_curriculum_enrollment',
+        'test_create_event',
+        'test_enroll_user_in_event',
+        'test_enroll_users_in_curriculum',
+        'test_exam_create_from_xml',
+        'test_exam_export_to_xml',
+        'test_exam_manager_xml',
+        'test_modify_user_in_different_org',
+        'test_read_users_in_other_org',
+        'test_update_event',
+        'test_user_add_initial_organization',
+        'test_user_add_organization_role',
+        'test_user_add_second_organization',
+        'test_user_update_basic',
+    ]
+
+
+    @load_fixtures('task_bundles')
+    def test_read_any_task_bundle(self):
+        bundles = TaskBundle.objects.all()
+        self.assertEquals(len(bundles), 3)
+        other_org = Organization.objects.create(name="Some Org")
+        bundles[0].organization = other_org
+        bundles[0].save()
+        result = self.task_bundle_manager.get_filtered({}, ('name', 'description'))
+        self.assertEquals(len(result), len(bundles))
+        self.assertIn('name', result[0])
+        self.assertIn('description', result[0])
+
+
+
+

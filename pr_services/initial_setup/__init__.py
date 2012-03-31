@@ -62,6 +62,7 @@ class InitialSetupMachine(object):
               'create_organization_admin_role',
               'create_owner_manager_role',
               'create_admin_assistant_role',
+              'create_serv_dealer_admin_role',
             ],
         }
 
