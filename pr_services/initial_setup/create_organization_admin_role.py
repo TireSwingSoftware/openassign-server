@@ -2,10 +2,15 @@
 from pr_services.initial_setup.admin_privs import admin_privs
 
 def setup(machine):
+    role_name = 'Administrator'
     checks = [
-        { # this check covers all actee types
+        { # Allow method calls as long as the user has the orgrole
+            'name': 'method.caller_has_orgrole',
+            'params': {'role_name': role_name}
+        },
+        { # Check the actor has the OrgRole for the actee's org
             'name': 'membership.orgrole.actor_role_in_actee_org',
-            'params': { 'role': 'Administrator' }
+            'params': {'role_name': role_name}
         }
     ]
     privs = {}
