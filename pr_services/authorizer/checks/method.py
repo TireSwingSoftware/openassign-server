@@ -55,6 +55,9 @@ def _check_context(context):
                 'parameters': { 'restrict': 'FooManager.foo_method'}}
            ]
     """
+    if context['op'] != 'm':
+        raise InvalidActeeTypeException()
+
     manager, method, args, kwargs = unpack_context(context)
     try:
         restrict_manager, restrict_method = context['restrict'].split('.')
