@@ -21,13 +21,6 @@ class PrException(Exception):
     #: dictionary of details for the error
     details = {}
 
-    def __new__(cls, *args, **kwds):
-        instance = super(PrException, cls).__new__(cls, *args, **kwds)
-        # Explicitly copy class attributes to instance attributes.
-        for attr in ('error_code', 'error_msg', 'details'):
-            setattr(instance, attr, copy.copy(getattr(cls, attr)))
-        return instance
-
     def get_error_code(self):
         """
         Returns the exception's error code.
