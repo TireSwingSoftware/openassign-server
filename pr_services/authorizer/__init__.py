@@ -455,11 +455,15 @@ class Authorizer(object):
 
         authorized = cls.get_authorized_attributes(op, auth_token, actee, attributes)
         if not authorized:
-            raise exceptions.PermissionDeniedException()
+            raise exceptions.PermissionDeniedException(
+                    denied_attributes=attributes,
+                    denied_model=actee._meta.object_name)
 
-        denied = attributes - authorized
-        if denied:
-            raise exceptions.PermissionDeniedException(denied, actee._meta.object_name)
+        denied_attributes = attributes - authorized
+        if denied_attributes:
+            raise exceptions.PermissionDeniedException(
+                    denied_attributes=denied_attributes,
+                    denied_model=actee._meta.object_name)
 
     @classmethod
     def check_read_permissions(cls, auth_token, actee, attributes):

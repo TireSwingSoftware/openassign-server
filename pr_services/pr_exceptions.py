@@ -126,15 +126,15 @@ class PermissionDeniedException(PrException):
 
     def __init__(self, denied_attributes=None, denied_model=None):
         if denied_attributes:
-            if isinstance(denied_attributes, str):
-                self.error_msg = 'permission denied for the "%s" attribute' % \
-                    (denied_attributes)
+            if isinstance(denied_attributes, basestring):
+                self.error_msg += ' for the "%s" attribute' % denied_attributes
             else:
-                self.error_msg = ('permission denied for the following '
-                        'attributes: %r' % tuple(denied_attributes))
+                attrs = ','.join(map(repr, denied_attributes))
+                self.error_msg += ' for the following attributes: (%s)' % attrs
 
         if denied_model:
-            self.error_msg += ' on the %s model' % (denied_model)
+            self.error_msg += ', on the %s model' % (denied_model)
+
 
 class DuplicateTokenGeneratedException(PrException):
     """
