@@ -3175,9 +3175,11 @@ class TestUserManager(GeneralTestCase):
         org1 = self.organization_manager.create('Org 1')
         orgrole1 = self.org_role_manager.create('Org Role 1')
         group1 = Group.objects.create(name='Jerks')
+        credential_type1 = CredentialType.objects.create(name='Bachelor of Arts')
         jerk = self.user_manager.create('george', 'initial_password', 'Mr.', 'first_name',
                            'last_name', '555.555.5555', 'foo@bar.org',
                            'active', {'groups':[group1.id], 'organizations' : {'add' : [{'id' : org1.id, 'role' : orgrole1.id}]}})
+        Credential.objects.create(user=jerk, credential_type=credential_type1)
 
         ret = self.user_manager.admin_users_view(self.admin_token)
         for user in ret:
@@ -3190,6 +3192,9 @@ class TestUserManager(GeneralTestCase):
                 self.assertEqual(len(user['owned_userorgroles']), 1)
                 self.assertTrue('organization_name' in user['owned_userorgroles'][0])
                 self.assertEqual(user['owned_userorgroles'][0]['organization_name'], org1.name)
+                self.assertEqual(len(user['credentials']), 1)
+                self.assertTrue('credential_type_name' in user['credentials'][0])
+                self.assertEqual(user['credentials'][0]['credential_type_name'], credential_type1.name)
 
         ret = self.user_manager.admin_users_view(self.admin_token,
                 {'exact': {'id' :jerk.id}})

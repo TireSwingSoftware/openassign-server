@@ -13,6 +13,7 @@ class CredentialManager(ObjectManager):
     GETTERS = {
         'authority': 'get_general',
         'credential_type': 'get_foreign_key',
+        'credential_type_name': 'get_general',
         'date_assigned': 'get_time',
         'date_expires': 'get_time',
         'date_granted': 'get_time',

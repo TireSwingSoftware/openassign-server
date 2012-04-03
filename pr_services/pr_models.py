@@ -732,6 +732,10 @@ class Credential(OwnedPRModel):
     status = models.CharField(max_length=8, null=False, choices=STATUS_CHOICES,
         default='pending')
 
+    @property
+    def credential_type_name(self):
+        return self.credential_type.name
+
     def __unicode__(self):
         return u'Credential, id=%d' % (self.id)
 

@@ -1132,7 +1132,9 @@ class UserManager(ObjectManager):
                 ('groups',
                     ('name', )),
                 ('achievement_awards',
-                    ('achievement_name', 'date' ))
+                    ('achievement_name', 'date')),
+                ('credentials',
+                    ('credential_type_name', 'status', 'date_granted', 'date_expires')) 
             ))
         return view(auth_token, *args, **kwargs)
 
