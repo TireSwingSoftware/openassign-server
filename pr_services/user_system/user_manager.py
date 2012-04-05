@@ -800,9 +800,11 @@ class UserManager(ObjectManager):
 
         ret = self.get_filtered(auth_token, {'exact' : {'id':da.user.id}}, [
             'id', 'groups', 'first_name', 'last_name',
-            'title', 'email', 'phone', 'status', 'organizations', 'groups'])
+            'title', 'email', 'phone', 'status', 'organizations', 'groups', 'owned_userorgroles'])
 
-        ret = Utils.merge_queries(ret, facade.managers.GroupManager(), auth_token, ['name'], 'groups')[0]
+        ret = Utils.merge_queries(ret, facade.managers.GroupManager(), auth_token, ['name'], 'groups')
+        ret = Utils.merge_queries(ret, facade.managers.OrganizationManager(), auth_token, ['name', 'descendants'], 'organizations')
+        ret = Utils.merge_queries(ret, facade.managers.UserOrgRoleManager(), auth_token, ['organization', 'role', 'role_name', 'organization_name'], 'owned_userorgroles')[0]
 
         ret.update({'auth_token' : auth_token.session_id,
                     'username' : da.username,
