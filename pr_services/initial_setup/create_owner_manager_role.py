@@ -20,6 +20,7 @@ def setup(machine):
         'Exam',  # expose additional attributes for Exams
         'FileDownload',
         'FileUpload',
+        'Organization',
         'Session',
         'SessionUserRoleRequirement',
         'Task', # includes all subclasses

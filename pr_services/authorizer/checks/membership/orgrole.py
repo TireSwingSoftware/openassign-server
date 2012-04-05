@@ -294,3 +294,13 @@ def actor_orgrole_for_resource(auth_token, actee, role, *args, **kwargs):
     """
     query = Q(organization__events__sessions__session_resource_type_requirements=actee)
     return check_orgrole(auth_token, role, query=query)
+
+@check(Organization)
+def actor_orgrole_for_organization(auth_token, actee, role, *args, **kwargs):
+    """
+    Return True if the actor has the specified OrgRole for any
+    organization at all.
+    """
+    return UserOrgRole.objects.filter(
+            role__name=role,
+            owner__id=auth_token.user_id).exists()
