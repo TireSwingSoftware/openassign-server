@@ -126,4 +126,15 @@ class EventManager(ObjectManager):
         self.authorizer.check_create_permissions(auth_token, e)
         return e
 
+    @service_method
+    def detail_view(self, auth_token, *args, **kwargs):
+        view = self.build_view(
+            fields=('name', 'title', 'description', 'start', 'end',
+                    'lead_time', 'sessions'),
+            merges=(
+                ('organization',
+                    ('name',)),
+            ))
+        return view(auth_token, *args, **kwargs)
+
 # vim:tabstop=4 shiftwidth=4 expandtab
