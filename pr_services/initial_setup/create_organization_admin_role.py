@@ -35,6 +35,7 @@ def setup(machine):
 
     read_only_objects = (
         'CredentialType',
+        'Organization',
         'Resource',
         'Response', # for exams
         'Task',
