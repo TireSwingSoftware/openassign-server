@@ -13,6 +13,7 @@ import inspect
 import operator
 import os
 import time
+import unittest
 import urllib2
 import uuid
 
@@ -20,7 +21,7 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 from functools import partial
 from operator import attrgetter, itemgetter
-from mock import Mock, patch
+from mock import Mock, MagicMock, patch
 
 import django.test.client
 import django.utils.dateformat
@@ -3608,6 +3609,19 @@ class TestObjectManager(GeneralTestCase, CommonObjectManagerTests):
             {'sessions__start': s3_start.isoformat(' ')}}, ['id'])
         self.assertEquals(len(ret), 1)
         self.assertEquals(ret[0]['id'], e2.id)
+
+
+class TestGetFilteredNoDB(unittest.TestCase):
+    def test_isnull_filter(self):
+        """
+        make sure that our get_filtered API accepts its 'isnull' parameter and
+        produces the corresponding django ORM filter in a Q object.
+        """
+        filter_instance = ObjectManager.Filter(MagicMock())
+        ret = filter_instance.construct_query({'isnull': {'field_name' : True}})
+        self.assertTrue(isinstance(ret, Q))
+        self.assertEqual(len(ret.children), 1)
+        self.assertEqual(ret.children[0], ('field_name__isnull', True))
 
 
 class TestGetFiltered(BasicTestCase):

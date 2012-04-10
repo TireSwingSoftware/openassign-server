@@ -250,6 +250,7 @@ class ObjectManager(object):
             'icontains' : 'icontains',
             'range' : 'range',
             'member' : 'in',
+            'isnull' : 'isnull',
         }
 
         boolean_operators = ('and', 'or', 'not')
