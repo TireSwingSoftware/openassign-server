@@ -9,7 +9,7 @@ def setup(machine):
             'params': {'role_name': role_name}
         },
         { # Check the actor has the OrgRole for the actee's org
-            'name': 'membership.orgrole.actor_role_in_actee_org',
+            'name': 'membership.orgrole.actor_has_role_for_actee',
             'params': {'role_name': role_name}
         }
     ]

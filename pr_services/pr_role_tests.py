@@ -5,6 +5,7 @@ of common tests in testlib.
 
 import facade
 
+from abc import abstractproperty
 from functools import partial
 
 from pr_services import pr_time
@@ -128,31 +129,57 @@ class TestSessionParticipantRole(TestCase):
         self.assertDictEqual(events[0], expected)
 
 
-class OrgRoleTest(RoleTestCase, GeneralTestCase):
+class OrgRoleBase(RoleTestCase, GeneralTestCase):
     fixtures = [
         'initial_setup_precor',
         'legacy_objects',
         'precor_org_roles',
     ]
 
-    ORGROLE_NAME = None
+    ORGROLE_NAME = abstractproperty()
 
     def setUp(self):
-        super(OrgRoleTest, self).setUp()
+        super(OrgRoleBase, self).setUp()
         update_user = self.admin_user_manager.update
         # put user1 and 2 in organization1
         org_dict = {'organizations': {'add': [{'id': self.organization1.id}]}}
         update_user(self.user2.id, org_dict)
 
-        orgrole = OrgRole.objects.get(name=self.ORGROLE_NAME)
-        new_role = {'id': orgrole.id, 'organization': self.organization1.id}
+        self.orgrole = OrgRole.objects.get(name=self.ORGROLE_NAME)
+        new_role = {'id': self.orgrole.id, 'organization': self.organization1.id}
         role_dict = {'roles': {'add': [new_role]}}
         update_user(self.user1.id, role_dict)
         # use auth token from user1 for all subsequent tests
         self.auth_token = self.user1_auth_token
 
 
-class TestOrganizationAdminRole(OrgRoleTest,
+class OrgRoleTests:
+    # These are separate so nose doesnt run tests in the abstract base class.
+
+    @load_fixtures('precor_orgs', 'precor_org_roles')
+    def test_privileges_apply_for_descendent_org(self):
+        from authorizer.checks.membership.orgrole import actor_has_role_for_actee
+        org1 = self.organization1
+        org2 = Organization.objects.create(name='XYZ', parent=org1)
+        org3 = Organization.objects.create(name='ABC', parent=org2)
+        exam1 = Exam.objects.create(name='Exam 1', organization=org2)
+        exam2 = Exam.objects.create(name='Exam 2', organization=org3)
+        func = partial(actor_has_role_for_actee, self.auth_token,
+                role_name=self.ORGROLE_NAME, op='r')
+
+        result = func(exam1)
+        self.assertTrue(result)
+        result = func(exam2)
+        self.assertTrue(result)
+        org3.parent = None
+        org3.save()
+        result = func(exam2)
+        self.assertFalse(result)
+        result = func(exam1)
+        self.assertTrue(result)
+
+
+class TestOrganizationAdminRole(OrgRoleBase, OrgRoleTests,
                                 common.AssignmentViewTests,
                                 common.CredentialTests,
                                 common.EnrollmentTests,
@@ -197,8 +224,7 @@ class TestOrganizationAdminRole(OrgRoleTest,
             self.user_manager.update(user.id, {'status': 'active'})
 
 
-
-class TestOwnerManagerRole(OrgRoleTest,
+class TestOwnerManagerRole(OrgRoleBase, OrgRoleTests,
                            common.AssignmentViewTests,
                            common.EnrollmentTests,
                            common.ExamTests,

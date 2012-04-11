@@ -15,14 +15,15 @@ runs before the function being decorated to ensure that the actor actually
 has the role in question.
 """
 import inspect
-import logging
 import types
 
-from collections import defaultdict
+from collections import defaultdict, Set
 
-from django.db.models import Q
+from django.db.models import Manager
+from django.db.models.query import QuerySet
 
 from pr_services.authorizer.checks import check as _check
+from pr_services.caching import ORG_DESCENDENT_CACHE
 from pr_services.exceptions import InvalidActeeTypeException
 
 import facade
@@ -32,17 +33,25 @@ facade.import_models(locals())
 # A mapping between actee_type and corresponding check functions
 ORGROLE_CHECKS = defaultdict(list)
 
-def ensure_actor_has_orgrole_hook(func, auth_token, actee, role, *args, **kwargs):
-    """A pre-check hook that will ensure that the actor has the role in question
-    before continuing the rest of check."""
-    query = Q(role__name=role, owner__id=auth_token.user_id)
-    return UserOrgRole.objects.filter(query).exists()
+@_check
+def actor_has_orgrole(auth_token, role_name, *args, **kwargs):
+    return role_name in auth_token.user_roles_by_name
+
+
+def ensure_actor_has_orgrole_hook(func, auth_token, actee, role_name,
+        *args, **kwargs):
+    """
+    A pre-check hook that will ensure that the actor has the role
+    in question before continuing the rest of check.
+    """
+    return actor_has_orgrole(auth_token, role_name)
 
 # The following defines hooks which will run before every check in this module.
 ORGROLE_CHECK_HOOKS = (ensure_actor_has_orgrole_hook, )
 
-# Redefine the check decorator to populate the ORGROLE_CHECKS mapping
-# and attach the pre-check hooks.
+# XXX: The following redefines the check decorator for all subsequent uses,
+# in order to populate the ORGROLE_CHECKS mapping and attach
+# the pre-check hooks.
 def check(*args):
     # decorating a function directly
     if len(args) == 1 and isinstance(args[0], types.FunctionType):
@@ -59,180 +68,226 @@ def check(*args):
     return wrapper
 
 
-def check_orgrole_with_orgs(auth_token, role, orgs):
+def check_role_in_orgs(auth_token, role_name, actee_orgs):
     """
     Check that the `auth_token` user has the `role` OrgRole for one of the
-    organizations in `orgs` (a QuerySet of Organization objects).
+    organizations in `actee_orgs`.
 
     Args:
-        auth_token - the users auth_token
-        role - the name of the OrgRole to check
-        orgs - a QuerySet of Organization objects
-
+        auth_token: The user's auth token
+        role_name: The name of the OrgRole to check for
+        actee_orgs: A set of organization ids or a QuerySet of Organization
+                    objects.
     Returns:
         True if the `auth_token` user has the OrgRole in one of the specified
-        organizations. False otherwise.
+        organizations or its descendent organizations. False otherwise.
     """
-    return UserOrgRole.objects.filter(
-            role__name=role,
-            owner__id=auth_token.user_id,
-            organization__in=orgs).exists()
+    actor_roles = auth_token.user_roles_by_name
+    if not actor_roles:
+        return False
+
+    actor_orgs = actor_roles.get(role_name, None)
+    if not actor_orgs:
+        return False
+
+    assert isinstance(actor_orgs, Set)
+
+    if isinstance(actee_orgs, (QuerySet, Manager)):
+        actee_orgs = set(actee_orgs.values_list('id', flat=True))
+    elif not isinstance(actee_orgs, Set):
+        actee_orgs = set(actee_orgs)
+
+    if not actee_orgs:
+        return False
+
+    if actor_orgs & actee_orgs:
+        return True
+
+    return any(actee_orgs & ORG_DESCENDENT_CACHE[org] for org in actor_orgs)
 
 
-def check_orgrole(auth_token, role, org=None, query=None):
+def check_role_in_org(auth_token, role_name, org_id):
     """
-    Check that the `auth_token` user has the `role` OrgRole for `org`,
-    or for one of the orgs matched by a query on the `auth_token` user's
-    organizations restricted with `query` (a Django Q object).
+    Check that the `auth_token` user has the OrgRole with `role_name` for the
+    organization specified by `org_id` or one of its descendents.
 
     Args:
-        auth_token - the users auth token
-        role - the name of the OrgRole we are checking
-        org - *optional* a specific organization to limit the check
-        query - *optional* additional query to restrict organizations
+        auth_token - the user's auth token
+        role_name - the name of the actor's OrgRole we are checking for
+        org_id - the id of the organization we are checking against the actor
     """
-    base_query = Q(role__name=role, owner__id=auth_token.user_id)
-    if isinstance(org, Organization):
-        base_query &= Q(organization__id=org.id)
-    elif org:
-        base_query &= Q(organization__id=org)
-    query = query & base_query if query else base_query
-    return UserOrgRole.objects.filter(query).exists()
+    if not org_id:
+        return False
+
+    assert isinstance(org_id, (int, long))
+    return check_role_in_orgs(auth_token, role_name, (org_id, ))
 
 
 @check
-def actor_role_in_actee_org(auth_token, actee, role, *args, **kwargs):
-    """
-    Returns True if the actor has the specified OrgRole named `role` for an
-    organization, and the actee is a member of the same organization.
+def actor_has_role_for_actee(auth_token, actee, role_name,
+        excluded_types=frozenset(), restricted_ops=frozenset(),
+        *args, **kwargs):
+    """Returns True if the actor has the specified OrgRole named `role` for an
+    organization, and the actee is a member of the same organization or a
+    descendent organization.
 
-    This check supports ALL authorizable actee types for OrgRole privileges.
+    This check supports ALL authorizable actee types for OrgRole privileges. It
+    may be desirable to exclude some specific types from this broad check. In
+    that case, such types can be specified in `excluded_types`.
+
+    Arguments:
+        auth_token: The user's auth token.
+        actee: The object being acted on.
+        role: The name of the OrgRole required for the actor.
+        excluded_types: A set of types that will NOT be checked by this method.
+        restricted_ops: A set of operations which will be checked by this
+                        method.
     """
     t = type(actee)
-    typename = t.__name__
-    checks = ORGROLE_CHECKS.get(typename, None)
+    if t in excluded_types:
+        # TODO(jcon): Possibly use a different exception type here
+        raise InvalidActeeTypeException(actee)
+    if restricted_ops:
+        assert isinstance(restricted_ops, Set)
+        assert restricted_ops <= frozenset('crud')
+        if kwargs['op'] not in restricted_ops:
+            # TODO(jcon): Possibly use a different exception type here
+            raise InvalidActeeTypeException(actee)
+
+    checks = ORGROLE_CHECKS.get(t.__name__, None)
     if not checks:
         bases = inspect.getmro(t)
         for base in bases:
-            typename = type(base).__name__
-            checks = ORGROLE_CHECKS.get(typename, None)
+            checks = ORGROLE_CHECKS.get(type(base).__name__, None)
             if checks:
                 break
         else:
-            # XXX: No specialized checks found for type.
+            # No specialized checks were found for type.
             # Actee must have an organization attribute or
             # else we dont know about it
             assert not isinstance(actee, UserOrgRole)
             try:
-                return check_orgrole(auth_token, role, actee.organization)
+                org_id = actee.organization_id
             except AttributeError:
                 raise InvalidActeeTypeException(actee)
+            else:
+                return check_role_in_org(auth_token, role_name, org_id)
 
     assert checks
-    return all(func(auth_token, actee, role, *args, **kwargs) for func in checks)
+    for func in checks:
+        if not func(auth_token, actee, role_name, *args, **kwargs):
+            return False
+
+    return True
+
+
+@check(Achievement)
+def actor_has_role_for_achievement(auth_token, actee, role_name,
+        *args, **kwargs):
+    """
+    Returns True if the actor has the specified OrgRole for the
+    organization and the actee is an `Achievement` object. False otherwise.
+    """
+    return True
 
 
 @check(Assignment)
-def actor_orgrole_for_assignment(auth_token, actee, role, *args, **kwargs):
+def actor_has_role_for_assignment(auth_token, actee, role_name,
+        *args, **kwargs):
     """
     Returns True if the actor has the specified OrgRole for the
     organization to which the actee (an `Assignment` object) belongs.
     False otherwise.
     """
-    if (actor_orgrole_for_user(auth_token, actee.user, role, *args, **kwargs)):
-        return True
+    return actor_has_role_for_user(auth_token, actee.user, role_name,
+            *args, **kwargs)
 
 
 @check(Credential)
-def actor_orgrole_for_credential(auth_token, actee, role, *args, **kwargs):
+def actor_has_role_for_credential(auth_token, actee, role_name,
+        *args, **kwargs):
     """
-    Returns True if the actor has the specified OrgRole for the organization to
-    which the actee (a `Credential` object) belongs. False Otherwise.
+    Returns True if the actor has the specified OrgRole for the organization
+    to which the actee (a `Credential` object) belongs. False Otherwise.
     """
-    actee_orgs = actee.user.organizations.all()
-    if not actee_orgs:
-        return False
-
-    return check_orgrole_with_orgs(auth_token, role, actee_orgs)
+    orgs = actee.user.organizations.all()
+    return check_role_in_orgs(auth_token, role_name, orgs)
 
 
 @check(CredentialType)
-def actor_orgrole_for_credential_type(auth_token, actee, role, *args, **kwargs):
+def actor_has_role_for_credential_type(auth_token, actee, role_name,
+        *args, **kwargs):
     """
-    Returns True if the actor is a `CredentialType` object. Currently this is a
-    tautology because it always returns True. Support for differentiating
-    Credential types by Organization *may* be implemented in the future.
+    Returns True if the actee is a `CredentialType` object and the actor has
+    the role in question. Support for differentiating Credential types by
+    Organization *may* be implemented in the future.
     """
     return True
 
 
 @check(CurriculumTaskAssociation)
-def actor_orgrole_for_curriculum_task_assoc(auth_token, actee, role, *args, **kwargs):
+def actor_has_role_for_curriculum_task_assoc(auth_token, actee, role_name,
+        *args, **kwargs):
     """
     Returns True if the actor has the specified OrgRole for the
     organization to which the actee (a `CurriculumTaskAssignment`
     object) belongs. False otherwise
     """
     try:
-        organization = actee.curriculum.organization
+        org_id = actee.curriculum.organization_id
     except AttributeError:
         return False
-    else:
-        return check_orgrole(auth_token, role, organization)
 
-
-@check(Task)
-def actor_orgrole_for_task(auth_token, actee, role, *args, **kwargs):
-    """
-    Returns True if the actor has the specified OrgRole for the
-    organization to which the actee (a `Task` object or instance)
-    belongs. False otherwise.
-    """
-    return check_orgrole(auth_token, role, actee.organization)
+    return check_role_in_org(auth_token, role_name, org_id)
 
 
 @check(CurriculumEnrollment)
-def actor_orgrole_for_enrollment(auth_token, actee, role, *args, **kwargs):
+def actor_has_role_for_enrollment(auth_token, actee, role_name,
+        *args, **kwargs):
     """
     Returns True if the actor has the specified OrgRole for the
     organization to which the actee (a `CurriculumEnrollment` object)
     belongs. False otherwise.
     """
     try:
-        organization = actee.curriculum.organization
+        org_id = actee.curriculum.organization_id
     except AttributeError:
         return False
-    else:
-        return check_orgrole(auth_token, role, organization)
+
+    return check_role_in_org(auth_token, role_name, org_id)
+
+
+@check(CurriculumEnrollmentUserAssociation)
+def actor_has_role_for_enrollment_association(auth_token, actee, role_name,
+        *args, **kwargs):
+
+    # check the enrollment curriculum organization
+    if not actor_has_role_for_enrollment(auth_token,
+            actee.curriculum_enrollment, role_name, *args, **kwargs):
+        return False
+
+    # check the enrollment user
+    return actor_has_role_for_user(auth_token, actee.user, role_name,
+            *args, **kwargs)
 
 
 @check(Session)
-def actor_orgrole_for_session(auth_token, actee, role, *args, **kwargs):
+def actor_has_role_for_session(auth_token, actee, role_name, *args, **kwargs):
     """
     Returns True if the actor has the specified OrgRole for the
     organization to which the actee (a `Session` object) belongs. False
     otherwise.
     """
     try:
-        organization = actee.event.organization
+        org_id = actee.event.organization_id
     except AttributeError:
         return False
-    else:
-        return check_orgrole(auth_token, role, organization)
 
-
-@check(SessionUserRoleRequirement)
-def actor_orgrole_for_surr(auth_token, actee, role, *args, **kwargs):
-    """
-    Returns True if the actor has the specified OrgRole for the
-    organization to which the actee (as `SessionUserRoleRequirement` object)
-    belongs. False otherwise.
-    """
-    return actor_orgrole_for_task(auth_token, actee, role, *args, **kwargs)
+    return check_role_in_org(auth_token, role_name, org_id)
 
 
 @check(User)
-def actor_orgrole_for_user(auth_token, actee, role, *args, **kwargs):
+def actor_has_role_for_user(auth_token, actee, role_name, *args, **kwargs):
     """
     Returns True if the actor has the specified OrgRole for the
     organization to which the actee (a `User` object) belongs. False
@@ -240,38 +295,42 @@ def actor_orgrole_for_user(auth_token, actee, role, *args, **kwargs):
     """
     actee_orgs = actee.organizations.distinct()
     if not actee_orgs:
-        return True
+        return actee.status == u'pending'
 
-    return check_orgrole_with_orgs(auth_token, role, actee_orgs)
+    return check_role_in_orgs(auth_token, role_name, actee_orgs)
 
 
 @check(UserOrgRole)
-def actor_orgrole_for_userorgrole(auth_token, actee, role, *args, **kwargs):
+def actor_has_role_for_userorgrole(auth_token, actee, role_name,
+        *args, **kwargs):
     """
     Returns True if the actor has the specified OrgRole for the same
     organization as the actee (a `UserOrgRole` object) and the actee does not
     belong to other organizations.
     """
-    # XXX: Allow adding a user to an organization when the user has
+    # Allow adding a user to an organization when the user has
     # no previous organization affiliations.
     if not actee.owner.organizations.exists():
-        return True
+        return actee.owner.status == u'pending'
 
-    return check_orgrole(auth_token, role, actee.organization_id)
+    return check_role_in_org(auth_token, role_name, actee.organization_id)
 
 
 @check(Answer)
-def actor_orgrole_for_exam_answer(auth_token, actee, role, *args, **kwargs):
+def actor_has_role_for_exam_answer(auth_token, actee, role_name,
+        *args, **kwargs):
     """
     Returns True if the actor has the specified OrgRole for the
     organization which owns the actee, an `Answer` object.
     False otherwise.
     """
-    return actor_orgrole_for_exam_question(auth_token, actee.question, role, *args, **kwargs)
+    return actor_has_role_for_exam_question(auth_token,
+            actee.question, role_name, *args, **kwargs)
 
 
 @check(Question, QuestionPool)
-def actor_orgrole_for_exam_question(auth_token, actee, role, *args, **kwargs):
+def actor_has_role_for_exam_question(auth_token, actee, role_name,
+        *args, **kwargs):
     """
     Returns True if the actor has the specified OrgRole for the
     organization which owns the actee (a `Question` or `QuestionPool`
@@ -282,15 +341,16 @@ def actor_orgrole_for_exam_question(auth_token, actee, role, *args, **kwargs):
     else:
         exam = actee.question_pool.exam
 
-    return actor_orgrole_for_task(auth_token, exam, role, *args, **kwargs)
+    return check_role_in_org(auth_token, role_name, exam.organization_id)
 
 
 @check(Resource)
-def actor_orgrole_for_resource(auth_token, actee, role, *args, **kwargs):
+def actor_has_role_for_resource(auth_token, actee, role_name, *args, **kwargs):
     """
     Returns True if the actor has the specified OrgRole for the
     organization which owns the actee (a `Resource` object). False
     otherwise.
     """
-    query = Q(organization__events__sessions__session_resource_type_requirements=actee)
-    return check_orgrole(auth_token, role, query=query)
+    srtr = actee.session_resource_type_requirements
+    orgs = srtr.values_list('session__event__organization', flat=True)
+    return check_role_in_orgs(auth_token, role_name, orgs)
