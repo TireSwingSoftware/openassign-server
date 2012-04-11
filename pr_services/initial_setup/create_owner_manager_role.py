@@ -43,6 +43,8 @@ def setup(machine):
     )
     read = (
         'Assignment',
+        'Achievement',
+        'AchievementAward',
         'Credential',
         'CredentialType',
         'Event',
