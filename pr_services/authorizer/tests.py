@@ -11,7 +11,8 @@ from mock import Mock, patch
 from django.db import models
 from django.utils import timezone
 
-from pr_services.exceptions import PermissionDeniedException
+from pr_services.exceptions import (PermissionDeniedException,
+        InvalidActeeTypeException)
 from pr_services.object_manager import ObjectManager
 from pr_services.pr_models import PRModel
 from pr_services.rpc.service import service_method, public_service_method
@@ -413,3 +414,35 @@ class TestOrgRoleChecks(TestCase):
         with patch.dict(self.CHECKS, UserOrgRole=[check]):
             self.authorizer.check_create_permissions(self.auth_token, uorgrole)
         assert check.called
+
+    def test_excluded_types(self):
+        class Foo(models.Model):
+            pass
+        from checks.membership.orgrole import actor_has_role_for_actee
+        mock = Mock(return_value=False)
+        with patch.dict(self.CHECKS, Foo=[mock]):
+            result = actor_has_role_for_actee(None, Foo(), 'Foo')
+            assert not result
+            assert mock.called
+            mock.reset_mock()
+            with self.assertRaises(InvalidActeeTypeException):
+                actor_has_role_for_actee(None, Foo(), 'Foo',
+                                        excluded_types=(Foo,))
+            assert not mock.called
+
+    def test_restricted_ops(self):
+        class Foo(models.Model):
+            pass
+        from checks.membership.orgrole import actor_has_role_for_actee
+        mock = Mock(return_value=True)
+        func = partial(actor_has_role_for_actee, None, Foo(), 'Foo', op='r')
+        with patch.dict(self.CHECKS, Foo=[mock]):
+            result = func(restricted_ops=frozenset('r'))
+            self.assertTrue(result)
+            with self.assertRaises(InvalidActeeTypeException):
+                func(restricted_ops=frozenset('cud'))
+
+            with self.assertRaises(AssertionError):
+                func(restricted_ops='123', op='r')
+            with self.assertRaises(AssertionError):
+                func(restricted_ops=frozenset('123'))

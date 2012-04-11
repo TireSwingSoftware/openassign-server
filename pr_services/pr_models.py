@@ -18,7 +18,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db import models
-from django.db.models.signals import pre_save, post_delete
+from django.db.models import signals
 from django.dispatch import receiver
 from django.template import Template, Context
 from django.utils import timezone
@@ -2498,6 +2498,10 @@ class AuthToken(OwnedPRModel):
     ip = models.IPAddressField(default = '0.0.0.0')
     active = PRBooleanField(default = True)
 
+    def __init__(self, *args, **kwargs):
+        super(AuthToken, self).__init__(*args, **kwargs)
+        self._user_roles_by_name = None
+
     def __str__(self):
         return self.session_id
 
@@ -2515,11 +2519,47 @@ class AuthToken(OwnedPRModel):
 
     @property
     def cache_key(self):
-        return AuthToken.generate_cache_key(self.session_id)
+        return self.generate_cache_key(self.session_id)
 
     @staticmethod
-    def generate_cache_key(session_id):
-        return '%s%sSERIAL%s' % (AuthToken._meta.app_label, AuthToken._meta.object_name, session_id)
+    def generate_cache_key(key):
+        return '%s%sSERIAL%s' % (AuthToken._meta.app_label,
+                AuthToken._meta.object_name, key)
+
+    @classmethod
+    def post_save(cls, instance, raw, **kwargs):
+        if not raw:
+            cache.delete(instance.user_roles_by_name_key)
+
+    @classmethod
+    def post_delete(cls, instance, **kwargs):
+        cache.delete(instance.user_roles_by_name_key)
+
+    @property
+    def user_roles_by_name_key(self):
+        return '%s:roles_by_name' % self.session_id
+
+    @property
+    def user_roles_by_name(self):
+        """
+        A mapping over a user's owned UserOrgRole objects. The returned
+        dictionary maps a role name to a set of organization ids for which
+        the user has the role.
+        """
+        if self._user_roles_by_name is not None:
+            return self._user_roles_by_name
+        cache_key = self.user_roles_by_name_key
+        roles = cache.get(cache_key)
+        if roles is None:
+            roles, owned = {}, self.user.owned_userorgroles
+            for org_id, name in owned.values_list('organization', 'role__name'):
+                if name not in roles:
+                    roles[name] = set((org_id, ))
+                else:
+                    roles[name].add(org_id)
+            cache.set(cache_key, roles)
+        self._user_roles_by_name = roles
+        return roles
 
 
 class SingleUseAuthToken(AuthToken):
@@ -3327,7 +3367,7 @@ class DBSetting(models.Model):
 
 # Cache management
 
-@receiver(pre_save, sender=AuthToken)
+@receiver(signals.pre_save, sender=AuthToken)
 def auth_token_save_handler(sender, **kwargs):
     """
     When an auth_token is saved, we need to clear the stale one from the cache
@@ -3346,11 +3386,28 @@ def auth_token_save_handler(sender, **kwargs):
                 pass
         cache.delete(instance.cache_key)
 
-@receiver(post_delete, sender=AuthToken)
+@receiver(signals.post_delete, sender=AuthToken)
 def auth_token_delete_handler(sender, **kwargs):
     """ on delete, also clear from cache """
     if 'instance' in kwargs:
         cache.delete(kwargs['instance'].cache_key)
 
 
+def auth_token_userorgrole_handler(sender, instance, **kwargs):
+    if kwargs.get('raw', False):
+        return
+    try:
+        user = instance.owner
+    except User.DoesNotExist:
+        return
+
+    if user:
+        tokens = AuthToken.objects.filter(owner__id=user.id)
+        for token in tokens:
+            cache.delete(token.user_roles_by_name_key)
+
+signals.post_save.connect(auth_token_userorgrole_handler, sender=UserOrgRole)
+signals.post_delete.connect(auth_token_userorgrole_handler, sender=UserOrgRole)
+signals.post_save.connect(AuthToken.post_save, sender=AuthToken)
+signals.post_delete.connect(AuthToken.post_delete, sender=AuthToken)
 # vim:tabstop=4 shiftwidth=4 expandtab

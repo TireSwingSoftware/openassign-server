@@ -17,6 +17,9 @@ import facade
 
 facade.import_models(locals())
 
+from auth import actor_is_authenticated
+from membership.orgrole import actor_has_orgrole
+
 # Here goes a bit of hand waving to make everyone elses life a bit easier when
 # making new check methods for method calls.
 #
@@ -132,3 +135,19 @@ def instructor_can_email_task_assignees(auth_token, **context):
             session=surr.session,
             session_user_role__name="Instructor",
             users__in=[auth_token.user_id]).exists()
+
+
+@methodcheck
+def caller_is_authenticated(auth_token, **context):
+    """
+    Return True if a method call is being authorized and the user is
+    authenticated. Use this for allowing access to methods when the only
+    requirement is that the user of the role be logged in.
+    """
+    return auth.actor_is_authenticated(auth_token)
+
+
+@methodcheck
+def caller_has_orgrole(auth_token, role_name, **context):
+    "Check that the caller has an OrgRole named `role_name`."
+    return actor_has_orgrole(auth_token, role_name)

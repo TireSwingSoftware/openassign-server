@@ -2,10 +2,15 @@
 from pr_services.initial_setup.admin_privs import admin_privs
 
 def setup(machine):
+    role_name = 'Owner Manager'
     checks = [
+        { # Allow method calls as long as the user has the orgrole
+            'name': 'method.caller_has_orgrole',
+            'params': {'role_name': role_name}
+        },
         {
-            'name': 'membership.orgrole.actor_role_in_actee_org',
-            'params': {'role': 'Owner Manager'}
+            'name': 'membership.orgrole.actor_has_role_for_actee',
+            'params': {'role_name': role_name}
         }
     ]
     create = (
@@ -46,5 +51,5 @@ def setup(machine):
             'methods': set(('export_to_xml', 'create_from_xml'))
         },
     })
-    machine.add_acl_to_role("Owner Manager", checks, privs)
+    machine.add_acl_to_role(role_name, checks, privs)
 

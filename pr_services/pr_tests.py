@@ -30,6 +30,7 @@ import django.utils.unittest
 from django import test
 from django.conf import settings
 from django.core import mail
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
@@ -140,6 +141,33 @@ class TestAuthToken(GeneralTestCase):
         old_session_id = auth_token.session_id
         new_session_id = self.user_manager.relogin(auth_token)['auth_token']
         self.assertRaises(AuthToken.DoesNotExist, AuthToken.objects.get, session_id=old_session_id)
+
+    @load_fixtures('precor_org_roles')
+    def test_user_roles_by_name(self):
+        user, at = self.user1, self.user1_auth_token
+        org1, org2 = self.organization1, Organization.objects.create(name='XYZ')
+        role1 = OrgRole.objects.get(name='Administrator')
+        role2 = OrgRole.objects.get(name='Instructor')
+        role3 = OrgRole.objects.get(name='User')
+        UserOrgRole.objects.create(owner=user, role=role1, organization=org1)
+        UserOrgRole.objects.create(owner=user, role=role2, organization=org1)
+        UserOrgRole.objects.create(owner=user, role=role3, organization=org1)
+        UserOrgRole.objects.create(owner=user, role=role3, organization=org2)
+        expected = {
+            role1.name: set((org1.id,)),
+            role2.name: set((org1.id,)),
+            role3.name: set((org1.id, org2.id))
+        }
+        self.assertEquals(at.user_roles_by_name, expected)
+        key = at.user_roles_by_name_key
+        self.assertEquals(cache.get(key), expected)
+        at.renewal_timestamp = timezone.now()
+        at.save()
+        self.assertEquals(cache.get(key), None)
+        self.assertEquals(at.user_roles_by_name, expected)
+        at.delete()
+        self.assertEquals(cache.get(key), None)
+
 
 class TestBackendInfo(TestCase):
     def test_backend_info(self):
