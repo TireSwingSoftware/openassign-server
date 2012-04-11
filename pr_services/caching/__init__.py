@@ -51,8 +51,12 @@ class OrganizationDescendentCache(object):
 
     def __del__(self):
         # disconnect organization change notifications
-        signals.post_save.disconnect(self._post_save, sender=Organization)
-        signals.post_delete.disconnect(self._post_delete, sender=Organization)
+        try:
+            # python might be shutting down and these calls will fail
+            signals.post_save.disconnect(self._post_save, sender=Organization)
+            signals.post_delete.disconnect(self._post_delete, sender=Organization)
+        except:
+            pass
 
     #
     # Signal handlers
