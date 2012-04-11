@@ -1800,6 +1800,31 @@ class TestEventManager(GeneralTestCase):
             self.assertEquals(session.url, 'http://openassign.org')
             self.assertEquals(session.lead_time, 60*60*24*3)
 
+    @load_fixtures('session_and_event')
+    def test_detail_view(self):
+        e = Event.objects.get(id=1)
+        expected = {
+            'id': e.id,
+            'name': e.name,
+            'title': e.title,
+            'description': e.description,
+            'start': e.start.strftime('%Y-%m-%d'),
+            'end': e.end.strftime('%Y-%m-%d'),
+            'lead_time': e.lead_time,
+            'sessions': list(
+                e.sessions.order_by('id').values_list('id', flat=True)
+            ),
+            'organization': {
+                'id': e.organization.id,
+                'name': e.organization.name
+            }
+        }
+        result = self.event_manager.detail_view()
+        self.assertEquals(len(result), 1)
+        result[0]['sessions'] = sorted(result[0]['sessions'])
+        self.assertDictEqual(result[0], expected)
+
+
 
 class TestSessionManager(GeneralTestCase):
     def setUp(self):
