@@ -1,6 +1,8 @@
 
 from pr_services.initial_setup.admin_privs import admin_privs
 
+import facade
+
 def setup(machine):
     role_name = 'Owner Manager'
     checks = [
@@ -8,10 +10,30 @@ def setup(machine):
             'name': 'method.caller_has_orgrole',
             'params': {'role_name': role_name}
         },
+        # XXX: Perform regular OrgRole checks for create, update, and delete
+        # operations on all objects.
         {
             'name': 'membership.orgrole.actor_has_role_for_actee',
+            'params': {
+                'role_name': role_name,
+                'restricted_ops': frozenset('cud')
+            }
+        },
+        { # XXX: Exclude Task from the OrgRole check when doing
+          # read operations
+            'name': 'membership.orgrole.actor_has_role_for_actee',
+            'params': {
+                'role_name': role_name,
+                'restricted_ops': frozenset('r'),
+                'excluded_types': frozenset((facade.models.Task,))
+            }
+        },
+        # Ensure the actor is authenticated and has the proper role for
+        # anything skipped above.
+        {
+            'name': 'membership.orgrole.actor_has_orgrole',
             'params': {'role_name': role_name}
-        }
+        },
     ]
     create = (
         'Assignment',
@@ -21,15 +43,19 @@ def setup(machine):
     )
     read = (
         'Assignment',
+        'Credential',
+        'CredentialType',
         'Event',
-        'Exam',  # expose additional attributes for Exams
+        'Exam',
         'FileDownload',
         'FileUpload',
+        'OrgRole',
         'Organization',
         'Session',
         'SessionUserRoleRequirement',
-        'Task', # includes all subclasses
+        'Task',
         'User',
+        'UserOrgRole',
     )
     update = (
         'Assignment',
