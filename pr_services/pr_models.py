@@ -545,22 +545,14 @@ class Organization(OwnedPRModel):
 
     @property
     def descendants(self):
-        return self.get_descendants()
-
-    def get_descendants(self, descendants=None):
         """
         Return a list of primary keys including the children and all other descendants.
         This is useful for a client that wants to display the entire heirarchy. In
         one call, they can get a list of all ancestors and descendants, and in a
         second call retrieve the rest of those objects.
         """
-        if descendants is None:
-            descendants = []
-        if self.children.count() > 0:
-            descendants.extend(self.children.values_list('id', flat=True))
-            for child in self.children.all():
-                child.get_descendants(descendants)
-        return descendants
+        from pr_services.caching import ORG_DESCENDANT_CACHE
+        return list(ORG_DESCENDANT_CACHE[self.id])
 
 
 class OrgRole(PRModel):
