@@ -1,6 +1,6 @@
 
 
-from collections import deque, Set
+from collections import Set
 
 from django.core.cache import cache as DEFAULT_CACHE
 from django.db.models import signals
@@ -174,26 +174,14 @@ class OrganizationDescendantCache(object):
         # for use in the graph.
         nodes = self._get_org_nodes()
 
-        # Step 2: Build a transitive closure of descendants using a
-        # queue-based level order traversal over the org tree starting
-        # at one level up from the bottom.
-        q = deque()
+        # Step 2: Build a transitive closure of descendants
         for node in nodes.itervalues():
-            if node.descendants or node.parent is None:
+            if node.parent is None:
                 continue
-            parent = node.parent
-            if not parent.visited:
-                parent.visited = True
-                q.append(parent)
-
-        while q:
-            node = q.popleft()
-            for child in list(node.descendants):
-                node.descendants.update(child.descendants)
-            parent = node.parent
-            if parent and not parent.visited:
-                parent.visited = True
-                q.append(parent)
+            parent = node.parent.parent
+            while parent is not None:
+                parent.descendants.add(node)
+                parent = parent.parent
 
         # Return the resulting graph
         return nodes
@@ -201,8 +189,6 @@ class OrganizationDescendantCache(object):
 
 class OrgNode(object):
     "Internal data structure used in building an Organization graph."
-
-    visited = False
 
     def __init__(self, id, parent=None, descendants=None):
         self.id = int(id)
