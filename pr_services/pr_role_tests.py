@@ -12,7 +12,7 @@ from pr_services import pr_time
 from pr_services.exceptions import PermissionDeniedException
 from pr_services.testlib import (TestCase, BasicTestCase, RoleTestCase,
         GeneralTestCase, common)
-from pr_services.testlib.helpers import expectPermissionDenied, object_dict
+from pr_services.testlib.helpers import *
 
 facade.import_models(locals(), globals())
 
@@ -259,4 +259,31 @@ class TestOwnerManagerRole(OrgRoleBase, OrgRoleTests,
     ]
 
 
+class TestAdminAssistantRole(OrgRoleBase, OrgRoleTests,
+                             common.AssignmentViewTests,
+                             common.EnrollmentTests,
+                             common.ExamTests,
+                             common.EventTests,
+                             common.UserTests,
+                             common.VenueTests):
+    """
+    Verifies the privileges for the "Admin Assistant" authorizer role which
+    implies that the user has the "Admin Assitant" OrgRole for an organization.
+    (issue #132).
+    """
 
+    ORGROLE_NAME = 'Admin Assistant'
+
+    # check that the following tests fail because of
+    # a PermissionDenied exception
+    CHECK_PERMISSION_DENIED = [
+        'test_create_curriculum',
+        'test_create_curriculum_enrollment',
+        'test_create_event',
+        'test_enroll_user_in_event',
+        'test_modify_user_in_different_org',
+        'test_read_users_in_other_org',
+        'test_update_event',
+        'test_user_add_second_organization',
+        'test_user_update_basic',
+    ]
