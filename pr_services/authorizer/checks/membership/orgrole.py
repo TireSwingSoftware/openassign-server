@@ -23,7 +23,7 @@ from django.db.models import Manager
 from django.db.models.query import QuerySet
 
 from pr_services.authorizer.checks import check as _check
-from pr_services.caching import ORG_DESCENDENT_CACHE
+from pr_services.caching import ORG_DESCENDANT_CACHE
 from pr_services.exceptions import InvalidActeeTypeException
 
 import facade
@@ -80,7 +80,7 @@ def check_role_in_orgs(auth_token, role_name, actee_orgs):
                     objects.
     Returns:
         True if the `auth_token` user has the OrgRole in one of the specified
-        organizations or its descendent organizations. False otherwise.
+        organizations or its descendant organizations. False otherwise.
     """
     actor_roles = auth_token.user_roles_by_name
     if not actor_roles:
@@ -104,8 +104,8 @@ def check_role_in_orgs(auth_token, role_name, actee_orgs):
         return True
 
     for org in actor_orgs:
-        descendents = ORG_DESCENDENT_CACHE[org]
-        if descendents and actee_orgs & descendents:
+        descendants = ORG_DESCENDANT_CACHE[org]
+        if descendants and actee_orgs & descendants:
             return True
 
     return False
@@ -115,7 +115,7 @@ def check_role_in_orgs(auth_token, role_name, actee_orgs):
 def check_role_in_org(auth_token, role_name, org_id):
     """
     Check that the `auth_token` user has the OrgRole with `role_name` for the
-    organization specified by `org_id` or one of its descendents.
+    organization specified by `org_id` or one of its descendants.
 
     Args:
         auth_token - the user's auth token
@@ -135,7 +135,7 @@ def actor_has_role_for_actee(auth_token, actee, role_name,
         *args, **kwargs):
     """Returns True if the actor has the specified OrgRole named `role` for an
     organization, and the actee is a member of the same organization or a
-    descendent organization.
+    descendant organization.
 
     This check supports ALL authorizable actee types for OrgRole privileges. It
     may be desirable to exclude some specific types from this broad check. In

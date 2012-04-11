@@ -2,7 +2,7 @@
 from random import randint
 from mock import Mock, MagicMock
 
-from pr_services.caching import OrganizationDescendentCache
+from pr_services.caching import OrganizationDescendantCache
 from pr_services.testlib import TestCase
 
 import facade
@@ -32,7 +32,7 @@ class TestOrgDescendentCache(TestCase):
         super(TestOrgDescendentCache, self).setUp()
         _backend = self.MockCacheBackend()
         self.backend = MagicMock(wraps=_backend)
-        self.cache = OrganizationDescendentCache(backend=self.backend)
+        self.cache = OrganizationDescendantCache(backend=self.backend)
         self.cache.rebuild = Mock(wraps=self.cache.rebuild)
         self.expected = { # based on the precor_orgs fixture
             1: frozenset((2,3,4,5,6,7)),
@@ -119,7 +119,7 @@ class TestOrgDescendentCache(TestCase):
     def test_dropped_keys(self):
         self.cache.rebuild()
         self.assertEquals(self.cache._cache_key(1),
-                'OrganizationDescendentCache:1:1')
+                'OrganizationDescendantCache:1:1')
         self.assertEquals(self.cache.generation, 1)
         self.assertEquals(self.cache[1], self.expected[1])
         self.assertEquals(self.cache.hits, 1)
@@ -128,22 +128,22 @@ class TestOrgDescendentCache(TestCase):
         self.backend.set(self.cache.generation_key, 1)
         self.assertEquals(self.cache[1], self.expected[1])
         self.assertEquals(self.cache._cache_key(1),
-                'OrganizationDescendentCache:1:2')
+                'OrganizationDescendantCache:1:2')
         self.assertEquals(self.cache.generation, 2)
         self.assertEquals(self.cache.hits, 1)
         self.assertEquals(self.cache.misses, 1)
 
     def test_key_generation(self):
         one = self.cache._cache_key('foo')
-        self.assertEquals(one, 'OrganizationDescendentCache:foo:0')
+        self.assertEquals(one, 'OrganizationDescendantCache:foo:0')
 
         self.cache.rebuild()
         two = self.cache._cache_key('foo')
-        self.assertEquals(two, 'OrganizationDescendentCache:foo:1')
+        self.assertEquals(two, 'OrganizationDescendantCache:foo:1')
 
         self.cache.rebuild()
         three = self.cache._cache_key('foo')
-        self.assertEquals(three, 'OrganizationDescendentCache:foo:2')
+        self.assertEquals(three, 'OrganizationDescendantCache:foo:2')
 
     def test_descendents(self):
         for key, value in self.expected.iteritems():

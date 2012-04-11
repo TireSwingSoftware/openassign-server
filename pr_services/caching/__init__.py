@@ -9,17 +9,17 @@ import facade
 
 Organization = facade.models.Organization
 
-__all__ = ('ORG_DESCENDENT_CACHE',)
+__all__ = ('ORG_DESCENDANT_CACHE',)
 
-class OrganizationDescendentCache(object):
+class OrganizationDescendantCache(object):
     """
     A read-only cache that computes and stores a transitive closure over all
-    descendents of an Organization. This relationship is determined by the
+    descendants of an Organization. This relationship is determined by the
     `parent` attribute in the `Organization` Model. The cache exposes a
-    mapping from organization id to a set of descendent organization ids.
+    mapping from organization id to a set of descendant organization ids.
 
     In other words if A is a parent of B and B is a parent of C, then C is a
-    descendent of A. Consequently, a lookup in this cache for the id of A will
+    descendant of A. Consequently, a lookup in this cache for the id of A will
     return a set of ids -> {B, C}. A lookup for the id of B will return a
     set -> {C, }. A lookup for the id of C will return an empty set.
     """
@@ -112,7 +112,7 @@ class OrganizationDescendentCache(object):
             # XXX: all new keys are stored in the next generation group
             # which becomes active at the end of this routine
             key = self._cache_key(org_id, next_generation)
-            value = frozenset(d.id for d in node.descendents)
+            value = frozenset(d.id for d in node.descendants)
             if return_key == org_id:
                 assert not return_value
                 return_value = value
@@ -145,7 +145,7 @@ class OrganizationDescendentCache(object):
         """
         Builds an adjacency list of organization-parent pairs using
         OrgNode objects. At the end of the routine each node will reference it's
-        first order descendents.
+        first order descendants.
         """
         nodes = {}
         for id, parent_id in Organization.objects.values_list('id', 'parent'):
@@ -157,29 +157,29 @@ class OrganizationDescendentCache(object):
                 if not parent:
                     parent = OrgNode(parent_id)
                     nodes[parent_id] = parent
-                parent.descendents.add(node)
+                parent.descendants.add(node)
                 node.parent = parent
         return nodes
 
     def _build_org_graph(self):
         """
         Constructs a graph of the transitive closure over
-        Organization descendents.
+        Organization descendants.
 
         Returns:
             A dictionary mapping each organization id to an OrgNode object with
-            it's descendents' transitive closure computed.
+            it's descendants' transitive closure computed.
         """
         # Step 1: Convert Organization adjacencies into a Node structure
         # for use in the graph.
         nodes = self._get_org_nodes()
 
-        # Step 2: Build a transitive closure of descendents using a
+        # Step 2: Build a transitive closure of descendants using a
         # queue-based level order traversal over the org tree starting
         # at one level up from the bottom.
         q = deque()
         for node in nodes.itervalues():
-            if node.descendents or node.parent is None:
+            if node.descendants or node.parent is None:
                 continue
             parent = node.parent
             if not parent.visited:
@@ -188,8 +188,8 @@ class OrganizationDescendentCache(object):
 
         while q:
             node = q.popleft()
-            for child in list(node.descendents):
-                node.descendents.update(child.descendents)
+            for child in list(node.descendants):
+                node.descendants.update(child.descendants)
             parent = node.parent
             if parent and not parent.visited:
                 parent.visited = True
@@ -204,10 +204,10 @@ class OrgNode(object):
 
     visited = False
 
-    def __init__(self, id, parent=None, descendents=None):
+    def __init__(self, id, parent=None, descendants=None):
         self.id = int(id)
         self.parent = parent
-        self.descendents = descendents if descendents else set()
+        self.descendants = descendants if descendants else set()
 
     def __eq__(self, other):
         return self.id == other.id
@@ -216,4 +216,4 @@ class OrgNode(object):
         return hash(self.id)
 
 
-ORG_DESCENDENT_CACHE = OrganizationDescendentCache()
+ORG_DESCENDANT_CACHE = OrganizationDescendantCache()
