@@ -103,7 +103,13 @@ def check_role_in_orgs(auth_token, role_name, actee_orgs):
     if actor_orgs & actee_orgs:
         return True
 
-    return any(actee_orgs & ORG_DESCENDENT_CACHE[org] for org in actor_orgs)
+    for org in actor_orgs:
+        descendents = ORG_DESCENDENT_CACHE[org]
+        if descendents and actee_orgs & descendents:
+            return True
+
+    return False
+
 
 
 def check_role_in_org(auth_token, role_name, org_id):

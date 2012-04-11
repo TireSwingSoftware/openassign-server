@@ -1,6 +1,6 @@
 
 
-from collections import deque
+from collections import deque, Set
 
 from django.core.cache import cache as DEFAULT_CACHE
 from django.db.models import signals
@@ -130,7 +130,7 @@ class OrganizationDescendentCache(object):
         # XXX: read operations will continue to use the current cache
         # generation number while the cache is rebuilt into the next generation.
         value = self.backend.get(self._cache_key(key))
-        if value is None:
+        if value is None or not isinstance(value, Set):
             self.misses += 1
             value = self.rebuild(key)
         else:
