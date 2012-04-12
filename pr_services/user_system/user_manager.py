@@ -262,7 +262,8 @@ class UserManager(ObjectManager):
         u.blame = user_blame
         u.owner = u
 
-        facade.subsystems.Setter(auth_token, self, u, optional_attributes)
+        facade.subsystems.Setter(auth_token, self, u, optional_attributes,
+                censored=False)
         # we set groups manualy because self-registering users don't have
         # permission to do it
         default_groups = facade.models.Group.objects.filter(default=True).\
@@ -1136,7 +1137,7 @@ class UserManager(ObjectManager):
                 ('achievement_awards',
                     ('achievement_name', 'date')),
                 ('credentials',
-                    ('credential_type_name', 'status', 'date_granted', 'date_expires')) 
+                    ('credential_type_name', 'status', 'date_granted', 'date_expires'))
             ))
         return view(auth_token, *args, **kwargs)
 
