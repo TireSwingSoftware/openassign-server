@@ -1,6 +1,10 @@
 
 from pr_services.initial_setup.admin_privs import admin_privs
 
+import facade
+
+facade.import_models(locals())
+
 def setup(machine):
     role_name = 'Administrator'
     checks = [
@@ -8,10 +12,36 @@ def setup(machine):
             'name': 'method.caller_has_orgrole',
             'params': {'role_name': role_name}
         },
-        { # Check the actor has the OrgRole for the actee's org
-            'name': 'membership.orgrole.actor_has_role_for_actee',
+        # XXX: Perform regular OrgRole checks for create, update, and delete
+        # operations on all objects.
+        {'name': 'membership.orgrole.actor_has_role_for_actee',
+            'params': {'role_name': role_name,
+                'restricted_ops': frozenset('cud'),
+            }
+        },
+        # XXX: Exclude several types from the OrgRole check when doing
+        # read operations
+        {'name': 'membership.orgrole.actor_has_role_for_actee',
+            'params': {'role_name': role_name,
+                'restricted_ops': frozenset('r'),
+                'excluded_types': frozenset((
+                    Curriculum,
+                    CurriculumEnrollment,
+                    Exam,
+                    FileDownload,
+                    FileUpload,
+                    SessionUserRoleRequirement,
+                    Task,
+                    TaskFee,
+                    ))
+                }
+        },
+        # Ensure the actor is authenticated and has the proper role for
+        # anything skipped above.
+        {
+            'name': 'membership.orgrole.actor_has_orgrole',
             'params': {'role_name': role_name}
-        }
+        },
     ]
     privs = {}
 
@@ -22,6 +52,8 @@ def setup(machine):
         'Answer',
         'Assignment',
         'Credential',
+        'CredentialType',
+        'Curriculum',
         'CurriculumEnrollment',
         'CurriculumEnrollmentUserAssociation',
         'CurriculumTaskAssociation',
@@ -29,12 +61,14 @@ def setup(machine):
         'Exam', # subclass of Task
         'FileDownload', # subclass of Task
         'FileUpload', # subclass of Task
-        'Session',
-        'SessionUserRoleRequirement', # subclass of Task
-        'User',
-        'UserOrgRole',
+        'Group',
         'Question',
         'QuestionPool',
+        'Session',
+        'SessionUserRoleRequirement', # subclass of Task
+        'TaskFee',
+        'User',
+        'UserOrgRole',
         )
     for name in full_admin_objects:
         privs[name] = admin_privs[name]
@@ -54,9 +88,6 @@ def setup(machine):
             privs[name] = dict(r=read_privs)
 
     privs.update({
-        'CredentialType': {
-            'c': True
-        },
         'AssignmentManager': {
             'methods': set(('email_task_assignees', ))
         },

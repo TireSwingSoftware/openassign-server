@@ -198,7 +198,6 @@ class TestOrganizationAdminRole(OrgRoleBase, OrgRoleTests,
     # check that the following tests fail because of
     # a PermissionDenied exception
     CHECK_PERMISSION_DENIED = [
-        'test_create_curriculum',
         'test_create_resource',
         'test_grant_credential_to_no_org_user',
         'test_grant_credential_to_wrong_org_user',

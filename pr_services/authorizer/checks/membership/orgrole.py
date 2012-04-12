@@ -369,3 +369,27 @@ def actor_has_role_for_organization(auth_token, actee, role, *args, **kwargs):
     organization at all.
     """
     return True
+
+
+@check(TaskFee)
+def actor_has_role_for_task_fee(auth_token, actee, role_name, *args, **kwargs):
+    """
+    Return True if the actor has the specified OrgRole for a TaskFee object,
+    which is determined by whether or not the actor has this role for the
+    associated Task.
+    """
+    if not actee.task:
+        return False
+
+    return actor_has_role_for_actee(auth_token, actee.task, role_name,
+            *args, **kwargs)
+
+
+@check(Group)
+def actor_has_role_for_group(auth_token, actee, role_name, *args, **kwargs):
+    """
+    Return True if the actor has the specified OrgRole for the Group. Currently
+    this always returns True since a Group is not associated with any particular
+    organization.
+    """
+    return True
