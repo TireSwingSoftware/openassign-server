@@ -406,7 +406,21 @@ class Getter(object):
 class Setter(object):
     logger = logging.getLogger('pr_services.setter')
 
-    def __init__(self, auth_token, object_manager, django_object, setter_dict):
+    def __init__(self, auth_token, object_manager, django_object, setter_dict,
+            censored=True):
+        """
+        Setter constructor
+
+        Arguments:
+            auth_token: The user's auth token.
+            object_manager: The object manager which for the `django_object`
+                            being modified.
+            django_object: The object being modified.
+            setter_dict: A mapping of fields and values which will be set on the
+                         object.
+            censored: A boolean flag which if set to False, will not use the
+                      authorizer in checking attribute access.
+        """
         self.object_manager = object_manager
         self.authorizer = facade.subsystems.Authorizer()
         self.django_object = django_object
@@ -418,7 +432,10 @@ class Setter(object):
         for field in setter_dict:
             if field not in object_manager.SETTERS:
                 raise exceptions.FieldNameNotFoundException(field)
-        self.authorizer.check_update_permissions(auth_token, django_object, setter_dict)
+        if censored:
+            self.authorizer.check_update_permissions(
+                    auth_token, django_object, setter_dict)
+
         for field, value in setter_dict.iteritems():
             setter_name = object_manager.SETTERS[field]
             if not hasattr(self, setter_name):
