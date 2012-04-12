@@ -94,7 +94,7 @@ def object_dict(obj, attributes):
 
 def datestring(d):
     """Convert date to string format using UTC tzinfo"""
-    return d.replace(tzinfo=pr_time.UTC()).isoformat()
+    return d.replace(tzinfo=pr_time.UTC(), microsecond=0).isoformat()
 
 
 sorted_id = functools.partial(sorted, key=itemgetter('id'))

@@ -3225,35 +3225,69 @@ class TestUserManager(GeneralTestCase):
         self.assertEquals(ret[0]['last_name'], jerk.last_name)
         self.assertEquals(ret[0]['email'], jerk.email)
 
+    @load_fixtures('achievements', 'credential_types')
     def test_admin_users_view(self):
-        org1 = self.organization_manager.create('Org 1')
-        orgrole1 = self.org_role_manager.create('Org Role 1')
-        group1 = Group.objects.create(name='Jerks')
-        credential_type1 = CredentialType.objects.create(name='Bachelor of Arts')
-        jerk = self.user_manager.create('george', 'initial_password', 'Mr.', 'first_name',
-                           'last_name', '555.555.5555', 'foo@bar.org',
-                           'active', {'groups':[group1.id], 'organizations' : {'add' : [{'id' : org1.id, 'role' : orgrole1.id}]}})
-        Credential.objects.create(user=jerk, credential_type=credential_type1)
+        achievement = Achievement.objects.get(id=1)
+        cred = CredentialType.objects.get(id=1)
+        group = Group.objects.get(name="Students")
+        for u in User.objects.all():
+            u.groups.add(group)
+            AchievementAward.objects.create(
+                    user=u, achievement=achievement)
+            Credential.objects.create(
+                    user=u, credential_type=cred)
 
-        ret = self.user_manager.admin_users_view(self.admin_token)
-        for user in ret:
-            if user['id'] == jerk.id:
-                self.assertTrue('groups' in user)
-                self.assertEqual(len(user['groups']), 1)
-                self.assertTrue('name' in user['groups'][0])
-                self.assertEqual(user['groups'][0]['name'], 'Jerks')
-                self.assertTrue('owned_userorgroles' in user)
-                self.assertEqual(len(user['owned_userorgroles']), 1)
-                self.assertTrue('organization_name' in user['owned_userorgroles'][0])
-                self.assertEqual(user['owned_userorgroles'][0]['organization_name'], org1.name)
-                self.assertEqual(len(user['credentials']), 1)
-                self.assertTrue('credential_type_name' in user['credentials'][0])
-                self.assertEqual(user['credentials'][0]['credential_type_name'], credential_type1.name)
-
-        ret = self.user_manager.admin_users_view(self.admin_token,
-                {'exact': {'id' :jerk.id}})
-        self.assertEquals(len(ret), 1)
-        self.assertTrue('groups' in ret[0])
+        expected = [{
+            'id': u.id,
+            'alleged_organization': u.alleged_organization,
+            'default_username_and_domain': u.default_username_and_domain,
+            'email': u.email,
+            'first_name': u.first_name,
+            'last_name': u.last_name,
+            'title': u.title,
+            'phone': u.phone,
+            'status': u.status,
+            'owned_userorgroles': [{
+                'id': r.id,
+                'role': r.role.id,
+                'role_name': r.role_name,
+                'organization': r.organization.id,
+                'organization_name': r.organization_name
+            } for r in u.owned_userorgroles.order_by('id')],
+            'groups': [{
+                'id': g.id,
+                'name': g.name,
+            } for g in u.groups.order_by('id')],
+            'achievement_awards': [{
+                'id': a.id,
+                'achievement_name': a.achievement_name,
+                'date': datestring(a.date),
+            } for a in u.achievement_awards.order_by('id')],
+            'credentials': [{
+                'id': c.id,
+                'credential_type_name': c.credential_type_name,
+                'status': c.status,
+                'date_granted': (
+                    c.date_granted.strftime('%Y-%m-%d') if c.date_granted else None
+                ),
+                'date_expires': (
+                    c.date_expires.strftime('%Y-%m-%d') if c.date_expires else None
+                )
+            } for c in u.credentials.order_by('id')]
+        } for u in User.objects.all()]
+        result = self.user_manager.admin_users_view()
+        self.assertGreater(len(expected), 0)
+        self.assertEquals(len(result), len(expected))
+        for i, row in enumerate(result):
+            row['owned_userorgroles'] = sorted_id(row['owned_userorgroles'])
+            self.assertTrue(row['owned_userorgroles'])
+            row['groups'] = sorted_id(row['groups'])
+            self.assertTrue(row['groups'])
+            row['achievement_awards'] = sorted_id(row['achievement_awards'])
+            self.assertTrue(row['achievement_awards'])
+            row['credentials'] = sorted_id(row['credentials'])
+            self.assertTrue(row['credentials'])
+            self.assertDictEqual(result[i], expected[i])
 
     @skipUnless(settings.LDAP_AUTHENTICATION, "ldap authentication disabled")
     def test_ldap_login(self):
