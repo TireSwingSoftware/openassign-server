@@ -255,6 +255,7 @@ class TestOwnerManagerRole(OrgRoleBase, OrgRoleTests,
         'test_user_change_status_inactive',
         'test_user_change_status_suspended',
         'test_user_create_basic',
+        'test_user_create_in_org',
         'test_user_update_basic',
     ]
 

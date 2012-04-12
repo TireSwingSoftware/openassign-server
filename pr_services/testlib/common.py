@@ -405,6 +405,12 @@ class UserTests(mixins.UserTestMixin):
         self.assertDictEqual(user_dict, expected_dict)
         self.assertEquals(user.username, 'local:%s' % create_dict['username'])
 
+    def test_user_create_in_org(self):
+        user, create_dict, expected_dict = self.create_user(compare=True,
+                opt_dict={'organizations': {'add': [self.organization1.id]}})
+        user_dict = self.user_as_dict(user)
+        self.assertDictEqual(user_dict, expected_dict)
+
     def test_user_update_basic(self):
         changes = {
             'first_name': 'last_name',

@@ -60,6 +60,7 @@ def setup(machine):
         'Task',
         'TaskBundle',
         'User',
+        'UserOrgRole',
     )
     read = (
         'Achievement',
@@ -85,6 +86,7 @@ def setup(machine):
         'Task',
         'TaskBundle',
         'User',
+        'UserOrgRole',
     )
     update = (
         'Exam',
