@@ -3426,6 +3426,48 @@ class TestUserManager(GeneralTestCase):
         self.assertTrue('Example Corporation' in mess.body)
         self.assertTrue('mypasswd' in mess.body)
 
+    def test_login(self):
+        u = self.admin_token.user
+        da = self.admin_token.domain_affiliation
+        expiration = self.admin_token.time_of_expiration
+        result = self.user_manager.login('admin', 'admin')
+        expected = {
+            'id': u.id,
+            'auth_token': result['auth_token'],
+            'username': da.username,
+            'domain': da.domain.name,
+            'first_name': u.first_name,
+            'last_name': u.last_name,
+            'title': u.title,
+            'email': u.email,
+            'phone': u.phone,
+            'status': u.status,
+            'organizations': [{
+                'id': o.id,
+                'name': o.name,
+                'descendants': o.descendants,
+            } for o in u.organizations.order_by('id')],
+            'groups': [{
+                'id': g.id,
+                'name': g.name,
+            } for g in u.groups.order_by('id')],
+            'owned_userorgroles': [{
+                'id': r.id,
+                'organization': r.organization.id,
+                'organization_name': r.organization_name,
+                'role': r.role.id,
+                'role_name': r.role_name,
+            } for r in u.owned_userorgroles.order_by('id')]
+        }
+        del result['expiration']
+        result['organizations'] = sorted_id(result['organizations'])
+        self.assertTrue(result['organizations'])
+        result['groups'] = sorted_id(result['groups'])
+        self.assertTrue(result['groups'])
+        result['owned_userorgroles'] = sorted_id(result['owned_userorgroles'])
+        self.assertTrue(result['owned_userorgroles'])
+        self.assertDictEqual(result, expected)
+
 
 class TestExternalUID(BasicTestCase):
 
