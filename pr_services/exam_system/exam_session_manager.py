@@ -139,7 +139,6 @@ class ExamSessionManager(AssignmentAttemptManager):
                 ],
             }
         """
-
         assignment_object = self._find_by_id(assignment, facade.models.Assignment)
         if resume and isinstance(auth_token, facade.models.AuthToken):
             exam_sessions = facade.models.ExamSession.objects.filter(assignment__id=assignment_object.id,
@@ -166,13 +165,13 @@ class ExamSessionManager(AssignmentAttemptManager):
         """
         es = self.my_django_model.objects.create(assignment=assignment)
         self.authorizer.check_create_permissions(auth_token, es)
-        if fetch_all:
-            return self._get_next_questions(auth_token, es)
-        else:
-            return es
+        return self._get_next_questions(auth_token, es,
+                include_responses=False,
+                fetch_all=fetch_all)
 
     @service_method
-    def resume(self, auth_token, exam_session, fetch_all=True):
+    def resume(self, auth_token, exam_session, fetch_all=True,
+            include_responses=False):
         """
         Resume a previously started exam session.
 
@@ -207,9 +206,9 @@ class ExamSessionManager(AssignmentAttemptManager):
             if es.date_started is None:
                 es.date_started = timezone.now()
                 es.save()
-            return self._get_next_questions(auth_token, es, False)
-        else:
-            return es
+        return self._get_next_questions(auth_token, es,
+                include_responses=include_responses,
+                fetch_all=fetch_all)
 
     @service_method
     def review(self, auth_token, exam_session):
@@ -222,12 +221,13 @@ class ExamSessionManager(AssignmentAttemptManager):
         :return:                A dictionary containing all questions and
                                 responses.
         """
-
         es = self._find_by_id(exam_session)
-        return self._get_next_questions(auth_token, es, True, True)
+        return self._get_next_questions(auth_token, es,
+                include_responses=True,
+                fetch_all=True)
 
     def _get_next_questions(self, auth_token, exam_session,
-                            include_responses=False, for_review=False):
+                            include_responses=False, fetch_all=False):
         """
         Return the next set of questions.
 
@@ -238,14 +238,14 @@ class ExamSessionManager(AssignmentAttemptManager):
         :param include_responses:    If True (default=False), return responses
                                     submitted so far.
         :type include_responses:     bool
-        :param for_review:          If True (default=False), return all
+        :param fetch_all:          If True (default=False), return all
                                     questions and responses submitted.
-        :type for_review:           bool
+        :type fetch_all:           bool
         :return:                    A hierarchical dict-representation of an exam with
                                     question pool(s), questions and answers all included.
         """
         assert isinstance(exam_session, facade.models.ExamSession)
-        if for_review:
+        if fetch_all:
             q_iter = exam_session.iter_questions()
         else:
             q_iter = exam_session.get_next_questions(include_responses)
