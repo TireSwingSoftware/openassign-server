@@ -251,6 +251,7 @@ class TestTask(TestCase):
         exam3 = Exam.objects.create(name='my_exam', organization=org)
         self.assertEqual(exam3.name, 'my_exam')
 
+
 class TestAssignment(GeneralTestCase):
 
     @skip('broken')
@@ -416,6 +417,22 @@ class TestAssignment(GeneralTestCase):
         assignments = self.assignment_manager.bulk_create(role_req2.id, [learner8.id])
         self.assertEquals(len(assignments), 1)
         self.assertEquals(assignments[learner8.id]['status'], 'assigned')
+
+    @load_fixtures('exams_and_achievements')
+    def test_required_achievements(self):
+        achievements = Achievement.objects.all()
+        exam = Exam.objects.get(id=1)
+        for a in achievements:
+            exam.prerequisite_achievements.add(a)
+        exam.save()
+
+        assignment = self.assignment_manager.create(exam.id, self.user1.id)
+        with self.assertRaises(exceptions.PermissionDeniedException):
+            self.assignment_attempt_manager._create(self.user1_auth_token, assignment)
+        for a in achievements:
+            AchievementAward.objects.create(user=self.user1, achievement=a)
+        self.user1.save()
+        self.assignment_attempt_manager._create(self.auth_token, assignment)
 
 
 class TestMessageTypeManager(BasicTestCase):
