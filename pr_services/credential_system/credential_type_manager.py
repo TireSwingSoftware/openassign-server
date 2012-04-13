@@ -22,6 +22,7 @@ class CredentialTypeManager(ObjectManager):
     """
     GETTERS = {
         'description': 'get_general',
+        'duration': 'get_general',
         'min_required_tasks': 'get_general',
         'name': 'get_general',
         'notes': 'get_many_to_many',
@@ -31,6 +32,7 @@ class CredentialTypeManager(ObjectManager):
 
     SETTERS = {
         'description': 'set_general',
+        'duration': 'set_general',
         'min_required_tasks': 'set_general',
         'name': 'set_general',
         'notes': 'set_many',
@@ -79,7 +81,8 @@ class CredentialTypeManager(ObjectManager):
             c.prerequisite_credential_types.add(*prereqs)
 
         if optional_parameters:
-            raise ValueError("unsupported optional parameters")
+            facade.subsystems.Setter(auth_token, self, c,
+                    optional_parameters, censored=False)
 
         c.save()
         self.authorizer.check_create_permissions(auth_token, c)

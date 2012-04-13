@@ -56,6 +56,14 @@ facade.import_models(locals())
 
 _id = itemgetter('id')
 
+# Helper for Python < 2.7
+if not hasattr(timedelta, 'total_seconds'):
+    class timedelta(timedelta):
+        def total_seconds(self):
+            """Total seconds in the duration."""
+            return ((self.days * 86400 + self.seconds)*10**6 +
+                    self.microseconds) / 10**6
+
 ##############################################################################
 #
 # Let the unit tests begin!
@@ -1060,12 +1068,25 @@ class TestCredentialManager(GeneralTestCase):
             {'exact': {'id': credential.id}}, ['status'])
         self.assertEqual(ret[0]['status'], 'granted')
 
+    def test_date_expires(self):
+        duration = timedelta(seconds=12345)
+        ct = CredentialType.objects.create(name='Foo', duration=duration.seconds)
+        cred = self.credential_manager.create(self.user1.id, ct.id)
+        cred.mark_granted()
+        expected = timezone.now() + duration
+        self.assertAlmostEqual(cred.date_expires, expected,
+                delta=timedelta(seconds=1))
+
+
 
 class TestCredentialTypeManager(GeneralTestCase):
     def test_create(self):
         ret = self.credential_type_manager.create('some name', 'A degree from an accredited university.')
         self.assertEquals(ret.name, 'some name')
         self.assertEquals(ret.description, 'A degree from an accredited university.')
+        ret = self.credential_type_manager.create('Another', 'Description',
+                {'duration': 12345})
+        self.assertEquals(ret.duration, 12345)
 
     def test_update(self):
         ct_1 = self.credential_type_manager.create('some name', 'A cisco certification')
@@ -1077,26 +1098,25 @@ class TestCredentialTypeManager(GeneralTestCase):
         self.assertEquals(credential_type.description, 'different description')
         self.assertEquals(credential_type.name, 'a longer name')
 
+    @load_fixtures('credential_types')
     def test_get_filtered(self):
-        ct_1 = self.credential_type_manager.create('a name', 'a description')
-        ct_2 = self.credential_type_manager.create('another', 'another description')
-        ret = self.credential_type_manager.get_filtered({}, ['id', 'name', 'description'])
-        self.assertEquals(type(ret), list)
-        self.assertEquals(len(ret), 2)
-        self.assertEquals(type(ret[0]), dict)
-        self.assertEquals(type(ret[1]), dict)
-        self.assertTrue(type(ret[1]['id']) in [int, long])
-        for credential_type in ret:
-            if credential_type['id'] == ct_1.id:
-                self.assertEquals(credential_type['name'], 'a name')
-            elif credential_type['id'] == ct_2.id:
-                self.assertEquals(credential_type['name'], 'another')
-                self.assertEquals(credential_type['description'], 'another description')
-            else:
-                self.fail('unexpected credential type primary key [%d] in result set.  the expected ones were [%d, %d]' %\
-                    (credential_type['id'], ct_1.id, ct_2.id))
-        ret = self.credential_type_manager.get_filtered({}, ['id'])
-        self.assertEquals('name' not in ret[0], True)
+        cred_types = CredentialType.objects.order_by('id')
+        get_filtered = partial(self.credential_type_manager.get_filtered, {})
+        expected = [{
+            'id': ct.id,
+            'name': ct.name,
+            'description': ct.description,
+            'duration': ct.duration,
+        } for ct in cred_types]
+        result = get_filtered(('id', 'name', 'description', 'duration'))
+        self.assertGreater(len(expected), 0)
+        self.assertEquals(len(result), len(expected))
+        for i, row in enumerate(sorted_id(result)):
+            self.assertDictEqual(row, expected[i])
+
+        result = get_filtered(('id',))
+        self.assertGreater(len(result), 0)
+        self.assertSequenceEqual(result[0].keys(), ('id', ))
 
     def test_delete(self):
         self.credential_type_manager.create('name', 'description')
@@ -1107,6 +1127,56 @@ class TestCredentialTypeManager(GeneralTestCase):
         self.credential_type_manager.delete(ret[0]['id'])
         ret = self.credential_type_manager.get_filtered({}, ['id'])
         self.assertEquals(len(ret), 1)
+
+    def test_get_expiration_date(self):
+        duration = timedelta(seconds=12345)
+        ct = CredentialType.objects.create(name='XYZ', duration=duration.seconds)
+        expected = self.right_now + duration
+        self.assertEquals(ct.get_expiration_date(self.right_now), expected)
+
+    def test_completed(self):
+        create_ct = CredentialType.objects.create
+        create_cred = Credential.objects.create
+        create_achievement = Achievement.objects.create
+        create_award = AchievementAward.objects.create
+
+        duration = timedelta(days=30)
+        ct = create_ct(name='ABC', duration=duration.total_seconds())
+        self.assertGreater(ct.duration, 0)
+
+        completed = partial(ct.completed, self.user1)
+        self.assertTrue(completed())
+
+        a1 = create_achievement(name='Foo')
+        ct.required_achievements.add(a1)
+        ct.save()
+        self.assertFalse(completed())
+        create_award(user=self.user1, achievement=a1)
+        self.assertTrue(completed())
+
+        a2 = create_achievement(name='Bar')
+        ct.required_achievements.add(a2)
+        ct.save()
+        self.assertFalse(completed())
+        # complete the achievement after the duration
+        award = create_award(user=self.user1, achievement=a2)
+        award.date = timezone.now() - duration - timedelta(days=1)
+        award.save()
+        self.assertFalse(completed())
+        award.date = timezone.now() - duration + timedelta(days=1)
+        award.save()
+        self.assertTrue(completed())
+
+        req_ct = create_ct(name='DEF')
+        ct.prerequisite_credential_types.add(req_ct)
+        ct.save()
+        self.assertFalse(completed())
+        cred = create_cred(user=self.user1, credential_type=req_ct)
+        cred.mark_granted()
+        cred.save()
+        self.assertTrue(completed())
+
+
 
 class TestCsvExport(TestCase):
     """ Tests the export_csv view. """

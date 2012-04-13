@@ -657,25 +657,48 @@ class CredentialType(OwnedPRModel):
     prerequisite_credential_types = models.ManyToManyField('self',
         symmetrical=False, related_name='requisite_credential_types')
 
+    # The number of seconds a credential will be valid after it is created
+    duration = models.IntegerField(null=True)
+
+    def get_expiration_date(self, start_date=None):
+        "Returns a date after `start_date` when the Credential should expire."
+        if not self.duration:
+            return None
+        if not start_date:
+            start_date = timezone.now()
+        return start_date + timedelta(seconds=self.duration)
+
+    def _check_prerequisite_cred_types(self, user):
+        # Check that the User has been granted Credentials for all of the
+        # prerequisite_credential_types.
+        granted_types = user.credentials.filter(status='granted')
+        granted = set(granted_types.values_list('credential_type', flat=True))
+        required = set(self.prerequisite_credential_types.values_list('id', flat=True))
+        return granted >= required
+
+    def _check_required_achievements(self, user):
+        # Check that the user has completed all required Achievements within the
+        # allowed duration
+        if self.duration:
+            cutoff_date = timezone.now() - timedelta(seconds=self.duration)
+            valid_awards = user.achievement_awards.filter(date__gte=cutoff_date)
+        else:
+            valid_awards = user.achievement_awards.all()
+
+        achievements = set(valid_awards.values_list('achievement', flat=True))
+        required = set(self.required_achievements.values_list('id', flat=True))
+        return achievements >= required
+
     def completed(self, user):
         """
         Return a boolean indicating whether the given User meets all
         requirements to be granted a Credential of this type.
         """
+        if not self._check_prerequisite_cred_types(user):
+            return False
 
-        # Check that the User has been granted Credentials for all of the
-        # prerequisite_credential_types.
-        for required_credential_type in self.prerequisite_credential_types.all():
-            if not required_credential_type.credentials.filter(
-                    user__id=user.id, status='granted').count():
-                return False
-
-        # Check that the user has completed all required Achievements
-        user_achievement_awards = user.achievement_awards.all()
-        user_achievement_award_ids = [award.achievement.id for award in user_achievement_awards]
-        for achievement_id in self.required_achievements.values_list('id', flat=True):
-            if achievement_id not in user_achievement_award_ids:
-                return False
+        if not self._check_required_achievements(user):
+            return False
 
         return True
 
@@ -732,18 +755,16 @@ class Credential(OwnedPRModel):
         Check that this Credential's User meets all requirements to be granted
         the Credential, and if so, mark it as granted.
         """
-
         credential_type = self.credential_type.downcast_completely()
         if credential_type.completed(self.user):
             self.downcast_completely().mark_granted()
 
     def mark_granted(self):
-        """
-        Mark the Credential as granted and set the completion date.
-        """
-
+        "Mark the Credential as granted and set the completion date."
         self.status = 'granted'
-        self.date_granted = timezone.now()
+        timenow = timezone.now()
+        self.date_granted = timenow
+        self.date_expires = self.credential_type.get_expiration_date(timenow)
         self.save()
 
 
