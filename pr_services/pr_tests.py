@@ -1069,8 +1069,8 @@ class TestCredentialManager(GeneralTestCase):
         self.assertEqual(ret[0]['status'], 'granted')
 
     def test_date_expires(self):
-        duration = timedelta(seconds=12345)
-        ct = CredentialType.objects.create(name='Foo', duration=duration.seconds)
+        duration = timedelta(days=123)
+        ct = CredentialType.objects.create(name='Foo', duration=duration.days)
         cred = self.credential_manager.create(self.user1.id, ct.id)
         cred.mark_granted()
         expected = timezone.now() + duration
@@ -1129,8 +1129,8 @@ class TestCredentialTypeManager(GeneralTestCase):
         self.assertEquals(len(ret), 1)
 
     def test_get_expiration_date(self):
-        duration = timedelta(seconds=12345)
-        ct = CredentialType.objects.create(name='XYZ', duration=duration.seconds)
+        duration = timedelta(days=123)
+        ct = CredentialType.objects.create(name='XYZ', duration=duration.days)
         expected = self.right_now + duration
         self.assertEquals(ct.get_expiration_date(self.right_now), expected)
 
@@ -1141,7 +1141,7 @@ class TestCredentialTypeManager(GeneralTestCase):
         create_award = AchievementAward.objects.create
 
         duration = timedelta(days=30)
-        ct = create_ct(name='ABC', duration=duration.total_seconds())
+        ct = create_ct(name='ABC', duration=duration.days)
         self.assertGreater(ct.duration, 0)
 
         completed = partial(ct.completed, self.user1)

@@ -657,8 +657,8 @@ class CredentialType(OwnedPRModel):
     prerequisite_credential_types = models.ManyToManyField('self',
         symmetrical=False, related_name='requisite_credential_types')
 
-    # The number of seconds a credential will be valid after it is created
-    duration = models.IntegerField(null=True)
+    # The number of days a credential will be valid after it is created
+    duration = models.PositiveSmallIntegerField(null=True)
 
     def get_expiration_date(self, start_date=None):
         "Returns a date after `start_date` when the Credential should expire."
@@ -666,7 +666,7 @@ class CredentialType(OwnedPRModel):
             return None
         if not start_date:
             start_date = timezone.now()
-        return start_date + timedelta(seconds=self.duration)
+        return start_date + timedelta(days=self.duration)
 
     def _check_prerequisite_cred_types(self, user):
         # Check that the User has been granted Credentials for all of the
@@ -680,7 +680,7 @@ class CredentialType(OwnedPRModel):
         # Check that the user has completed all required Achievements within the
         # allowed duration
         if self.duration:
-            cutoff_date = timezone.now() - timedelta(seconds=self.duration)
+            cutoff_date = timezone.now() - timedelta(days=self.duration)
             valid_awards = user.achievement_awards.filter(date__gte=cutoff_date)
         else:
             valid_awards = user.achievement_awards.all()

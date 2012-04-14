@@ -111,7 +111,7 @@ class Migration(SchemaMigration):
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_credentialtypes', null=True, on_delete=models.SET_NULL, to=orm['pr_services.User'])),
             ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
             ('description', self.gf('django.db.models.fields.TextField')(null=True)),
-            ('duration', self.gf('django.db.models.fields.IntegerField')(null=True)),
+            ('duration', self.gf('django.db.models.fields.PositiveSmallIntegerField')(null=True)),
         ))
         db.send_create_signal('pr_services', ['CredentialType'])
 
@@ -2399,7 +2399,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'CredentialType'},
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'null': 'True'}),
-            'duration': ('django.db.models.fields.IntegerField', [], {'null': 'True'}),
+            'duration': ('django.db.models.fields.PositiveSmallIntegerField', [], {'null': 'True'}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']", 'on_delete': 'models.PROTECT'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
