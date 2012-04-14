@@ -13,15 +13,10 @@ def setup(machine):
                        'date_completed', 'due_date', 'prerequisites_met',
                        'effective_date_assigned', 'status',
                        'assignment_attempts')),
-            'u' : set(),
-            'd' : False,
         },
         'Task' : {
-            'c' : False,
-            'r' : set(('create_timestamp', 'prerequisite_tasks',
-                       'name', 'description', 'title', 'type')),
-            'u' : set(),
-            'd' : False,
+            'r' : set(('description', 'name', 'prerequisite_achievements',
+                       'prerequisite_tasks', 'title', 'type')),
         },
     }
     machine.add_acl_to_role('Task Taker', methods, crud)

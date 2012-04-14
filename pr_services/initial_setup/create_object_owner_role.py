@@ -76,7 +76,8 @@ def setup(machine):
             'r': set(('session', 'name', 'title', 'type', 'description'))
         },
         'Task': {
-            'r': set(('name', 'title', 'type', 'description', 'achievements')),
+            'r': set(('name', 'title', 'type', 'description',
+                      'achievements', 'prerequisite_achievements')),
         },
         'User': {
             # We allow users to create themselves
