@@ -897,9 +897,10 @@ class Task(OwnedPRModel, Versionable):
             prerequisite_task = prerequisite_task.downcast_completely()
             if not prerequisite_task.completed(user):
                 return False
-        # We've checked all the prerequisite Tasks, and haven't found the User to be
-        # ineligible, so let's return True
-        return True
+
+        reqs = set(self.prerequisite_achievements.values_list('id', flat=True))
+        achievements = set(user.achievements.values_list('id', flat=True))
+        return achievements >= reqs
 
     def save(self, *args, **kwargs):
         # Create a name based on the title if present, otherwise use the content
@@ -1149,11 +1150,11 @@ class Assignment(PRModel):
     @property
     def prerequisites_met(self):
         """Return True iff all prerequiseties have been met"""
-
         for task in self.task.prerequisite_tasks.all():
-            if task.assignments.filter(status='completed', user=self.user).count() == 0:
+            if not task.prerequisites_met(self.user):
                 return False
-        return True
+
+        return self.task.prerequisites_met(self.user)
 
     def mark_completed(self):
         """
