@@ -62,6 +62,8 @@ class CredentialManager(ObjectManager):
         optional_attributes.update({'credential_type' : credential_type_id})
         facade.subsystems.Setter(auth_token, self, c, optional_attributes)
         c.save()
+        if c.status == 'granted':
+            c.mark_granted()
         self.authorizer.check_create_permissions(auth_token, c)
         return c
 
