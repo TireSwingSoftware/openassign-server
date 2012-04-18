@@ -58,12 +58,12 @@ class CredentialManager(ObjectManager):
             optional_attributes = {}
 
         u = self._find_by_id(user_id, facade.models.User)
-        c = self.my_django_model(user=u, owner=u)
-        optional_attributes.update({'credential_type' : credential_type_id})
-        facade.subsystems.Setter(auth_token, self, c, optional_attributes)
-        c.save()
-        if c.status == 'granted':
+        credential_type = self._find_by_id(credential_type_id, facade.models.CredentialType)
+        c = self.my_django_model(user=u, owner=u, credential_type=credential_type)
+        if optional_attributes.get('status', None) == 'granted':
             c.mark_granted()
+        facade.subsystems.Setter(auth_token, self, c, optional_attributes, censored=False)
+        c.save()
         self.authorizer.check_create_permissions(auth_token, c)
         return c
 
