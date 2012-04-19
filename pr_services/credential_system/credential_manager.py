@@ -67,4 +67,16 @@ class CredentialManager(ObjectManager):
         self.authorizer.check_create_permissions(auth_token, c)
         return c
 
+    @service_method
+    def detail_view(self, auth_token, *args, **kwargs):
+        view = self.build_view(
+            fields=('status', 'date_expires'),
+            merges=(
+                ('user',
+                    ('last_name', 'first_name')),
+                ('credential_type',
+                    ('name',)),
+            ))
+        return view(auth_token, *args, **kwargs)
+
 # vim:tabstop=4 shiftwidth=4 expandtab
