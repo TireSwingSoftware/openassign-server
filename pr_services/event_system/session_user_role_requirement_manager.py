@@ -87,6 +87,8 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
                         ('name', )),
                     ('prerequisite_tasks',
                         ('name', 'description', 'title', 'type')),
+                    ('prerequisite_achievements',
+                        ('name', 'description')),
                     ('task_fees',
                         ('name', 'price')),
                     ('session_user_role',

@@ -308,6 +308,8 @@ class ExamManager(TaskManager):
             merges=(
                 ('prerequisite_tasks',
                     ('name', 'description', 'title', 'type')),
+                ('prerequisite_achievements',
+                    ('name', 'description')),
                 ('task_fees',
                     ('name', 'price')),
                 ('achievements',
