@@ -924,6 +924,7 @@ class Task(OwnedPRModel, Versionable):
 
 class Curriculum(PRModel):
     name = models.CharField(max_length=255)
+    description = models.TextField()
     organization = PRForeignKey('Organization', null=True, related_name='curriculums')
     achievements = models.ManyToManyField('Achievement', related_name='curriculums')
     tasks = models.ManyToManyField('Task', through='CurriculumTaskAssociation', related_name='curriculums')
@@ -978,6 +979,8 @@ class CurriculumEnrollment(PRModel):
     """
 
     curriculum = PRForeignKey('Curriculum', related_name='curriculum_enrollments')
+    name = models.CharField(max_length=255)
+    description = models.TextField()
     users = models.ManyToManyField('User', through='CurriculumEnrollmentUserAssociation', related_name='curriculum_enrollments')
     start = models.DateField()
     end = models.DateField()

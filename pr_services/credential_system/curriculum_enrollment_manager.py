@@ -18,7 +18,9 @@ class CurriculumEnrollmentManager(ObjectManager):
         'assignments': 'get_many_to_one',
         'curriculum': 'get_foreign_key',
         'curriculum_name': 'get_general',
+        'description': 'get_general',
         'end': 'get_time',
+        'name': 'get_general',
         'start': 'get_time',
         'user_completion_statuses': 'get_general',
         'users': 'get_many_to_many',
@@ -26,6 +28,8 @@ class CurriculumEnrollmentManager(ObjectManager):
 
     SETTERS = {
         'curriculum': 'set_foreign_key',
+        'description': 'set_general',
+        'name': 'set_general',
         'users': 'set_many',
         'start': 'set_time',
         'end': 'set_time',
@@ -38,7 +42,7 @@ class CurriculumEnrollmentManager(ObjectManager):
         self.my_django_model = facade.models.CurriculumEnrollment
 
     @service_method
-    def create(self, auth_token, curriculum, start, end, users=None):
+    def create(self, auth_token, curriculum, start, end, optional_attributes=None):
         """
         Create a new curriculum_enrollment.
 
@@ -55,17 +59,20 @@ class CurriculumEnrollmentManager(ObjectManager):
 
         c = self.my_django_model(start=start_date, end=end_date)
         c.curriculum = self._find_by_id(curriculum, facade.models.Curriculum)
+        if 'name' not in optional_attributes:
+            c.name = c.curriculum.name
+        if 'description' not in optional_attributes:
+            c.description = c.curriculum.description
         c.save()
-        if users is not None:
-            for user in facade.models.User.objects.filter(id__in=users):
-                facade.models.CurriculumEnrollmentUserAssociation.objects.create(user=user, curriculum_enrollment=c)
+        facade.subsystems.Setter(auth_token, self, c, optional_attributes, censored=False)
+        c.save()
         self.authorizer.check_create_permissions(auth_token, c)
         return c
 
     @service_method
     def user_detail_view(self, auth_token, *args, **kwargs):
         view = self.build_view(
-                fields=('curriculum_name', 'start', 'end'),
+                fields=('description', 'name', 'start', 'end'),
                 merges=(
                     ('users',
                         ('first_name', 'last_name', 'email')),

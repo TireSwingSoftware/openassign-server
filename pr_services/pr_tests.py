@@ -322,7 +322,7 @@ class TestAssignment(GeneralTestCase):
         self.curriculum_enrollment_manager.create(curriculum.id,
                 self.right_now.isoformat(),
                 (self.right_now + timedelta(days=10)).isoformat(),
-                [learner1.id])
+                {'users':[learner1.id]})
         assignment1 = self.assignment_manager.get_filtered(l1_token,
                 {'exact' : {'user' : learner1.id, 'task' : exam1.id}},
                 ['id'])[0]['id']
@@ -686,7 +686,8 @@ class TestCurriculumEnrollmentViews(BasicTestCase):
         e, u = self.enrollment, self.user
         expected = {
             'id': e.id,
-            'curriculum_name': e.curriculum.name,
+            'name': e.name,
+            'description': e.description,
             'start': e.start.isoformat(),
             'end': e.end.isoformat(),
             'users': [{
@@ -782,6 +783,7 @@ class TestSURRViews(BasicTestCase):
             'achievements': list(
                 s.achievements.values('id', 'name').order_by('id')
             ),
+            'prerequisite_achievements': [],
             'prerequisite_tasks': [{
                 'id': t.id,
                 'name': t.name,
@@ -805,6 +807,7 @@ class TestSURRViews(BasicTestCase):
             row['credential_types'] = sorted(row['credential_types'])
             row['achievements'] = sorted_id(row['achievements'])
             row['prerequisite_tasks'] = sorted_id(row['prerequisite_tasks'])
+            row['prerequisite_achievements'] = []
             row['task_fees'] = sorted_id(row['task_fees'])
             self.assertDictEqual(row, expected[i])
 
@@ -4186,7 +4189,7 @@ class TestCurriculumManagement(BasicTestCase):
         start = self.right_now.isoformat()
         end = (self.right_now+self.one_day).isoformat()
         enrollment = self.curriculum_enrollment_manager.create(curriculum.id,
-                start, end, user_ids)
+                start, end, {'users':user_ids})
 
         # verify enrollment
         ret = self.curriculum_enrollment_manager.get_filtered({'exact' : {'id' : enrollment.id}}, ['id', 'users', 'assignments', 'user_completion_statuses'])

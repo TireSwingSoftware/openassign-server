@@ -14,12 +14,14 @@ class CurriculumManager(ObjectManager):
     GETTERS = {
         'achievements': 'get_many_to_many',
         'curriculum_task_associations': 'get_many_to_one',
+        'description': 'get_general',
         'name': 'get_general',
         'organization': 'get_foreign_key',
         'tasks': 'get_many_to_many',
     }
     SETTERS = {
         'achievements': 'set_many',
+        'description': 'set_general',
         'name': 'set_general',
         'organization': 'set_foreign_key',
         'tasks': 'set_many',
@@ -32,7 +34,7 @@ class CurriculumManager(ObjectManager):
         self.my_django_model = facade.models.Curriculum
 
     @service_method
-    def create(self, auth_token, name, organization=None):
+    def create(self, auth_token, name, optional_attributes=None):
         """
         Create a new curriculum.
 
@@ -40,10 +42,12 @@ class CurriculumManager(ObjectManager):
         :param  organization:   organization to which this belongs
         :return:                a reference to the newly created curriculum
         """
+        if optional_attributes is None:
+            optional_attributes = {}
 
         c = self.my_django_model(name=name)
-        if organization is not None:
-            c.organization = self._find_by_id(organization, facade.models.Organization)
+        c.save()
+        facade.subsystems.Setter(auth_token, self, c, optional_attributes, censored=False)
         c.save()
         self.authorizer.check_create_permissions(auth_token, c)
         return c
@@ -51,7 +55,7 @@ class CurriculumManager(ObjectManager):
     @service_method
     def admin_curriculums_view(self, auth_token, *args, **kwargs):
         view = self.build_view(
-                fields=('name', 'organization'),
+                fields=('description', 'name', 'organization'),
                 merges=(
                     ('achievements',
                         ('name', )),
