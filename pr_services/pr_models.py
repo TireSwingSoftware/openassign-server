@@ -970,6 +970,10 @@ class CurriculumTaskAssociation(PRModel):
     def task_name(self):
         return self.task.name
 
+    @property
+    def task_type(self):
+        return self.task.final_type.app_label + '.' + self.task.final_type.name
+
 
 class CurriculumEnrollment(PRModel):
     """

@@ -20,6 +20,7 @@ class CurriculumTaskAssociationManager(ObjectManager):
         'task': 'get_foreign_key',
         'task_bundle': 'get_foreign_key',
         'task_name': 'get_general',
+        'task_type': 'get_general',
     }
     SETTERS = {
         'continue_automatically': 'set_general',

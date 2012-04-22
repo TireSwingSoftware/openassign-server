@@ -60,7 +60,7 @@ class CurriculumManager(ObjectManager):
                     ('achievements',
                         ('name', )),
                     ('curriculum_task_associations',
-                        ('task', 'task_name'))
+                        ('task', 'task_name', 'task_type'))
                 ))
         return view(auth_token, *args, **kwargs)
 
