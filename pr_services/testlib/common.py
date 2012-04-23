@@ -50,6 +50,7 @@ class AssignmentViewTests:
             auth_token=self.auth_token)
         assignment, exam = assignments[0], exams[0]
         expected = {
+            'due_date' : assignment.due_date,
             'id': assignment.id,
             'user': user.id,
             'status': assignment.status,
@@ -73,6 +74,7 @@ class AssignmentViewTests:
             auth_token=self.auth_token)
         assignment, exam = assignments[0], exams[0]
         expected = {
+            'due_date' : assignment.due_date,
             'id': assignment.id,
             'user': {
                 'id': user.id,

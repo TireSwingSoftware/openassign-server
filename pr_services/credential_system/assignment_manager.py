@@ -291,7 +291,7 @@ class AssignmentManager(ObjectManager):
                         'user': auth_token.user_id,
                         'task__final_type__name': 'file download'
                 }},
-                fields=('user', 'status'),
+                fields=('due_date', 'user', 'status'),
                 merges=(
                     ('task:file download',
                         ('name', 'title', 'type', 'description',
@@ -342,7 +342,7 @@ class AssignmentManager(ObjectManager):
                     'user': auth_token.user_id,
                     'task__final_type__name': 'exam'
             }},
-            fields=('user', 'status', 'task'),
+            fields=('due_date', 'user', 'status', 'task'),
             merges=(
                 ('task:exam',
                     ('name', 'title', 'type', 'description', 'passing_score')),
