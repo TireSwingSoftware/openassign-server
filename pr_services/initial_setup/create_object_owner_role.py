@@ -15,6 +15,7 @@ def setup(machine):
         {'name': 'ownership.actor_owns_assignment_for_task'},
         {'name': 'ownership.actor_owns_assignment_attempt'},
         {'name': 'ownership.actor_owns_credential'},
+        {'name': 'ownership.actor_owns_credential_for_credential_type'},
         {'name': 'ownership.actor_owns_prmodel'},
         {'name': 'ownership.actor_owns_question_response'},
         {'name': 'assignment.assignment_attempt_meets_date_restrictions'},
@@ -29,7 +30,7 @@ def setup(machine):
             'r': set(('description', 'name')),
         },
         'AchievementAward': {
-            'r': set(('achievement', 'assignment', 'date', 'user')),
+            'r': set(('achievement', 'achievement_name', 'assignment', 'date', 'user')),
         },
         'Assignment': {
             'c': True,
@@ -46,6 +47,9 @@ def setup(machine):
             'r': set(('authority', 'credential_type', 'date_assigned',
                       'date_expires', 'date_granted', 'date_started',
                       'serial_number', 'status', 'user')),
+        },
+        'CredentialType': {
+            'r' : set(('name', 'description'))
         },
         'CurriculumEnrollment': {
             'r': set(('curriculum_name', 'start', 'end')),

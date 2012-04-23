@@ -165,10 +165,20 @@ def actor_owns_credential(auth_token, actee, *args, **kwargs):
     Returns True iff the actor is the owner of the Credential
     """
     try:
-        return auth_token.user_id == actee.user.id
+        return auth_token.user_id == actee.user_id
     except (ObjectDoesNotExist, AttributeError):
         return False
 
+@check(CredentialType)
+def actor_owns_credential_for_credential_type(auth_token, actee, *args, **kwargs):
+    """
+    Returns True iff the actor is the owner of a Credential for the
+    CredentialType.
+    """
+    try:
+        return actee.credentials.filter(user__id=auth_token.user_id).exists()
+    except (ObjectDoesNotExist, AttributeError):
+        return False
 
 @check(Event)
 def actor_owns_event(auth_token, actee, *args, **kwargs):
