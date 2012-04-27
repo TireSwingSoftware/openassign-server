@@ -175,6 +175,13 @@ class CachingModelManager(models.Manager):
         return ret
 
 
+class Active(models.Model):
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        abstract = True
+
+
 class Versionable(models.Model):
     """
     Use this mixin class for models which need to be versioned in a way that
@@ -922,7 +929,7 @@ class Task(OwnedPRModel, Versionable):
         return u'(Task %s, id=%d)' % (self.name, self.id if self.id else -1)
 
 
-class Curriculum(PRModel):
+class Curriculum(PRModel, Active):
     name = models.CharField(max_length=255)
     description = models.TextField()
     organization = PRForeignKey('Organization', null=True, related_name='curriculums')

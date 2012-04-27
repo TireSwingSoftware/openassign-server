@@ -13,6 +13,7 @@ class CurriculumManager(ObjectManager):
     """
     GETTERS = {
         'achievements': 'get_many_to_many',
+        'active' : 'get_general',
         'curriculum_task_associations': 'get_many_to_one',
         'description': 'get_general',
         'name': 'get_general',
@@ -21,6 +22,7 @@ class CurriculumManager(ObjectManager):
     }
     SETTERS = {
         'achievements': 'set_many',
+        'active' : 'set_general',
         'description': 'set_general',
         'name': 'set_general',
         'organization': 'set_foreign_key',

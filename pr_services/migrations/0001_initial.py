@@ -248,6 +248,7 @@ class Migration(SchemaMigration):
         # Adding model 'Curriculum'
         db.create_table('pr_services_curriculum', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('django.db.models.fields.BooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
@@ -2425,6 +2426,7 @@ class Migration(SchemaMigration):
         'pr_services.curriculum': {
             'Meta': {'object_name': 'Curriculum'},
             'achievements': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'curriculums'", 'symmetrical': 'False', 'to': "orm['pr_services.Achievement']"}),
+            'active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']", 'on_delete': 'models.PROTECT'}),
