@@ -21,6 +21,7 @@ class CurriculumEnrollmentManager(ObjectManager):
         'description': 'get_general',
         'end': 'get_time',
         'name': 'get_general',
+        'organization': 'get_foreign_key',
         'start': 'get_time',
         'user_completion_statuses': 'get_general',
         'users': 'get_many_to_many',
@@ -30,6 +31,7 @@ class CurriculumEnrollmentManager(ObjectManager):
         'curriculum': 'set_foreign_key',
         'description': 'set_general',
         'name': 'set_general',
+        'organization': 'set_foreign_key',
         'users': 'set_many',
         'start': 'set_time',
         'end': 'set_time',
@@ -42,7 +44,7 @@ class CurriculumEnrollmentManager(ObjectManager):
         self.my_django_model = facade.models.CurriculumEnrollment
 
     @service_method
-    def create(self, auth_token, curriculum, start, end, optional_attributes=None):
+    def create(self, auth_token, curriculum, start, end, organization, optional_attributes=None):
         """
         Create a new curriculum_enrollment.
 
@@ -59,6 +61,7 @@ class CurriculumEnrollmentManager(ObjectManager):
 
         c = self.my_django_model(start=start_date, end=end_date)
         c.curriculum = self._find_by_id(curriculum, facade.models.Curriculum)
+        c.organization = self._find_by_id(organization, facade.models.Organization)
         if 'name' not in optional_attributes:
             c.name = c.curriculum.name
         if 'description' not in optional_attributes:
@@ -76,6 +79,8 @@ class CurriculumEnrollmentManager(ObjectManager):
                 merges=(
                     ('users',
                         ('first_name', 'last_name', 'email')),
+                    ('organization',
+                        ('name',))
                 ))
         return view(auth_token, *args, **kwargs)
 

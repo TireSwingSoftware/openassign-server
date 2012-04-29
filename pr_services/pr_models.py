@@ -990,6 +990,7 @@ class CurriculumEnrollment(PRModel):
     """
 
     curriculum = PRForeignKey('Curriculum', related_name='curriculum_enrollments')
+    organization = PRForeignKey('Organization', related_name='curriculums_enrollments')
     name = models.CharField(max_length=255)
     description = models.TextField()
     users = models.ManyToManyField('User', through='CurriculumEnrollmentUserAssociation', related_name='curriculum_enrollments')

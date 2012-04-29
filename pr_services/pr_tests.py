@@ -322,7 +322,7 @@ class TestAssignment(GeneralTestCase):
         self.curriculum_enrollment_manager.create(curriculum.id,
                 self.right_now.isoformat(),
                 (self.right_now + timedelta(days=10)).isoformat(),
-                {'users':[learner1.id]})
+                1, {'users':[learner1.id]})
         assignment1 = self.assignment_manager.get_filtered(l1_token,
                 {'exact' : {'user' : learner1.id, 'task' : exam1.id}},
                 ['id'])[0]['id']
@@ -687,6 +687,10 @@ class TestCurriculumEnrollmentViews(BasicTestCase):
         expected = {
             'id': e.id,
             'name': e.name,
+            'organization': {
+                'id' : e.organization.id,
+                'name' : e.organization.name
+            },
             'description': e.description,
             'start': e.start.isoformat(),
             'end': e.end.isoformat(),
@@ -4189,7 +4193,7 @@ class TestCurriculumManagement(BasicTestCase):
         start = self.right_now.isoformat()
         end = (self.right_now+self.one_day).isoformat()
         enrollment = self.curriculum_enrollment_manager.create(curriculum.id,
-                start, end, {'users':user_ids})
+                start, end, 1, {'users':user_ids})
 
         # verify enrollment
         ret = self.curriculum_enrollment_manager.get_filtered({'exact' : {'id' : enrollment.id}}, ['id', 'users', 'assignments', 'user_completion_statuses'])

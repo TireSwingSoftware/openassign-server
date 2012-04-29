@@ -70,7 +70,7 @@
                 "curriculum"
             ],
             "create_timestamp": "2012-01-22T08:08:50Z",
-            "organization": null,
+            "organization": 1,
             "name": "Curriculum 1"
         }
     },
@@ -103,6 +103,7 @@
                 "curriculumenrollment"
             ],
             "curriculum": 1,
+            "organization": 1,
             "start": "2012-01-22",
             "create_timestamp": "2012-01-22T08:08:50Z",
             "save_timestamp": "2012-01-22T08:08:50Z"

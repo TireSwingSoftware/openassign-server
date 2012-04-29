@@ -289,6 +289,7 @@ class Migration(SchemaMigration):
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('curriculum', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculum_enrollments', on_delete=models.PROTECT, to=orm['pr_services.Curriculum'])),
+            ('organization', self.gf('pr_services.fields.PRForeignKey')(related_name='curriculums_enrollments', on_delete=models.PROTECT, to=orm['pr_services.Organization'])),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('description', self.gf('django.db.models.fields.TextField')()),
             ('start', self.gf('django.db.models.fields.DateField')()),
@@ -2445,6 +2446,7 @@ class Migration(SchemaMigration):
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']", 'on_delete': 'models.PROTECT'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'organization': ('pr_services.fields.PRForeignKey', [], {'related_name': "'curriculums_enrollments'", 'on_delete': 'models.PROTECT', 'to': "orm['pr_services.Organization']"}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'start': ('django.db.models.fields.DateField', [], {}),
             'users': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'curriculum_enrollments'", 'symmetrical': 'False', 'through': "orm['pr_services.CurriculumEnrollmentUserAssociation']", 'to': "orm['pr_services.User']"})
