@@ -33,6 +33,7 @@ class SessionManager(ObjectManager):
 
     """
     GETTERS = {
+        'active' : 'get_general',
         'audience': 'get_general',
         'confirmed': 'get_general',
         'default_price': 'get_general',
@@ -57,6 +58,7 @@ class SessionManager(ObjectManager):
         'url': 'get_general',
     }
     SETTERS = {
+        'active' : 'set_general',
         'audience': 'set_general',
         'confirmed': 'set_general',
         'default_price': 'set_general',

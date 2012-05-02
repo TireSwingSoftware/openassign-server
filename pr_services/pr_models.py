@@ -176,7 +176,14 @@ class CachingModelManager(models.Manager):
 
 
 class Active(models.Model):
-    active = models.BooleanField(default=True)
+    """
+    This mixin gives a model an "active" attribute, which is used to mark an
+    object as "deleted". For example, a Task marked with active == False could
+    be filtered out of the task catalog so that new assignments are not made,
+    but its data will still be available so that existing assignments can be
+    completed and so it will show up on transcripts.
+    """
+    active = PRBooleanField(default=True)
 
     class Meta:
         abstract = True
@@ -486,7 +493,7 @@ class Note(OwnedPRModel):
     active = PRBooleanField(default = True)
 
 
-class Organization(OwnedPRModel):
+class Organization(OwnedPRModel, Active):
     """
     A Organization
 
@@ -504,7 +511,6 @@ class Organization(OwnedPRModel):
     phone = models.CharField(max_length=31, null=True)
     email = models.EmailField()
     fax = models.CharField(max_length=31, null=True)
-    active = PRBooleanField(default = True)
     description = models.TextField()
     parent = PRForeignKey('Organization', null=True, related_name='children')
     #: You can retrieve the photo itself by calling organization.photo, but more likely
@@ -640,7 +646,7 @@ class OrgEmailDomain(OwnedPRModel):
         return self.effective_role.name
 
 
-class CredentialType(OwnedPRModel):
+class CredentialType(OwnedPRModel, Active):
     """
     A CredentialType defines the prerequisites that must be completed in order
     for a User to earn a Credential. It represents an award, certificate or
@@ -775,7 +781,7 @@ class Credential(OwnedPRModel):
         self.save()
 
 
-class Achievement(OwnedPRModel):
+class Achievement(OwnedPRModel, Active):
     """
     Awarded to a user upon completion of an assignment, or upon having attained
     some collection of other achievements. It is possible that several tasks
@@ -830,7 +836,7 @@ class AchievementAward(PRModel):
                     credential.mark_granted()
 
 
-class Task(OwnedPRModel, Versionable):
+class Task(OwnedPRModel, Versionable, Active):
     """The smallest unit of work that a User can complete.
 
     Completing a task may give a user one or more achievements. A task may be
@@ -1297,7 +1303,7 @@ class AssignmentAttempt(OwnedPRModel):
             (repr(self.assignment), self.id)
 
 
-class TaskBundle(PRModel):
+class TaskBundle(PRModel, Active):
     """
     A collection of Tasks with an organization and an optional name. This is
     only used for the purposes of automatic assignments in a
@@ -1413,7 +1419,7 @@ class Resource(OwnedPRModel):
         return u'%s' % (self.name)
 
 
-class Group(OwnedPRModel):
+class Group(OwnedPRModel, Active):
     """
     A Group is a set of Users
     """
@@ -1423,7 +1429,6 @@ class Group(OwnedPRModel):
     # many-to-many relationship with User gives us a users field
     # Group managers can add/remove Users and fun stuff like that
     managers = models.ManyToManyField('User', related_name = 'groups_managed')
-    active = PRBooleanField(default = True)
     # if default=True, then every new user will be added to this group
     default = PRBooleanField(default = False)
 
@@ -1590,7 +1595,7 @@ class ACMethodCall(OwnedPRModel):
     ac_check_parameters = models.TextField()
 
 
-class Address(OwnedPRModel):
+class Address(OwnedPRModel, Active):
     """
     These objects should only be associated with one other object.
 
@@ -1610,7 +1615,6 @@ class Address(OwnedPRModel):
     postal_code = models.CharField(max_length=16, null=True, blank=True, default='')
     #: all Address lines above the locality but below a person's name
     label = models.CharField(max_length=255)
-    active = PRBooleanField(default = True)
 
     @property
     def address_dict(self):
@@ -1902,7 +1906,7 @@ MODALITY_CHOICES = (('ILT', 'ILT'),
                     )
 
 
-class SessionTemplate(OwnedPRModel):
+class SessionTemplate(OwnedPRModel, Active):
     """
     a template for a Session.
     """
@@ -1921,7 +1925,6 @@ class SessionTemplate(OwnedPRModel):
     duration = models.PositiveIntegerField(null=True)
     product_line = PRForeignKey(ProductLine, null=True)
     notes = models.ManyToManyField(Note, related_name = 'session_templates')
-    active = PRBooleanField(default = True)
     modality = models.CharField(max_length = 31, choices = MODALITY_CHOICES, default='Generic')
     event_template = PRForeignKey('EventTemplate', related_name='session_templates', null=True)
 
@@ -1931,7 +1934,7 @@ class SessionTemplate(OwnedPRModel):
         return u'%s' % (str(self))
 
 
-class Venue(OwnedPRModel):
+class Venue(OwnedPRModel, Active):
     """
     A Venue is a location at which an Session occurs
 
@@ -1943,7 +1946,6 @@ class Venue(OwnedPRModel):
         [blackout_periods]
     """
 
-    active = PRBooleanField(default=True)
     address = PRForeignKey(Address, null=True, related_name='venues')
     blame = PRForeignKey(Blame, null=True)
     contact = models.CharField(max_length=63, null=True)
@@ -1980,7 +1982,7 @@ class BlackoutPeriod(OwnedPRModel):
         return self.venue.name
 
 
-class Room(OwnedPRModel):
+class Room(OwnedPRModel, Active):
     blame = PRForeignKey(Blame, null=True)
     venue = PRForeignKey(Venue, related_name='rooms')
     room_number = models.CharField(max_length=15)
@@ -2084,7 +2086,7 @@ class SessionResourceTracker(models.Manager):
             )
         return related_sessions
 
-class Session(OwnedPRModel):
+class Session(OwnedPRModel, Active):
     """
      - template (1 Session to 0..1 SessionTemplate)
      - venue (1 Session to 0..1 Venue)
@@ -2127,7 +2129,6 @@ class Session(OwnedPRModel):
     status = models.CharField(max_length = 63, choices = STATUS_CHOICES)
     url = models.URLField(max_length = 255, null = True, verify_exists=False)
     blame = PRForeignKey(Blame, null=True)
-    active = PRBooleanField(default=True)
     modality = models.CharField(max_length=31, choices=MODALITY_CHOICES, default='Generic')
     description = models.TextField(null = True)
     event = PRForeignKey('Event', related_name = 'sessions')
@@ -2199,7 +2200,7 @@ class Session(OwnedPRModel):
         return validation_errors
 
 
-class EventTemplate(OwnedPRModel):
+class EventTemplate(OwnedPRModel, Active):
     """
     This is a collection of values that can be used to pre-populate an Event object.
     For now, the UI client is responsible for fetching these values and applying them
@@ -2343,7 +2344,7 @@ class Event(OwnedPRModel):
         return validation_errors
 
 
-class SessionUserRole(OwnedPRModel):
+class SessionUserRole(OwnedPRModel, Active):
     """
     roles that Users can have at Sessions
 
@@ -2355,7 +2356,6 @@ class SessionUserRole(OwnedPRModel):
 
     name = models.CharField(max_length=255, unique=True)
     notes = models.ManyToManyField(Note, related_name = 'session_user_roles')
-    active = PRBooleanField(default = True)
 
     def __str__(self):
         return self.name
@@ -2400,7 +2400,6 @@ class SessionUserRoleRequirement(Task):
     credential_types = models.ManyToManyField(CredentialType,
             related_name='session_user_role_requirements')
     notes = models.ManyToManyField(Note, related_name='session_user_role_requirements')
-    active = PRBooleanField(default=True)
     session = PRForeignKey(Session, related_name='session_user_role_requirements')
     enrollment_status_test = PRForeignKey('ConditionTestCollection', related_name='session_user_role_requirements', null=True)
     ignore_room_capacity = PRBooleanField(default=False)
@@ -2482,7 +2481,7 @@ class SessionUserRoleRequirement(Task):
         return u'%s' % (str(self))
 
 
-class SessionTemplateUserRoleReq(OwnedPRModel):
+class SessionTemplateUserRoleReq(OwnedPRModel, Active):
     """
     Template for SessionUserRoleRequirement
 
@@ -2496,7 +2495,6 @@ class SessionTemplateUserRoleReq(OwnedPRModel):
     max = models.PositiveIntegerField()
     session_template = PRForeignKey(SessionTemplate, related_name = 'session_template_user_role_requirements')
     notes = models.ManyToManyField(Note, related_name = 'session_template_user_role_requirements')
-    active = PRBooleanField(default = True)
 
     def __str__(self):
         return '(%s,%d,%d)' % (str(self.session_user_role), self.min, self.max)

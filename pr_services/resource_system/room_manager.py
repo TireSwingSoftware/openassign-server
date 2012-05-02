@@ -16,6 +16,7 @@ class RoomManager(ObjectManager):
     This class manages physical addresses.
     """
     GETTERS = {
+        'active' : 'get_general',
         'capacity': 'get_general',
         'name': 'get_general',
         'notes': 'get_many_to_many',
@@ -24,6 +25,7 @@ class RoomManager(ObjectManager):
         'venue_name': 'get_general',
     }
     SETTERS = {
+        'active' : 'set_general',
         'capacity': 'set_general',
         'name': 'set_general',
         'notes': 'set_many',

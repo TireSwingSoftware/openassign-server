@@ -23,6 +23,7 @@ class Migration(SchemaMigration):
         # Adding model 'Organization'
         db.create_table('pr_services_organization', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
@@ -33,7 +34,6 @@ class Migration(SchemaMigration):
             ('phone', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
             ('email', self.gf('django.db.models.fields.EmailField')(max_length=75)),
             ('fax', self.gf('django.db.models.fields.CharField')(max_length=31, null=True)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('description', self.gf('django.db.models.fields.TextField')()),
             ('parent', self.gf('pr_services.fields.PRForeignKey')(related_name='children', null=True, on_delete=models.SET_NULL, to=orm['pr_services.Organization'])),
             ('photo', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True)),
@@ -105,6 +105,7 @@ class Migration(SchemaMigration):
         # Adding model 'CredentialType'
         db.create_table('pr_services_credentialtype', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
@@ -169,6 +170,7 @@ class Migration(SchemaMigration):
         # Adding model 'Achievement'
         db.create_table('pr_services_achievement', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
@@ -203,6 +205,7 @@ class Migration(SchemaMigration):
         # Adding model 'Task'
         db.create_table('pr_services_task', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('version_id', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
             ('version_label', self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True)),
             ('version_comment', self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True)),
@@ -248,7 +251,7 @@ class Migration(SchemaMigration):
         # Adding model 'Curriculum'
         db.create_table('pr_services_curriculum', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('active', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
@@ -350,6 +353,7 @@ class Migration(SchemaMigration):
         # Adding model 'TaskBundle'
         db.create_table('pr_services_taskbundle', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
@@ -460,12 +464,12 @@ class Migration(SchemaMigration):
         # Adding model 'Group'
         db.create_table('pr_services_group', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_groups', null=True, on_delete=models.SET_NULL, to=orm['pr_services.User'])),
             ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('default', self.gf('pr_services.fields.PRBooleanField')(default=False)),
         ))
         db.send_create_signal('pr_services', ['Group'])
@@ -547,6 +551,7 @@ class Migration(SchemaMigration):
         # Adding model 'Address'
         db.create_table('pr_services_address', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
@@ -556,7 +561,6 @@ class Migration(SchemaMigration):
             ('locality', self.gf('django.db.models.fields.CharField')(default='', max_length=31, null=True, blank=True)),
             ('postal_code', self.gf('django.db.models.fields.CharField')(default='', max_length=16, null=True, blank=True)),
             ('label', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['Address'])
 
@@ -667,6 +671,7 @@ class Migration(SchemaMigration):
         # Adding model 'SessionTemplate'
         db.create_table('pr_services_sessiontemplate', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
@@ -681,7 +686,6 @@ class Migration(SchemaMigration):
             ('lead_time', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
             ('duration', self.gf('django.db.models.fields.PositiveIntegerField')(null=True)),
             ('product_line', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.ProductLine'], null=True, on_delete=models.SET_NULL)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('modality', self.gf('django.db.models.fields.CharField')(default='Generic', max_length=31)),
             ('event_template', self.gf('pr_services.fields.PRForeignKey')(related_name='session_templates', null=True, on_delete=models.SET_NULL, to=orm['pr_services.EventTemplate'])),
         ))
@@ -698,11 +702,11 @@ class Migration(SchemaMigration):
         # Adding model 'Venue'
         db.create_table('pr_services_venue', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_venues', null=True, on_delete=models.SET_NULL, to=orm['pr_services.User'])),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('address', self.gf('pr_services.fields.PRForeignKey')(related_name='venues', null=True, on_delete=models.SET_NULL, to=orm['pr_services.Address'])),
             ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True, on_delete=models.SET_NULL)),
             ('contact', self.gf('django.db.models.fields.CharField')(max_length=63, null=True)),
@@ -739,6 +743,7 @@ class Migration(SchemaMigration):
         # Adding model 'Room'
         db.create_table('pr_services_room', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
@@ -762,6 +767,7 @@ class Migration(SchemaMigration):
         # Adding model 'Session'
         db.create_table('pr_services_session', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
@@ -781,7 +787,6 @@ class Migration(SchemaMigration):
             ('status', self.gf('django.db.models.fields.CharField')(max_length=63)),
             ('url', self.gf('django.db.models.fields.URLField')(max_length=255, null=True)),
             ('blame', self.gf('pr_services.fields.PRForeignKey')(to=orm['pr_services.Blame'], null=True, on_delete=models.SET_NULL)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('modality', self.gf('django.db.models.fields.CharField')(default='Generic', max_length=31)),
             ('description', self.gf('django.db.models.fields.TextField')(null=True)),
             ('event', self.gf('pr_services.fields.PRForeignKey')(related_name='sessions', on_delete=models.PROTECT, to=orm['pr_services.Event'])),
@@ -801,6 +806,7 @@ class Migration(SchemaMigration):
         # Adding model 'EventTemplate'
         db.create_table('pr_services_eventtemplate', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
@@ -864,12 +870,12 @@ class Migration(SchemaMigration):
         # Adding model 'SessionUserRole'
         db.create_table('pr_services_sessionuserrole', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('pr_services.fields.PRForeignKey')(related_name='owned_sessionuserroles', null=True, on_delete=models.SET_NULL, to=orm['pr_services.User'])),
             ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['SessionUserRole'])
 
@@ -913,7 +919,6 @@ class Migration(SchemaMigration):
         db.create_table('pr_services_sessionuserrolerequirement', (
             ('task_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['pr_services.Task'], unique=True, primary_key=True)),
             ('session_user_role', self.gf('pr_services.fields.PRForeignKey')(related_name='session_user_role_requirements', on_delete=models.PROTECT, to=orm['pr_services.SessionUserRole'])),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('session', self.gf('pr_services.fields.PRForeignKey')(related_name='session_user_role_requirements', on_delete=models.PROTECT, to=orm['pr_services.Session'])),
             ('enrollment_status_test', self.gf('pr_services.fields.PRForeignKey')(related_name='session_user_role_requirements', null=True, on_delete=models.SET_NULL, to=orm['pr_services.ConditionTestCollection'])),
             ('ignore_room_capacity', self.gf('pr_services.fields.PRBooleanField')(default=False)),
@@ -939,6 +944,7 @@ class Migration(SchemaMigration):
         # Adding model 'SessionTemplateUserRoleReq'
         db.create_table('pr_services_sessiontemplateuserrolereq', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
             ('final_type', self.gf('pr_services.fields.PRForeignKey')(to=orm['contenttypes.ContentType'], on_delete=models.PROTECT)),
             ('create_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('save_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
@@ -947,7 +953,6 @@ class Migration(SchemaMigration):
             ('min', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('max', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('session_template', self.gf('pr_services.fields.PRForeignKey')(related_name='session_template_user_role_requirements', on_delete=models.PROTECT, to=orm['pr_services.SessionTemplate'])),
-            ('active', self.gf('pr_services.fields.PRBooleanField')(default=True)),
         ))
         db.send_create_signal('pr_services', ['SessionTemplateUserRoleReq'])
 
@@ -2157,6 +2162,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.achievement': {
             'Meta': {'object_name': 'Achievement'},
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'component_achievements': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'yielded_achievements'", 'symmetrical': 'False', 'to': "orm['pr_services.Achievement']"}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
@@ -2402,6 +2408,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.credentialtype': {
             'Meta': {'object_name': 'CredentialType'},
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'null': 'True'}),
             'duration': ('django.db.models.fields.PositiveSmallIntegerField', [], {'null': 'True'}),
@@ -2427,7 +2434,7 @@ class Migration(SchemaMigration):
         'pr_services.curriculum': {
             'Meta': {'object_name': 'Curriculum'},
             'achievements': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'curriculums'", 'symmetrical': 'False', 'to': "orm['pr_services.Achievement']"}),
-            'active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']", 'on_delete': 'models.PROTECT'}),
@@ -2544,6 +2551,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.eventtemplate': {
             'Meta': {'object_name': 'EventTemplate'},
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'external_reference': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
@@ -2937,6 +2945,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.room': {
             'Meta': {'object_name': 'Room'},
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'blame': ('pr_services.fields.PRForeignKey', [], {'to': "orm['pr_services.Blame']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'capacity': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
@@ -3075,7 +3084,6 @@ class Migration(SchemaMigration):
         },
         'pr_services.sessionuserrolerequirement': {
             'Meta': {'object_name': 'SessionUserRoleRequirement', '_ormbases': ['pr_services.Task']},
-            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'credential_types': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'session_user_role_requirements'", 'symmetrical': 'False', 'to': "orm['pr_services.CredentialType']"}),
             'enrollment_status_test': ('pr_services.fields.PRForeignKey', [], {'related_name': "'session_user_role_requirements'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': "orm['pr_services.ConditionTestCollection']"}),
             'ignore_room_capacity': ('pr_services.fields.PRBooleanField', [], {'default': 'False'}),
@@ -3092,6 +3100,7 @@ class Migration(SchemaMigration):
         'pr_services.task': {
             'Meta': {'object_name': 'Task'},
             'achievements': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'tasks'", 'symmetrical': 'False', 'to': "orm['pr_services.Achievement']"}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']", 'on_delete': 'models.PROTECT'}),
@@ -3114,6 +3123,7 @@ class Migration(SchemaMigration):
         },
         'pr_services.taskbundle': {
             'Meta': {'object_name': 'TaskBundle'},
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']", 'on_delete': 'models.PROTECT'}),

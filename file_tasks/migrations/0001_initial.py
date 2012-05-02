@@ -191,7 +191,9 @@ class Migration(SchemaMigration):
         'pr_services.curriculum': {
             'Meta': {'object_name': 'Curriculum'},
             'achievements': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'curriculums'", 'symmetrical': 'False', 'to': "orm['pr_services.Achievement']"}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'description': ('django.db.models.fields.TextField', [], {}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']", 'on_delete': 'models.PROTECT'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
@@ -203,9 +205,12 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'CurriculumEnrollment'},
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'curriculum': ('pr_services.fields.PRForeignKey', [], {'related_name': "'curriculum_enrollments'", 'on_delete': 'models.PROTECT', 'to': "orm['pr_services.Curriculum']"}),
+            'description': ('django.db.models.fields.TextField', [], {}),
             'end': ('django.db.models.fields.DateField', [], {}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']", 'on_delete': 'models.PROTECT'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'organization': ('pr_services.fields.PRForeignKey', [], {'related_name': "'curriculums_enrollments'", 'on_delete': 'models.PROTECT', 'to': "orm['pr_services.Organization']"}),
             'save_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'start': ('django.db.models.fields.DateField', [], {}),
             'users': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'curriculum_enrollments'", 'symmetrical': 'False', 'through': "orm['pr_services.CurriculumEnrollmentUserAssociation']", 'to': "orm['pr_services.User']"})
@@ -435,6 +440,7 @@ class Migration(SchemaMigration):
         'pr_services.task': {
             'Meta': {'object_name': 'Task'},
             'achievements': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'tasks'", 'symmetrical': 'False', 'to': "orm['pr_services.Achievement']"}),
+            'active': ('pr_services.fields.PRBooleanField', [], {'default': 'True'}),
             'create_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'final_type': ('pr_services.fields.PRForeignKey', [], {'to': "orm['contenttypes.ContentType']", 'on_delete': 'models.PROTECT'}),

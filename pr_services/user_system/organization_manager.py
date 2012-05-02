@@ -14,6 +14,7 @@ class OrganizationManager(ObjectManager):
     """
 
     GETTERS = {
+        'active': 'get_general',
         'address': 'get_address',
         'ancestors': 'get_general',
         'children': 'get_many_to_one',
@@ -45,6 +46,7 @@ class OrganizationManager(ObjectManager):
     }
 
     SETTERS = {
+        'active': 'set_general',
         'address': 'set_address',
         'department': 'set_general',
         'description': 'set_general',

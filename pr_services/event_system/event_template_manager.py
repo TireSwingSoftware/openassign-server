@@ -14,6 +14,7 @@ class EventTemplateManager(ObjectManager):
     Manage EventTemplates in the Power Reg system
     """
     SETTERS = {
+        'active' : 'set_general',
         'description': 'set_general',
         'external_reference': 'set_general',
         'facebook_message': 'set_general',
@@ -29,6 +30,7 @@ class EventTemplateManager(ObjectManager):
         'url': 'set_general',
     }
     GETTERS = {
+        'active' : 'get_general',
         'description': 'get_general',
         'events': 'get_many_to_one',
         'external_reference': 'get_general',

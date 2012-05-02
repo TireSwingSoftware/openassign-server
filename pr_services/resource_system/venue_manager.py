@@ -12,6 +12,7 @@ class VenueManager(ObjectManager):
     Manage Venues in the Power Reg system
     """
     GETTERS = {
+        'active': 'get_general',
         'address': 'get_address',
         'contact': 'get_general',
         'events': 'get_many_to_one',
@@ -25,6 +26,7 @@ class VenueManager(ObjectManager):
         'blackout_periods': 'get_many_to_one',
     }
     SETTERS = {
+        'active': 'set_general',
         'address': 'set_address',
         'contact': 'set_general',
         'events': 'set_many',

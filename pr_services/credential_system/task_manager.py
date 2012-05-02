@@ -15,6 +15,7 @@ class TaskManager(ObjectManager):
 
     GETTERS = {
         'achievements': 'get_many_to_many',
+        'active': 'get_general',
         'description': 'get_general',
         'min': 'get_general',
         'max': 'get_general',
@@ -35,6 +36,7 @@ class TaskManager(ObjectManager):
     }
     SETTERS = {
         'achievements': 'set_many',
+        'active': 'set_general',
         'description': 'set_general',
         'min': 'set_general',
         'max': 'set_general',

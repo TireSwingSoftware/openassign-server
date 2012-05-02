@@ -12,6 +12,7 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
     """
 
     GETTERS = {
+        'active' : 'get_general',
         'credential_types': 'get_many_to_many',
         'ignore_room_capacity': 'get_general',
         'max': 'get_general',
@@ -22,6 +23,7 @@ class SessionUserRoleRequirementManager(facade.managers.TaskManager):
         'session_user_role': 'get_foreign_key',
     }
     SETTERS = {
+        'active' : 'set_general',
         'credential_types': 'set_many',
         'ignore_room_capacity': 'set_general',
         'max': 'set_general',

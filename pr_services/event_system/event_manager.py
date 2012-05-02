@@ -19,6 +19,7 @@ class EventManager(ObjectManager):
     """
 
     GETTERS = {
+        'active' : 'get_general',
         'description': 'get_general',
         'end': 'get_time',
         'event_template': 'get_foreign_key',
@@ -42,6 +43,7 @@ class EventManager(ObjectManager):
         'venue': 'get_foreign_key',
     }
     SETTERS = {
+        'active' : 'set_general',
         'description': 'set_general',
         'end': 'set_time',
         'event_template': 'set_foreign_key',

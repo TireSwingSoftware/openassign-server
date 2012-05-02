@@ -12,11 +12,13 @@ class SessionUserRoleManager(ObjectManager):
     """
 
     GETTERS = {
+        'active' : 'get_general',
         'name': 'get_general',
         'notes': 'get_many_to_many',
         'session_user_role_requirements': 'get_many_to_one',
     }
     SETTERS = {
+        'active' : 'set_general',
         'name': 'set_general',
         'notes': 'set_many',
         'session_user_role_requirements': 'set_many',

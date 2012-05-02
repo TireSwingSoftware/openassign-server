@@ -12,6 +12,7 @@ class GroupManager(ObjectManager):
     Manage Groups in the Power Reg system
     """
     GETTERS = {
+        'active' : 'get_general',
         'categories': 'get_many_to_many',
         'default': 'get_general',
         'managers': 'get_many_to_many',
@@ -20,6 +21,7 @@ class GroupManager(ObjectManager):
         'users': 'get_many_to_many',
     }
     SETTERS = {
+        'active' : 'set_general',
         'categories': 'set_many',
         'default': 'set_general',
         'managers': 'set_many',

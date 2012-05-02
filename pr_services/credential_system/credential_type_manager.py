@@ -21,6 +21,7 @@ class CredentialTypeManager(ObjectManager):
     </pre>
     """
     GETTERS = {
+        'active': 'get_general',
         'description': 'get_general',
         'duration': 'get_general',
         'min_required_tasks': 'get_general',
@@ -31,6 +32,7 @@ class CredentialTypeManager(ObjectManager):
     }
 
     SETTERS = {
+        'active': 'set_general',
         'description': 'set_general',
         'duration': 'set_general',
         'min_required_tasks': 'set_general',

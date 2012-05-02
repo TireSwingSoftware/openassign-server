@@ -12,6 +12,7 @@ class AchievementManager(ObjectManager):
     """
 
     GETTERS = {
+        'active' : 'get_general',
         'component_achievements': 'get_many_to_many',
         'description': 'get_general',
         'name': 'get_general',
@@ -19,6 +20,7 @@ class AchievementManager(ObjectManager):
         'yielded_achievements': 'get_many_to_many',
     }
     SETTERS = {
+        'active' : 'set_general',
         'component_achievements': 'set_many',
         'description': 'set_general',
         'name': 'set_general',

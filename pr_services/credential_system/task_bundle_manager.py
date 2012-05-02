@@ -14,11 +14,13 @@ class TaskBundleManager(ObjectManager):
     """
 
     GETTERS = {
+        'active': 'get_general',
         'name': 'get_general',
         'description': 'get_general',
         'tasks': 'get_many_to_many',
     }
     SETTERS = {
+        'active': 'set_general',
         'name': 'set_general',
         'description': 'set_general',
         'tasks': 'set_many',
